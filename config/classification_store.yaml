@@ -52,6 +52,18 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolver
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTargetResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTargetResolver
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapQueueInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapQueue
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTrigger
+
+  # The queued remap rides the pimcore_core transport (see config/prepend/classification_store.yaml).
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Messenger\SearchIndexRemapHandler: ~
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreService
 

@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfe
 
 use Closure;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactField;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
@@ -41,6 +42,7 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
         private ApplyRefusalsInterface $refusals,
         private ArtifactRelationWriterInterface $relationWriter,
         private KeyRepositoryInterface $keyRepository,
+        private SearchIndexRemapTriggerInterface $searchIndexRemapTrigger,
     ) {
     }
 
@@ -208,9 +210,17 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
         $context->record($outcome, $label);
 
         $id = $target?->getId();
+        // read before the save, which writes the file's definition onto this very instance
+        $definitionBefore = $target?->getDefinition();
 
         if ($outcome !== ApplyOutcome::MATCHED_UNCHANGED && !$context->isDryRun()) {
-            $id = $this->keyRepository->saveFromArtifact($target, (int) $context->getStoreId(), $keyEntry)->getId();
+            $saved = $this->keyRepository->saveFromArtifact($target, (int) $context->getStoreId(), $keyEntry);
+            $id = $saved->getId();
+            $this->searchIndexRemapTrigger->noteFlagChange(
+                $saved->getStoreId(),
+                $definitionBefore,
+                $saved->getDefinition()
+            );
         }
 
         if ($id !== null) {

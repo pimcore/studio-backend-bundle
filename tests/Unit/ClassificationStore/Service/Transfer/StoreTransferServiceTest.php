@@ -17,6 +17,7 @@ use const JSON_THROW_ON_ERROR;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyReport;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilderInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser;
@@ -240,6 +241,7 @@ final class StoreTransferServiceTest extends Unit
             new ArtifactParser(),
             $this->makeEmpty(KeyRelationResolverInterface::class),
             $reconciler,
+            $this->makeEmpty(SearchIndexRemapTriggerInterface::class),
             $storeRepository
         );
     }

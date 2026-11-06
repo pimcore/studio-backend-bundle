@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -43,6 +44,7 @@ final readonly class KeyService implements KeyServiceInterface
         private KeyRelationResolverInterface $keyRelationResolver,
         private KeyRepositoryInterface $keyConfigurationRepository,
         private KeyHydratorInterface $keyHydrator,
+        private SearchIndexRemapTriggerInterface $searchIndexRemapTrigger,
     ) {
     }
 
@@ -90,18 +92,35 @@ final readonly class KeyService implements KeyServiceInterface
 
     /**
      * {@inheritdoc}
+     *
+     * The search index flag lives in the `definition` blob, so only an update that carries one can
+     * change it, and the stored blob is read before the write: the repository mutates the very
+     * instance a read afterwards would answer with, which would compare the new definition to
+     * itself ({@see SearchIndexRemapTriggerInterface::noteFlagChange()}).
      */
     public function updateKey(int $id, KeyUpdate $parameters): KeyDetail
     {
         $definition = $parameters->getDefinition();
+        $storedDefinition = null;
+
         if ($definition !== null) {
             $parameters = $parameters->withDefinition($this->applyOptionsProviderDefaults($definition));
+            $storedDefinition = $this->keyConfigurationRepository->getById($id)->getDefinition();
         }
 
         try {
             $keyConfig = $this->keyConfigurationRepository->update($id, $parameters);
+
+            if ($definition !== null) {
+                $this->searchIndexRemapTrigger->noteFlagChange(
+                    $keyConfig->getStoreId(),
+                    $storedDefinition,
+                    $keyConfig->getDefinition()
+                );
+            }
         } finally {
             $this->keyRelationResolver->clear();
+            $this->searchIndexRemapTrigger->flush();
         }
 
         return $this->getHydratedKeyDetail($keyConfig);

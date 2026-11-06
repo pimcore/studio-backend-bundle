@@ -17,6 +17,7 @@ use Closure;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\ImportReport;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -43,6 +44,7 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
         private ArtifactParserInterface $artifactParser,
         private KeyRelationResolverInterface $keyRelationResolver,
         private ReconcilerInterface $reconciler,
+        private SearchIndexRemapTriggerInterface $searchIndexRemapTrigger,
         private StoreRepositoryInterface $storeRepository,
     ) {
     }
@@ -94,6 +96,8 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
             $report = $this->reconciler->apply($document, $store, false);
         } finally {
             $this->keyRelationResolver->clear();
+            // one remap for the whole apply, however many of its keys changed the flag
+            $this->searchIndexRemapTrigger->flush();
         }
 
         if ($report->hasConflicts()) {
@@ -117,6 +121,8 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
             return $this->reconciler->apply($document, $store, $dryRun, $onDecision);
         } finally {
             $this->keyRelationResolver->clear();
+            // a dry run writes no key, so it notes nothing and this hands nothing over
+            $this->searchIndexRemapTrigger->flush();
         }
     }
 

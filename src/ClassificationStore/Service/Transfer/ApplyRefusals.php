@@ -38,8 +38,9 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
      * ({@see KeyGroupRelation::setDefinitionOverride()}). It is restated here because a reconcile
      * has to name every property it refuses rather than stop at the first one the model throws on.
      *
-     * The reserved `indexed` member is deliberately not one of them: the per assignment expression
-     * of that flag is the `metadata` column ({@see SearchIndexFlagResolverInterface}).
+     * The reserved `indexed` member is deliberately not one of them: that flag belongs to the key,
+     * in its own `definition` ({@see SearchIndexFlagResolverInterface}), and no assignment overrides
+     * it.
      */
     private const array OVERRIDABLE_PROPERTIES = ['options', 'defaultUnit', 'validUnits'];
 

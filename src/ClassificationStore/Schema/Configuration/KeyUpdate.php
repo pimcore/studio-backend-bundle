@@ -47,11 +47,12 @@ final readonly class KeyUpdate
         )]
         private ?string $type = null,
         #[Property(
-            description: 'Values for object brick definition metadata. The member "indexed" is reserved: it is the'
-                . ' default a newly created assignment of this key takes into its own metadata, where false excludes'
-                . ' the assignment from the search index and anything else leaves it indexed. The whole object'
-                . ' replaces the stored one, so a client that rebuilds it from a form has to send the member back to'
-                . ' keep it. It is unrelated to the "index" member below, which is about the object query tables.',
+            description: 'Values for object brick definition metadata. The member "indexed" is reserved: it is this'
+                . ' key\'s own search index flag, where false excludes the key from the search index wherever it is'
+                . ' used and anything else leaves it indexed. Changing it queues a remap of every search index the'
+                . ' key\'s store reaches, which converges in the background. The whole object replaces the stored'
+                . ' one, so a client that rebuilds it from a form has to send the member back to keep it. It is'
+                . ' unrelated to the "index" member below, which is about the object query tables.',
             type: 'object',
             example: [
                 'name' => 'weight',

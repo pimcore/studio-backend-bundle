@@ -21,14 +21,13 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Arti
 interface SearchIndexFlagResolverInterface
 {
     /**
-     * The reserved member that says whether a key assignment is in the search index: boolean `false`
-     * excludes it, and anything else - `true`, a non boolean, an absent member, or a NULL `metadata`
-     * column - leaves it indexed, which is what every assignment written so far is.
+     * The reserved member that says whether a key is in the search index: boolean `false` excludes it
+     * wherever that key is used, and anything else - `true`, a non boolean, an absent member, or a
+     * definition that does not parse - leaves it indexed, which is what every key written so far is.
      *
-     * The member is read in two places and spelled the same in both: inside an assignment's
-     * `metadata`, where it is the assignment's own answer, and inside a key's `definition`, where it
-     * is the default a created assignment of that key takes. `metadata` stays free-form either way,
-     * so a non boolean is stored as it arrived rather than refused.
+     * The member is read in one place and that place is the key's own `definition`. An assignment's
+     * `metadata` reserves nothing: a member spelled `indexed` in there is an ordinary free-form
+     * member that is stored as it arrived and changes nothing about the search index.
      *
      * Not to be confused with the `index` member a Pimcore field definition blob carries: that one
      * is about the object query tables, which classification store values never reach.
@@ -40,30 +39,10 @@ interface SearchIndexFlagResolverInterface
     public const string INDEXED_MEMBER = 'indexed';
 
     /**
-     * Whether the assignment carrying this `metadata` is in the search index. Null is the NULL
-     * column, which is indexed - as is any value but boolean `false`.
+     * Whether the key carrying this `definition` is in the search index. Null is a key that has no
+     * definition yet, which is indexed - as is any value of the member but boolean `false`.
      *
-     * @param array<string, mixed>|null $metadata
+     * @param string|null $keyDefinition the key's `definition` column, null for a key with none yet
      */
-    public function isIndexed(?array $metadata): bool;
-
-    /**
-     * Whether this `metadata` answers the question itself, which is what the key's default fills in
-     * for when it does not. A member present as null counts as an answer.
-     *
-     * @param array<string, mixed>|null $metadata
-     */
-    public function carriesFlag(?array $metadata): bool;
-
-    /**
-     * The `metadata` of a created assignment with the default of its key merged into the members it
-     * already carries, or null where the key states no default and nothing is to be seeded. The key
-     * is named by its `definition` column, and only a `metadata` {@see self::carriesFlag()} reports
-     * nothing for is asked about.
-     *
-     * @param array<string, mixed>|null $metadata the supplied members, null for an absent or null one
-     *
-     * @return array<string, mixed>|null
-     */
-    public function withKeyDefault(?array $metadata, string $keyDefinition): ?array;
+    public function isIndexed(?string $keyDefinition): bool;
 }

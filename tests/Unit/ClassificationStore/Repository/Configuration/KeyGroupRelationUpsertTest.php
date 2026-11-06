@@ -15,15 +15,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Repo
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepository;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationCreate;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryMapperInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Dao as GroupConfigDao;
-use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Dao as KeyGroupRelationDao;
 use function str_contains;
@@ -78,22 +75,19 @@ final class KeyGroupRelationUpsertTest extends Unit
 
     private const string INDEXED_MEMBER = 'indexed';
 
-    private const string KEY_DEFINITION_WITHOUT_DEFAULT = '{"fieldtype":"input"}';
-
+    /**
+     * A key excluded from the search index, which is the one case a created assignment used to copy
+     * the member out of and now copies nothing out of.
+     */
     private const string KEY_DEFINITION_NOT_INDEXED = '{"fieldtype":"input","indexed":false}';
 
-    private const string SEEDED_METADATA_JSON = '{"indexed":false}';
-
     /**
-     * How often the write read the key configuration, which a create does once and an update not at
-     * all.
+     * A stored `metadata` naming the member, which is an ordinary free-form member here: the column
+     * reserves nothing and the search index reads the key instead.
      */
-    private int $keyLookups = 0;
+    private const string METADATA_NAMING_THE_MEMBER_JSON = '{"indexed":false}';
 
-    public function _before(): void
-    {
-        $this->keyLookups = 0;
-    }
+    private const array METADATA_NAMING_THE_MEMBER = [self::INDEXED_MEMBER => false];
 
     /**
      * All three properties reach the addressed `(groupId, keyId)` row in one write - the row is
@@ -318,168 +312,106 @@ final class KeyGroupRelationUpsertTest extends Unit
     }
 
     /**
-     * The flag travels inside the metadata the released endpoints already carry in both directions,
-     * so an assignment can be marked not-indexed and back and is reported as stored each time.
-     *
-     * @dataProvider indexedFlagProvider
+     * A payload whose `metadata` names `indexed` is neither refused nor stripped: the column is
+     * free-form and reserves no member, so the object is stored and reported exactly as it arrived,
+     * alongside whatever else it names. What it does not do is say anything about the search index -
+     * that flag is the key's, and no remap follows an assignment write
+     * ({@see \Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\KeyIndexRemapTriggerTest}).
      */
-    public function testTheFlagIsWrittenAndReportedBothWaysRound(string $storedMetadataJson, bool $indexed): void
+    public function testAMetadataNamingTheIndexedMemberIsStoredVerbatim(): void
     {
-        $this->stubDatabase([[self::COLUMN_METADATA => $storedMetadataJson] + $this->createRow()]);
+        $this->stubDatabase([$this->createRow()]);
+        $supplied = self::STORED_METADATA + self::METADATA_NAMING_THE_MEMBER;
 
-        $relation = $this->createRepository(null)->createOrUpdate(
-            $this->createPayload([self::COLUMN_METADATA => [self::INDEXED_MEMBER => $indexed]])
+        $relation = $this->createRepository()->createOrUpdate(
+            $this->createPayload([self::COLUMN_METADATA => $supplied])
         );
 
-        $this->assertSame(
-            $indexed ? '{"indexed":true}' : self::SEEDED_METADATA_JSON,
-            $this->getWrittenRow()[self::COLUMN_METADATA]
-        );
-        $this->assertSame([self::INDEXED_MEMBER => $indexed], $relation->getMetadata());
+        $this->assertSame('{"source":"erp","indexed":false}', $this->getWrittenRow()[self::COLUMN_METADATA]);
+        $this->assertSame($supplied, $relation->getMetadata());
     }
 
     /**
-     * @return array<string, array{0: string, 1: bool}>
-     */
-    public static function indexedFlagProvider(): array
-    {
-        return [
-            'marking a stored assignment as not indexed' => [self::STORED_METADATA_JSON, false],
-            'marking it back as indexed' => [self::SEEDED_METADATA_JSON, true],
-        ];
-    }
-
-    /**
-     * A create whose payload would leave the assignment without the flag takes the one its key
-     * states - whether the payload leaves `metadata` out, sends it as null, or sends an object
-     * naming other members, which keep their place alongside the seeded one.
+     * A created assignment seeds nothing from its key, not even under a key that excludes itself
+     * from the search index: the column ends up NULL whether `metadata` is absent from the payload
+     * or sent as an explicit null, and a supplied object is stored as it arrived with nothing added
+     * to it. The key decides the search index at read time and there is no stored per assignment
+     * copy to keep in step with it.
      *
-     * @dataProvider createdWithoutTheFlagProvider
+     * The two NULL cases are the same answer here and only here: there is no stored value for an
+     * absent property to keep, which is what tells them apart on an update
+     * ({@see self::testAnUpdateKeepsAStoredMetadata()}).
+     *
+     * @dataProvider createdAssignmentProvider
      *
      * @param array<string, mixed> $perAssignment
-     * @param array<string, mixed> $expected
+     * @param array<string, mixed>|null $expected the metadata the created row reports
      */
-    public function testACreatedAssignmentWithoutTheFlagTakesTheKeyDefault(
+    public function testACreatedAssignmentSeedsNothingFromItsKey(
         array $perAssignment,
-        string $expectedJson,
-        array $expected,
+        ?string $expectedJson,
+        ?array $expected,
     ): void {
         $this->stubDatabase([]);
-        $this->letTheKeyExistForNewAssignments($this->createKeyColumns());
-
-        $relation = $this->createRepository(self::KEY_DEFINITION_NOT_INDEXED)
-            ->createOrUpdate($this->createPairOnlyPayload($perAssignment));
-
-        $this->assertSame($expectedJson, $this->getWrittenRow()[self::COLUMN_METADATA]);
-        $this->assertSame($expected, $relation->getMetadata());
-        $this->assertSame(1, $this->keyLookups);
-    }
-
-    /**
-     * @return array<string, array{0: array<string, mixed>, 1: string, 2: array<string, mixed>}>
-     */
-    public static function createdWithoutTheFlagProvider(): array
-    {
-        return [
-            'metadata absent from the payload' => [
-                [],
-                self::SEEDED_METADATA_JSON,
-                [self::INDEXED_MEMBER => false],
-            ],
-            'metadata sent as an explicit null' => [
-                [self::COLUMN_METADATA => null],
-                self::SEEDED_METADATA_JSON,
-                [self::INDEXED_MEMBER => false],
-            ],
-            'metadata naming other members only' => [
-                [self::COLUMN_METADATA => self::STORED_METADATA],
-                '{"source":"erp","indexed":false}',
-                self::STORED_METADATA + [self::INDEXED_MEMBER => false],
-            ],
-        ];
-    }
-
-    /**
-     * An explicit flag in the payload is the only thing that overrides the key, so the key is not
-     * consulted at all - not even to be overruled by the opposite value.
-     */
-    public function testACreatedAssignmentStatingTheFlagKeepsItAndNeverReadsTheKey(): void
-    {
-        $this->stubDatabase([]);
-        $this->letTheKeyExistForNewAssignments($this->createKeyColumns());
-
-        $relation = $this->createRepository(self::KEY_DEFINITION_NOT_INDEXED)->createOrUpdate(
-            $this->createPairOnlyPayload([self::COLUMN_METADATA => [self::INDEXED_MEMBER => true]])
+        $this->letTheKeyExistForNewAssignments(
+            ['definition' => self::KEY_DEFINITION_NOT_INDEXED] + $this->createKeyColumns()
         );
 
-        $this->assertSame('{"indexed":true}', $this->getWrittenRow()[self::COLUMN_METADATA]);
-        $this->assertSame([self::INDEXED_MEMBER => true], $relation->getMetadata());
-        $this->assertSame(0, $this->keyLookups, 'The key must not be consulted here.');
-    }
-
-    /**
-     * A key stating no flag seeds nothing: an absent `metadata` stays out of the write altogether
-     * and a supplied object is written as it arrived. Nothing is backfilled by the back door.
-     *
-     * @dataProvider createdUnderAKeyWithoutADefaultProvider
-     *
-     * @param array<string, mixed> $perAssignment
-     */
-    public function testAKeyStatingNoDefaultSeedsNothing(array $perAssignment, ?string $expectedJson): void
-    {
-        $this->stubDatabase([]);
-        $this->letTheKeyExistForNewAssignments($this->createKeyColumns());
-
-        $this->createRepository()->createOrUpdate($this->createPairOnlyPayload($perAssignment));
-
+        $relation = $this->createRepository()->createOrUpdate($this->createPairOnlyPayload($perAssignment));
         $row = $this->getWrittenRow();
 
         if ($expectedJson === null) {
-            $this->assertArrayNotHasKey(self::COLUMN_METADATA, $row);
-
-            return;
+            // left out of the write or written as NULL: the column of the new row is NULL either way
+            $this->assertNull($row[self::COLUMN_METADATA] ?? null);
+        } else {
+            $this->assertSame($expectedJson, $row[self::COLUMN_METADATA]);
         }
 
-        $this->assertSame($expectedJson, $row[self::COLUMN_METADATA]);
+        $this->assertSame($expected, $relation->getMetadata());
     }
 
     /**
-     * @return array<string, array{0: array<string, mixed>, 1: ?string}>
+     * @return array<string, array{0: array<string, mixed>, 1: ?string, 2: ?array<string, mixed>}>
      */
-    public static function createdUnderAKeyWithoutADefaultProvider(): array
+    public static function createdAssignmentProvider(): array
     {
         return [
-            'an absent metadata is left out of the write' => [[], null],
-            'a supplied object is written unchanged' => [
+            'metadata absent from the payload' => [[], null, null],
+            'metadata sent as an explicit null' => [[self::COLUMN_METADATA => null], null, null],
+            'metadata naming other members only' => [
                 [self::COLUMN_METADATA => self::STORED_METADATA],
                 self::STORED_METADATA_JSON,
+                self::STORED_METADATA,
             ],
         ];
     }
 
     /**
-     * An update is never seeded: there is a prior value to keep or to clear, so the key is not
-     * consulted and an absent `metadata` leaves the stored flag exactly where it is.
+     * An absent `metadata` leaves a stored object exactly where it is, whichever members it names.
      */
-    public function testAnUpdateKeepsAStoredFlagAndNeverReadsTheKey(): void
+    public function testAnUpdateKeepsAStoredMetadata(): void
     {
-        $this->stubDatabase([[self::COLUMN_METADATA => self::SEEDED_METADATA_JSON] + $this->createRow()]);
+        $this->stubDatabase([
+            [self::COLUMN_METADATA => self::METADATA_NAMING_THE_MEMBER_JSON] + $this->createRow(),
+        ]);
 
-        $relation = $this->createRepository(null)->createOrUpdate($this->createPairOnlyPayload());
+        $relation = $this->createRepository()->createOrUpdate($this->createPairOnlyPayload());
 
         $this->assertArrayNotHasKey(self::COLUMN_METADATA, $this->getWrittenRow());
-        $this->assertSame([self::INDEXED_MEMBER => false], $relation->getMetadata());
+        $this->assertSame(self::METADATA_NAMING_THE_MEMBER, $relation->getMetadata());
     }
 
     /**
      * And an explicit null still clears it, which is the rule the released endpoint settled on for
      * every per assignment column.
      */
-    public function testAnUpdateWithAnExplicitNullClearsAStoredFlag(): void
+    public function testAnUpdateWithAnExplicitNullClearsAStoredMetadata(): void
     {
-        $this->stubDatabase([[self::COLUMN_METADATA => self::SEEDED_METADATA_JSON] + $this->createRow()]);
+        $this->stubDatabase([
+            [self::COLUMN_METADATA => self::METADATA_NAMING_THE_MEMBER_JSON] + $this->createRow(),
+        ]);
 
-        $relation = $this->createRepository(null)->createOrUpdate(
+        $relation = $this->createRepository()->createOrUpdate(
             $this->createPairOnlyPayload([self::COLUMN_METADATA => null])
         );
 
@@ -492,14 +424,17 @@ final class KeyGroupRelationUpsertTest extends Unit
 
     /**
      * And a supplied object replaces the stored one whole rather than merging into it, so an update
-     * naming other members only drops a stored flag. This is what "an existing assignment keeps what
-     * it has stored" is bounded by, and the schema says so: it holds while `metadata` is omitted.
+     * naming other members only drops a stored member. This is what "an existing assignment keeps
+     * what it has stored" is bounded by, and the schema says so: it holds while `metadata` is
+     * omitted.
      */
-    public function testAnUpdateSupplyingOtherMembersReplacesAStoredFlagRatherThanMergingIntoIt(): void
+    public function testAnUpdateSupplyingOtherMembersReplacesTheStoredObjectRatherThanMergingIntoIt(): void
     {
-        $this->stubDatabase([[self::COLUMN_METADATA => self::SEEDED_METADATA_JSON] + $this->createRow()]);
+        $this->stubDatabase([
+            [self::COLUMN_METADATA => self::METADATA_NAMING_THE_MEMBER_JSON] + $this->createRow(),
+        ]);
 
-        $relation = $this->createRepository(null)->createOrUpdate(
+        $relation = $this->createRepository()->createOrUpdate(
             $this->createPairOnlyPayload([self::COLUMN_METADATA => self::STORED_METADATA])
         );
 
@@ -728,37 +663,16 @@ final class KeyGroupRelationUpsertTest extends Unit
     }
 
     /**
-     * @param string|null $keyDefinition the `definition` of the key the payload names, null for a
-     *                                   lookup this write must not make
+     * The write reads no key configuration at all: the three per assignment columns are the
+     * payload's and the search index flag is the key's own, read from the key where it is used.
      */
-    private function createRepository(
-        ?string $keyDefinition = self::KEY_DEFINITION_WITHOUT_DEFAULT,
-    ): KeyGroupRelationRepository {
+    private function createRepository(): KeyGroupRelationRepository
+    {
         return new KeyGroupRelationRepository(
             $this->makeEmpty(ListingFilterInterface::class),
             $this->getStubbedConnection(),
-            $this->makeEmpty(ArtifactEntryMapperInterface::class),
-            $this->makeEmpty(KeyRepositoryInterface::class, [
-                'getById' => function () use ($keyDefinition): KeyConfig {
-                    $this->assertNotNull($keyDefinition, 'The key configuration must not be read here.');
-                    $this->keyLookups++;
-
-                    return $this->createKeyConfig($keyDefinition);
-                },
-            ]),
-            new SearchIndexFlagResolver()
+            $this->makeEmpty(ArtifactEntryMapperInterface::class)
         );
-    }
-
-    private function createKeyConfig(string $definition): KeyConfig
-    {
-        $config = new KeyConfig();
-        $config->setId(self::KEY_ID);
-        $config->setName('weight');
-        $config->setType('input');
-        $config->setDefinition($definition);
-
-        return $config;
     }
 
     /**

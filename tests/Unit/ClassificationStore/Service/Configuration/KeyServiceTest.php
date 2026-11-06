@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -45,6 +46,9 @@ final class KeyServiceTest extends Unit
         ];
 
         $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->method('getById')
+            ->willReturn(new KeyConfig());
         $repository
             ->expects($this->once())
             ->method('update')
@@ -79,6 +83,9 @@ final class KeyServiceTest extends Unit
 
         $repository = $this->createMock(KeyRepositoryInterface::class);
         $repository
+            ->method('getById')
+            ->willReturn(new KeyConfig());
+        $repository
             ->expects($this->once())
             ->method('update')
             ->with(1, new KeyUpdate('key', definition: $definition))
@@ -93,6 +100,9 @@ final class KeyServiceTest extends Unit
     public function testUpdateKeyPassesANullDefinitionThrough(): void
     {
         $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->method('getById')
+            ->willReturn(new KeyConfig());
         $repository
             ->expects($this->once())
             ->method('update')
@@ -118,6 +128,9 @@ final class KeyServiceTest extends Unit
         );
 
         $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->method('getById')
+            ->willReturn(new KeyConfig());
         $repository
             ->expects($this->once())
             ->method('update')
@@ -222,6 +235,9 @@ final class KeyServiceTest extends Unit
     {
         $repository = $this->createMock(KeyRepositoryInterface::class);
         $repository
+            ->method('getById')
+            ->willReturn(new KeyConfig());
+        $repository
             ->method('create')
             ->willReturn(new KeyConfig());
         $repository
@@ -249,6 +265,7 @@ final class KeyServiceTest extends Unit
             $resolver ?? $this->createMock(KeyRelationResolverInterface::class),
             $repository,
             $hydrator,
+            $this->createMock(SearchIndexRemapTriggerInterface::class),
         );
     }
 }

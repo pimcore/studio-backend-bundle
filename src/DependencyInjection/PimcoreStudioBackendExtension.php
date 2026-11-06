@@ -422,6 +422,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $loader->load('rate_limiter.yaml');
         // Routes the email channel's send message onto the pimcore_core transport (see the file).
         $loader->load('notification.yaml');
+        // Routes the classification store's search index remap onto it as well (see the file).
+        $loader->load('classification_store.yaml');
 
         $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree(
             $container,
