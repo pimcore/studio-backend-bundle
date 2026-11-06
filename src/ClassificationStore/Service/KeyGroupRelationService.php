@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\GroupConfigResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event\KeyGroupRelationEvent;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\KeyGroupRelationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
@@ -23,10 +22,10 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
 use Pimcore\Model\DataObject\ClassDefinition\Data\LayoutDefinitionEnrichmentInterface;
-use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_map;
 use function count;
 
 /**
@@ -40,7 +39,6 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         private KeyGroupRelationHydratorInterface $keyGroupRelationHydrator,
         private GroupConfigResolverInterface $groupConfigResolver,
         private EventDispatcherInterface $eventDispatcher,
-        private KeyConfigResolverInterface $keyConfigResolver,
         private KeyLocalizationResolverInterface $keyLocalizationResolver,
     ) {
     }
@@ -64,13 +62,15 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
             $parameter->getSearchTerm()
         );
 
+        $localizationFlags = $this->resolveKeyLocalizationFlags($keyGroupRelations);
+
         foreach ($keyGroupRelations as $keyGroupRelation) {
             $groupConfig = $this->groupConfigResolver->getById($keyGroupRelation->getGroupId());
 
             $hydratedKeyGroupRelation = $this->keyGroupRelationHydrator->hydrate(
                 $keyGroupRelation,
                 $groupConfig,
-                $this->resolveKeyLocalized($keyGroupRelation->getKeyId())
+                $localizationFlags[$keyGroupRelation->getKeyId()] ?? null
             );
 
             $this->eventDispatcher->dispatch(
@@ -125,18 +125,29 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
     }
 
     /**
-     * The key's own flag, read off the key configuration: core's relation listing selects the key's
-     * columns but keeps only those it has a property for, and it has none for this one. A key the
-     * configuration no longer carries reports nothing rather than failing the whole listing.
+     * The `localized` flag of every key on the page, in one statement: core's relation listing
+     * selects the key's columns but keeps only those its model has a property for, and it has none
+     * for this one. A key the configuration no longer carries is simply absent from the result and
+     * reports nothing, rather than failing the whole listing.
+     *
+     * A core that does not carry the flag is not asked at all - there, the answer could only be null
+     * for every key.
+     *
+     * @param KeyGroupRelation[] $keyGroupRelations
+     *
+     * @return array<int, bool|null>
      */
-    private function resolveKeyLocalized(int $keyId): ?bool
+    private function resolveKeyLocalizationFlags(array $keyGroupRelations): array
     {
-        $keyConfig = $this->keyConfigResolver->getById($keyId);
-
-        if (!$keyConfig instanceof KeyConfig) {
-            return null;
+        if (!$this->keyLocalizationResolver->supportsLocalization()) {
+            return [];
         }
 
-        return $this->keyLocalizationResolver->getLocalized($keyConfig);
+        return $this->keyGroupRelationRepository->getKeyLocalizationFlags(
+            array_map(
+                static fn (KeyGroupRelation $keyGroupRelation): int => $keyGroupRelation->getKeyId(),
+                $keyGroupRelations
+            )
+        );
     }
 }

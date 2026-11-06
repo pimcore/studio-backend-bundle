@@ -247,6 +247,41 @@ final class ArtifactTargetMatcherTest extends Unit
     }
 
     /**
+     * On a core that does not carry the flag the column is not compared at all: it reads null
+     * whatever the key says and a write of it goes nowhere, so comparing would report every entry
+     * that carries `localized: true` or `false` as a change the apply cannot make - each apply would
+     * save the key again and report UPDATED, and deploying one file twice would never be a no-op.
+     * Everything else about the key is still compared.
+     *
+     * @dataProvider localizedFlagProvider
+     */
+    public function testACoreWithoutTheFlagDoesNotCompareIt(?bool $entry): void
+    {
+        $this->keyLocalizationResolver = new InMemoryKeyLocalizationResolver(false);
+        $matcher = $this->createTargetMatcher();
+        $target = $this->createKey('{"fieldtype":"input"}', localized: true);
+
+        $this->assertTrue(
+            $matcher->describesSameKey($target, $this->createKeyEntry(['fieldtype' => 'input'], $entry))
+        );
+        $this->assertFalse(
+            $matcher->describesSameKey($target, $this->createKeyEntry(['fieldtype' => 'textarea'], $entry))
+        );
+    }
+
+    /**
+     * @return array<string, array{0: ?bool}>
+     */
+    public static function localizedFlagProvider(): array
+    {
+        return [
+            'the file flags the key localized' => [true],
+            'the file flags the key not localized' => [false],
+            'the file states no flag' => [null],
+        ];
+    }
+
+    /**
      * A per assignment column the entry leaves out is not written, so it is not compared either -
      * which is what keeps a file that says nothing about it from re-writing the row every deploy.
      */

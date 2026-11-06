@@ -248,6 +248,29 @@ final class ArtifactRoundTripTest extends Unit
     }
 
     /**
+     * A file written by an installation that carries the flag, applied twice to a core that does
+     * NOT: there the flag can neither be read off the key nor written to it, so the apply leaves it
+     * out of the comparison. Comparing it would report the key as updated and save it again on every
+     * deploy, because the write the report promises is the one write that cannot happen.
+     */
+    public function testAFileCarryingTheFlagDecidesNothingOnACoreWithoutIt(): void
+    {
+        // the enabled fixture key is flagged localized, so the file carries `"localized": true`
+        $keys = $this->createFixtureKeys();
+
+        $report = $this->applyExportOf(
+            $keys,
+            targetKeys: $keys,
+            targetIsTheSource: true,
+            targetCarriesTheFlag: false
+        );
+
+        $this->assertSame(0, $report->getCount(ApplyOutcome::CREATED));
+        $this->assertSame(0, $report->getCount(ApplyOutcome::UPDATED));
+        $this->assertSame([], $this->appliedKeys);
+    }
+
+    /**
      * @param KeyConfig[] $sourceKeys
      * @param KeyConfig[] $targetKeys
      * @param array<string, mixed>|null $assignmentMetadata
@@ -258,12 +281,13 @@ final class ArtifactRoundTripTest extends Unit
         bool $targetIsTheSource = false,
         bool $keysAreNotIndexed = false,
         ?array $assignmentMetadata = self::FIXTURE_METADATA,
+        bool $targetCarriesTheFlag = true,
     ): ApplyReport {
         $json = $this->export($sourceKeys, $assignmentMetadata);
         $document = (new ArtifactParser())->parse($json);
 
         return $this
-            ->createReconciler($targetKeys, $targetIsTheSource, $keysAreNotIndexed)
+            ->createReconciler($targetKeys, $targetIsTheSource, $keysAreNotIndexed, $targetCarriesTheFlag)
             ->apply($document, $this->createStore(), false);
     }
 
@@ -335,6 +359,7 @@ final class ArtifactRoundTripTest extends Unit
         array $targetKeys,
         bool $targetIsTheSource,
         bool $keysAreNotIndexed = false,
+        bool $targetCarriesTheFlag = true,
     ): Reconciler {
         $storeRepository = $this->createMock(StoreRepositoryInterface::class);
         $storeRepository->method('saveFromArtifact')->willReturnCallback(
@@ -457,7 +482,10 @@ final class ArtifactRoundTripTest extends Unit
         );
 
         $parser = new ArtifactParser();
-        $matcher = new ArtifactTargetMatcher($this->keyLocalizationResolver);
+        // the target's core, which is the one the apply compares against
+        $matcher = new ArtifactTargetMatcher(
+            $targetCarriesTheFlag ? $this->keyLocalizationResolver : new InMemoryKeyLocalizationResolver(false)
+        );
         $diagnostics = new ApplyDiagnostics();
         $refusals = new ApplyRefusals(
             $collectionRepository,

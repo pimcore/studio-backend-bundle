@@ -29,6 +29,23 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 interface KeyLocalizationResolverInterface
 {
     /**
+     * The column of `classificationstore_keys` the flag is stored in, published so that a read of a
+     * whole listing page - which goes to the column, because there is no batch loader for the model -
+     * spells it the way the accessors do.
+     */
+    public const string LOCALIZED_COLUMN = 'localized';
+
+    /**
+     * Whether the core this bundle runs against carries the flag at all.
+     *
+     * `composer.json` allows a core whose `classificationstore_keys` has no `localized` column, and
+     * such a core has neither accessor: there, every key reports null and every write is dropped.
+     * That null is NOT the key's own answer, so a caller that would otherwise compare a stored flag
+     * against a supplied one, or reach for the flag of every row of a page, asks this first.
+     */
+    public function supportsLocalization(): bool;
+
+    /**
      * The flag the key stores, or null where it stores none.
      */
     public function getLocalized(KeyConfig $keyConfig): ?bool;

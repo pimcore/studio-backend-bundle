@@ -22,6 +22,11 @@ use SplObjectStorage;
  * production resolver reaches holds it. The flag lives in a column of `classificationstore_keys`,
  * which this suite has no database for, and `KeyConfig` is final, so there is nothing to stub.
  *
+ * This stands in for a core that CARRIES the flag; `new InMemoryKeyLocalizationResolver(false)` is
+ * one that does not, where a read is null whatever was written and a write goes nowhere. The
+ * production bridge that decides which of the two a core is has its own coverage in
+ * {@see KeyLocalizationResolverTest}; this one exists so a caller of it can be tested either way.
+ *
  * @internal
  */
 final class InMemoryKeyLocalizationResolver implements KeyLocalizationResolverInterface
@@ -31,18 +36,32 @@ final class InMemoryKeyLocalizationResolver implements KeyLocalizationResolverIn
      */
     private SplObjectStorage $values;
 
-    public function __construct()
-    {
+    public function __construct(
+        private readonly bool $supported = true
+    ) {
         $this->values = new SplObjectStorage();
+    }
+
+    public function supportsLocalization(): bool
+    {
+        return $this->supported;
     }
 
     public function getLocalized(KeyConfig $keyConfig): ?bool
     {
+        if (!$this->supported) {
+            return null;
+        }
+
         return $this->values[$keyConfig] ?? null;
     }
 
     public function setLocalized(KeyConfig $keyConfig, ?bool $localized): void
     {
+        if (!$this->supported) {
+            return;
+        }
+
         $this->values[$keyConfig] = $localized;
     }
 }
