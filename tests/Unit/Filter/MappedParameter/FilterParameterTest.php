@@ -131,4 +131,29 @@ final class FilterParameterTest extends Unit
         $this->assertNotNull($filter);
         $this->assertSame(42, $filter->getFilterValue());
     }
+
+    /**
+     * @dataProvider malformedOperatorFilterProvider
+     */
+    public function testMalformedOperatorFilterIsRejectedAsInvalidArgument(array $columnFilter): void
+    {
+        $parameter = new FilterParameter(columnFilters: [$columnFilter]);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        iterator_to_array($parameter->getOperatorColumnFilters());
+    }
+
+    public function malformedOperatorFilterProvider(): array
+    {
+        return [
+            'key is a number' => [['key' => 42, 'type' => self::STRING_TYPE, 'operator' => 'empty']],
+            'key is a list' => [['key' => ['sku'], 'type' => self::STRING_TYPE, 'operator' => 'empty']],
+            'type is a list' => [['key' => 'sku', 'type' => ['system.string'], 'operator' => 'empty']],
+            'operator is a list' => [['key' => 'sku', 'type' => self::STRING_TYPE, 'operator' => ['empty']]],
+            'operator is a number' => [['key' => 'sku', 'type' => self::STRING_TYPE, 'operator' => 1]],
+            'locale is a number' => [['key' => 'sku', 'type' => self::STRING_TYPE, 'operator' => 'empty', 'locale' => 5]],
+            'locale is a list' => [['key' => 'sku', 'type' => self::STRING_TYPE, 'operator' => 'empty', 'locale' => ['en']]],
+        ];
+    }
 }

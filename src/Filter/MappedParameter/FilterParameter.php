@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParamete
 use function array_key_exists;
 use function count;
 use function implode;
+use function is_string;
 
 /**
  * @internal
@@ -147,11 +148,15 @@ final class FilterParameter implements
         );
 
         foreach ($columns as $column) {
-            if (!isset($column['key'], $column['type'])) {
+            if (!is_string($column['key'] ?? null) || !is_string($column['type'] ?? null)) {
                 throw new InvalidArgumentException('Invalid column filter');
             }
 
-            $operator = FilterOperator::tryFrom((string)$column['operator']);
+            if (!is_string($column['operator']) || !is_string($column['locale'] ?? '')) {
+                throw new InvalidArgumentException('Invalid column filter');
+            }
+
+            $operator = FilterOperator::tryFrom($column['operator']);
 
             if ($operator === null) {
                 throw new InvalidArgumentException(
