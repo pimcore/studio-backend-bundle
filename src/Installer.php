@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Entity\OAuth\OAuthTokenRecord;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Perspective\UserPerspectiveData;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfigurationShare;
+use Pimcore\Bundle\StudioBackendBundle\Entity\User\UserSettings;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Extension\Bundle\Installer\SettingsStoreAwareInstaller;
@@ -70,6 +71,7 @@ final class Installer extends SettingsStoreAwareInstaller
         $this->createSavedSearchConfigurationTable($schema);
         $this->createSavedSearchConfigurationSharesTable($schema);
         $this->createUserPerspectivesTable($schema);
+        $this->createUserSettingsTable($schema);
         $this->createJobRunHiddenTable($schema);
         $this->createMcpAccessTokenTable($schema);
         $this->createNotificationSubscriptionTable($schema);
@@ -111,6 +113,10 @@ final class Installer extends SettingsStoreAwareInstaller
 
         if ($schema->hasTable(UserPerspectiveData::TABLE_NAME)) {
             $schema->dropTable(UserPerspectiveData::TABLE_NAME);
+        }
+
+        if ($schema->hasTable(UserSettings::TABLE_NAME)) {
+            $schema->dropTable(UserSettings::TABLE_NAME);
         }
 
         if ($schema->hasTable(JobRunHidden::TABLE_NAME)) {
@@ -463,6 +469,39 @@ final class Installer extends SettingsStoreAwareInstaller
         );
 
         $table->setPrimaryKey(['user'], 'pk_' . UserPerspectiveData::TABLE_NAME);
+    }
+
+    /**
+     * @throws SchemaException
+     */
+    public function createUserSettingsTable(Schema $schema): void
+    {
+        if ($schema->hasTable(UserSettings::TABLE_NAME)) {
+            return;
+        }
+
+        $table = $schema->createTable(UserSettings::TABLE_NAME);
+
+        $table->addColumn(
+            'user',
+            'integer',
+            ['notnull' => true, 'unsigned' => true]
+        );
+
+        $table->addColumn('welcomeScreenPath', 'string', [
+            'notnull' => false,
+            'length' => 255,
+        ]);
+
+        $table->addForeignKeyConstraint(
+            'users',
+            ['user'],
+            ['id'],
+            ['onDelete' => 'CASCADE'],
+            'fk_' . UserSettings::TABLE_NAME.'_users'
+        );
+
+        $table->setPrimaryKey(['user'], 'pk_' . UserSettings::TABLE_NAME);
     }
 
     /**

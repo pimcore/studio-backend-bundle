@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\Entity\User\UserSettings;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDataObjectWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDocumentWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\PositiveOrZero;
 
@@ -55,6 +57,8 @@ final readonly class UpdateUserParameter
         private array $documentWorkspaces,
         private array $perspectives = [],
         private string $theme = 'default',
+        #[Length(max: UserSettings::WELCOME_SCREEN_PATH_MAX_LENGTH)]
+        private ?string $welcomeScreenPath = null,
     ) {
     }
 
@@ -201,5 +205,10 @@ final readonly class UpdateUserParameter
     public function getPerspectives(): array
     {
         return $this->perspectives;
+    }
+
+    public function getWelcomeScreenPath(): ?string
+    {
+        return $this->welcomeScreenPath;
     }
 }

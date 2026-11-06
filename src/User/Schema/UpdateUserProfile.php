@@ -16,6 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Entity\User\UserSettings;
+use Symfony\Component\Validator\Constraints\Length;
 
 /**
  * @internal
@@ -63,6 +65,16 @@ final readonly class UpdateUserProfile
         private array $keyBindings,
         #[Property(description: 'Theme of the User', type: 'string', example: 'default')]
         private string $theme = 'default',
+        #[Property(
+            description: 'Path of the main navigation entry opened as welcome screen. '
+                . 'Omitted or null keeps the stored path, an empty string clears it',
+            type: 'string',
+            maxLength: UserSettings::WELCOME_SCREEN_PATH_MAX_LENGTH,
+            example: 'Reporting/Dashboards/Dashboards',
+            nullable: true
+        )]
+        #[Length(max: UserSettings::WELCOME_SCREEN_PATH_MAX_LENGTH)]
+        private ?string $welcomeScreenPath = null,
     ) {
     }
 
@@ -117,5 +129,10 @@ final readonly class UpdateUserProfile
     public function getKeyBindings(): array
     {
         return $this->keyBindings;
+    }
+
+    public function getWelcomeScreenPath(): ?string
+    {
+        return $this->welcomeScreenPath;
     }
 }

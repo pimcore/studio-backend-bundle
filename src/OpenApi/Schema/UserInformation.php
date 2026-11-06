@@ -127,6 +127,13 @@ final class UserInformation implements AdditionalAttributesInterface
             items: new Items(ref: PerspectiveConfig::class))
         ]
         private readonly array $perspectives = [],
+        #[Property(
+            description: 'Path of the main navigation entry opened as welcome screen',
+            type: 'string',
+            example: 'Reporting/Dashboards/Dashboards',
+            nullable: true
+        )]
+        private readonly ?string $welcomeScreenPath = null,
     ) {
     }
 
@@ -252,5 +259,10 @@ final class UserInformation implements AdditionalAttributesInterface
     public function getAllowedLanguagesForViewingWebsiteTranslations(): array
     {
         return $this->allowedLanguagesForViewingWebsiteTranslations;
+    }
+
+    public function getWelcomeScreenPath(): ?string
+    {
+        return $this->welcomeScreenPath;
     }
 }
