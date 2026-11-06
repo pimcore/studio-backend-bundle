@@ -35,10 +35,4 @@ final readonly class AdvancedManyToManyObjectRelationDefinition extends Abstract
     {
         return false;
     }
-
-    #[Override]
-    public function isFilterable(): bool
-    {
-        return false;
-    }
 }

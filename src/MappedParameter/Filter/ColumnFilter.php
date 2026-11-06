@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
 
+use Pimcore\Bundle\StudioBackendBundle\Filter\FilterOperator;
+
 /**
  * @internal
  */
@@ -22,7 +24,8 @@ final readonly class ColumnFilter extends SimpleColumnFilter
         private string $key,
         private string $type,
         private mixed $filterValue,
-        private ?string $locale = null
+        private ?string $locale = null,
+        private ?FilterOperator $operator = null
     ) {
         parent::__construct($this->type, $this->filterValue);
     }
@@ -44,5 +47,10 @@ final readonly class ColumnFilter extends SimpleColumnFilter
     public function getLocale(): ?string
     {
         return $this->locale;
+    }
+
+    public function getOperator(): ?FilterOperator
+    {
+        return $this->operator;
     }
 }
