@@ -100,7 +100,7 @@ final readonly class PasswordAdapter implements SetterDataInterface, DataNormali
     {
         $contextObject = $contextData?->getContextObject();
         if ($contextObject instanceof FieldCollectionData) {
-            // the context item is the rebuilt (empty) one, the stored one is the item of the same type at the same index
+            // the context item is rebuilt without values, the stored one has the same type and index
             $value = $this->getStoredCollectionItem($element, $contextObject)?->get($key, $contextData?->getLanguage());
         } else {
             $value = $this->getValidFieldValue($element, $key, $contextData);
