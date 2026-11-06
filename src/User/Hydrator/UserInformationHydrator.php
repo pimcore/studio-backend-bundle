@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\UserInformation;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPermissionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserSettingsServiceInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 
@@ -31,6 +32,7 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
         private TwoFactorAuthHydratorInterface $twoFactorAuthHydrator,
         private UserPermissionServiceInterface $userPermissionService,
         private UserPerspectiveServiceInterface $userPerspectiveService,
+        private UserSettingsServiceInterface $userSettingsService,
     ) {
     }
 
@@ -61,7 +63,8 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
             keyBindings: $this->keyBindingService->hydrateKeyBindings($user->getKeyBindings()),
             twoFactorAuthentication: $this->twoFactorAuthHydrator->hydrate($user),
             activePerspective: $this->userPerspectiveService->getActivePerspective($user),
-            perspectives: $this->userPerspectiveService->getAllowedPerspectives($user)
+            perspectives: $this->userPerspectiveService->getAllowedPerspectives($user),
+            welcomeScreenPath: $this->userSettingsService->getWelcomeScreenPath($user)
         );
     }
 }

@@ -23,8 +23,10 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UpdateUserProfile;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserSettingsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateService;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
@@ -37,6 +39,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class UserUpdateServiceTest extends Unit
 {
+    private const string WELCOME_SCREEN_PATH = 'Reporting/Dashboards/Dashboards';
+
     public function testNonAdminCannotUpdateAdminUser(): void
     {
         $targetUser = $this->createTargetUser(isAdmin: true);
@@ -170,6 +174,66 @@ final class UserUpdateServiceTest extends Unit
         );
     }
 
+    public function testUpdateUserStoresTheWelcomeScreenPath(): void
+    {
+        $targetUser = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService(
+            targetUser: $targetUser,
+            currentUser: $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
+            userSettingsService: $this->createUserSettingsService(self::WELCOME_SCREEN_PATH, $targetUser)
+        );
+
+        $service->updateUserById($this->createUpdateParams(welcomeScreenPath: self::WELCOME_SCREEN_PATH), 42);
+    }
+
+    public function testUpdateUserPassesAnEmptyWelcomeScreenPathOnToClearIt(): void
+    {
+        $targetUser = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService(
+            targetUser: $targetUser,
+            currentUser: $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
+            userSettingsService: $this->createUserSettingsService('', $targetUser)
+        );
+
+        $service->updateUserById($this->createUpdateParams(welcomeScreenPath: ''), 42);
+    }
+
+    public function testUpdateUserWithoutWelcomeScreenPathKeepsTheStoredPath(): void
+    {
+        $targetUser = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService(
+            targetUser: $targetUser,
+            currentUser: $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
+            userSettingsService: $this->createUserSettingsService(null, $targetUser)
+        );
+
+        $service->updateUserById($this->createUpdateParams(), 42);
+    }
+
+    public function testUpdateProfileStoresTheWelcomeScreenPath(): void
+    {
+        $user = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService(
+            targetUser: $user,
+            currentUser: $user,
+            userSettingsService: $this->createUserSettingsService(self::WELCOME_SCREEN_PATH, $user)
+        );
+
+        $service->updateUserProfile($user, $this->createProfileParams(self::WELCOME_SCREEN_PATH));
+    }
+
+    public function testUpdateProfileWithoutWelcomeScreenPathKeepsTheStoredPath(): void
+    {
+        $user = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService(
+            targetUser: $user,
+            currentUser: $user,
+            userSettingsService: $this->createUserSettingsService(null, $user)
+        );
+
+        $service->updateUserProfile($user, $this->createProfileParams());
+    }
+
     private function createValidator(int $violations): ValidatorInterface
     {
         $list = new ConstraintViolationList();
@@ -211,7 +275,7 @@ final class UserUpdateServiceTest extends Unit
         return $user;
     }
 
-    private function createUpdateParams(bool $admin = false): UpdateUserParameter
+    private function createUpdateParams(bool $admin = false, ?string $welcomeScreenPath = null): UpdateUserParameter
     {
         return new UpdateUserParameter(
             email: 'test@example.com',
@@ -238,6 +302,37 @@ final class UserUpdateServiceTest extends Unit
             assetWorkspaces: [],
             dataObjectWorkspaces: [],
             documentWorkspaces: [],
+            welcomeScreenPath: $welcomeScreenPath,
+        );
+    }
+
+    private function createUserSettingsService(?string $expectedPath, User $expectedUser): UserSettingsServiceInterface
+    {
+        $update = $expectedPath === null
+            ? Expected::never()
+            : Expected::once(function (?string $path, UserInterface $user) use ($expectedPath, $expectedUser): void {
+                $this->assertSame($expectedPath, $path);
+                $this->assertSame($expectedUser, $user);
+            });
+
+        return $this->makeEmpty(UserSettingsServiceInterface::class, [
+            'updateWelcomeScreenPath' => $update,
+        ]);
+    }
+
+    private function createProfileParams(?string $welcomeScreenPath = null): UpdateUserProfile
+    {
+        return new UpdateUserProfile(
+            firstname: 'Test',
+            lastname: 'User',
+            email: 'test@example.com',
+            language: 'en',
+            dateTimeLocale: null,
+            welcomeScreen: true,
+            memorizeTabs: false,
+            contentLanguages: [],
+            keyBindings: [],
+            welcomeScreenPath: $welcomeScreenPath,
         );
     }
 
@@ -245,7 +340,8 @@ final class UserUpdateServiceTest extends Unit
         User $targetUser,
         UserInterface $currentUser,
         ?AuthenticationResolverInterface $authenticationResolver = null,
-        ?ValidatorInterface $validator = null
+        ?ValidatorInterface $validator = null,
+        ?UserSettingsServiceInterface $userSettingsService = null
     ): UserUpdateService {
         $updateService = $this->makeEmpty(UpdateServiceInterface::class, [
             'updatePermissions' => $targetUser,
@@ -268,6 +364,7 @@ final class UserUpdateServiceTest extends Unit
             ]),
             $updateService,
             $this->makeEmpty(UserPerspectiveServiceInterface::class),
+            $userSettingsService ?? $this->makeEmpty(UserSettingsServiceInterface::class),
             $validator ?? $this->makeEmpty(ValidatorInterface::class),
         );
     }

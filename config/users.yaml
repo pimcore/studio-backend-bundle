@@ -48,6 +48,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveService
 
+  Pimcore\Bundle\StudioBackendBundle\User\Service\UserSettingsServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserSettingsService
+
   Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneService
 
@@ -115,6 +118,11 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\User\Repository\PerspectiveRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Repository\PerspectiveRepository
+    arguments:
+      - "@doctrine.orm.default_entity_manager"
+
+  Pimcore\Bundle\StudioBackendBundle\User\Repository\UserSettingsRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Repository\UserSettingsRepository
     arguments:
       - "@doctrine.orm.default_entity_manager"
 

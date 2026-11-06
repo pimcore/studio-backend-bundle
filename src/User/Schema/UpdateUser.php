@@ -17,6 +17,7 @@ use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserWelcomeScreen;
 
 /**
  * @internal
@@ -97,6 +98,15 @@ final readonly class UpdateUser
         private array $perspectives = [],
         #[Property(description: 'Theme of the User', type: 'string', example: 'default')]
         private string $theme = 'default',
+        #[Property(
+            description: 'Path of the main navigation entry opened as welcome screen. '
+                . 'Omitted or null keeps the stored path, an empty string clears it',
+            type: 'string',
+            maxLength: UserWelcomeScreen::MAX_PATH_LENGTH,
+            example: 'Reporting/Dashboards/Dashboards',
+            nullable: true
+        )]
+        private ?string $welcomeScreenPath = null,
     ) {
     }
 
@@ -243,5 +253,10 @@ final readonly class UpdateUser
     public function getPerspectives(): array
     {
         return $this->perspectives;
+    }
+
+    public function getWelcomeScreenPath(): ?string
+    {
+        return $this->welcomeScreenPath;
     }
 }
