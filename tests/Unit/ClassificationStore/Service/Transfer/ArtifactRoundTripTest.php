@@ -40,6 +40,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Scop
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
 use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
@@ -77,9 +78,13 @@ final class ArtifactRoundTripTest extends Unit
 
     private const string DISABLED_KEY_IDENTIFIER = '01KEYB';
 
+    private const string LOCALIZED_KEY_IDENTIFIER = '01KEYC';
+
     private const string INDEXED_MEMBER = 'indexed';
 
     private const array FIXTURE_METADATA = ['source' => 'etim'];
+
+    private InMemoryKeyLocalizationResolver $keyLocalizationResolver;
 
     /**
      * @var array<string, ArtifactKeyEntry>
@@ -100,6 +105,11 @@ final class ArtifactRoundTripTest extends Unit
      * @var array<string, int>
      */
     private array $appliedCollectionRelations = [];
+
+    public function _before(): void
+    {
+        $this->keyLocalizationResolver = new InMemoryKeyLocalizationResolver();
+    }
 
     /**
      * Exporting a store and applying the file to an empty installation reproduces the store: the
@@ -220,6 +230,47 @@ final class ArtifactRoundTripTest extends Unit
     }
 
     /**
+     * All three states a key's `localized` flag can hold survive the round trip as themselves: the
+     * key that states nothing arrives stating nothing, and the key flagged false arrives flagged
+     * false rather than collapsed into the same answer as the first.
+     */
+    public function testEachLocalizationStateSurvivesTheRoundTrip(): void
+    {
+        $inherit = $this->createKey(self::ENABLED_KEY_IDENTIFIER, 'weight', enabled: true);
+        $localized = $this->createKey(self::LOCALIZED_KEY_IDENTIFIER, 'colour', enabled: true, localized: true);
+        $notLocalized = $this->createKey(self::DISABLED_KEY_IDENTIFIER, 'depth', enabled: false, localized: false);
+
+        $this->applyExportOf([$inherit, $localized, $notLocalized]);
+
+        $this->assertNull($this->appliedKeys[self::ENABLED_KEY_IDENTIFIER]->getLocalized());
+        $this->assertTrue($this->appliedKeys[self::LOCALIZED_KEY_IDENTIFIER]->getLocalized());
+        $this->assertFalse($this->appliedKeys[self::DISABLED_KEY_IDENTIFIER]->getLocalized());
+    }
+
+    /**
+     * A file written by an installation that carries the flag, applied twice to a core that does
+     * NOT: there the flag can neither be read off the key nor written to it, so the apply leaves it
+     * out of the comparison. Comparing it would report the key as updated and save it again on every
+     * deploy, because the write the report promises is the one write that cannot happen.
+     */
+    public function testAFileCarryingTheFlagDecidesNothingOnACoreWithoutIt(): void
+    {
+        // the enabled fixture key is flagged localized, so the file carries `"localized": true`
+        $keys = $this->createFixtureKeys();
+
+        $report = $this->applyExportOf(
+            $keys,
+            targetKeys: $keys,
+            targetIsTheSource: true,
+            targetCarriesTheFlag: false
+        );
+
+        $this->assertSame(0, $report->getCount(ApplyOutcome::CREATED));
+        $this->assertSame(0, $report->getCount(ApplyOutcome::UPDATED));
+        $this->assertSame([], $this->appliedKeys);
+    }
+
+    /**
      * @param KeyConfig[] $sourceKeys
      * @param KeyConfig[] $targetKeys
      * @param array<string, mixed>|null $assignmentMetadata
@@ -230,12 +281,13 @@ final class ArtifactRoundTripTest extends Unit
         bool $targetIsTheSource = false,
         bool $keysAreNotIndexed = false,
         ?array $assignmentMetadata = self::FIXTURE_METADATA,
+        bool $targetCarriesTheFlag = true,
     ): ApplyReport {
         $json = $this->export($sourceKeys, $assignmentMetadata);
         $document = (new ArtifactParser())->parse($json);
 
         return $this
-            ->createReconciler($targetKeys, $targetIsTheSource, $keysAreNotIndexed)
+            ->createReconciler($targetKeys, $targetIsTheSource, $keysAreNotIndexed, $targetCarriesTheFlag)
             ->apply($document, $this->createStore(), false);
     }
 
@@ -283,7 +335,7 @@ final class ArtifactRoundTripTest extends Unit
             ->willReturn([$this->createAssignment($assignmentMetadata)]);
 
         $builder = new ArtifactBuilder(
-            new ArtifactEntryMapper(),
+            new ArtifactEntryMapper($this->keyLocalizationResolver),
             $collectionRepository,
             $collectionRelationRepository,
             $groupRepository,
@@ -307,6 +359,7 @@ final class ArtifactRoundTripTest extends Unit
         array $targetKeys,
         bool $targetIsTheSource,
         bool $keysAreNotIndexed = false,
+        bool $targetCarriesTheFlag = true,
     ): Reconciler {
         $storeRepository = $this->createMock(StoreRepositoryInterface::class);
         $storeRepository->method('saveFromArtifact')->willReturnCallback(
@@ -410,7 +463,8 @@ final class ArtifactRoundTripTest extends Unit
                 $key = $entry->getGroupIdentifier() . '->' . $entry->getKeyIdentifier();
                 $this->appliedAssignments[$key] = $entry;
 
-                return (new ArtifactEntryMapper())->mapToAssignment($entry, $keyId, $groupId);
+                return (new ArtifactEntryMapper($this->keyLocalizationResolver))
+                    ->mapToAssignment($entry, $keyId, $groupId);
             }
         );
 
@@ -428,7 +482,10 @@ final class ArtifactRoundTripTest extends Unit
         );
 
         $parser = new ArtifactParser();
-        $matcher = new ArtifactTargetMatcher();
+        // the target's core, which is the one the apply compares against
+        $matcher = new ArtifactTargetMatcher(
+            $targetCarriesTheFlag ? $this->keyLocalizationResolver : new InMemoryKeyLocalizationResolver(false)
+        );
         $diagnostics = new ApplyDiagnostics();
         $refusals = new ApplyRefusals(
             $collectionRepository,
@@ -475,7 +532,14 @@ final class ArtifactRoundTripTest extends Unit
     private function createFixtureKeys(bool $notIndexed = false): array
     {
         return [
-            $this->createKey(self::ENABLED_KEY_IDENTIFIER, 'weight', enabled: true, notIndexed: $notIndexed),
+            // the enabled key carries a localization flag, so the no-op apply below has to compare it
+            $this->createKey(
+                self::ENABLED_KEY_IDENTIFIER,
+                'weight',
+                enabled: true,
+                notIndexed: $notIndexed,
+                localized: true
+            ),
             $this->createKey(self::DISABLED_KEY_IDENTIFIER, 'depth', enabled: false, notIndexed: $notIndexed),
         ];
     }
@@ -529,6 +593,7 @@ final class ArtifactRoundTripTest extends Unit
         string $name,
         bool $enabled,
         bool $notIndexed = false,
+        ?bool $localized = null,
     ): KeyConfig {
         $title = $name === 'depth' ? 'Depth' : 'Weight';
         $definition = ['fieldtype' => 'input', 'title' => $title];
@@ -538,7 +603,11 @@ final class ArtifactRoundTripTest extends Unit
         }
 
         $config = new KeyConfig();
-        $config->setId($identifier === self::ENABLED_KEY_IDENTIFIER ? 51 : 52);
+        $config->setId(match ($identifier) {
+            self::ENABLED_KEY_IDENTIFIER => 51,
+            self::LOCALIZED_KEY_IDENTIFIER => 53,
+            default => 52,
+        });
         $config->setStoreId(self::STORE_ID);
         $config->setIdentifier($identifier);
         $config->setName($name);
@@ -546,6 +615,7 @@ final class ArtifactRoundTripTest extends Unit
         $config->setType('input');
         $config->setDefinition((string) json_encode($definition));
         $config->setEnabled($enabled);
+        $this->keyLocalizationResolver->setLocalized($config, $localized);
 
         return $config;
     }

@@ -35,6 +35,7 @@ final readonly class ArtifactKeyEntry
         private string $type,
         private ?array $definition,
         private bool $enabled,
+        private ?bool $localized = null,
     ) {
     }
 
@@ -74,5 +75,14 @@ final readonly class ArtifactKeyEntry
     public function isEnabled(): bool
     {
         return $this->enabled;
+    }
+
+    /**
+     * The key's own `localized` flag, null for an entry that carries none - which is both an entry
+     * written before the flag existed and one written for a key that states nothing.
+     */
+    public function getLocalized(): ?bool
+    {
+        return $this->localized;
     }
 }

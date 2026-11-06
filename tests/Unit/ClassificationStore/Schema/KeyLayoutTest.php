@@ -41,4 +41,33 @@ final class KeyLayoutTest extends Unit
             $attributes[0]->getArguments()['required']
         );
     }
+
+    /**
+     * The flag is optional and nullable, so a key that states nothing serialises as null rather
+     * than being left out of the layout a client renders a language control from.
+     *
+     * @dataProvider localizedProvider
+     */
+    public function testLocalizedIsOptionalAndNullable(?bool $localized): void
+    {
+        $definition = new Input();
+
+        $this->assertNull((new KeyLayout(42, 'weight', 'The weight', $definition))->getLocalized());
+        $this->assertSame(
+            $localized,
+            (new KeyLayout(42, 'weight', 'The weight', $definition, null, null, $localized))->getLocalized()
+        );
+    }
+
+    /**
+     * @return array<string, array{0: ?bool}>
+     */
+    public static function localizedProvider(): array
+    {
+        return [
+            'a key flagged localized' => [true],
+            'a key flagged not localized' => [false],
+            'a key stating nothing' => [null],
+        ];
+    }
 }

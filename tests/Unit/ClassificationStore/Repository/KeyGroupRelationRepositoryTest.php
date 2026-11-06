@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Repository;
 
 use Codeception\Test\Unit;
+use Doctrine\DBAL\Connection;
+use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepository;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperService;
@@ -36,6 +38,16 @@ final class KeyGroupRelationRepositoryTest extends Unit
     private const int STORE_ID = 1;
 
     private const int GROUP_ID = 7;
+
+    /**
+     * @var list<array{query: string, parameters: array<mixed>}>
+     */
+    private array $keyLocalizationQueries = [];
+
+    public function _before(): void
+    {
+        $this->keyLocalizationQueries = [];
+    }
 
     public function testGetByGroupIdsOrdersBySorterThenId(): void
     {
@@ -90,14 +102,78 @@ final class KeyGroupRelationRepositoryTest extends Unit
         $this->assertSame([13, 11], $this->getKeyIds($relations));
     }
 
+    /**
+     * The flags of a whole listing page in one statement, which is what keeps a cold page of N keys
+     * from costing N reads of the key configuration.
+     */
+    public function testGetKeyLocalizationFlagsReadsEveryKeyInOneStatement(): void
+    {
+        $repository = $this->createRepository(dbResolver: $this->stubKeyRowsReturning([
+            ['id' => 11, 'localized' => 1],
+            ['id' => 12, 'localized' => 0],
+            ['id' => 13, 'localized' => null],
+        ]));
+
+        $flags = $repository->getKeyLocalizationFlags([11, 12, 13, 11]);
+
+        $this->assertSame([11 => true, 12 => false, 13 => null], $flags);
+        $this->assertCount(1, $this->keyLocalizationQueries);
+        $this->assertSame(
+            'SELECT * FROM `classificationstore_keys` WHERE `id` IN (?)',
+            $this->keyLocalizationQueries[0]['query']
+        );
+        // the duplicate is asked about once
+        $this->assertSame([[11, 12, 13]], $this->keyLocalizationQueries[0]['parameters']);
+    }
+
+    /**
+     * A key with no row - one the configuration no longer carries - is absent rather than present as
+     * null, and a core whose `classificationstore_keys` has no `localized` column reports no flag
+     * for any key rather than failing: the statement names no column.
+     */
+    public function testGetKeyLocalizationFlagsLeavesOutWhatTheKeysTableDoesNotCarry(): void
+    {
+        $repository = $this->createRepository(dbResolver: $this->stubKeyRowsReturning([
+            ['id' => 11, 'name' => 'weight'],
+        ]));
+
+        $this->assertSame([11 => null], $repository->getKeyLocalizationFlags([11, 12]));
+    }
+
+    public function testGetKeyLocalizationFlagsAsksNothingForAnEmptyPage(): void
+    {
+        $repository = $this->createRepository(dbResolver: $this->stubKeyRowsReturning([]));
+
+        $this->assertSame([], $repository->getKeyLocalizationFlags([]));
+        $this->assertSame([], $this->keyLocalizationQueries);
+    }
+
+    /**
+     * @param list<array<string, mixed>> $rows
+     */
+    private function stubKeyRowsReturning(array $rows): DbResolverInterface
+    {
+        $connection = $this->makeEmpty(Connection::class, [
+            'fetchAllAssociative' => function (string $query, array $parameters = []) use ($rows): array {
+                $this->keyLocalizationQueries[] = ['query' => $query, 'parameters' => $parameters];
+
+                return $rows;
+            },
+        ]);
+
+        return $this->makeEmpty(DbResolverInterface::class, ['get' => $connection]);
+    }
+
     private function createRepository(
-        ?SearchHelperServiceInterface $searchHelperService = null
+        ?SearchHelperServiceInterface $searchHelperService = null,
+        ?DbResolverInterface $dbResolver = null
     ): KeyGroupRelationRepository {
         $groupConfig = (new GroupConfig())->setId(self::GROUP_ID);
 
         return new KeyGroupRelationRepository(
             $this->makeEmpty(GroupConfigRepositoryInterface::class, ['getAllGroupsByStore' => [$groupConfig]]),
-            $searchHelperService ?? $this->makeEmpty(SearchHelperServiceInterface::class)
+            $searchHelperService ?? $this->makeEmpty(SearchHelperServiceInterface::class),
+            $dbResolver ?? $this->makeEmpty(DbResolverInterface::class)
         );
     }
 

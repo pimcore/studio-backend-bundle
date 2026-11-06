@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationDetail;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\GroupInfoResolverTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -44,6 +45,7 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         private KeyRelationResolverInterface $keyRelationResolver,
         private GroupRepositoryInterface $groupConfigurationRepository,
         private KeyRepositoryInterface $keyConfigurationRepository,
+        private KeyLocalizationResolverInterface $keyLocalizationResolver,
     ) {
     }
 
@@ -62,8 +64,13 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         $items = [];
 
         foreach ($relations as $relation) {
-            [$keyName, $keyDescription] = $this->resolveKeyInfo($relation->getKeyId());
-            $items[] = $this->getHydratedKeyGroupRelationDetail($relation, $keyName, $keyDescription);
+            [$keyName, $keyDescription, $keyLocalized] = $this->resolveKeyInfo($relation->getKeyId());
+            $items[] = $this->getHydratedKeyGroupRelationDetail(
+                $relation,
+                $keyName,
+                $keyDescription,
+                $keyLocalized
+            );
         }
 
         return new Collection(
@@ -84,9 +91,9 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
             $this->keyRelationResolver->clear();
         }
 
-        [$keyName, $keyDescription] = $this->resolveKeyInfo($relation->getKeyId());
+        [$keyName, $keyDescription, $keyLocalized] = $this->resolveKeyInfo($relation->getKeyId());
 
-        return $this->getHydratedKeyGroupRelationDetail($relation, $keyName, $keyDescription);
+        return $this->getHydratedKeyGroupRelationDetail($relation, $keyName, $keyDescription, $keyLocalized);
     }
 
     /**
@@ -104,13 +111,15 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
     private function getHydratedKeyGroupRelationDetail(
         KeyGroupRelation $relation,
         ?string $keyName = null,
-        ?string $keyDescription = null
+        ?string $keyDescription = null,
+        ?bool $keyLocalized = null
     ): KeyGroupRelationDetail {
         $detail = $this->keyGroupRelationHydrator->hydrateKeyGroupRelationDetail(
             $relation,
             $keyName,
             $keyDescription,
             $this->resolveGroupName($relation->getGroupId(), $this->groupConfigurationRepository),
+            $keyLocalized,
         );
         $this->eventDispatcher->dispatch(
             new KeyGroupRelationDetailEvent($detail),
@@ -121,16 +130,24 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
     }
 
     /**
-     * @return array{0: ?string, 1: ?string} [keyName, keyDescription]
+     * The key's `localized` flag comes off the configuration this already loads for the name and the
+     * description: core's relation has no property of its own for it, so there is nothing on the
+     * relation to read it from.
+     *
+     * @return array{0: ?string, 1: ?string, 2: ?bool} [keyName, keyDescription, keyLocalized]
      */
     private function resolveKeyInfo(int $keyId): array
     {
         try {
             $keyConfig = $this->keyConfigurationRepository->getById($keyId);
 
-            return [$keyConfig->getName(), $keyConfig->getDescription()];
+            return [
+                $keyConfig->getName(),
+                $keyConfig->getDescription(),
+                $this->keyLocalizationResolver->getLocalized($keyConfig),
+            ];
         } catch (NotFoundException) {
-            return [null, null];
+            return [null, null, null];
         }
     }
 }

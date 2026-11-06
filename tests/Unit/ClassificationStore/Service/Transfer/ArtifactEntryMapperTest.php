@@ -17,6 +17,7 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryMapper;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedCollectionRelation;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
 use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
@@ -24,6 +25,7 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
+use function array_key_exists;
 use function array_keys;
 
 /**
@@ -46,6 +48,15 @@ final class ArtifactEntryMapperTest extends Unit
 
     private const int TIMESTAMP = 1734567890;
 
+    private const string FIELD_LOCALIZED = 'localized';
+
+    private InMemoryKeyLocalizationResolver $keyLocalizationResolver;
+
+    public function _before(): void
+    {
+        $this->keyLocalizationResolver = new InMemoryKeyLocalizationResolver();
+    }
+
     /**
      * The store's `engine` is not exported: flipping a store's storage engine moves stored values,
      * which is a migration of its own and not something a configuration file carries.
@@ -59,7 +70,7 @@ final class ArtifactEntryMapperTest extends Unit
         $store->setDescription('The ETIM classification');
         $store->setEngine('column');
 
-        $entry = (new ArtifactEntryMapper())->mapStore($store);
+        $entry = $this->createEntryMapper()->mapStore($store);
 
         $this->assertSame(['identifier', 'name', 'description'], array_keys($entry));
         $this->assertSame(self::IDENTIFIER, $entry['identifier']);
@@ -78,7 +89,7 @@ final class ArtifactEntryMapperTest extends Unit
         $config->setCreationDate(self::TIMESTAMP);
         $config->setModificationDate(self::TIMESTAMP);
 
-        $entry = (new ArtifactEntryMapper())->mapSubGroup($config);
+        $entry = $this->createEntryMapper()->mapSubGroup($config);
 
         $this->assertSame(['identifier', 'name', 'description'], array_keys($entry));
     }
@@ -94,7 +105,7 @@ final class ArtifactEntryMapperTest extends Unit
         $config->setCreationDate(self::TIMESTAMP);
         $config->setModificationDate(self::TIMESTAMP);
 
-        $entry = (new ArtifactEntryMapper())->mapCollection($config);
+        $entry = $this->createEntryMapper()->mapCollection($config);
 
         $this->assertSame(['identifier', 'name', 'description'], array_keys($entry));
     }
@@ -115,7 +126,7 @@ final class ArtifactEntryMapperTest extends Unit
         $config->setCreationDate(self::TIMESTAMP);
         $config->setModificationDate(self::TIMESTAMP);
 
-        $entry = (new ArtifactEntryMapper())->mapGroup($config);
+        $entry = $this->createEntryMapper()->mapGroup($config);
 
         $this->assertSame(['identifier', 'name', 'description'], array_keys($entry));
         $this->assertArrayNotHasKey('parentId', $entry);
@@ -128,7 +139,7 @@ final class ArtifactEntryMapperTest extends Unit
      */
     public function testTheKeyEntryCarriesItsOwnColumnsWithTheDefinitionDecoded(): void
     {
-        $entry = (new ArtifactEntryMapper())->mapKey($this->createKey(enabled: true));
+        $entry = $this->createEntryMapper()->mapKey($this->createKey(enabled: true));
 
         $this->assertSame(
             ['identifier', 'name', 'title', 'description', 'type', 'definition', 'enabled'],
@@ -144,9 +155,39 @@ final class ArtifactEntryMapperTest extends Unit
      */
     public function testADisabledKeyIsExportedWithItsFlag(): void
     {
-        $entry = (new ArtifactEntryMapper())->mapKey($this->createKey(enabled: false));
+        $entry = $this->createEntryMapper()->mapKey($this->createKey(enabled: false));
 
         $this->assertFalse($entry['enabled']);
+    }
+
+    /**
+     * The key's own `localized` flag travels only where the key states one. A key that states none
+     * produces an entry with no such member at all, which is also the entry a file written before
+     * the flag existed carries - so the two are one shape and apply has one answer for them.
+     *
+     * @dataProvider localizedProvider
+     */
+    public function testTheLocalizedFlagIsExportedOnlyWhereTheKeyStatesOne(?bool $localized, bool $present): void
+    {
+        $entry = $this->createEntryMapper()->mapKey($this->createKey(enabled: true, localized: $localized));
+
+        $this->assertSame($present, array_key_exists(self::FIELD_LOCALIZED, $entry));
+
+        if ($present) {
+            $this->assertSame($localized, $entry[self::FIELD_LOCALIZED]);
+        }
+    }
+
+    /**
+     * @return array<string, array{0: ?bool, 1: bool}>
+     */
+    public static function localizedProvider(): array
+    {
+        return [
+            'a key that states nothing carries no member' => [null, false],
+            'a key flagged localized carries true' => [true, true],
+            'a key flagged not localized carries false' => [false, true],
+        ];
     }
 
     /**
@@ -172,7 +213,7 @@ final class ArtifactEntryMapperTest extends Unit
         $relation->setType('input');
         $relation->setEnabled(true);
 
-        $entry = (new ArtifactEntryMapper())->mapKeyAssignment(
+        $entry = $this->createEntryMapper()->mapKeyAssignment(
             new ScopedKeyAssignment($relation, self::GROUP_IDENTIFIER, self::KEY_IDENTIFIER)
         );
 
@@ -200,7 +241,7 @@ final class ArtifactEntryMapperTest extends Unit
         $relation->setName('Measurements');
         $relation->setDescription('Measured properties');
 
-        $entry = (new ArtifactEntryMapper())->mapCollectionRelation(
+        $entry = $this->createEntryMapper()->mapCollectionRelation(
             new ScopedCollectionRelation($relation, self::COLLECTION_IDENTIFIER, self::GROUP_IDENTIFIER)
         );
 
@@ -210,7 +251,12 @@ final class ArtifactEntryMapperTest extends Unit
         $this->assertSame(5, $entry['sorter']);
     }
 
-    private function createKey(bool $enabled): KeyConfig
+    private function createEntryMapper(): ArtifactEntryMapper
+    {
+        return new ArtifactEntryMapper($this->keyLocalizationResolver);
+    }
+
+    private function createKey(bool $enabled, ?bool $localized = null): KeyConfig
     {
         $config = new KeyConfig();
         $config->setId(51);
@@ -224,6 +270,7 @@ final class ArtifactEntryMapperTest extends Unit
         $config->setEnabled($enabled);
         $config->setCreationDate(self::TIMESTAMP);
         $config->setModificationDate(self::TIMESTAMP);
+        $this->keyLocalizationResolver->setLocalized($config, $localized);
 
         return $config;
     }

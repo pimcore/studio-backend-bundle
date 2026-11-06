@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Serv
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyGroupRelationHydrator;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyGroupRelationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
@@ -24,7 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyGroupRelationService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
@@ -114,6 +115,41 @@ final class KeyGroupRelationServiceTest extends Unit
     }
 
     /**
+     * The key's own `localized` flag reaches the detail off the key configuration the service
+     * already loads for the name and the description - core's relation has no property for it - and
+     * a key the configuration no longer carries reports nothing rather than failing the read.
+     *
+     * @dataProvider localizedProvider
+     *
+     * @throws Exception
+     */
+    public function testTheDetailCarriesTheLocalizationFlagOfItsKey(?bool $localized, bool $keyExists): void
+    {
+        $detail = $this
+            ->createService(
+                $this->createMock(KeyRelationResolverInterface::class),
+                $localized,
+                $keyExists
+            )
+            ->createOrUpdateKeyGroupRelation(new KeyGroupRelationCreate(self::KEY_ID, self::GROUP_ID));
+
+        $this->assertSame($localized, $detail->getLocalized());
+    }
+
+    /**
+     * @return array<string, array{0: ?bool, 1: bool}>
+     */
+    public static function localizedProvider(): array
+    {
+        return [
+            'a key flagged localized reports true' => [true, true],
+            'a key flagged not localized reports false' => [false, true],
+            'a key stating nothing reports null' => [null, true],
+            'a key missing from the configuration reports null' => [null, false],
+        ];
+    }
+
+    /**
      * @throws Exception
      */
     private function expectClearedOnce(): KeyRelationResolverInterface
@@ -129,8 +165,11 @@ final class KeyGroupRelationServiceTest extends Unit
     /**
      * @throws Exception
      */
-    private function createService(KeyRelationResolverInterface $resolver): KeyGroupRelationService
-    {
+    private function createService(
+        KeyRelationResolverInterface $resolver,
+        ?bool $keyLocalized = null,
+        bool $keyExists = true
+    ): KeyGroupRelationService {
         $relation = new KeyGroupRelation();
         $relation->setKeyId(self::KEY_ID);
         $relation->setGroupId(self::GROUP_ID);
@@ -139,11 +178,6 @@ final class KeyGroupRelationServiceTest extends Unit
         $repository
             ->method('createOrUpdate')
             ->willReturn($relation);
-
-        $hydrator = $this->createMock(KeyGroupRelationHydratorInterface::class);
-        $hydrator
-            ->method('hydrateKeyGroupRelationDetail')
-            ->willReturn(new KeyGroupRelationDetail(self::KEY_ID, self::GROUP_ID, 0, false));
 
         $group = new GroupConfig();
         $group->setName('My Group');
@@ -156,19 +190,32 @@ final class KeyGroupRelationServiceTest extends Unit
         $key = new KeyConfig();
         $key->setName('My Key');
 
+        $keyLocalizationResolver = new InMemoryKeyLocalizationResolver();
+
+        if ($keyLocalized !== null) {
+            $keyLocalizationResolver->setLocalized($key, $keyLocalized);
+        }
+
         $keyRepository = $this->createMock(KeyRepositoryInterface::class);
         $keyRepository
             ->method('getById')
-            ->willReturn($key);
+            ->willReturnCallback(static function (int $keyId) use ($key, $keyExists): KeyConfig {
+                if (!$keyExists) {
+                    throw new NotFoundException('key configuration', $keyId);
+                }
+
+                return $key;
+            });
 
         return new KeyGroupRelationService(
             $this->createMock(EventDispatcherInterface::class),
             $this->createMock(FilterMapperServiceInterface::class),
             $repository,
-            $hydrator,
+            new KeyGroupRelationHydrator(),
             $resolver,
             $groupRepository,
             $keyRepository,
+            $keyLocalizationResolver,
         );
     }
 

@@ -26,5 +26,6 @@ interface KeyGroupRelationHydratorInterface
         ?string $keyName = null,
         ?string $keyDescription = null,
         ?string $groupName = null,
+        ?bool $keyLocalized = null,
     ): KeyGroupRelationDetail;
 }

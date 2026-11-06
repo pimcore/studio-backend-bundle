@@ -118,6 +118,45 @@ final class GroupServiceTest extends Unit
     }
 
     /**
+     * Every key of the group carries its own `localized` flag, passed through as the tri-state it
+     * is: the one key that states nothing reports null rather than the false the other two would
+     * make it look like.
+     *
+     * @throws Exception
+     */
+    public function testGetLayoutDefinitionExposesTheLocalizationFlagOfEveryKey(): void
+    {
+        $localized = [11 => true, 12 => false, 13 => null];
+
+        $keyRelationResolver = $this->createMock(KeyRelationResolverInterface::class);
+        $keyRelationResolver
+            ->method('getByGroup')
+            ->with(self::GROUP_ID)
+            ->willReturn([
+                11 => $this->createRelation(11, 'weight'),
+                12 => $this->createRelation(12, 'height'),
+                13 => $this->createRelation(13, 'depth'),
+            ]);
+
+        $keyGroupLayoutService = $this->createMock(KeyGroupLayoutServiceInterface::class);
+        $keyGroupLayoutService
+            ->method('getLayoutDefinition')
+            ->willReturn(new Input());
+        $keyGroupLayoutService
+            ->method('getKeyLocalized')
+            ->willReturnCallback(static fn (int $keyId): ?bool => $localized[$keyId]);
+
+        $keys = $this
+            ->createService($keyRelationResolver, $keyGroupLayoutService)
+            ->getLayoutDefinition(self::GROUP_ID, new LayoutParameter(self::FIELD_NAME, self::OBJECT_ID))
+            ->getKeys();
+
+        $this->assertTrue($keys[0]->getLocalized());
+        $this->assertFalse($keys[1]->getLocalized());
+        $this->assertNull($keys[2]->getLocalized());
+    }
+
+    /**
      * A group added in the session is served by this endpoint and has to report the same shape as a
      * pre-loaded one, so it carries a title too. classificationstore_groups has no title column, so
      * the title is the group name until package 16 lands.
@@ -247,7 +286,8 @@ final class GroupServiceTest extends Unit
             new ConcreteObjectResolver(),
             $keyConfigResolver,
             $this->createLabelResolver($labels),
-            $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE)
+            $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
+            new InMemoryKeyLocalizationResolver()
         );
 
         return $this->createService($keyRelationResolver, $keyGroupLayoutService);

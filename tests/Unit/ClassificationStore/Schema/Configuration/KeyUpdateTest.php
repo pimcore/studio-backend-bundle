@@ -72,4 +72,57 @@ final class KeyUpdateTest extends Unit
         $this->assertTrue($parameters->isDescriptionSupplied());
         $this->assertSame('', $parameters->getTitle());
     }
+
+    /**
+     * `localized` carries a presence marker of its own, the way the title and the description do:
+     * null is a value a request can ask for here, so inference from the value alone cannot tell a
+     * supplied null from an omitted member, and the repository would never write NULL at all.
+     */
+    public function testAnAbsentLocalizationFlagIsDistinguishableFromASuppliedNull(): void
+    {
+        $absent = new KeyUpdate('weight');
+        $suppliedNull = new KeyUpdate(name: 'weight', localized: null, localizedSupplied: true);
+
+        $this->assertFalse($absent->isLocalizedSupplied());
+        $this->assertTrue($suppliedNull->isLocalizedSupplied());
+        $this->assertNull($absent->getLocalized());
+        $this->assertNull($suppliedNull->getLocalized());
+    }
+
+    /**
+     * @dataProvider inferredLocalizationProvider
+     */
+    public function testANonNullLocalizationFlagCountsAsSuppliedWithoutAFlag(?bool $value, bool $expected): void
+    {
+        $parameters = new KeyUpdate(name: 'weight', localized: $value);
+
+        $this->assertSame($expected, $parameters->isLocalizedSupplied());
+        $this->assertSame($value, $parameters->getLocalized());
+    }
+
+    /**
+     * @return array<string, array{0: ?bool, 1: bool}>
+     */
+    public static function inferredLocalizationProvider(): array
+    {
+        return [
+            'true is supplied' => [true, true],
+            'false is supplied' => [false, true],
+            'null without a flag is an omission' => [null, false],
+        ];
+    }
+
+    /**
+     * The service hands on a new instance whenever a definition is present, so a supplied null
+     * flag has to survive that copy or a request that sends `localized: null` together with a
+     * definition would silently leave the stored flag alone.
+     */
+    public function testWithDefinitionKeepsASuppliedNullLocalizationFlag(): void
+    {
+        $parameters = (new KeyUpdate(name: 'weight', localized: null, localizedSupplied: true))
+            ->withDefinition(['fieldtype' => 'input']);
+
+        $this->assertTrue($parameters->isLocalizedSupplied());
+        $this->assertNull($parameters->getLocalized());
+    }
 }

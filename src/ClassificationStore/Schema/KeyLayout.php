@@ -51,6 +51,17 @@ final readonly class KeyLayout
             nullable: true
         )]
         private ?string $subGroup = null,
+        #[Property(
+            description: 'Whether the key holds a value per language, as the key stores it: true, false, or null'
+                . ' where the key states nothing and the `localized` flag of the class definition field the key'
+                . ' is rendered in decides. It is not resolved against that field here. The flag is not yet'
+                . ' honoured by the object data endpoints, which still read and write a classification store'
+                . ' field under the language set of the class definition field alone.',
+            type: 'boolean',
+            example: true,
+            nullable: true
+        )]
+        private ?bool $localized = null,
     ) {
     }
 
@@ -82,5 +93,10 @@ final readonly class KeyLayout
     public function getSubGroup(): ?string
     {
         return $this->subGroup;
+    }
+
+    public function getLocalized(): ?bool
+    {
+        return $this->localized;
     }
 }

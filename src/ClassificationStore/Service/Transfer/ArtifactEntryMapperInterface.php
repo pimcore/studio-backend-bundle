@@ -59,6 +59,9 @@ interface ArtifactEntryMapperInterface
      * The definition travels decoded and verbatim, which is what carries the key's title through a
      * core that re-derives the column from the blob.
      *
+     * `localized` is written only where the key states a flag: a key that states none produces an
+     * entry with no such member, the entry a file written before the flag existed also carries.
+     *
      * @return array<string, mixed>
      */
     public function mapKey(KeyConfig $config): array;

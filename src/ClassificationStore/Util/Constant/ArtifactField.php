@@ -32,6 +32,7 @@ enum ArtifactField: string
     case TYPE = 'type';
     case DEFINITION = 'definition';
     case ENABLED = 'enabled';
+    case LOCALIZED = 'localized';
     case SORTER = 'sorter';
     case MANDATORY = 'mandatory';
     case METADATA = 'metadata';

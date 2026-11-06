@@ -32,13 +32,14 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Arti
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryWriter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcher;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactRelationWriter;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcher;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Reconciler;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedCollectionRelation;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactField;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
 use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
@@ -1196,7 +1197,8 @@ final class ReconcilerTest extends Unit
                         $entry->getKeyIdentifier()
                     )
                 );
-                $relation = (new ArtifactEntryMapper())->mapToAssignment($entry, $keyId, $groupId);
+                $mapper = new ArtifactEntryMapper(new InMemoryKeyLocalizationResolver());
+                $relation = $mapper->mapToAssignment($entry, $keyId, $groupId);
                 $this->savedAssignments[] = $relation;
 
                 return $relation;
@@ -1219,7 +1221,7 @@ final class ReconcilerTest extends Unit
         );
 
         $parser = new ArtifactParser();
-        $matcher = new ArtifactTargetMatcher();
+        $matcher = new ArtifactTargetMatcher(new InMemoryKeyLocalizationResolver());
         $diagnostics = new ApplyDiagnostics();
         $refusals = new ApplyRefusals(
             $collectionRepository,
