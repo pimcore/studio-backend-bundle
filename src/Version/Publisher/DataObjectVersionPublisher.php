@@ -27,7 +27,7 @@ final class DataObjectVersionPublisher implements DataObjectVersionPublisherInte
     public function publish(
         DataObject $versionDataObject,
         UserInterface $user,
-        Version $version
+        ?Version $existingVersion = null
     ): void {
         try {
             if (!$versionDataObject instanceof DataObject\Concrete) {
@@ -36,9 +36,8 @@ final class DataObjectVersionPublisher implements DataObjectVersionPublisherInte
 
             $versionDataObject->setPublished(true);
             $versionDataObject->setUserModification($user->getId());
-            // the published state is written into the version itself, so the history shows which version went live;
-            // an auto-save version is rewritten by the editor of its user at any time, it is published as a new version
-            $versionDataObject->save($version->isAutoSave() ? [] : ['existingVersion' => $version]);
+            // the published state is written into the existing version, so the history shows which version went live
+            $versionDataObject->save($existingVersion !== null ? ['existingVersion' => $existingVersion] : []);
         } catch (Exception $e) {
             throw new ElementPublishingFailedException(
                 $versionDataObject->getId(),

@@ -55,13 +55,11 @@ final class DocumentVersionPublisherTest extends Unit
     }
 
     /**
-     * An auto-save version is rewritten by the editor of its user at any time, it is published as a new version
+     * Without an existing version (e.g. an older or an auto-save version, see VersionService) the published state
+     * is saved as a new version
      */
-    public function testPublishSavesAnAutoSaveVersionAsANewVersion(): void
+    public function testPublishWithoutAnExistingVersionSavesANewVersion(): void
     {
-        $version = $this->createVersion();
-        $version->setAutoSave(true);
-
         $currentDocument = $this->createMock(Page::class);
         $currentDocument->method('getKey')->willReturn('current-key');
         $currentDocument->method('getPath')->willReturn('/current/');
@@ -70,7 +68,7 @@ final class DocumentVersionPublisherTest extends Unit
         $versionDocument->method('getId')->willReturn(self::DOCUMENT_ID);
         $versionDocument->expects($this->once())->method('save')->with([]);
 
-        $this->createPublisher($currentDocument)->publish($versionDocument, $this->createUser(), $version);
+        $this->createPublisher($currentDocument)->publish($versionDocument, $this->createUser());
     }
 
     public function testPublishFailsWhenTheDocumentNoLongerExists(): void
