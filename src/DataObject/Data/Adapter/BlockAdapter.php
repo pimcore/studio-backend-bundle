@@ -28,6 +28,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Block;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\BlockElement;
+use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData as FieldCollectionData;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function get_class;
@@ -124,6 +125,8 @@ final readonly class BlockAdapter implements
                     'containerType' => 'block',
                     'classId' => $element->getClassId(),
                     'fieldname' => $fieldDefinition->getName(),
+                    // items of a field collection are rebuilt without their stored values
+                    'inRebuiltContainer' => $contextData?->getContextObject() instanceof FieldCollectionData,
                 ]
             ),
             $contextData?->getLanguage()
