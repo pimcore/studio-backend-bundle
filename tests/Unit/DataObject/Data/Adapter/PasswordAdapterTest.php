@@ -24,7 +24,9 @@ use Pimcore\Model\DataObject\Fieldcollection;
 use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData as FieldCollectionData;
 use Pimcore\Model\DataObject\Localizedfield;
 use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData as BrickData;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
+use RuntimeException;
 use Symfony\Component\Yaml\Yaml;
 use function dirname;
 
@@ -226,6 +228,75 @@ final class PasswordAdapterTest extends Unit
         );
 
         $this->assertSame(self::STORED, $result);
+    }
+
+    public function testEchoedMaskInsideBlockOfRebuiltContainerIsRejected(): void
+    {
+        $blockData = new BlockData(
+            [],
+            ['containerType' => 'block', 'classId' => 'x', 'fieldname' => 'blocks', 'inRebuiltContainer' => true]
+        );
+
+        foreach (['******', '********'] as $placeholder) {
+            try {
+                $this->adapter->getDataForSetter(
+                    $this->buildObject(self::OTHER),
+                    $this->field,
+                    'secret',
+                    ['secret' => $placeholder],
+                    $this->user,
+                    new FieldContextData($blockData)
+                );
+                $this->fail('The placeholder must be rejected');
+            } catch (ValidationException $exception) {
+                $this->assertStringNotContainsString($placeholder, $exception->getMessage());
+                $this->assertStringNotContainsString(self::OTHER, $exception->getMessage());
+            }
+        }
+    }
+
+    public function testEchoedMaskIsRejectedWhenTheStoredValueCannotBeRead(): void
+    {
+        $object = new class extends Concrete {
+            public function get(string $fieldName, ?string $language = null): mixed
+            {
+                throw new RuntimeException('not readable');
+            }
+        };
+
+        $this->expectException(ValidationException::class);
+
+        $this->adapter->getDataForSetter($object, $this->field, 'secret', ['secret' => '******'], $this->user);
+    }
+
+    public function testEchoedMaskForLocalizedContextWithoutLanguageIsRejected(): void
+    {
+        $this->expectException(ValidationException::class);
+
+        $this->adapter->getDataForSetter(
+            $this->buildObject(null),
+            $this->field,
+            'secret',
+            ['secret' => '******'],
+            $this->user,
+            new FieldContextData(new Localizedfield())
+        );
+    }
+
+    public function testEchoedMaskInsideNewBlockItemStoresNothing(): void
+    {
+        $blockData = new BlockData([], ['containerType' => 'block', 'classId' => 'x', 'fieldname' => 'blocks']);
+
+        $result = $this->adapter->getDataForSetter(
+            $this->buildObject(self::OTHER),
+            $this->field,
+            'secret',
+            ['secret' => '******'],
+            $this->user,
+            new FieldContextData($blockData)
+        );
+
+        $this->assertNull($result);
     }
 
     public function testEchoedMaskInsideLocalizedFieldKeepsTheValueOfThatLanguage(): void

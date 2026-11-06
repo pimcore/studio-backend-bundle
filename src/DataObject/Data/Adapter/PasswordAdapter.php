@@ -26,10 +26,13 @@ use Pimcore\Model\DataObject\Data\BlockElement;
 use Pimcore\Model\DataObject\Fieldcollection;
 use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData as FieldCollectionData;
 use Pimcore\Model\DataObject\Localizedfield;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use Throwable;
 use function array_key_exists;
 use function is_string;
+use function sprintf;
 
 /**
  * Password fields never leave the API: reading returns a fixed placeholder instead of the stored value.
@@ -103,23 +106,61 @@ final readonly class PasswordAdapter implements SetterDataInterface, DataNormali
         return is_string($value) && $value !== '' ? self::MASK : null;
     }
 
+    /**
+     * @throws ValidationException when the stored value cannot be determined: the save is rejected instead of
+     * clearing the stored value or persisting the placeholder
+     */
     private function getStoredValue(Concrete $element, string $key, ?FieldContextData $contextData): ?string
     {
+        $language = $contextData?->getLanguage();
         $contextObject = $contextData?->getContextObject();
-        if ($contextObject instanceof FieldCollectionData) {
-            // the context item is rebuilt without values, the stored one has the same type and index
-            $value = $this->getStoredCollectionItem($element, $contextObject)?->get($key, $contextData?->getLanguage());
-        } elseif ($contextObject instanceof BlockData) {
-            $value = $this->getStoredBlockValue($contextObject, $key, $contextData?->getLanguage());
-        } else {
-            $value = $this->getValidFieldValue($element, $key, $contextData);
+
+        try {
+            $value = match (true) {
+                // the context item is rebuilt without values, the stored one has the same type and index
+                $contextObject instanceof FieldCollectionData =>
+                    $this->getStoredCollectionItem($element, $contextObject)?->get($key, $language),
+                $contextObject instanceof BlockData => $this->getStoredBlockValue($contextObject, $key, $language),
+                $contextObject instanceof Localizedfield =>
+                    $this->getStoredLocalizedValue($contextObject, $key, $language),
+                $contextObject instanceof Concrete => $contextObject->get($key, $language),
+                $contextObject !== null => $contextData?->getFieldValueFromContextObject($key),
+                default => $element->get($key, $language),
+            };
+        } catch (Throwable $exception) {
+            throw $this->unresolvable($key, $exception);
         }
 
         return is_string($value) && $value !== '' ? $value : null;
     }
 
+    private function getStoredLocalizedValue(Localizedfield $localizedField, string $key, ?string $language): mixed
+    {
+        if ($language === null) {
+            throw new ValidationException('unresolvable');
+        }
+
+        return $localizedField->getItems()[$language][$key] ?? null;
+    }
+
+    private function unresolvable(string $key, Throwable $previous): ValidationException
+    {
+        return new ValidationException(
+            sprintf(
+                'The unchanged value of password field "%s" cannot be kept in this position, set a new value instead',
+                $key
+            ),
+            0,
+            $previous
+        );
+    }
+
     private function getStoredBlockValue(BlockData $blockData, string $key, ?string $language): mixed
     {
+        if (($blockData->getContextData()['inRebuiltContainer'] ?? false) === true) {
+            throw new ValidationException('unresolvable');
+        }
+
         foreach ($blockData->getBlockData() as $blockElement) {
             if (!$blockElement instanceof BlockElement) {
                 continue;
