@@ -33,6 +33,16 @@ interface SearchIndexRemapTriggerInterface
      * Hands one remap to the queue per search index the noted stores reach, skipping an index a
      * remap is already queued and unprocessed for, and forgets the notes. A unit of work that noted
      * nothing hands over nothing.
+     *
+     * Called once the writes the notes describe are committed: a remap of rows that were rolled
+     * back re-indexes a whole class for a change the store does not carry.
      */
     public function flush(): void;
+
+    /**
+     * Forgets the notes without handing anything over, which is what a rolled back unit of work
+     * leaves behind: there is no change to converge to, and a note kept instead would be handed
+     * over by whatever flushes next.
+     */
+    public function discard(): void;
 }

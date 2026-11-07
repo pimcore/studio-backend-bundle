@@ -17,6 +17,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Tool\SettingsStoreResolverInterfa
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Messenger\SearchIndexRemapMessage;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
+use function time;
 
 /**
  * Hands a search index remap of one data object class to the queue and answers whether one is
@@ -30,7 +31,9 @@ use Symfony\Component\Messenger\Stamp\DelayStamp;
  *
  * The marker is set after the hand-over and read before it, so two requests racing cost one extra
  * remap at worst, while the reverse order could leave a marker with no message behind it and
- * suppress every later change - the silent no-op this exists to prevent.
+ * suppress every later change - the silent no-op this exists to prevent. The marker carries the
+ * time it was written and stops answering once that is old enough, so even a message the handler
+ * never sees costs a window rather than every remap of its class from then on.
  *
  * @internal
  */
@@ -42,7 +45,16 @@ final readonly class SearchIndexRemapQueue implements SearchIndexRemapQueueInter
      */
     private const string SETTINGS_STORE_SCOPE = 'studio_classificationstore_index_remap';
 
-    private const string SETTINGS_STORE_TYPE = 'bool';
+    private const string SETTINGS_STORE_TYPE = 'int';
+
+    /**
+     * How long a marker is taken to mean "queued". It is removed by the handler, so this is only
+     * ever reached when the message never got there - a transport that dropped it, retries that ran
+     * out, a worker that was never started. Without it such a marker would suppress every later
+     * remap of that class for good, with nothing to read anywhere: the silent no-op this whole
+     * mechanism exists to prevent. Expiring it costs one superfluous remap at worst.
+     */
+    private const int PENDING_REMAP_SECONDS = 3600;
 
     /**
      * The delay a class save hands its own mapping update over with, so a worker picks the remap up
@@ -62,7 +74,13 @@ final readonly class SearchIndexRemapQueue implements SearchIndexRemapQueueInter
      */
     public function hasPendingRemap(string $classDefinitionId): bool
     {
-        return $this->settingsStoreResolver->get($classDefinitionId, self::SETTINGS_STORE_SCOPE) !== null;
+        $marker = $this->settingsStoreResolver->get($classDefinitionId, self::SETTINGS_STORE_SCOPE);
+
+        if ($marker === null) {
+            return false;
+        }
+
+        return (int) $marker->getData() + self::PENDING_REMAP_SECONDS > time();
     }
 
     /**
@@ -75,9 +93,10 @@ final readonly class SearchIndexRemapQueue implements SearchIndexRemapQueueInter
             [new DelayStamp(self::DISPATCH_DELAY_MILLISECONDS)]
         );
 
+        // the hand-over time, so a marker the handler never got to stops answering by itself
         $this->settingsStoreResolver->set(
             $classDefinitionId,
-            true,
+            time(),
             self::SETTINGS_STORE_TYPE,
             self::SETTINGS_STORE_SCOPE
         );

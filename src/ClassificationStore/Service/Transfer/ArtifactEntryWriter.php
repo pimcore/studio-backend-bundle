@@ -216,11 +216,15 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
         if ($outcome !== ApplyOutcome::MATCHED_UNCHANGED && !$context->isDryRun()) {
             $saved = $this->keyRepository->saveFromArtifact($target, (int) $context->getStoreId(), $keyEntry);
             $id = $saved->getId();
-            $this->searchIndexRemapTrigger->noteFlagChange(
-                $saved->getStoreId(),
-                $definitionBefore,
-                $saved->getDefinition()
-            );
+
+            // a key the file creates is in no mapping yet and holds no value, so it changes no index
+            if ($outcome !== ApplyOutcome::CREATED) {
+                $this->searchIndexRemapTrigger->noteFlagChange(
+                    $saved->getStoreId(),
+                    $definitionBefore,
+                    $saved->getDefinition()
+                );
+            }
         }
 
         if ($id !== null) {

@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
-use Pimcore\Model\DataObject\ClassDefinition\Listing;
 use Pimcore\Model\DataObject\Classificationstore\Service as ClassificationStoreService;
-use function array_keys;
+use function array_values;
 
 /**
  * Resolves a store to the search indices it reaches. The index is per data object class while the
@@ -34,22 +34,33 @@ use function array_keys;
  */
 final readonly class SearchIndexRemapTargetResolver implements SearchIndexRemapTargetResolverInterface
 {
+    public function __construct(
+        private ClassDefinitionRepositoryInterface $classDefinitionRepository,
+    ) {
+    }
+
     /**
+     * The class id is the value of its own entry as well as its key, because a class id made of
+     * digits is an integer array key and the queue is handed the id as the string a class carries
+     * it as - reading the keys back would hand it an integer and fail the save it was triggered by.
+     *
      * {@inheritdoc}
      */
     public function resolveForStore(int $storeId): array
     {
         $targets = [];
 
-        foreach ((new Listing())->load() as $class) {
+        foreach ($this->classDefinitionRepository->getClassDefinitions() as $class) {
             $classId = $class->getId();
 
-            if ($classId !== null && !isset($targets[$classId]) && $this->carriesStore($class, $storeId)) {
-                $targets[$classId] = true;
+            if ($classId === null || isset($targets[$classId]) || !$this->carriesStore($class, $storeId)) {
+                continue;
             }
+
+            $targets[$classId] = $classId;
         }
 
-        return array_keys($targets);
+        return array_values($targets);
     }
 
     private function carriesStore(ClassDefinition $class, int $storeId): bool

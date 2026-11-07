@@ -29,6 +29,10 @@ interface SearchIndexFlagResolverInterface
      * `metadata` reserves nothing: a member spelled `indexed` in there is an ordinary free-form
      * member that is stored as it arrived and changes nothing about the search index.
      *
+     * What this bundle does with the flag is store it, publish it, and queue a remap of the indices
+     * the key's store reaches when it changes; leaving the key out of an index is the search index's
+     * own half of it.
+     *
      * Not to be confused with the `index` member a Pimcore field definition blob carries: that one
      * is about the object query tables, which classification store values never reach.
      *

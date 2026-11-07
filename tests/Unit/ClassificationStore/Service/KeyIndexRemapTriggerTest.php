@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service;
 
 use Codeception\Test\Unit;
+use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Message\UpdateClassMappingMessage;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
@@ -22,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuratio
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
@@ -37,16 +39,23 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Appl
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyDiagnostics;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusalsInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyReport;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilderInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryWriter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactRelationWriter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcher;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ReconcilerInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreTransferService;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
 use Pimcore\Model\Tool\SettingsStore;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
@@ -65,7 +74,9 @@ use function sprintf;
  * save that changes nothing has to hand nothing over at all - a remap is a whole class re-indexed.
  *
  * The remap is queued, never run here: what the write path does is dispatch, and the mapping is
- * rewritten by whoever drains the queue.
+ * rewritten by whoever drains the queue. It is also only queued once the writes it answers for have
+ * committed - an apply that was refused or that failed rolled its key writes back, and remapping
+ * their classes would re-index everything for a change the store does not carry.
  *
  * The queue is the real one throughout, over an in-memory stand-in for the settings store it keeps
  * its "already queued" marker in, so that the coalescing is observed where it happens rather than
@@ -85,6 +96,8 @@ final class KeyIndexRemapTriggerTest extends Unit
 
     private const string KEY_IDENTIFIER = '01KEY';
 
+    private const string STORE_IDENTIFIER = '01STORE';
+
     private const string GROUP_IDENTIFIER = '01GROUP';
 
     private const string CLASS_ID = 'CAR';
@@ -98,12 +111,18 @@ final class KeyIndexRemapTriggerTest extends Unit
     private const string NO_MEMBER = '{"fieldtype":"input"}';
 
     /**
+     * Comfortably past the window a queued remap's marker answers for.
+     */
+    private const int PAST_THE_PENDING_WINDOW = 7200;
+
+    /**
      * @var list<Envelope> the messages handed to the bus, in order, with their stamps
      */
     private array $dispatched = [];
 
     /**
-     * @var array<string, array<string, true>> the settings store, keyed by scope and by id
+     * @var array<string, array<string, int>> the settings store, keyed by scope and by id, holding
+     *                                        the second each marker was written at
      */
     private array $settings = [];
 
@@ -169,6 +188,126 @@ final class KeyIndexRemapTriggerTest extends Unit
         $writer->writeKey($context, $this->createStoredKey(self::INDEXED), $this->createKeyEntry(['indexed' => false]));
         $writer->writeKey($context, $this->createStoredKey(self::NOT_INDEXED), $this->createKeyEntry([]));
         $trigger->flush();
+
+        $this->assertSame([self::CLASS_ID], $this->getRemappedClassIds());
+    }
+
+    /**
+     * The key update endpoint needs no decision of its own about a rolled back write: its note is
+     * taken after the save that committed the row, so an update that fails leaves nothing for the
+     * flush to hand over - which is why that one flushes in a finally and the apply does not.
+     */
+    public function testAKeyUpdateThatFailsHandsNoRemapOver(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+        $failure = new ElementSavingFailedException(self::KEY_ID, 'the key row is gone');
+
+        try {
+            $this->createKeyService($trigger, self::INDEXED, $failure)->updateKey(
+                self::KEY_ID,
+                new KeyUpdate(name: self::KEY_NAME, definition: ['fieldtype' => 'input', 'indexed' => false])
+            );
+            $this->fail('A failing key update cannot answer with a key detail.');
+        } catch (ElementSavingFailedException) {
+            // the failure is the caller's to handle; what it must not leave behind is the remap
+        }
+
+        $this->assertSame([], $this->getRemappedClassIds());
+    }
+
+    /**
+     * A key the file creates is in no mapping yet and holds no value, so an import that creates a
+     * whole vocabulary is not a re-index of every class its store reaches - however many of those
+     * created keys carry the member.
+     */
+    public function testAKeyTheApplyCreatesEnqueuesNothing(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+        $writer = $this->createEntryWriter($trigger);
+
+        $writer->writeKey($this->createApplyContext(), null, $this->createKeyEntry(['indexed' => false]));
+        $trigger->flush();
+
+        $this->assertSame([], $this->getRemappedClassIds());
+        $this->assertSame(0, $this->targetLookups);
+    }
+
+    /**
+     * An apply runs inside one transaction ({@see ReconcilerInterface::apply()}), so the remap it
+     * earns is handed over once that transaction has committed and the keys it wrote are the
+     * store's.
+     */
+    public function testAnAppliedConfigurationHandsItsRemapOverOnceItHasCommitted(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $this
+            ->createTransferService($trigger, new ApplyReport())
+            ->importStore(self::STORE_ID, $this->createArtifactJson());
+
+        $this->assertSame([self::CLASS_ID], $this->getRemappedClassIds());
+    }
+
+    /**
+     * A refused apply is rolled back whole, so its key writes are not the store's: a remap of their
+     * classes would re-index everything for a change nobody can read.
+     */
+    public function testARefusedApplyIsRolledBackAndHandsNoRemapOver(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        try {
+            $this
+                ->createTransferService($trigger, $this->createRefusedReport())
+                ->importStore(self::STORE_ID, $this->createArtifactJson());
+            $this->fail('A refused configuration cannot be applied.');
+        } catch (ConflictException) {
+            // the 409 is the refusal's own answer; what it must not leave behind is the remap
+        }
+
+        $this->assertSame([], $this->getRemappedClassIds());
+    }
+
+    /**
+     * The console apply decides the same thing differently: it reports its conflicts rather than
+     * throwing, and hands nothing over just the same.
+     */
+    public function testARefusedConsoleApplyHandsNoRemapOver(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $report = $this
+            ->createTransferService($trigger, $this->createRefusedReport())
+            ->applyArtifact($this->createArtifactJson(), false);
+
+        $this->assertTrue($report->hasConflicts());
+        $this->assertSame([], $this->getRemappedClassIds());
+    }
+
+    /**
+     * And an apply that fails part way through is rolled back the same way - and leaves no note
+     * behind either: the apply that follows it hands over the remap it earned itself, not the one
+     * the failed apply never did.
+     */
+    public function testAnApplyThatFailsHandsNoRemapOverAndLeavesNoNoteBehind(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+        $failure = new ElementSavingFailedException(self::KEY_ID, 'the key row is gone');
+
+        try {
+            $this
+                ->createTransferService($trigger, new ApplyReport(), $failure)
+                ->importStore(self::STORE_ID, $this->createArtifactJson());
+            $this->fail('A failing apply cannot answer with a report.');
+        } catch (ElementSavingFailedException) {
+            // the failure is the caller's to handle; what it must not leave behind is the remap
+        }
+
+        $this->assertSame([], $this->getRemappedClassIds());
+
+        $this
+            ->createTransferService($trigger, new ApplyReport())
+            ->importStore(self::STORE_ID, $this->createArtifactJson());
 
         $this->assertSame([self::CLASS_ID], $this->getRemappedClassIds());
     }
@@ -287,6 +426,25 @@ final class KeyIndexRemapTriggerTest extends Unit
 
         $this->assertSame([self::CLASS_ID, self::CLASS_ID], $this->getRemappedClassIds());
         $this->assertSame([self::CLASS_ID], $this->getMappingUpdateClassIds());
+    }
+
+    /**
+     * A marker the handler never got to - a transport that dropped the message, retries that ran
+     * out, a worker nobody started - stops answering once it is old enough. Without that, one lost
+     * message would suppress every later remap of its class for good and say nothing about it.
+     */
+    public function testAMarkerOlderThanItsWindowNoLongerSuppressesTheNextRemap(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $trigger->flush();
+        $this->ageTheQueuedMarkers();
+
+        $trigger->noteFlagChange(self::STORE_ID, self::NOT_INDEXED, self::INDEXED);
+        $trigger->flush();
+
+        $this->assertSame([self::CLASS_ID, self::CLASS_ID], $this->getRemappedClassIds());
     }
 
     /**
@@ -442,8 +600,11 @@ final class KeyIndexRemapTriggerTest extends Unit
         }
     }
 
-    private function createKeyService(SearchIndexRemapTrigger $trigger, string $storedDefinition): KeyService
-    {
+    private function createKeyService(
+        SearchIndexRemapTrigger $trigger,
+        string $storedDefinition,
+        ?Exception $failure = null,
+    ): KeyService {
         $stored = $this->createStoredKey($storedDefinition);
 
         return new KeyService(
@@ -453,7 +614,11 @@ final class KeyIndexRemapTriggerTest extends Unit
             $this->makeEmpty(KeyRepositoryInterface::class, [
                 'getById' => $stored,
                 'create' => $stored,
-                'update' => static function (int $id, KeyUpdate $parameters) use ($stored): KeyConfig {
+                'update' => static function (int $id, KeyUpdate $parameters) use ($stored, $failure): KeyConfig {
+                    if ($failure !== null) {
+                        throw $failure;
+                    }
+
                     $definition = $parameters->getDefinition();
 
                     if ($definition !== null) {
@@ -499,6 +664,77 @@ final class KeyIndexRemapTriggerTest extends Unit
             $keyRepository,
             $trigger
         );
+    }
+
+    /**
+     * The apply as its two halves actually run: the entry writer notes what its key writes changed,
+     * and the transfer service is the one that knows whether the transaction they lived in
+     * committed. The reconciler stands in for the sections in between, writing the one key the note
+     * comes from.
+     */
+    private function createTransferService(
+        SearchIndexRemapTrigger $trigger,
+        ApplyReport $report,
+        ?Exception $failure = null,
+    ): StoreTransferService {
+        $writer = $this->createEntryWriter($trigger);
+
+        return new StoreTransferService(
+            $this->makeEmpty(ArtifactBuilderInterface::class, ['stream' => []]),
+            new ArtifactParser(),
+            $this->makeEmpty(KeyRelationResolverInterface::class),
+            $this->makeEmpty(ReconcilerInterface::class, [
+                'apply' => function () use ($writer, $report, $failure): ApplyReport {
+                    $writer->writeKey(
+                        $this->createApplyContext(),
+                        $this->createStoredKey(self::INDEXED),
+                        $this->createKeyEntry(['indexed' => false])
+                    );
+
+                    if ($failure !== null) {
+                        throw $failure;
+                    }
+
+                    return $report;
+                },
+            ]),
+            $trigger,
+            $this->makeEmpty(StoreRepositoryInterface::class, [
+                'getById' => $this->createStore(),
+                'getByIdentifier' => $this->createStore(),
+            ])
+        );
+    }
+
+    private function createRefusedReport(): ApplyReport
+    {
+        $report = new ApplyReport();
+        $report->record(ApplyOutcome::CONFLICT, 'group "Measurements": the name is already another store\'s');
+
+        return $report;
+    }
+
+    private function createStore(): StoreConfig
+    {
+        $store = new StoreConfig();
+        $store->setId(self::STORE_ID);
+        $store->setName('ETIM');
+        $store->setIdentifier(self::STORE_IDENTIFIER);
+
+        return $store;
+    }
+
+    private function createArtifactJson(): string
+    {
+        return (string) json_encode([
+            'store' => ['identifier' => self::STORE_IDENTIFIER, 'name' => 'ETIM', 'description' => null],
+            'subGroups' => [],
+            'collections' => [],
+            'groups' => [],
+            'keys' => [],
+            'collectionGroupRelations' => [],
+            'keyGroupRelations' => [],
+        ]);
     }
 
     private function createApplyContext(): ApplyContext
@@ -576,21 +812,32 @@ final class KeyIndexRemapTriggerTest extends Unit
     }
 
     /**
-     * The settings store the queue keeps its marker in, in memory: one entry per scope and id, and
-     * the value is never read - what it answers is whether there is an entry at all.
+     * The settings store the queue keeps its marker in, in memory: one entry per scope and id,
+     * holding the second the hand-over was written at.
      */
     private function createSettingsStoreResolver(): SettingsStoreResolverInterface
     {
         return $this->makeEmpty(SettingsStoreResolverInterface::class, [
-            'get' => fn (string $id, ?string $scope = null): ?SettingsStore
-                => isset($this->settings[(string) $scope][$id]) ? new SettingsStore() : null,
+            'get' => function (string $id, ?string $scope = null): ?SettingsStore {
+                $writtenAt = $this->settings[(string) $scope][$id] ?? null;
+
+                if ($writtenAt === null) {
+                    return null;
+                }
+
+                $marker = new SettingsStore();
+                $marker->setType(SettingsStore::TYPE_INTEGER);
+                $marker->setData($writtenAt);
+
+                return $marker;
+            },
             'set' => function (
                 string $id,
                 float|bool|int|string $data,
                 string $type = 'string',
                 ?string $scope = null,
             ): bool {
-                $this->settings[(string) $scope][$id] = true;
+                $this->settings[(string) $scope][$id] = (int) $data;
 
                 return true;
             },
@@ -600,6 +847,19 @@ final class KeyIndexRemapTriggerTest extends Unit
                 return 1;
             },
         ]);
+    }
+
+    /**
+     * Moves every marker back past the window a queued remap answers for, which is what a message
+     * the handler never saw leaves behind.
+     */
+    private function ageTheQueuedMarkers(): void
+    {
+        foreach ($this->settings as $scope => $markers) {
+            foreach ($markers as $id => $writtenAt) {
+                $this->settings[$scope][$id] = $writtenAt - self::PAST_THE_PENDING_WINDOW;
+            }
+        }
     }
 
     /**

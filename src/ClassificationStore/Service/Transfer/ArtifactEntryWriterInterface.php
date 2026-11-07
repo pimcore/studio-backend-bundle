@@ -90,8 +90,8 @@ interface ArtifactEntryWriterInterface
     /**
      * One key entry against the key row it was matched to, or against none. A save that changes the
      * key's resolved search index flag is noted for the remap the apply hands over when it ends
-     * ({@see SearchIndexRemapTriggerInterface}); a dry run and an unchanged key write nothing and
-     * note nothing.
+     * ({@see SearchIndexRemapTriggerInterface}); a dry run, an unchanged key and a key the file
+     * creates note nothing - a created key is in no mapping yet and holds no value.
      *
      * @param array<string, mixed> $entry
      *

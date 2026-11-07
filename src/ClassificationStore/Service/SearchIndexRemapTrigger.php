@@ -25,9 +25,10 @@ use function sprintf;
  * its keys changed, and two stores reaching the same class remap that class once.
  *
  * The notes are dropped by {@see flush()}, which the key write surfaces call once per request or
- * per apply, and by {@see reset()}: implementing ResetInterface makes autoconfiguration tag the
- * service `kernel.reset`, so a long-running worker starts each message with no note of the one
- * before it.
+ * per apply and only once the writes they describe are committed; by {@see discard()}, which is
+ * what a rolled back apply leaves behind instead; and by {@see reset()}: implementing ResetInterface
+ * makes autoconfiguration tag the service `kernel.reset`, so a long-running worker starts each
+ * message with no note of the one before it.
  *
  * A remap that cannot be handed over is logged and nothing more. The key row is committed by then,
  * and failing the request afterwards would cost the operator the edit rather than the convergence.
@@ -86,9 +87,17 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
         }
     }
 
-    public function reset(): void
+    /**
+     * {@inheritdoc}
+     */
+    public function discard(): void
     {
         $this->noted = [];
+    }
+
+    public function reset(): void
+    {
+        $this->discard();
     }
 
     /**

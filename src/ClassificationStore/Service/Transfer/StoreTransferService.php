@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOu
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
+use Throwable;
 use function ctype_digit;
 use function implode;
 use function sprintf;
@@ -94,17 +95,26 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
 
         try {
             $report = $this->reconciler->apply($document, $store, false);
+        } catch (Throwable $e) {
+            // Throwable, not Exception: an Error rolls the apply back just the same
+            $this->searchIndexRemapTrigger->discard();
+
+            throw $e;
         } finally {
             $this->keyRelationResolver->clear();
-            // one remap for the whole apply, however many of its keys changed the flag
-            $this->searchIndexRemapTrigger->flush();
         }
 
         if ($report->hasConflicts()) {
+            // the apply was rolled back, so the keys it wrote are not the store's and remap nothing
+            $this->searchIndexRemapTrigger->discard();
+
             throw new ConflictException(
                 'The configuration was not applied: ' . implode('; ', $report->getNamed(ApplyOutcome::CONFLICT))
             );
         }
+
+        // one remap for the whole apply, handed over only now its transaction has committed
+        $this->searchIndexRemapTrigger->flush();
 
         return $this->buildImportReport($report);
     }
@@ -118,12 +128,27 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
         $store = $this->storeRepository->getByIdentifier($document->getStoreIdentifier());
 
         try {
-            return $this->reconciler->apply($document, $store, $dryRun, $onDecision);
+            $report = $this->reconciler->apply($document, $store, $dryRun, $onDecision);
+        } catch (Throwable $e) {
+            // Throwable, not Exception: an Error rolls the apply back just the same
+            $this->searchIndexRemapTrigger->discard();
+
+            throw $e;
         } finally {
             $this->keyRelationResolver->clear();
-            // a dry run writes no key, so it notes nothing and this hands nothing over
-            $this->searchIndexRemapTrigger->flush();
         }
+
+        if ($report->hasConflicts()) {
+            // a refused apply is rolled back, so the keys it wrote are not the store's
+            $this->searchIndexRemapTrigger->discard();
+
+            return $report;
+        }
+
+        // a dry run writes no key, so it notes nothing and this hands nothing over
+        $this->searchIndexRemapTrigger->flush();
+
+        return $report;
     }
 
     /**
