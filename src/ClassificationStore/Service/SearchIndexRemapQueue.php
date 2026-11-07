@@ -18,6 +18,9 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Messenger\Sea
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Throwable;
+use function bin2hex;
+use function explode;
+use function random_bytes;
 use function time;
 
 /**
@@ -81,7 +84,7 @@ use function time;
  * suppression converges, over-suppression is the stale mapping this whole mechanism exists to
  * prevent. Whether a remap is skipped is still the class marker's answer alone.
  *
- * And it is released a second way, by {@see releaseAllStoreCoverage()}, because "every class this
+ * And it is superseded a second way, by {@see invalidateStoreCoverage()}, because "every class this
  * store reaches" is answered once and the answer is not stable. The classes a store reaches are a
  * read of every class definition there is, and through each of them of the object brick and field
  * collection definitions it uses ({@see SearchIndexRemapTargetResolver}), and any of those three
@@ -90,10 +93,33 @@ use function time;
  * then skip BIKE for as long as CAR's remap stayed pending - BIKE having meanwhile been saved with a
  * field of this store and finished the remap its own save triggered - and the next flag change
  * would leave BIKE's mapping stale, which is the one outcome the store marker may never produce. So
- * a definition write drops every claim, through {@see releaseAllStoreCoverage()} and the
+ * a definition write supersedes every claim, through {@see invalidateStoreCoverage()} and the
  * `SearchIndexRemapStoreCoverageSubscriber` that calls it. Every claim, not the stores the saved
  * definition reaches: the write is itself what decides which stores those are, so the set to
  * invalidate cannot be read off either side of it.
+ *
+ * ## Why that is a generation and not a deletion
+ *
+ * A claim is not written at the moment its classes are read. The flush reads the store's classes,
+ * decides every one of them, and only then claims ({@see SearchIndexRemapTrigger::flush()}), so a
+ * definition write can land in between - and deleting the claims there reaches nothing, because the
+ * claim is written after the deletion and survives it, standing for a set of classes the write has
+ * already changed. That is the same stale coverage, through a window a deletion cannot close.
+ *
+ * So the claims are not deleted but stamped. {@see readDefinitionGeneration()} answers with the
+ * generation the definitions are in; a claim carries the generation that was read BEFORE its
+ * classes were resolved; and {@see hasPendingStoreRemap()} answers only while the two are still the
+ * same. A definition write moves the generation on, which supersedes every claim carrying the old
+ * one - the ones already written and the ones still to be written out of a resolve that began
+ * before it alike. There is no compare-then-write anywhere on that path, so there is no window: the
+ * claim is decided when it is READ, against a generation that cannot have been overtaken without
+ * having changed.
+ *
+ * The generation is a fresh random value per write rather than a counter, because a counter is a
+ * read-modify-write: two definition writes racing would both read n and both write n + 1, and a
+ * claim stamped n + 1 by a flush that resolved between them would outlive the write that did not
+ * get to move the generation past it. Nothing orders generations - they are only ever compared for
+ * equality - so uniqueness per write is the whole requirement.
  *
  * @internal
  */
@@ -112,7 +138,42 @@ final readonly class SearchIndexRemapQueue implements SearchIndexRemapQueueInter
      */
     private const string STORE_SETTINGS_STORE_SCOPE = 'studio_classificationstore_index_remap_store';
 
+    /**
+     * A third scope for the one entry the definition generation lives in. It is not per store: a
+     * definition write changes which classes any store reaches, so there is one answer for all of
+     * them, and sharing a scope with the per-store claims would make it a store id.
+     */
+    private const string GENERATION_SETTINGS_STORE_SCOPE = 'studio_classificationstore_index_remap_generation';
+
+    private const string GENERATION_ID = 'definitions';
+
+    /**
+     * What the generation reads as while no definition write has been seen. A value of its own
+     * rather than the empty string, so that a claim an earlier build wrote - before a claim carried
+     * a generation at all - cannot match it and is resolved again rather than trusted.
+     */
+    private const string INITIAL_GENERATION = 'initial';
+
+    /**
+     * How many random bytes a generation is made of. Nothing orders them, so the only requirement
+     * is that two definition writes cannot land on the same value.
+     */
+    private const int GENERATION_BYTES = 8;
+
+    /**
+     * What separates the second a coverage was claimed from the generation it was claimed against,
+     * inside the one value the claim is stored as. The second comes first and the generation is the
+     * remainder, so a generation is never parsed for and cannot be split by its own content.
+     */
+    private const string CLAIM_SEPARATOR = ':';
+
     private const string SETTINGS_STORE_TYPE = 'int';
+
+    /**
+     * A claim carries two things in one value and a generation is a token, so both are stored as
+     * strings where a class marker is an int.
+     */
+    private const string SETTINGS_STORE_STRING_TYPE = 'string';
 
     /**
      * How long a marker is taken to mean "queued". It is removed by the handler, so this is only
@@ -141,7 +202,13 @@ final readonly class SearchIndexRemapQueue implements SearchIndexRemapQueueInter
      */
     public function hasPendingRemap(string $classDefinitionId): bool
     {
-        return $this->isPending($classDefinitionId, self::SETTINGS_STORE_SCOPE);
+        $marker = $this->settingsStoreResolver->get($classDefinitionId, self::SETTINGS_STORE_SCOPE);
+
+        if ($marker === null) {
+            return false;
+        }
+
+        return $this->isWithinTheWindow((int) $marker->getData());
     }
 
     /**
@@ -149,7 +216,38 @@ final readonly class SearchIndexRemapQueue implements SearchIndexRemapQueueInter
      */
     public function hasPendingStoreRemap(int $storeId): bool
     {
-        return $this->isPending((string) $storeId, self::STORE_SETTINGS_STORE_SCOPE);
+        $claim = $this->settingsStoreResolver->get((string) $storeId, self::STORE_SETTINGS_STORE_SCOPE);
+
+        if ($claim === null) {
+            return false;
+        }
+
+        [$claimedAt, $claimedGeneration] = $this->readClaim((string) $claim->getData());
+
+        // the generation is asked for as it stands now, where the claim carries the one its classes
+        // were read in: a definition write between the two is what makes them differ
+        if ($claimedGeneration !== $this->readDefinitionGeneration()) {
+            return false;
+        }
+
+        return $this->isWithinTheWindow($claimedAt);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function readDefinitionGeneration(): string
+    {
+        $generation = $this->settingsStoreResolver->get(
+            self::GENERATION_ID,
+            self::GENERATION_SETTINGS_STORE_SCOPE
+        );
+
+        if ($generation === null) {
+            return self::INITIAL_GENERATION;
+        }
+
+        return (string) $generation->getData();
     }
 
     /**
@@ -176,14 +274,15 @@ final readonly class SearchIndexRemapQueue implements SearchIndexRemapQueueInter
     /**
      * {@inheritdoc}
      */
-    public function claimStoreCoverage(int $storeId): void
+    public function claimStoreCoverage(int $storeId, string $definitionGeneration): void
     {
         $this->settingsStoreResolver->set(
             (string) $storeId,
             // the time the coverage was claimed, so a claim nothing ever released stops answering
-            // by itself rather than skipping this store for good
-            time(),
-            self::SETTINGS_STORE_TYPE,
+            // by itself rather than skipping this store for good - and the generation its classes
+            // were read in, so a definition write that has landed since answers it away
+            time() . self::CLAIM_SEPARATOR . $definitionGeneration,
+            self::SETTINGS_STORE_STRING_TYPE,
             self::STORE_SETTINGS_STORE_SCOPE
         );
     }
@@ -191,16 +290,14 @@ final readonly class SearchIndexRemapQueue implements SearchIndexRemapQueueInter
     /**
      * {@inheritdoc}
      */
-    public function releaseAllStoreCoverage(): void
+    public function invalidateStoreCoverage(): void
     {
-        // the ids are a column of digits, which a driver may hand back either way; the delete takes
-        // the id as the string the entry is keyed by, the way every other call here does
-        /** @var list<int|string> $storeIds */
-        $storeIds = $this->settingsStoreResolver->getIdsByScope(self::STORE_SETTINGS_STORE_SCOPE);
-
-        foreach ($storeIds as $storeId) {
-            $this->settingsStoreResolver->delete((string) $storeId, self::STORE_SETTINGS_STORE_SCOPE);
-        }
+        $this->settingsStoreResolver->set(
+            self::GENERATION_ID,
+            bin2hex(random_bytes(self::GENERATION_BYTES)),
+            self::SETTINGS_STORE_STRING_TYPE,
+            self::GENERATION_SETTINGS_STORE_SCOPE
+        );
     }
 
     /**
@@ -226,14 +323,24 @@ final readonly class SearchIndexRemapQueue implements SearchIndexRemapQueueInter
         );
     }
 
-    private function isPending(string $id, string $scope): bool
+    /**
+     * The second a coverage claim was made and the generation it was made against.
+     *
+     * A value carrying no generation is one an earlier build wrote, before a claim recorded what it
+     * was claimed against: nothing can say whether it still describes the classes its store
+     * reaches, so it is answered with null, which no generation ever equals.
+     *
+     * @return array{0: int, 1: string|null}
+     */
+    private function readClaim(string $claim): array
     {
-        $marker = $this->settingsStoreResolver->get($id, $scope);
+        $members = explode(self::CLAIM_SEPARATOR, $claim, 2);
 
-        if ($marker === null) {
-            return false;
-        }
+        return [(int) $members[0], $members[1] ?? null];
+    }
 
-        return (int) $marker->getData() + self::PENDING_REMAP_SECONDS > time();
+    private function isWithinTheWindow(int $writtenAt): bool
+    {
+        return $writtenAt + self::PENDING_REMAP_SECONDS > time();
     }
 }

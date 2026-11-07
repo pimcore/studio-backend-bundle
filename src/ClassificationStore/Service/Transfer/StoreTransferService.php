@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOu
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
-use Throwable;
 use function ctype_digit;
 use function implode;
 use function sprintf;
@@ -95,19 +94,14 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
 
         try {
             $report = $this->reconciler->apply($document, $store, false);
-        } catch (Throwable $e) {
-            // Throwable, not Exception: an Error rolls the apply back just the same
-            $this->searchIndexRemapTrigger->discard();
-
-            throw $e;
         } finally {
             $this->keyRelationResolver->clear();
         }
 
         if ($report->hasConflicts()) {
-            // the apply was rolled back, so the keys it wrote are not the store's and remap nothing
-            $this->searchIndexRemapTrigger->discard();
-
+            // the notes are not touched here: whether the keys this apply wrote are gone is known
+            // to the apply alone, which takes back what it rolled back and nothing a writer before
+            // it in this request left ({@see ReconcilerInterface::apply()})
             throw new ConflictException(
                 'The configuration was not applied: ' . implode('; ', $report->getNamed(ApplyOutcome::CONFLICT))
             );
@@ -129,19 +123,13 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
 
         try {
             $report = $this->reconciler->apply($document, $store, $dryRun, $onDecision);
-        } catch (Throwable $e) {
-            // Throwable, not Exception: an Error rolls the apply back just the same
-            $this->searchIndexRemapTrigger->discard();
-
-            throw $e;
         } finally {
             $this->keyRelationResolver->clear();
         }
 
         if ($report->hasConflicts()) {
-            // a refused apply is rolled back, so the keys it wrote are not the store's
-            $this->searchIndexRemapTrigger->discard();
-
+            // as above: the refused apply has already taken back the notes of the writes it rolled
+            // back, and a note it did not take is not this method's to drop
             return $report;
         }
 

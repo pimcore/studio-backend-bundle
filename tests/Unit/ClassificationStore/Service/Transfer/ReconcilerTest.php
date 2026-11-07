@@ -40,6 +40,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Scop
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactField;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
 use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
@@ -92,6 +93,12 @@ final class ReconcilerTest extends Unit
     private const string KEY_DEFINITION = '{"fieldtype":"input","title":"Weight"}';
 
     /**
+     * The mark the trigger answers the apply with, non-zero so that a test can tell the apply took
+     * its notes back to the mark it read rather than to the beginning of the request.
+     */
+    private const int NOTE_MARK = 7;
+
+    /**
      * @var list<string>
      */
     private array $writes = [];
@@ -115,6 +122,20 @@ final class ReconcilerTest extends Unit
      * @var list<bool>
      */
     private array $disableProbesHeld = [];
+
+    /**
+     * What the apply asked of the search index remap trigger, in order, so that a test can assert
+     * whether it took its own notes back and what mark it took them back to.
+     *
+     * @var list<string>
+     */
+    private array $noteCalls = [];
+
+    /**
+     * Whether a transaction is open on the connection, which is both what tells the apply whose
+     * transaction it is and what tells it there is still one to roll back.
+     */
+    private bool $transactionActive = false;
 
     /**
      * The identifier is what matches, so a renamed row is updated rather than duplicated.
@@ -966,6 +987,78 @@ final class ReconcilerTest extends Unit
     }
 
     /**
+     * A refused apply that owns its transaction rolls back, so the search index remap notes its own
+     * key writes left are taken back with the rows they were about - and back to the mark it read
+     * before its first section, never further. The notes it found already there belong to writes it
+     * did not make: one request reaches the key endpoint and an apply alike, and their notes sit in
+     * one map keyed by store.
+     */
+    public function testARefusedApplyTakesItsOwnNotesBackWhenItRollsBack(): void
+    {
+        $store = $this->createStore();
+        $store->setName('Old name');
+
+        $report = $this
+            ->createReconciler(connection: $this->createConnection(false), storeNameIsTaken: true)
+            ->apply($this->createDocument(), $store, false);
+
+        $this->assertTrue($report->hasConflicts());
+        $this->assertContains('rollBack', $this->steps);
+        $this->assertSame(
+            ['mark', sprintf('discardSince:%d', self::NOTE_MARK)],
+            $this->noteCalls,
+            'A refused apply takes back the notes it took itself, to the mark it read.'
+        );
+    }
+
+    /**
+     * And one that joined a transaction a caller owns takes nothing back, because it rolled nothing
+     * back: whether the keys it wrote survive is the caller's to decide. A note dropped on the
+     * guess that they did not is the stale mapping - the documented answer where nothing can see
+     * how that transaction ended is to hand the remap over and pay for one superfluous re-index.
+     */
+    public function testARefusedApplyInsideACallersTransactionTakesNoNoteBack(): void
+    {
+        $store = $this->createStore();
+        $store->setName('Old name');
+
+        $report = $this
+            ->createReconciler(connection: $this->createConnection(true), storeNameIsTaken: true)
+            ->apply($this->createDocument(), $store, false);
+
+        $this->assertTrue($report->hasConflicts());
+        $this->assertNotContains('rollBack', $this->steps);
+        $this->assertSame(['mark'], $this->noteCalls);
+    }
+
+    /**
+     * An apply that fails part way through is the same answer: it rolled its own transaction back,
+     * so it takes its own notes back with it.
+     */
+    public function testAnApplyThatFailsTakesItsOwnNotesBackWhenItRollsBack(): void
+    {
+        $reconciler = $this->createReconciler(
+            connection: $this->createConnection(false),
+            failingSubGroupWrite: true
+        );
+        $document = $this->createDocument([
+            'subGroups' => [
+                ['identifier' => self::SUB_GROUP_IDENTIFIER, 'name' => 'Dimensions', 'description' => null],
+            ],
+        ]);
+
+        try {
+            $reconciler->apply($document, $this->createStore(), false);
+            $this->fail('A failing apply cannot answer with a report.');
+        } catch (ElementSavingFailedException) {
+            // the failure is the caller's to handle; what it must not leave behind is the note
+        }
+
+        $this->assertContains('rollBack', $this->steps);
+        $this->assertSame(['mark', sprintf('discardSince:%d', self::NOTE_MARK)], $this->noteCalls);
+    }
+
+    /**
      * The same shape one level up. A group whose name the file reuses under another identifier is a
      * genuine refusal - applying the file would have to write two rows under one name. A group that
      * merely shares a name with an entry the file's own identifier owner has already answered for
@@ -1082,6 +1175,7 @@ final class ReconcilerTest extends Unit
         ?Connection $connection = null,
         bool $storeNameIsTaken = false,
         bool $subGroupNameIsTaken = false,
+        bool $failingSubGroupWrite = false,
     ): Reconciler {
         $storeRepository = $this->createMock(StoreRepositoryInterface::class);
         $storeRepository->method('isNameTaken')->willReturn($storeNameIsTaken);
@@ -1106,7 +1200,16 @@ final class ReconcilerTest extends Unit
         );
         $subGroupRepository->method('isNameTaken')->willReturn($subGroupNameIsTaken);
         $subGroupRepository->method('saveFromArtifact')->willReturnCallback(
-            function (?SubGroupConfig $config, int $storeId, string $identifier, string $name): SubGroupConfig {
+            function (
+                ?SubGroupConfig $config,
+                int $storeId,
+                string $identifier,
+                string $name
+            ) use ($failingSubGroupWrite): SubGroupConfig {
+                if ($failingSubGroupWrite) {
+                    throw new ElementSavingFailedException(null, 'the sub group row is gone');
+                }
+
                 $this->recordWrite(sprintf('subGroup:%s:%s', $identifier, $name));
 
                 return $config ?? $this->createSubGroup($identifier, $name);
@@ -1224,6 +1327,9 @@ final class ReconcilerTest extends Unit
             $subGroupRepository
         );
 
+        // the same trigger the writer notes into and the apply takes its own notes back on
+        $remapTrigger = $this->createRemapTrigger();
+
         return new Reconciler(
             $parser,
             $matcher,
@@ -1241,7 +1347,7 @@ final class ReconcilerTest extends Unit
                     $keyGroupRelationRepository
                 ),
                 $keyRepository,
-                $this->makeEmpty(SearchIndexRemapTriggerInterface::class)
+                $remapTrigger
             ),
             $diagnostics,
             $collectionRepository,
@@ -1250,9 +1356,57 @@ final class ReconcilerTest extends Unit
             $groupRepository,
             $keyGroupRelationRepository,
             $keyRepository,
+            $remapTrigger,
             $storeRepository,
             $subGroupRepository
         );
+    }
+
+    /**
+     * The trigger the apply's key writes note into, recording what was asked of it: the apply reads
+     * a mark before its first section and takes the notes since that mark back only where it rolls
+     * back itself.
+     */
+    private function createRemapTrigger(): SearchIndexRemapTriggerInterface
+    {
+        return $this->makeEmpty(SearchIndexRemapTriggerInterface::class, [
+            'mark' => function (): int {
+                $this->noteCalls[] = 'mark';
+
+                return self::NOTE_MARK;
+            },
+            'discardSince' => function (int $mark): void {
+                $this->noteCalls[] = sprintf('discardSince:%d', $mark);
+            },
+            'discard' => function (): void {
+                $this->noteCalls[] = 'discard';
+            },
+        ]);
+    }
+
+    /**
+     * A connection whose transaction state the apply reads the way it does in a request: active is
+     * a caller that opened one of its own, which the apply joins and neither commits nor rolls back.
+     */
+    private function createConnection(bool $callerOwnsOne): Connection
+    {
+        $this->transactionActive = $callerOwnsOne;
+
+        return $this->makeEmpty(Connection::class, [
+            'isTransactionActive' => fn (): bool => $this->transactionActive,
+            'beginTransaction' => function (): void {
+                $this->transactionActive = true;
+                $this->steps[] = 'beginTransaction';
+            },
+            'commit' => function (): void {
+                $this->transactionActive = false;
+                $this->steps[] = 'commit';
+            },
+            'rollBack' => function (): void {
+                $this->transactionActive = false;
+                $this->steps[] = 'rollBack';
+            },
+        ]);
     }
 
     /**

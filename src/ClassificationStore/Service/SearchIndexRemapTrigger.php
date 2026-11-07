@@ -27,9 +27,24 @@ use function sprintf;
  *
  * The notes are dropped by {@see flush()}, which the key write surfaces call once per request or
  * per apply, and again at the end of the request when their own call could not hand anything over
- * yet; by {@see discard()}, which is what a rolled back apply leaves behind instead; and by
+ * yet; by {@see discardSince()}, which is what a unit of work that rolled its own key writes back
+ * takes back with them; by {@see discard()}, which is the end of the request itself; and by
  * {@see reset()}: implementing ResetInterface makes autoconfiguration tag the service
  * `kernel.reset`, so a long-running worker starts each message with no note of the one before it.
+ *
+ * ## Why a rollback takes back notes by mark and not all of them
+ *
+ * A note is not the noter's property: one request can reach both write surfaces, and the notes of
+ * all of them sit in one map keyed by store, because the remap they earn is one remap. So a unit of
+ * work that rolls its own key writes back may only take back what it noted itself - the notes it
+ * found already there are about rows it did not write and did not roll back, and dropping them
+ * leaves those rows committed with nothing pending and nothing noted, which is the stale mapping.
+ * {@see mark()} is read before such a unit of work starts and {@see discardSince()} takes back the
+ * notes taken after it.
+ *
+ * A store noted before the mark and again inside it stays noted, which is why a note records the
+ * sequence it was FIRST taken at: the earlier write is still committed, so its remap is still owed,
+ * however many later ones were rolled back on top of it.
  *
  * ## Why the hand-over waits for the transaction and not for the caller
  *
@@ -63,6 +78,13 @@ use function sprintf;
  * covered by a message that does not carry this store, so claiming on it would suppress this
  * store's later flag changes for that class after the message had already been handled.
  *
+ * Deciding before claiming means the claim is written after the classes it covers were read, and a
+ * definition write can land in that window and change which classes the store reaches. So the
+ * generation of the definitions is read BEFORE the first store is resolved and the claims are
+ * stamped with it ({@see SearchIndexRemapQueueInterface::readDefinitionGeneration()}): a definition
+ * write moves the generation on and the claim, whenever it is written, answers for nothing. Reading
+ * the generation after the resolve instead would only narrow that window, not close it.
+ *
  * Nothing {@see flush()} does can fail the request it was called from: a store that cannot be
  * resolved to its indices and a remap that cannot be handed over are both logged and nothing more.
  * The key row is committed by then, and failing the request afterwards would cost the operator the
@@ -74,9 +96,16 @@ use function sprintf;
 final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface, ResetInterface
 {
     /**
-     * @var array<int, true> keyed by storeId
+     * @var array<int, int> the sequence each noted store was FIRST noted at, keyed by storeId
      */
     private array $noted = [];
+
+    /**
+     * The sequence the next note is taken at, and what {@see mark()} answers with. It is never
+     * reset, not by a flush and not by a discard: a mark a caller is still holding may not come to
+     * stand for a note taken after it was read.
+     */
+    private int $sequence = 0;
 
     public function __construct(
         private readonly SearchIndexFlagResolverInterface $searchIndexFlagResolver,
@@ -99,7 +128,9 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
             return;
         }
 
-        $this->noted[$storeId] = true;
+        // the sequence of the FIRST note of this store, so that a rollback taking back what it
+        // noted itself cannot take back an earlier writer's note of the same store
+        $this->noted[$storeId] ??= $this->sequence++;
     }
 
     /**
@@ -107,7 +138,13 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
      */
     public function flush(): void
     {
-        if ($this->noted !== [] && $this->isWriteUncommitted()) {
+        if ($this->noted === []) {
+            // answered before anything is read, because the terminate of every request and every
+            // command makes this call: a unit of work that noted nothing may not cost a query
+            return;
+        }
+
+        if ($this->isWriteUncommitted()) {
             // the notes stay: nothing may be coalesced away against rows the rest of the database
             // cannot see yet. The terminate subscriber flushes again once the transaction is gone.
             return;
@@ -116,6 +153,9 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
         $stores = array_keys($this->noted);
         // forgotten before the hand-over, so a failing one is not retried by the next flush
         $this->noted = [];
+        // read before the first store is resolved, never after: a claim may only carry the
+        // generation the definitions were in when the classes it covers were read
+        $generation = $this->readDefinitionGeneration();
         $targets = [];
         $coverage = [];
 
@@ -135,12 +175,32 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
         // before its own: a hand-over that then fails takes the claim back with it, and so does a
         // synchronous transport that handles its message inside `dispatch()`
         foreach ($coverage as $storeId => $keys) {
-            $this->claimCoveredStore($storeId, $keys, $handOver);
+            $this->claimCoveredStore($storeId, $keys, $handOver, $generation);
         }
 
         foreach ($targets as $key => $target) {
             if ($handOver[$key]) {
                 $this->handOver($target['classDefinitionId'], $target['storeIds']);
+            }
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function mark(): int
+    {
+        return $this->sequence;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function discardSince(int $mark): void
+    {
+        foreach ($this->noted as $storeId => $sequence) {
+            if ($sequence >= $mark) {
+                unset($this->noted[$storeId]);
             }
         }
     }
@@ -177,6 +237,26 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
             ));
 
             return false;
+        }
+    }
+
+    /**
+     * The generation the definitions are in, as it stands before this flush resolves anything, or
+     * null when it cannot be read - in which case nothing is claimed at all. A claim carrying a
+     * generation nobody read is a claim nothing can supersede, and the cost of claiming nothing is
+     * one store resolve per flush, where the cost of an unsupersedable claim is the stale mapping.
+     */
+    private function readDefinitionGeneration(): ?string
+    {
+        try {
+            return $this->remapQueue->readDefinitionGeneration();
+        } catch (Throwable $e) {
+            $this->logger->error(sprintf(
+                'Failed to read the definition generation of the classification store search indices: %s',
+                $e->getMessage()
+            ));
+
+            return null;
         }
     }
 
@@ -274,15 +354,19 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
      * A store that reaches no class at all is not claimed either: there is no coverage to stand on,
      * and a class added to the store inside the window would have its flag changes skipped.
      *
+     * The claim carries the generation read before this flush resolved anything, so that a
+     * definition write since then - which is what moves a class into or out of the store's reach -
+     * leaves it answering for nothing. A flush that could not read that generation claims nothing.
+     *
      * Failing to claim costs the next flush one resolve of the store, so it is logged like the rest
      * and nothing more.
      *
      * @param list<array-key> $keys the `$targets` entries this store reaches
      * @param array<array-key, bool> $handOver whether this flush is handing each collected class over
      */
-    private function claimCoveredStore(int $storeId, array $keys, array $handOver): void
+    private function claimCoveredStore(int $storeId, array $keys, array $handOver, ?string $generation): void
     {
-        if ($keys === []) {
+        if ($keys === [] || $generation === null) {
             return;
         }
 
@@ -293,7 +377,7 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
         }
 
         try {
-            $this->remapQueue->claimStoreCoverage($storeId);
+            $this->remapQueue->claimStoreCoverage($storeId, $generation);
         } catch (Throwable $e) {
             $this->logger->error(sprintf(
                 'Failed to mark the search indices of the classification store "%d" as queued: %s',

@@ -49,9 +49,30 @@ interface SearchIndexRemapTriggerInterface
     public function flush(): void;
 
     /**
-     * Forgets the notes without handing anything over, which is what a rolled back unit of work
-     * leaves behind: there is no change to converge to, and a note kept instead would be handed
-     * over by whatever flushes next.
+     * An opaque mark of the notes as they stand, to be read before a unit of work that may have to
+     * roll its own key writes back and passed to {@see self::discardSince()} if it does.
+     */
+    public function mark(): int;
+
+    /**
+     * Forgets the notes taken since the mark without handing anything over, which is what a unit of
+     * work that rolled ITS OWN key writes back leaves behind: there is no change to converge to,
+     * and a note kept instead would be handed over by whatever flushes next.
+     *
+     * The notes that were already there when the mark was read are kept, including a note of a
+     * store this unit of work went on to note again: they are about rows this unit of work neither
+     * wrote nor rolled back, and dropping them leaves those rows committed with nothing pending and
+     * nothing noted - the stale mapping this whole mechanism exists to prevent. Only a unit of work
+     * that rolled back may call it at all: one that merely failed to commit, or that left the
+     * decision to a transaction a caller owns, does not know that its rows are gone, and the
+     * documented answer when nothing can see that is to hand the remap over anyway.
+     */
+    public function discardSince(int $mark): void;
+
+    /**
+     * Forgets every note without handing anything over, which only the end of the unit of work
+     * itself may do: the request or the command is over, so a note still held has no later flush to
+     * be handed over by and would otherwise reach the next message of a worker-mode runtime.
      */
     public function discard(): void;
 }
