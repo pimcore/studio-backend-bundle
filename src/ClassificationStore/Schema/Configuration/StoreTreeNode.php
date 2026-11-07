@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration;
 
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
@@ -47,6 +48,25 @@ final class StoreTreeNode implements AdditionalAttributesInterface
             nullable: true
         )]
         private readonly ?string $identifier = null,
+        #[Property(
+            description: 'The engine the store stores its values with, as the store stores it; null where it stores'
+                . ' none, which is the default engine, and null as well on a core that does not report an engine'
+                . ' at all.',
+            type: 'string',
+            example: 'document',
+            nullable: true
+        )]
+        private readonly ?string $engine = null,
+        #[Property(
+            description: 'The capabilities the store\'s engine reports, naming exactly those it supports. An empty'
+                . ' array is an engine that reports none; null is a core that cannot be asked at all, which is not'
+                . ' the same answer.',
+            type: 'array',
+            items: new Items(type: 'string'),
+            example: ['MultiValue', 'Variants'],
+            nullable: true
+        )]
+        private readonly ?array $engineCapabilities = null,
     ) {
     }
 
@@ -68,5 +88,15 @@ final class StoreTreeNode implements AdditionalAttributesInterface
     public function getIdentifier(): ?string
     {
         return $this->identifier;
+    }
+
+    public function getEngine(): ?string
+    {
+        return $this->engine;
+    }
+
+    public function getEngineCapabilities(): ?array
+    {
+        return $this->engineCapabilities;
     }
 }

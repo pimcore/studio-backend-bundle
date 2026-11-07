@@ -220,3 +220,10 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Request\Configuration\KeyUpdateDenormalizer:
     tags: [ 'serializer.normalizer' ]
+
+  # the engine resolver is optional: `composer.json` allows a core that does not ship one, and
+  # against such a core the store reports no engine and no capabilities rather than failing to boot
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolver
+    arguments:
+      $engineResolver: '@?Pimcore\Model\DataObject\Classificationstore\Engine\EngineResolver'
