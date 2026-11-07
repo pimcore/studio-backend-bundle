@@ -111,7 +111,8 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
      *
      * The class a remap is handed over for is read back as the value of its own entry, never as the
      * key: a class id made of digits is an integer array key, and the queue is handed the id as the
-     * string the class carries it as.
+     * string the class carries it as. The entry is written whole rather than a member at a time, so
+     * no state of `$targets` exists in which an entry is missing its `storeIds`.
      *
      * @param array<array-key, array{classDefinitionId: string, storeIds: list<int>}> $targets the
      *        classes collected so far and the noted stores reaching each of them
@@ -124,8 +125,13 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
             }
 
             foreach ($this->remapTargetResolver->resolveForStore($storeId) as $classDefinitionId) {
-                $targets[$classDefinitionId]['classDefinitionId'] = $classDefinitionId;
-                $targets[$classDefinitionId]['storeIds'][] = $storeId;
+                $storeIds = $targets[$classDefinitionId]['storeIds'] ?? [];
+                $storeIds[] = $storeId;
+
+                $targets[$classDefinitionId] = [
+                    'classDefinitionId' => $classDefinitionId,
+                    'storeIds' => $storeIds,
+                ];
             }
         } catch (Throwable $e) {
             $this->logger->error(sprintf(
