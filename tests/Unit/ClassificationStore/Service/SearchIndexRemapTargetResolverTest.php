@@ -207,8 +207,10 @@ final class SearchIndexRemapTargetResolverTest extends Unit
         return $class;
     }
 
-    private function createContainerField(string $container, int $storeId): Localizedfields|Objectbricks|Fieldcollections
-    {
+    private function createContainerField(
+        string $container,
+        int $storeId,
+    ): Localizedfields|Objectbricks|Fieldcollections {
         $storeField = $this->createStoreField(self::FIELD_NAME, $storeId);
 
         if ($container === 'localizedfields') {

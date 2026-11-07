@@ -73,6 +73,7 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\TransportException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
+use Throwable;
 use function count;
 use function explode;
 use function is_int;
@@ -1053,6 +1054,67 @@ final class KeyIndexRemapTriggerTest extends Unit
     }
 
     /**
+     * And it holds with a claim already sitting there, which is the state that read actually fails
+     * in: with no claim the coverage question answers no without reading the generation at all, so
+     * the generation read only throws out of `hasPendingStoreRemap()` once there is a claim for it
+     * to be compared against.
+     *
+     * Asked under the same guard as the resolve, as it was, that threw the whole store away - and
+     * `flush()` drops the notes before it reads the first store, so the committed flag change would
+     * be left with no remap pending and nothing any later flush could retry it from. So the
+     * coverage question has a guard of its own and a read that fails answers "not covered": the
+     * store is resolved, its classes are decided, and the hand-over is made.
+     *
+     * The claim here is expired as well as unreadable, which is the worst of it: the generation is
+     * compared before the second is, so even a claim that would no longer suppress anything is
+     * enough to make the read throw.
+     */
+    public function testAFlushThatCannotReadAnExistingClaimStillHandsTheRemapOver(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $trigger->flush();
+
+        $this->assertSame([self::CLASS_ID], $this->getRemappedClassIds());
+        $this->assertTrue($this->isStoreMarkedQueued(self::STORE_ID));
+
+        // the claim and the class marker are both past their window, and the generation the claim
+        // would be read against can no longer be reached at all
+        $this->ageTheQueuedMarkers();
+        $this->duringSettingsRead = static function (string $id, string $scope): void {
+            if ($scope === self::GENERATION_SCOPE) {
+                throw new Exception('the settings store cannot be reached');
+            }
+        };
+
+        $trigger->noteFlagChange(self::STORE_ID, self::NOT_INDEXED, self::INDEXED);
+        $trigger->flush();
+
+        $this->assertSame(
+            2,
+            $this->targetLookups,
+            'A coverage lookup that failed is not coverage: the store is resolved rather than skipped.'
+        );
+        $this->assertSame(
+            [self::CLASS_ID, self::CLASS_ID],
+            $this->getRemappedClassIds(),
+            'And the committed flag change is handed over, because no later flush holds a note of it.'
+        );
+        $this->assertSame(
+            2,
+            $this->loggedFailures,
+            'Both reads that failed are logged, and neither reaches the save.'
+        );
+
+        $this->duringSettingsRead = null;
+        $this->assertFalse(
+            $this->isStoreMarkedQueued(self::STORE_ID),
+            'Nothing answers for this store afterwards: the generation a claim needs could not be read.'
+        );
+    }
+
+    /**
      * And one of the hand-overs a claim rests on failing takes the claim back with it, because the
      * store it was written for is one of the stores the failing message answered for. The class
      * whose hand-over did reach the transport stays pending, so the flag change after it hands over
@@ -1743,17 +1805,27 @@ final class KeyIndexRemapTriggerTest extends Unit
      * Whether the queue already answers that everything this message stands for is pending - the
      * class it remaps and the coverage of every store it answers for - asked through the queue
      * itself rather than of the stand-in it writes into.
+     *
+     * Guarded, because this is an observation made from inside `dispatch()` and an observation may
+     * not throw into the code it is observing: a test that makes the settings store unreadable
+     * would otherwise see the failure arrive as a refused hand-over, which the transport never
+     * refused. Unreadable is answered with "not written", which is what every test asserting on
+     * this already expects of a marker it cannot find.
      */
     private function isEveryMarkerWritten(SearchIndexRemapMessage $message): bool
     {
-        if ($this->queue === null || !$this->queue->hasPendingRemap($message->getClassDefinitionId())) {
-            return false;
-        }
-
-        foreach ($message->getStoreIds() as $storeId) {
-            if (!$this->isStoreMarkedQueued($storeId)) {
+        try {
+            if ($this->queue === null || !$this->queue->hasPendingRemap($message->getClassDefinitionId())) {
                 return false;
             }
+
+            foreach ($message->getStoreIds() as $storeId) {
+                if (!$this->isStoreMarkedQueued($storeId)) {
+                    return false;
+                }
+            }
+        } catch (Throwable) {
+            return false;
         }
 
         return true;

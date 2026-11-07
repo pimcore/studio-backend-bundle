@@ -265,6 +265,13 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
      * marker is asked first: while it answers, every class the store reaches has a remap queued
      * already and resolving them would only rediscover that.
      *
+     * That question has a guard of its own ({@see isStoreCovered()}) and is asked OUTSIDE the one
+     * the resolve runs under, because the two failures are not the same failure. A resolve that
+     * cannot finish leaves nothing to hand over - the classes are unknown - so logging is all there
+     * is. A coverage read that cannot finish leaves the classes perfectly knowable, and taking the
+     * resolve down with it would skip the hand-over of a change whose note {@see flush()} has
+     * already dropped: committed, nothing pending, and nothing any later flush could retry it from.
+     *
      * Resolving happens under the same guard as the hand-over, and against Throwable rather than
      * Exception, because the key row is committed by the time either runs: a store whose classes
      * cannot be resolved has to cost a log line, not the operator's edit turned into a 500.
@@ -287,11 +294,11 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
      */
     private function collectTargets(int $storeId, array &$targets, array &$coverage): void
     {
-        try {
-            if ($this->remapQueue->hasPendingStoreRemap($storeId)) {
-                return;
-            }
+        if ($this->isStoreCovered($storeId)) {
+            return;
+        }
 
+        try {
             $reached = [];
 
             foreach ($this->remapTargetResolver->resolveForStore($storeId) as $classDefinitionId) {
@@ -312,6 +319,33 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
                 $storeId,
                 $e->getMessage()
             ));
+        }
+    }
+
+    /**
+     * Whether this store's own marker still stands for complete coverage, which is the one thing
+     * that lets a flush skip resolving it.
+     *
+     * A claim that cannot be read is answered with no rather than yes, the way every other read on
+     * this path answers toward doing the work: a claim is read by asking the settings store for the
+     * claim AND for the definition generation it has to still match
+     * ({@see SearchIndexRemapQueueInterface::hasPendingStoreRemap()}), so either read failing used
+     * to cost the whole store its resolve - and with it the hand-over of a committed flag change
+     * whose note was already dropped. Answering no costs one resolve of the store and at worst one
+     * superfluous re-index; answering yes costs the stale mapping.
+     */
+    private function isStoreCovered(int $storeId): bool
+    {
+        try {
+            return $this->remapQueue->hasPendingStoreRemap($storeId);
+        } catch (Throwable $e) {
+            $this->logger->error(sprintf(
+                'Failed to read the claimed search index coverage of the classification store "%d": %s',
+                $storeId,
+                $e->getMessage()
+            ));
+
+            return false;
         }
     }
 

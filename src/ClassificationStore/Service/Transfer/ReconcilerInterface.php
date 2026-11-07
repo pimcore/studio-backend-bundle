@@ -40,7 +40,7 @@ interface ReconcilerInterface
      * caller that decides. Where it does roll back, it also takes back the search index remap notes
      * its own key writes left - and only those, because the notes of a write that happened earlier
      * in the same request are about rows this rollback did not touch
-     * ({@see \Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface::discardSince()}).
+     * (`SearchIndexRemapTriggerInterface::discardSince()`).
      *
      * A null store is the console command applying a configuration to an installation that does not
      * carry it yet; the endpoint always has the store of its route.
