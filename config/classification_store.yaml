@@ -40,6 +40,9 @@ services:
     arguments:
       $labelResolver: '@Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface'
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolver
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolver
 

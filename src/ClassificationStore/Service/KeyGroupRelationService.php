@@ -25,6 +25,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\LayoutDefinitionEnrichmentInte
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_map;
 use function count;
 
 /**
@@ -38,6 +39,7 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         private KeyGroupRelationHydratorInterface $keyGroupRelationHydrator,
         private GroupConfigResolverInterface $groupConfigResolver,
         private EventDispatcherInterface $eventDispatcher,
+        private KeyLocalizationResolverInterface $keyLocalizationResolver,
     ) {
     }
 
@@ -60,10 +62,16 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
             $parameter->getSearchTerm()
         );
 
+        $localizationFlags = $this->resolveKeyLocalizationFlags($keyGroupRelations);
+
         foreach ($keyGroupRelations as $keyGroupRelation) {
             $groupConfig = $this->groupConfigResolver->getById($keyGroupRelation->getGroupId());
 
-            $hydratedKeyGroupRelation = $this->keyGroupRelationHydrator->hydrate($keyGroupRelation, $groupConfig);
+            $hydratedKeyGroupRelation = $this->keyGroupRelationHydrator->hydrate(
+                $keyGroupRelation,
+                $groupConfig,
+                $localizationFlags[$keyGroupRelation->getKeyId()] ?? null
+            );
 
             $this->eventDispatcher->dispatch(
                 new KeyGroupRelationEvent($hydratedKeyGroupRelation),
@@ -114,5 +122,32 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         }
 
         return $definition;
+    }
+
+    /**
+     * The `localized` flag of every key on the page, in one statement: core's relation listing
+     * selects the key's columns but keeps only those its model has a property for, and it has none
+     * for this one. A key the configuration no longer carries is simply absent from the result and
+     * reports nothing, rather than failing the whole listing.
+     *
+     * A core that does not carry the flag is not asked at all - there, the answer could only be null
+     * for every key.
+     *
+     * @param KeyGroupRelation[] $keyGroupRelations
+     *
+     * @return array<int, bool|null>
+     */
+    private function resolveKeyLocalizationFlags(array $keyGroupRelations): array
+    {
+        if (!$this->keyLocalizationResolver->supportsLocalization()) {
+            return [];
+        }
+
+        return $this->keyGroupRelationRepository->getKeyLocalizationFlags(
+            array_map(
+                static fn (KeyGroupRelation $keyGroupRelation): int => $keyGroupRelation->getKeyId(),
+                $keyGroupRelations
+            )
+        );
     }
 }

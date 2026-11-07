@@ -170,6 +170,48 @@ final class KeyGroupLayoutServiceTest extends Unit
     }
 
     /**
+     * The key's own `localized` flag reaches this response too, passed through as the tri-state it
+     * is: the editor gets a key's localization with the layout it already renders and needs no
+     * second request for it.
+     *
+     * @dataProvider localizedProvider
+     *
+     * @throws Exception
+     */
+    public function testGetKeyLayoutCarriesTheLocalizationFlagOfTheKey(?bool $localized): void
+    {
+        $keyLayout = $this->getKeyLayout(
+            $this->createKeyConfig(self::KEY_ID, self::KEY_NAME, self::COLUMN_TITLE),
+            localized: $localized
+        );
+
+        $this->assertSame($localized, $keyLayout->getLocalized());
+    }
+
+    /**
+     * @return array<string, array{0: ?bool}>
+     */
+    public static function localizedProvider(): array
+    {
+        return [
+            'a key flagged localized' => [true],
+            'a key flagged not localized' => [false],
+            'a key stating nothing' => [null],
+        ];
+    }
+
+    /**
+     * A key whose configuration cannot be loaded reports nothing rather than a decision, the way
+     * its title does.
+     *
+     * @throws Exception
+     */
+    public function testGetKeyLayoutReportsNoLocalizationFlagWithoutAKeyConfiguration(): void
+    {
+        $this->assertNull($this->getKeyLayout(null)->getLocalized());
+    }
+
+    /**
      * @throws Exception
      */
     public function testPreloadKeyTitlesReadsAWholeGroupWithOneCall(): void
@@ -190,10 +232,11 @@ final class KeyGroupLayoutServiceTest extends Unit
         ?KeyConfig $keyConfig,
         array $labels = [],
         ?string $userLanguage = self::LANGUAGE,
-        ?string $subGroup = null
+        ?string $subGroup = null,
+        ?bool $localized = null
     ): KeyLayout {
         return $this
-            ->createService($keyConfig, $labels, $userLanguage, $subGroup)
+            ->createService($keyConfig, $labels, $userLanguage, $subGroup, $localized)
             ->getKeyLayout(new LayoutParameter('classificationStore'), self::KEY_ID, self::GROUP_ID);
     }
 
@@ -206,7 +249,8 @@ final class KeyGroupLayoutServiceTest extends Unit
         ?KeyConfig $keyConfig,
         array $labels = [],
         ?string $userLanguage = self::LANGUAGE,
-        ?string $subGroup = null
+        ?string $subGroup = null,
+        ?bool $localized = null
     ): KeyGroupLayoutService {
         $relation = new KeyGroupRelation();
         $relation->setKeyId(self::KEY_ID);
@@ -234,13 +278,20 @@ final class KeyGroupLayoutServiceTest extends Unit
             ->with(self::KEY_ID)
             ->willReturn($keyConfig);
 
+        $keyLocalizationResolver = new InMemoryKeyLocalizationResolver();
+
+        if ($keyConfig !== null && $localized !== null) {
+            $keyLocalizationResolver->setLocalized($keyConfig, $localized);
+        }
+
         return new KeyGroupLayoutService(
             $serviceResolver,
             $keyRelationResolver,
             new ConcreteObjectResolver(),
             $keyConfigResolver,
             $this->createLabelResolver($labels),
-            $this->createLabelLanguageResolver($userLanguage, self::DEFAULT_LANGUAGE)
+            $this->createLabelLanguageResolver($userLanguage, self::DEFAULT_LANGUAGE),
+            $keyLocalizationResolver
         );
     }
 }

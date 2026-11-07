@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Arti
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcher;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
@@ -40,6 +41,13 @@ final class ArtifactTargetMatcherTest extends Unit
 
     private const string NAME = 'Measurements';
 
+    private InMemoryKeyLocalizationResolver $keyLocalizationResolver;
+
+    public function _before(): void
+    {
+        $this->keyLocalizationResolver = new InMemoryKeyLocalizationResolver();
+    }
+
     /**
      * The identifier is the identity. A row that carries one is never matched by name, so a file
      * that does not name it leaves it alone instead of overwriting the row that happens to share
@@ -47,7 +55,7 @@ final class ArtifactTargetMatcherTest extends Unit
      */
     public function testARowWithAnIdentifierIsMatchedByItAlone(): void
     {
-        $matcher = new ArtifactTargetMatcher();
+        $matcher = $this->createTargetMatcher();
         $entries = [self::IDENTIFIER => ['name' => self::NAME]];
         $byName = $matcher->indexByName($entries, 'name');
 
@@ -64,7 +72,7 @@ final class ArtifactTargetMatcherTest extends Unit
      */
     public function testARowWithoutAnIdentifierIsMatchedByNameCaseInsensitively(): void
     {
-        $matcher = new ArtifactTargetMatcher();
+        $matcher = $this->createTargetMatcher();
         $entries = [self::IDENTIFIER => ['name' => self::NAME]];
         $byName = $matcher->indexByName($entries, 'name');
 
@@ -78,7 +86,7 @@ final class ArtifactTargetMatcherTest extends Unit
      */
     public function testTheNameIndexKeepsTheFirstEntryAndSkipsWhatIsNotAName(): void
     {
-        $matcher = new ArtifactTargetMatcher();
+        $matcher = $this->createTargetMatcher();
 
         $byName = $matcher->indexByName(
             [
@@ -106,7 +114,7 @@ final class ArtifactTargetMatcherTest extends Unit
             return [];
         };
 
-        $walked = iterator_to_array((new ArtifactTargetMatcher())->walkTargetByIdCursor(
+        $walked = iterator_to_array(($this->createTargetMatcher())->walkTargetByIdCursor(
             $this->createContext(null),
             $walk
         ));
@@ -129,7 +137,7 @@ final class ArtifactTargetMatcherTest extends Unit
         };
 
         $walked = iterator_to_array(
-            (new ArtifactTargetMatcher())->walkTargetByIdCursor($this->createContext(1), $walk)
+            ($this->createTargetMatcher())->walkTargetByIdCursor($this->createContext(1), $walk)
         );
 
         $this->assertCount(self::CHUNK_SIZE + 1, $walked);
@@ -151,7 +159,7 @@ final class ArtifactTargetMatcherTest extends Unit
         };
 
         $walked = iterator_to_array(
-            (new ArtifactTargetMatcher())->walkTargetByRowCursor($this->createContext(1), $walk)
+            ($this->createTargetMatcher())->walkTargetByRowCursor($this->createContext(1), $walk)
         );
 
         $this->assertCount(self::CHUNK_SIZE, $walked);
@@ -164,7 +172,7 @@ final class ArtifactTargetMatcherTest extends Unit
      */
     public function testAnAbsentDescriptionAndAnEmptyOneDescribeTheSameEntity(): void
     {
-        $matcher = new ArtifactTargetMatcher();
+        $matcher = $this->createTargetMatcher();
 
         $this->assertTrue($matcher->describesSameEntity(self::NAME, null, self::NAME, ''));
         $this->assertTrue($matcher->describesSameEntity(self::NAME, '', self::NAME, null));
@@ -181,7 +189,7 @@ final class ArtifactTargetMatcherTest extends Unit
      */
     public function testTheKeyDefinitionIsComparedAsAStructure(): void
     {
-        $matcher = new ArtifactTargetMatcher();
+        $matcher = $this->createTargetMatcher();
         $target = $this->createKey('{ "title": "Weight", "fieldtype": "input" }');
 
         $this->assertTrue(
@@ -192,10 +200,85 @@ final class ArtifactTargetMatcherTest extends Unit
 
     public function testAKeyWhoseEnabledFlagDiffersIsNotTheSameKey(): void
     {
-        $matcher = new ArtifactTargetMatcher();
+        $matcher = $this->createTargetMatcher();
         $target = $this->createKey('{"fieldtype":"input"}', enabled: false);
 
         $this->assertFalse($matcher->describesSameKey($target, $this->createKeyEntry(['fieldtype' => 'input'])));
+    }
+
+    /**
+     * `localized` is compared as the tri-state it is, so a file whose only change is that flag
+     * reports the key as updated - and the three states stay three. Collapsing the stored NULL into
+     * `false` would make a key that states nothing look like one flagged not localized, and a file
+     * flagging it false would then write nothing.
+     *
+     * @dataProvider localizedComparisonProvider
+     */
+    public function testTheLocalizedFlagIsComparedAsATriState(
+        ?bool $stored,
+        ?bool $entry,
+        bool $sameKey
+    ): void {
+        $target = $this->createKey('{"fieldtype":"input"}', localized: $stored);
+
+        $this->assertSame(
+            $sameKey,
+            $this->createTargetMatcher()->describesSameKey(
+                $target,
+                $this->createKeyEntry(['fieldtype' => 'input'], $entry)
+            )
+        );
+    }
+
+    /**
+     * @return array<string, array{0: ?bool, 1: ?bool, 2: bool}>
+     */
+    public static function localizedComparisonProvider(): array
+    {
+        return [
+            'nothing stored and nothing in the file' => [null, null, true],
+            'nothing stored against an explicit false' => [null, false, false],
+            'nothing stored against an explicit true' => [null, true, false],
+            'false stored against nothing in the file' => [false, null, false],
+            'false stored against an explicit false' => [false, false, true],
+            'true stored against an explicit false' => [true, false, false],
+            'true stored against an explicit true' => [true, true, true],
+        ];
+    }
+
+    /**
+     * On a core that does not carry the flag the column is not compared at all: it reads null
+     * whatever the key says and a write of it goes nowhere, so comparing would report every entry
+     * that carries `localized: true` or `false` as a change the apply cannot make - each apply would
+     * save the key again and report UPDATED, and deploying one file twice would never be a no-op.
+     * Everything else about the key is still compared.
+     *
+     * @dataProvider localizedFlagProvider
+     */
+    public function testACoreWithoutTheFlagDoesNotCompareIt(?bool $entry): void
+    {
+        $this->keyLocalizationResolver = new InMemoryKeyLocalizationResolver(false);
+        $matcher = $this->createTargetMatcher();
+        $target = $this->createKey('{"fieldtype":"input"}', localized: true);
+
+        $this->assertTrue(
+            $matcher->describesSameKey($target, $this->createKeyEntry(['fieldtype' => 'input'], $entry))
+        );
+        $this->assertFalse(
+            $matcher->describesSameKey($target, $this->createKeyEntry(['fieldtype' => 'textarea'], $entry))
+        );
+    }
+
+    /**
+     * @return array<string, array{0: ?bool}>
+     */
+    public static function localizedFlagProvider(): array
+    {
+        return [
+            'the file flags the key localized' => [true],
+            'the file flags the key not localized' => [false],
+            'the file states no flag' => [null],
+        ];
     }
 
     /**
@@ -204,7 +287,7 @@ final class ArtifactTargetMatcherTest extends Unit
      */
     public function testAnOmittedPerAssignmentColumnIsNotCompared(): void
     {
-        $matcher = new ArtifactTargetMatcher();
+        $matcher = $this->createTargetMatcher();
         $target = new KeyGroupRelation();
         $target->setSorter(1);
         $target->setMandatory(false);
@@ -229,13 +312,13 @@ final class ArtifactTargetMatcherTest extends Unit
         $target->setMandatory(false);
 
         $this->assertFalse(
-            (new ArtifactTargetMatcher())->describesSameAssignment($target, $this->createAssignmentEntry())
+            ($this->createTargetMatcher())->describesSameAssignment($target, $this->createAssignmentEntry())
         );
     }
 
     public function testAValueThatIsNotAStringReadsAsNone(): void
     {
-        $matcher = new ArtifactTargetMatcher();
+        $matcher = $this->createTargetMatcher();
 
         $this->assertSame('Sizes', $matcher->readNullableString(['description' => 'Sizes'], 'description'));
         $this->assertNull($matcher->readNullableString(['description' => null], 'description'));
@@ -285,7 +368,12 @@ final class ArtifactTargetMatcherTest extends Unit
         return $assignments;
     }
 
-    private function createKey(string $definition, bool $enabled = true): KeyConfig
+    private function createTargetMatcher(): ArtifactTargetMatcher
+    {
+        return new ArtifactTargetMatcher($this->keyLocalizationResolver);
+    }
+
+    private function createKey(string $definition, bool $enabled = true, ?bool $localized = null): KeyConfig
     {
         $key = new KeyConfig();
         $key->setName('weight');
@@ -293,6 +381,7 @@ final class ArtifactTargetMatcherTest extends Unit
         $key->setType('input');
         $key->setDefinition($definition);
         $key->setEnabled($enabled);
+        $this->keyLocalizationResolver->setLocalized($key, $localized);
 
         return $key;
     }
@@ -300,9 +389,9 @@ final class ArtifactTargetMatcherTest extends Unit
     /**
      * @param array<string, mixed> $definition
      */
-    private function createKeyEntry(array $definition): ArtifactKeyEntry
+    private function createKeyEntry(array $definition, ?bool $localized = null): ArtifactKeyEntry
     {
-        return new ArtifactKeyEntry('01KEY', 'weight', 'Weight', null, 'input', $definition, true);
+        return new ArtifactKeyEntry('01KEY', 'weight', 'Weight', null, 'input', $definition, true, $localized);
     }
 
     private function createAssignmentEntry(?string $subGroup = null, bool $supplied = false): ArtifactAssignmentEntry

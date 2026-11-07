@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuratio
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\GroupHydrator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\StoreHydrator;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
@@ -64,7 +65,7 @@ final class IdentifierPublicationTest extends Unit
         );
         $this->assertSame(
             self::IDENTIFIER,
-            (new KeyHydrator())->hydrateKeyDetail($keyConfig)->getIdentifier()
+            (new KeyHydrator(new InMemoryKeyLocalizationResolver()))->hydrateKeyDetail($keyConfig)->getIdentifier()
         );
     }
 
@@ -82,7 +83,8 @@ final class IdentifierPublicationTest extends Unit
             (new CollectionHydrator())->hydrateCollectionDetail($this->createCollectionConfig())->getIdentifier()
         );
         $this->assertNull((new GroupHydrator())->hydrateGroupDetail($this->createGroupConfig())->getIdentifier());
-        $this->assertNull((new KeyHydrator())->hydrateKeyDetail($this->createKeyConfig())->getIdentifier());
+        $keyHydrator = new KeyHydrator(new InMemoryKeyLocalizationResolver());
+        $this->assertNull($keyHydrator->hydrateKeyDetail($this->createKeyConfig())->getIdentifier());
     }
 
     private function createStoreConfig(): StoreConfig

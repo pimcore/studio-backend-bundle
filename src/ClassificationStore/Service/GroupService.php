@@ -153,6 +153,7 @@ final readonly class GroupService implements GroupServiceInterface
                 definition: $definition,
                 title: $this->keyGroupLayoutService->getKeyTitle($key->getKeyId(), $language),
                 subGroup: $key->getSubGroup(),
+                localized: $this->keyGroupLayoutService->getKeyLocalized($key->getKeyId()),
             );
         }
 

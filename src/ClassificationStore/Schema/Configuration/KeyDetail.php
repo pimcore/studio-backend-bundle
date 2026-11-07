@@ -76,6 +76,17 @@ final class KeyDetail implements AdditionalAttributesInterface
             nullable: true
         )]
         private readonly ?string $identifier = null,
+        #[Property(
+            description: 'Whether the key holds a value per language, reported as the key stores it: true, false,'
+                . ' or null where the key states nothing and the `localized` flag of the class definition field'
+                . ' the key is rendered in decides. It is not resolved against that field here. The flag is not'
+                . ' yet honoured by the object data endpoints, which still read and write a classification store'
+                . ' field under the language set of that field alone.',
+            type: 'boolean',
+            example: true,
+            nullable: true
+        )]
+        private readonly ?bool $localized = null,
     ) {
     }
 
@@ -132,5 +143,10 @@ final class KeyDetail implements AdditionalAttributesInterface
     public function getIdentifier(): ?string
     {
         return $this->identifier;
+    }
+
+    public function getLocalized(): ?bool
+    {
+        return $this->localized;
     }
 }

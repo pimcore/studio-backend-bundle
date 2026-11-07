@@ -89,9 +89,21 @@ final readonly class KeyUpdate
             nullable: true
         )]
         private ?array $definition = null,
+        #[Property(
+            description: 'Whether the key holds a value per language: true, false, or null to state nothing and'
+                . ' let the `localized` flag of the class definition field the key is rendered in decide. Leaving'
+                . ' the member out of the request keeps the stored value, sending it as null stores null. The'
+                . ' flag is not yet honoured by the object data endpoints, which still read and write a'
+                . ' classification store field under the language set of the class definition field alone.',
+            type: 'boolean',
+            example: true,
+            nullable: true
+        )]
+        private ?bool $localized = null,
         // Set by KeyUpdateDenormalizer: an absent field leaves the stored value alone, a present empty one clears it.
         private bool $titleSupplied = false,
         private bool $descriptionSupplied = false,
+        private bool $localizedSupplied = false,
         // only refused here, never a property of this schema; the default stands for an absent key
         mixed $identifier = AbsentValue::ABSENT,
     ) {
@@ -129,6 +141,11 @@ final readonly class KeyUpdate
         return $this->definition;
     }
 
+    public function getLocalized(): ?bool
+    {
+        return $this->localized;
+    }
+
     /**
      * A non-null title counts as supplied on its own, so constructing this DTO directly — without
      * the denormalizer that sets the flag — cannot silently drop the value. The flag is what tells
@@ -144,6 +161,11 @@ final readonly class KeyUpdate
         return $this->descriptionSupplied || $this->description !== null;
     }
 
+    public function isLocalizedSupplied(): bool
+    {
+        return $this->localizedSupplied || $this->localized !== null;
+    }
+
     /**
      * @throws InvalidArgumentException
      */
@@ -155,8 +177,10 @@ final readonly class KeyUpdate
             description: $this->description,
             type: $this->type,
             definition: $definition,
+            localized: $this->localized,
             titleSupplied: $this->titleSupplied,
             descriptionSupplied: $this->descriptionSupplied,
+            localizedSupplied: $this->localizedSupplied,
         );
     }
 }

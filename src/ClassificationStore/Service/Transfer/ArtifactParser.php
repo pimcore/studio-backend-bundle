@@ -96,6 +96,7 @@ final readonly class ArtifactParser implements ArtifactParserInterface
             ArtifactField::TYPE->value => self::REQUIRED_STRING,
             ArtifactField::DEFINITION->value => self::OPTIONAL_OBJECT,
             ArtifactField::ENABLED->value => self::OPTIONAL_BOOL,
+            ArtifactField::LOCALIZED->value => self::OPTIONAL_BOOL,
         ],
         ArtifactSection::COLLECTION_GROUP_RELATIONS->value => [
             ArtifactField::COLLECTION->value => self::REQUIRED_STRING,
@@ -157,6 +158,7 @@ final readonly class ArtifactParser implements ArtifactParserInterface
 
         $definition = $entry[ArtifactField::DEFINITION->value] ?? null;
         $enabled = $entry[ArtifactField::ENABLED->value] ?? null;
+        $localized = $entry[ArtifactField::LOCALIZED->value] ?? null;
 
         return new ArtifactKeyEntry(
             $this->requireString($entry, ArtifactField::IDENTIFIER->value, $section),
@@ -166,7 +168,9 @@ final readonly class ArtifactParser implements ArtifactParserInterface
             $this->requireString($entry, ArtifactField::TYPE->value, $section),
             is_array($definition) ? $definition : null,
             // a key row whose column was never written reads as disabled, which is what it is
-            is_bool($enabled) ? $enabled : false
+            is_bool($enabled) ? $enabled : false,
+            // the one optional column whose own NULL is a state: a key that states no flag
+            is_bool($localized) ? $localized : null
         );
     }
 

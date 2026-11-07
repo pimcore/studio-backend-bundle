@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Config
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GetPageResponse;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyDetail;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\GroupInfoResolverTrait;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 
@@ -24,6 +25,11 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 final readonly class KeyHydrator implements KeyHydratorInterface
 {
     use GroupInfoResolverTrait;
+
+    public function __construct(
+        private KeyLocalizationResolverInterface $keyLocalizationResolver,
+    ) {
+    }
 
     public function hydrateKeyDetail(KeyConfig $keyConfig): KeyDetail
     {
@@ -39,6 +45,7 @@ final readonly class KeyHydrator implements KeyHydratorInterface
             $keyConfig->getModificationDate(),
             $keyConfig->getTitle(),
             $keyConfig->getIdentifier(),
+            $this->keyLocalizationResolver->getLocalized($keyConfig),
         );
     }
 

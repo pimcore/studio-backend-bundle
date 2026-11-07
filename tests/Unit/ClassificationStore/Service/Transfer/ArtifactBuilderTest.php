@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Arti
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryMapper;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedCollectionRelation;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
 use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
@@ -199,7 +200,7 @@ final class ArtifactBuilderTest extends Unit
         $keyGroupRelationRepository->method('getChunkAfter')->willReturn([$this->createKeyAssignment()]);
 
         return new ArtifactBuilder(
-            new ArtifactEntryMapper(),
+            new ArtifactEntryMapper(new InMemoryKeyLocalizationResolver()),
             $collectionRepository,
             $collectionRelationRepository,
             $groupRepository,

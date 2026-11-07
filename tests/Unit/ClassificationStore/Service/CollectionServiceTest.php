@@ -301,7 +301,8 @@ final class CollectionServiceTest extends Unit
                 new ConcreteObjectResolver(),
                 $keyConfigResolver,
                 $this->createLabelResolver(),
-                $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE)
+                $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
+                new InMemoryKeyLocalizationResolver()
             ),
             new GroupLayoutHydrator(),
             $this->createMock(ClassDefinitionResolverInterface::class),

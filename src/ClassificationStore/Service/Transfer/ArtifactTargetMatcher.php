@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfe
 
 use Closure;
 use Generator;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use function count;
@@ -29,6 +30,11 @@ use function mb_strtolower;
 final readonly class ArtifactTargetMatcher implements ArtifactTargetMatcherInterface
 {
     private const int CHUNK_SIZE = 200;
+
+    public function __construct(
+        private KeyLocalizationResolverInterface $keyLocalizationResolver,
+    ) {
+    }
 
     /**
      * {@inheritdoc}
@@ -131,6 +137,12 @@ final readonly class ArtifactTargetMatcher implements ArtifactTargetMatcherInter
      * the stored `[]` would report the key updated on every apply, and deploying one file twice
      * would never become a no-op. The title is normalized for the same reason: it is stored as `''`
      * when the entry leaves it out.
+     *
+     * `localized` is the one column compared without normalizing: an entry that leaves it out writes
+     * NULL, so the parsed null and the stored NULL are already the same value, and collapsing it into
+     * a boolean would report a key flagged false as unchanged against one that states nothing. It is
+     * also the one column a core need not carry at all, and then it is not compared
+     * ({@see self::describesSameLocalization()}).
      */
     public function describesSameKey(KeyConfig $target, ArtifactKeyEntry $entry): bool
     {
@@ -141,6 +153,7 @@ final readonly class ArtifactTargetMatcher implements ArtifactTargetMatcherInter
             && ($target->getDescription() ?? '') === ($entry->getDescription() ?? '')
             && $target->getType() === $entry->getType()
             && $target->getEnabled() === $entry->isEnabled()
+            && $this->describesSameLocalization($target, $entry)
             && (is_array($storedDefinition) ? $storedDefinition : []) === ($entry->getDefinition() ?? []);
     }
 
@@ -176,5 +189,24 @@ final readonly class ArtifactTargetMatcher implements ArtifactTargetMatcherInter
         $value = $entry[$field] ?? null;
 
         return is_string($value) ? $value : null;
+    }
+
+    /**
+     * On a core that carries the flag this is the strict tri-state comparison: `true`, `false` and
+     * "states none" are three different answers and each has to match.
+     *
+     * On a core that does not carry it the column is not compared at all. There the stored flag reads
+     * null whatever the key says and a write of it is dropped, so comparing would report every entry
+     * that carries `localized: true` or `false` as a change the apply cannot make: each apply would
+     * save the key again and report UPDATED, and deploying one file twice would never become a no-op
+     * ({@see ArtifactEntryWriterInterface::writeKey()}).
+     */
+    private function describesSameLocalization(KeyConfig $target, ArtifactKeyEntry $entry): bool
+    {
+        if (!$this->keyLocalizationResolver->supportsLocalization()) {
+            return true;
+        }
+
+        return $this->keyLocalizationResolver->getLocalized($target) === $entry->getLocalized();
     }
 }

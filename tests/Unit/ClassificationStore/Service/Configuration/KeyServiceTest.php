@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Serv
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\CoreBundle\OptionsProvider\SelectOptionsOptionsProvider;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyCreate;
@@ -25,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -216,6 +218,81 @@ final class KeyServiceTest extends Unit
     }
 
     /**
+     * The flag written on the key is the flag the same call reports back, so a client that renders
+     * the response needs no second read: the repository double writes what it was handed and the
+     * real hydrator reads it off the config it got back.
+     *
+     * @dataProvider localizedProvider
+     *
+     * @throws Exception
+     */
+    public function testUpdateKeyWritesTheLocalizationFlagAndReportsItBack(?bool $localized): void
+    {
+        $keyLocalizationResolver = new InMemoryKeyLocalizationResolver();
+        $config = new KeyConfig();
+        $config->setId(1);
+        $config->setName('key');
+        $config->setType('select');
+
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->method('update')
+            ->willReturnCallback(
+                static function (int $id, KeyUpdate $parameters) use ($config, $keyLocalizationResolver): KeyConfig {
+                    if ($parameters->isLocalizedSupplied()) {
+                        $keyLocalizationResolver->setLocalized($config, $parameters->getLocalized());
+                    }
+
+                    return $config;
+                }
+            );
+
+        $detail = $this
+            ->createService($repository, null, new KeyHydrator($keyLocalizationResolver))
+            ->updateKey(1, new KeyUpdate(name: 'key', localized: $localized, localizedSupplied: true));
+
+        $this->assertSame($localized, $keyLocalizationResolver->getLocalized($config));
+        $this->assertSame($localized, $detail->getLocalized());
+    }
+
+    /**
+     * @return array<string, array{0: ?bool}>
+     */
+    public static function localizedProvider(): array
+    {
+        return [
+            'made localized' => [true],
+            'made not localized' => [false],
+            'made to inherit again' => [null],
+        ];
+    }
+
+    /**
+     * A created key states nothing, so it inherits: the create endpoint writes no flag and the
+     * detail it reports back carries null rather than a decision nobody asked for.
+     *
+     * @throws Exception
+     */
+    public function testCreateKeyReportsAKeyThatStatesNoLocalizationFlag(): void
+    {
+        $created = new KeyConfig();
+        $created->setId(1);
+        $created->setName('weight');
+        $created->setType('input');
+
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->method('create')
+            ->willReturn($created);
+
+        $detail = $this
+            ->createService($repository, null, new KeyHydrator(new InMemoryKeyLocalizationResolver()))
+            ->createKey(new KeyCreate('weight', 3));
+
+        $this->assertNull($detail->getLocalized());
+    }
+
+    /**
      * @throws Exception
      */
     private function expectClearedOnce(): KeyRelationResolverInterface
@@ -252,19 +329,22 @@ final class KeyServiceTest extends Unit
      */
     private function createService(
         KeyRepositoryInterface $repository,
-        ?KeyRelationResolverInterface $resolver = null
+        ?KeyRelationResolverInterface $resolver = null,
+        ?KeyHydratorInterface $keyHydrator = null
     ): KeyService {
-        $hydrator = $this->createMock(KeyHydratorInterface::class);
-        $hydrator
-            ->method('hydrateKeyDetail')
-            ->willReturn(new KeyDetail(1, 'key', 1, 'select', true));
+        if (!$keyHydrator) {
+            $keyHydrator = $this->createMock(KeyHydratorInterface::class);
+            $keyHydrator
+                ->method('hydrateKeyDetail')
+                ->willReturn(new KeyDetail(1, 'key', 1, 'select', true));
+        }
 
         return new KeyService(
             $this->createMock(EventDispatcherInterface::class),
             $this->createMock(FilterMapperServiceInterface::class),
             $resolver ?? $this->createMock(KeyRelationResolverInterface::class),
             $repository,
-            $hydrator,
+            $keyHydrator,
             $this->createMock(SearchIndexRemapTriggerInterface::class),
         );
     }

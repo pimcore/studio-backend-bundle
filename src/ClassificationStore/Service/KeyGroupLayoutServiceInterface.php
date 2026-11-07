@@ -54,4 +54,11 @@ interface KeyGroupLayoutServiceInterface
      * language of the chain, then the key's own title, then null - never its technical name.
      */
     public function getKeyTitle(int $keyId, string $language): ?string;
+
+    /**
+     * The key's own `localized` flag, taken off the key configuration the title resolution already
+     * loads - core serves that second read from its runtime cache, so no key costs a second query -
+     * and null for a key that states none or cannot be loaded at all.
+     */
+    public function getKeyLocalized(int $keyId): ?bool;
 }

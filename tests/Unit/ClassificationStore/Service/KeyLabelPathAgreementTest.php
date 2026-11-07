@@ -186,7 +186,8 @@ final class KeyLabelPathAgreementTest extends Unit
             new ConcreteObjectResolver(),
             $keyConfigResolver,
             $labelResolver,
-            $labelLanguageResolver
+            $labelLanguageResolver,
+            new InMemoryKeyLocalizationResolver()
         );
     }
 

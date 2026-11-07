@@ -851,7 +851,7 @@ final class KeyIndexRemapTriggerTest extends Unit
     private function createEntryWriter(SearchIndexRemapTrigger $trigger): ArtifactEntryWriter
     {
         $parser = new ArtifactParser();
-        $matcher = new ArtifactTargetMatcher();
+        $matcher = new ArtifactTargetMatcher(new InMemoryKeyLocalizationResolver());
         $diagnostics = new ApplyDiagnostics();
         $refusals = $this->makeEmpty(ApplyRefusalsInterface::class);
         $keyRepository = $this->makeEmpty(KeyRepositoryInterface::class, [

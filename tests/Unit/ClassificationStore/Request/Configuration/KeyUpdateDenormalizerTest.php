@@ -57,6 +57,54 @@ final class KeyUpdateDenormalizerTest extends Unit
         $this->assertNull($present->getDescription());
     }
 
+    /**
+     * The flag is a tri-state, so the payload has three answers and the denormalizer is the only
+     * place the third - an omitted member - is still visible.
+     *
+     * @dataProvider localizedPayloadProvider
+     *
+     * @param array<string, mixed> $payload
+     */
+    public function testTheLocalizationFlagIsReadAsATriState(
+        array $payload,
+        bool $supplied,
+        ?bool $expected
+    ): void {
+        $parameters = $this->denormalize($payload);
+
+        $this->assertSame($supplied, $parameters->isLocalizedSupplied());
+        $this->assertSame($expected, $parameters->getLocalized());
+    }
+
+    /**
+     * @return array<string, array{0: array<string, mixed>, 1: bool, 2: ?bool}>
+     */
+    public static function localizedPayloadProvider(): array
+    {
+        return [
+            'an absent member is an omission' => [[], false, null],
+            'a member sent as null is supplied' => [['localized' => null], true, null],
+            'a member sent as true is supplied' => [['localized' => true], true, true],
+            'a member sent as false is supplied' => [['localized' => false], true, false],
+        ];
+    }
+
+    /**
+     * A wrongly shaped flag is refused here, before the request reaches the service that would
+     * write the key - so the refusal is this bundle's own 422 rather than the 500 a TypeError in
+     * the repository would become, and nothing is written on the way to it.
+     */
+    public function testANonBooleanLocalizationFlagIsRefusedAsUnprocessable(): void
+    {
+        try {
+            $this->denormalize(['localized' => 'true']);
+            $this->fail('Expected the non-boolean localization flag to be refused.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame(HttpResponseCodes::UNPROCESSABLE_CONTENT->value, $e->getStatusCode());
+            $this->assertStringContainsString('localized', $e->getMessage());
+        }
+    }
+
     public function testAnEmptyStringCountsAsSupplied(): void
     {
         $parameters = $this->denormalize(['title' => '', 'description' => '']);
@@ -117,6 +165,9 @@ final class KeyUpdateDenormalizerTest extends Unit
             'a non-string description' => [['name' => self::KEY_NAME, 'description' => ['a']]],
             'a non-string type' => [['name' => self::KEY_NAME, 'type' => false]],
             'a string definition' => [['name' => self::KEY_NAME, 'definition' => 'input']],
+            'a string localized flag' => [['name' => self::KEY_NAME, 'localized' => 'true']],
+            'a numeric localized flag' => [['name' => self::KEY_NAME, 'localized' => 1]],
+            'an array localized flag' => [['name' => self::KEY_NAME, 'localized' => []]],
         ];
     }
 
