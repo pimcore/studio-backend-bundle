@@ -26,9 +26,12 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Arti
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
+use Pimcore\Cache\Core\CoreCacheHandler;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
@@ -52,7 +55,15 @@ final class KeyRepositoryTest extends Unit
      */
     private const string HELD_DEFINITION = '{"fieldtype":"input","indexed":true}';
 
+    /**
+     * What the model was loaded with, which a competing writer has since replaced: it differs from
+     * the locking read's answer so that reporting the wrong one of the two cannot pass.
+     */
+    private const string LOADED_DEFINITION = '{"fieldtype":"input","indexed":false}';
+
     private const string BEGIN = 'beginTransaction';
+
+    private const string COMMIT = 'commit';
 
     private const string HOLD_KEY_QUERY =
         'SELECT `definition` FROM `classificationstore_keys` WHERE `id` = ? FOR UPDATE';
@@ -358,6 +369,115 @@ final class KeyRepositoryTest extends Unit
         $this->write(static fn (): KeyWriteResult => $repository->saveFromArtifact(null, 1, $entry));
 
         $this->assertSame([self::BEGIN], $calls);
+    }
+
+    /**
+     * The write as it goes when nothing fails, which is the only state in which the thing the key
+     * endpoint actually consumes exists: the {@see KeyWriteResult}.
+     *
+     * Two rules are asserted on it, and neither is observable from a write that threw. The commit
+     * happens inside the call rather than after it, because a caller handed the result is told the
+     * row is the store's and notes a flag change on the strength of it
+     * ({@see \Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyService::updateKey()}).
+     * And `definitionBefore` is the definition the locking read answered with and not the one the
+     * model was loaded with: the two differ here, exactly as they do for a row a competing writer
+     * changed between the load and the lock, and it is the locked value the flag comparison has to
+     * be made against.
+     *
+     * The save succeeds because the model is given a dao of its own rather than the one it would
+     * detect, which is what needs a database. Everything `KeyConfig::save()` reaches past that - the
+     * cache handler and the event dispatcher - is served from the container for the length of this
+     * test.
+     *
+     * @throws Exception
+     */
+    public function testASuccessfulWriteCommitsBeforeItAnswersWithTheDefinitionItLocked(): void
+    {
+        $calls = [];
+        $config = $this->createSavableKeyConfig();
+        // the value the model was loaded with, which is NOT the one the locking read answers with
+        $config->setDefinition(self::LOADED_DEFINITION);
+        $repository = $this->createRepository($config, $this->createCommittingConnection($calls));
+
+        $result = $repository->update(
+            self::KEY_ID,
+            new KeyUpdate(name: self::KEY_NAME, definition: ['fieldtype' => 'input', 'indexed' => false])
+        );
+
+        $this->assertSame(
+            [self::BEGIN, self::HOLD_KEY_QUERY, self::COMMIT],
+            $calls,
+            'The write commits inside the call that answers with the result.'
+        );
+        $this->assertSame(self::HELD_DEFINITION, $result->getDefinitionBefore());
+        $this->assertSame($config, $result->getConfig());
+        $this->assertSame('{"fieldtype":"input","indexed":false}', $result->getConfig()->getDefinition());
+    }
+
+    /**
+     * The apply's key write answers the same way, over the row it overwrites: it is the one write
+     * that runs long enough for the key endpoint to have committed over the target it read, so the
+     * definition it reports has to be the locked one there too.
+     *
+     * @throws Exception
+     */
+    public function testASuccessfulApplyWriteCommitsBeforeItAnswersWithTheDefinitionItLocked(): void
+    {
+        $calls = [];
+        $config = $this->createSavableKeyConfig();
+        $config->setDefinition(self::LOADED_DEFINITION);
+        $repository = $this->createRepository($config, $this->createCommittingConnection($calls));
+
+        $result = $repository->saveFromArtifact($config, 1, $this->createArtifactEntry());
+
+        $this->assertSame([self::BEGIN, self::HOLD_KEY_QUERY, self::COMMIT], $calls);
+        $this->assertSame(self::HELD_DEFINITION, $result->getDefinitionBefore());
+        $this->assertSame('{"fieldtype":"input"}', $result->getConfig()->getDefinition());
+    }
+
+    /**
+     * A key config whose save does not need a database: the dao it would otherwise detect is the
+     * one part of `KeyConfig::save()` that cannot run without one.
+     *
+     * @throws Exception
+     */
+    private function createSavableKeyConfig(): KeyConfig
+    {
+        $container = new Container();
+        $container->set(CoreCacheHandler::class, $this->makeEmpty(CoreCacheHandler::class));
+        $container->set('event_dispatcher', new EventDispatcher());
+        Pimcore::setKernel($this->makeEmpty(KernelInterface::class, ['getContainer' => $container]));
+
+        $config = $this->createStoredKeyConfig();
+        $config->setDao($this->makeEmpty(KeyConfigDao::class));
+
+        return $config;
+    }
+
+    /**
+     * A connection that records what the write asked of it and commits, so that the order the
+     * commit sits in relative to the answer is asserted rather than assumed.
+     *
+     * @param list<string> $calls
+     *
+     * @throws Exception
+     */
+    private function createCommittingConnection(array &$calls): Connection
+    {
+        return $this->makeEmpty(Connection::class, [
+            'isTransactionActive' => false,
+            'beginTransaction' => static function () use (&$calls): void {
+                $calls[] = self::BEGIN;
+            },
+            'fetchOne' => static function (string $query) use (&$calls): string {
+                $calls[] = $query;
+
+                return self::HELD_DEFINITION;
+            },
+            'commit' => static function () use (&$calls): void {
+                $calls[] = self::COMMIT;
+            },
+        ]);
     }
 
     private function createArtifactEntry(): ArtifactKeyEntry

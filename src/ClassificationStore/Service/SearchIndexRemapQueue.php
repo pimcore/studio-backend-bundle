@@ -81,6 +81,20 @@ use function time;
  * suppression converges, over-suppression is the stale mapping this whole mechanism exists to
  * prevent. Whether a remap is skipped is still the class marker's answer alone.
  *
+ * And it is released a second way, by {@see releaseAllStoreCoverage()}, because "every class this
+ * store reaches" is answered once and the answer is not stable. The classes a store reaches are a
+ * read of every class definition there is, and through each of them of the object brick and field
+ * collection definitions it uses ({@see SearchIndexRemapTargetResolver}), and any of those three
+ * gaining a field of this store joins a class to the set without touching anything the marker can
+ * see. A store claimed while it reached CAR alone would
+ * then skip BIKE for as long as CAR's remap stayed pending - BIKE having meanwhile been saved with a
+ * field of this store and finished the remap its own save triggered - and the next flag change
+ * would leave BIKE's mapping stale, which is the one outcome the store marker may never produce. So
+ * a definition write drops every claim, through {@see releaseAllStoreCoverage()} and the
+ * `SearchIndexRemapStoreCoverageSubscriber` that calls it. Every claim, not the stores the saved
+ * definition reaches: the write is itself what decides which stores those are, so the set to
+ * invalidate cannot be read off either side of it.
+ *
  * @internal
  */
 final readonly class SearchIndexRemapQueue implements SearchIndexRemapQueueInterface
@@ -172,6 +186,21 @@ final readonly class SearchIndexRemapQueue implements SearchIndexRemapQueueInter
             self::SETTINGS_STORE_TYPE,
             self::STORE_SETTINGS_STORE_SCOPE
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function releaseAllStoreCoverage(): void
+    {
+        // the ids are a column of digits, which a driver may hand back either way; the delete takes
+        // the id as the string the entry is keyed by, the way every other call here does
+        /** @var list<int|string> $storeIds */
+        $storeIds = $this->settingsStoreResolver->getIdsByScope(self::STORE_SETTINGS_STORE_SCOPE);
+
+        foreach ($storeIds as $storeId) {
+            $this->settingsStoreResolver->delete((string) $storeId, self::STORE_SETTINGS_STORE_SCOPE);
+        }
     }
 
     /**

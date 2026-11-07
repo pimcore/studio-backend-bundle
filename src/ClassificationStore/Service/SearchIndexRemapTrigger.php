@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
+use Doctrine\DBAL\Connection;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Service\ResetInterface;
 use Throwable;
@@ -25,10 +26,35 @@ use function sprintf;
  * its keys changed, and two stores reaching the same class remap that class once.
  *
  * The notes are dropped by {@see flush()}, which the key write surfaces call once per request or
- * per apply and only once the writes they describe are committed; by {@see discard()}, which is
- * what a rolled back apply leaves behind instead; and by {@see reset()}: implementing ResetInterface
- * makes autoconfiguration tag the service `kernel.reset`, so a long-running worker starts each
- * message with no note of the one before it.
+ * per apply, and again at the end of the request when their own call could not hand anything over
+ * yet; by {@see discard()}, which is what a rolled back apply leaves behind instead; and by
+ * {@see reset()}: implementing ResetInterface makes autoconfiguration tag the service
+ * `kernel.reset`, so a long-running worker starts each message with no note of the one before it.
+ *
+ * ## Why the hand-over waits for the transaction and not for the caller
+ *
+ * "Once the writes are committed" cannot be left to where the call sits. Both write surfaces join a
+ * transaction they did not open when there is one - `KeyRepository::writeHoldingTheRow()` and
+ * `Reconciler::apply()` each own theirs only when `isTransactionActive()` said no at the start -
+ * and a flush that runs inside one still reads rows nobody else can see yet. The damage is not the
+ * hand-over, which converges, but the coalescing: a class that already has a remap pending is taken
+ * for covered, the note is dropped, and that remap's handler then rebuilds the mapping from the old
+ * committed row and releases the marker - all before the caller commits. The change is left
+ * committed with nothing pending and nothing noted anywhere, which is the stale mapping this whole
+ * mechanism exists to prevent.
+ *
+ * So {@see flush()} hands nothing over while a transaction is open: it keeps the notes and returns,
+ * and `SearchIndexRemapFlushSubscriber` flushes again on the request's or the command's terminate,
+ * by which time no transaction of the unit of work can still be open. For every write surface this
+ * bundle has, the flush they make themselves is already after the commit - each of them owns its
+ * transaction and has committed it by then - so the deferral is what holds the contract for a
+ * caller that owns the transaction instead.
+ *
+ * The one thing the deferral cannot see is whether that outermost transaction committed or rolled
+ * back. It hands over either way, and deliberately: a remap of rows that were rolled back rebuilds
+ * the mapping from the committed state and costs one superfluous re-index, where skipping one that
+ * was needed costs the stale mapping. The rollbacks this bundle performs itself are still reported
+ * exactly, by {@see discard()}.
  *
  * A store is skipped on its own marker only when that marker stands for complete coverage, which is
  * why {@see flush()} decides every class before it claims anything: a store may be marked as queued
@@ -56,6 +82,7 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
         private readonly SearchIndexFlagResolverInterface $searchIndexFlagResolver,
         private readonly SearchIndexRemapTargetResolverInterface $remapTargetResolver,
         private readonly SearchIndexRemapQueueInterface $remapQueue,
+        private readonly Connection $connection,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -80,6 +107,12 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
      */
     public function flush(): void
     {
+        if ($this->noted !== [] && $this->isWriteUncommitted()) {
+            // the notes stay: nothing may be coalesced away against rows the rest of the database
+            // cannot see yet. The terminate subscriber flushes again once the transaction is gone.
+            return;
+        }
+
         $stores = array_keys($this->noted);
         // forgotten before the hand-over, so a failing one is not retried by the next flush
         $this->noted = [];
@@ -123,6 +156,28 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
     public function reset(): void
     {
         $this->discard();
+    }
+
+    /**
+     * Whether the key writes the notes describe are still inside a transaction, in which case no
+     * answer this flush could give is about the state anyone else can read.
+     *
+     * A connection that cannot even be asked is answered with no rather than yes: the hand-over is
+     * guarded and converges, where deferring forever is the one outcome that does not - there is no
+     * later moment than the terminate the subscriber already flushes at.
+     */
+    private function isWriteUncommitted(): bool
+    {
+        try {
+            return $this->connection->isTransactionActive();
+        } catch (Throwable $e) {
+            $this->logger->error(sprintf(
+                'Failed to read whether the classification store key writes are committed: %s',
+                $e->getMessage()
+            ));
+
+            return false;
+        }
     }
 
     /**

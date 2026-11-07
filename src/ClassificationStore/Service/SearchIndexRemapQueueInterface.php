@@ -59,9 +59,29 @@ interface SearchIndexRemapQueueInterface
      * Call it before the hand-overs it stands for are dispatched, for the same reason the class
      * marker is written before its own: any of them failing takes the claim back with it.
      *
+     * The coverage it claims is complete for the classes there were when it was claimed, and for no
+     * others - which is why {@see self::releaseAllStoreCoverage()} exists.
+     *
      * @throws Exception
      */
     public function claimStoreCoverage(int $storeId): void;
+
+    /**
+     * Forgets every store's coverage claim, whoever claimed it, so that the next flush resolves its
+     * stores to their classes again rather than skipping them on a claim that no longer describes
+     * the classes they reach.
+     *
+     * Called when a class, object brick or field collection definition is written: a coverage claim
+     * is a statement about the set of classes a store reached at the moment it was made, and that
+     * set is exactly what such a write changes. It costs the next flush one resolve per store; the
+     * claim outliving its set costs the mapping of the class that joined the store.
+     *
+     * The class markers are left alone. Each of them stands for one class and one message, neither
+     * of which a definition write invalidates.
+     *
+     * @throws Exception
+     */
+    public function releaseAllStoreCoverage(): void;
 
     /**
      * Forgets the queued remap of this class's index, and the coverage claimed for the stores it

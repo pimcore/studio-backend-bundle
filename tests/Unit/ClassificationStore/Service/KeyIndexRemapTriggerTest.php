@@ -15,12 +15,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Serv
 
 use Closure;
 use Codeception\Test\Unit;
+use Doctrine\DBAL\Connection;
 use Error;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Message\UpdateClassMappingMessage;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\SettingsStoreResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\EventSubscriber\SearchIndexRemapFlushSubscriber;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\EventSubscriber\SearchIndexRemapStoreCoverageSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
@@ -69,6 +72,7 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\TransportException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
+use function array_keys;
 use function json_encode;
 use function sprintf;
 
@@ -80,7 +84,14 @@ use function sprintf;
  * The remap is queued, never run here: what the write path does is dispatch, and the mapping is
  * rewritten by whoever drains the queue. It is also only queued once the writes it answers for have
  * committed - an apply that was refused or that failed rolled its key writes back, and remapping
- * their classes would re-index everything for a change the store does not carry.
+ * their classes would re-index everything for a change the store does not carry. Both write
+ * surfaces join a transaction a caller owns rather than opening one, so "committed" is read off the
+ * connection rather than off where the flush sits: inside one, the flush keeps its notes for the
+ * terminate the subscriber flushes at, and above all coalesces nothing - a note dropped as covered
+ * by a remap that then finishes against the old committed row is the one way a flag change is lost.
+ *
+ * And the store-scoped coalescing marker stands for a set of classes that is not fixed: a
+ * definition write is what moves a class into or out of a store's reach, so it drops every claim.
  *
  * The queue is the real one throughout, over an in-memory stand-in for the settings store it keeps
  * its "already queued" marker in, so that the coalescing is observed where it happens rather than
@@ -150,6 +161,18 @@ final class KeyIndexRemapTriggerTest extends Unit
     private int $targetLookups = 0;
 
     /**
+     * @var array<int, list<string>> the class ids each store reaches, as the class definitions
+     *                               stand now - a class editor save moves an entry in or out
+     */
+    private array $targetsByStore = [];
+
+    /**
+     * Whether the key writes are still inside a transaction when the flush is made, which is what a
+     * caller that opened one of its own leaves the write surfaces inside of.
+     */
+    private bool $transactionActive = false;
+
+    /**
      * How often the trigger logged a failure instead of letting it reach the save.
      */
     private int $loggedFailures = 0;
@@ -182,6 +205,14 @@ final class KeyIndexRemapTriggerTest extends Unit
     private ?Closure $duringSettingsWrite = null;
 
     /**
+     * What the settings store does when asked for the ids of a scope, which is how a store that
+     * cannot be read while the claims are being dropped is observed.
+     *
+     * @var Closure(string): void|null
+     */
+    private ?Closure $duringScopeRead = null;
+
+    /**
      * The queue the markers are read back through, so that they are observed through the service
      * that writes them rather than in the stand-in it writes into.
      */
@@ -192,11 +223,14 @@ final class KeyIndexRemapTriggerTest extends Unit
         $this->dispatched = [];
         $this->settings = [];
         $this->targetLookups = 0;
+        $this->targetsByStore = [];
+        $this->transactionActive = false;
         $this->loggedFailures = 0;
         $this->markedDuringDispatch = [];
         $this->dispatchFailures = 0;
         $this->duringDispatch = null;
         $this->duringSettingsWrite = null;
+        $this->duringScopeRead = null;
         $this->queue = null;
     }
 
@@ -551,6 +585,154 @@ final class KeyIndexRemapTriggerTest extends Unit
     }
 
     /**
+     * The regression the deferral exists for. Both write surfaces join a transaction they did not
+     * open, so a flush can be reached with the key row written and not committed - and a flush that
+     * coalesces there is the one way a flag change is lost for good: the class already has a remap
+     * pending, the note is dropped as covered by it, and that remap's handler rebuilds the mapping
+     * from the row as it still stands committed and releases the marker. By the time the caller
+     * commits there is nothing pending and nothing noted, and nothing will ever look again.
+     *
+     * So while a transaction is open the flush coalesces nothing, hands nothing over and drops
+     * nothing: the note is still there afterwards.
+     */
+    public function testAFlushInsideAnEnclosingTransactionCoalescesNothingAway(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        // a remap of this store's class is already waiting, which is what a flush would coalesce into
+        $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $trigger->flush();
+        $this->assertSame([self::CLASS_ID], $this->getRemappedClassIds());
+
+        // and now the key write of a caller that owns the transaction, flushed before it commits
+        $this->transactionActive = true;
+        $trigger->noteFlagChange(self::STORE_ID, self::NOT_INDEXED, self::INDEXED);
+        $trigger->flush();
+
+        $this->assertSame(
+            [self::CLASS_ID],
+            $this->getRemappedClassIds(),
+            'A flush inside a transaction hands nothing over.'
+        );
+
+        // the pending remap is then handled - against the row as it stands committed, which is the
+        // old one - and the note has to have survived it
+        $this->handleQueuedRemaps();
+        $this->transactionActive = false;
+        $this->terminate($trigger);
+
+        $this->assertSame(
+            [self::CLASS_ID, self::CLASS_ID],
+            $this->getRemappedClassIds(),
+            'The note the transaction was holding is handed over once the transaction is gone.'
+        );
+    }
+
+    /**
+     * The key update endpoint, reached inside a transaction its caller owns: the repository's
+     * `writeHoldingTheRow()` joins it rather than opening one of its own, so the flush in the
+     * service's `finally` runs over a row nobody else can read yet and defers.
+     */
+    public function testTheKeyUpdateEndpointDefersItsRemapUntilTheEnclosingTransactionIsGone(): void
+    {
+        $this->transactionActive = true;
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $this->createKeyService($trigger, self::INDEXED)->updateKey(
+            self::KEY_ID,
+            new KeyUpdate(name: self::KEY_NAME, definition: ['fieldtype' => 'input', 'indexed' => false])
+        );
+
+        $this->assertSame([], $this->getRemappedClassIds());
+
+        $this->transactionActive = false;
+        $this->terminate($trigger);
+
+        $this->assertSame([self::CLASS_ID], $this->getRemappedClassIds());
+    }
+
+    /**
+     * And the apply, for the same reason one step up: the reconciler joins an enclosing transaction
+     * rather than owning one ({@see ReconcilerInterface::apply()}), so the flush the transfer
+     * service makes after it is not after a commit at all.
+     */
+    public function testAnApplyInsideAnEnclosingTransactionDefersItsRemapUntilTerminate(): void
+    {
+        $this->transactionActive = true;
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $this
+            ->createTransferService($trigger, new ApplyReport())
+            ->importStore(self::STORE_ID, $this->createArtifactJson());
+
+        $this->assertSame([], $this->getRemappedClassIds());
+
+        $this->transactionActive = false;
+        $this->terminate($trigger);
+
+        $this->assertSame([self::CLASS_ID], $this->getRemappedClassIds());
+    }
+
+    /**
+     * A refused apply inside an enclosing transaction still discards, and the deferral may not give
+     * the discarded note a second life at terminate: the keys it wrote were rolled back.
+     */
+    public function testARefusedApplyInsideAnEnclosingTransactionLeavesNothingForTerminate(): void
+    {
+        $this->transactionActive = true;
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $report = $this
+            ->createTransferService($trigger, $this->createRefusedReport())
+            ->applyArtifact($this->createArtifactJson(), false);
+
+        $this->assertTrue($report->hasConflicts());
+
+        $this->transactionActive = false;
+        $this->terminate($trigger);
+
+        $this->assertSame([], $this->getRemappedClassIds());
+    }
+
+    /**
+     * Terminate is the last moment there is, so a transaction still open at it - a caller that never
+     * finished one - leaves no note behind. Kept instead, it would be handed over by the next
+     * request of a worker-mode runtime, for a change that request knows nothing about.
+     */
+    public function testATransactionLeftOpenPastTerminateLeavesNoNoteBehind(): void
+    {
+        $this->transactionActive = true;
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $trigger->flush();
+        $this->terminate($trigger);
+
+        $this->assertSame([], $this->getRemappedClassIds());
+
+        // the next unit of work, which noted nothing of its own
+        $this->transactionActive = false;
+        $trigger->flush();
+
+        $this->assertSame([], $this->getRemappedClassIds());
+    }
+
+    /**
+     * A flush with nothing noted is not deferred: it is already the answer the deferral would come
+     * back with, and deferring it would make every read-only request end in a second flush.
+     */
+    public function testAFlushWithNothingNotedIsNotDeferred(): void
+    {
+        $this->transactionActive = true;
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $trigger->flush();
+
+        $this->assertSame([], $this->getRemappedClassIds());
+        $this->assertSame(0, $this->targetLookups);
+    }
+
+    /**
      * The store's own marker is asked before the store is resolved, which is a read of every class
      * definition there is: the nineteen coalesced saves pay one settings store read each instead.
      */
@@ -626,6 +808,82 @@ final class KeyIndexRemapTriggerTest extends Unit
             [self::CLASS_ID, self::OTHER_CLASS_ID, self::CLASS_ID, self::OTHER_CLASS_ID],
             $this->getRemappedClassIds()
         );
+    }
+
+    /**
+     * A coverage claim says "every class this store reaches has a remap pending", and it says it
+     * about the classes there were when it was made. A class the editor afterwards gives a field of
+     * this store joins the set the claim already answers for without touching anything the claim can
+     * see: here CAR's remap is still pending, BIKE then gains a field of the store and finishes the
+     * remap its own save triggered, and the next flag change of the store would be skipped on the
+     * claim - leaving BIKE's mapping on the flag as it stood before the change.
+     *
+     * So a definition write drops the claims, and the flag change after it is resolved rather than
+     * skipped: BIKE is handed over, CAR is not, because CAR's own marker still answers for it.
+     */
+    public function testAClassJoiningTheStoreAfterTheCoverageWasClaimedIsStillRemapped(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $trigger->flush();
+
+        $this->assertSame([self::CLASS_ID], $this->getRemappedClassIds());
+        $this->assertTrue($this->isStoreMarkedQueued(self::STORE_ID));
+
+        // the class editor gives BIKE a field of this store
+        $this->targetsByStore[self::STORE_ID] = [self::CLASS_ID, self::OTHER_CLASS_ID];
+        $this->writeAClassDefinition();
+
+        $trigger->noteFlagChange(self::STORE_ID, self::NOT_INDEXED, self::INDEXED);
+        $trigger->flush();
+
+        $this->assertSame(
+            [self::CLASS_ID, self::OTHER_CLASS_ID],
+            $this->getRemappedClassIds(),
+            'The class that joined the store is remapped; the one still pending is not remapped twice.'
+        );
+        $this->assertFalse(
+            $this->isStoreMarkedQueued(self::STORE_ID),
+            'The store is not claimed again on coverage one of whose classes it did not hand over.'
+        );
+    }
+
+    /**
+     * The definition write drops the stores' claims and no class marker, because a class marker
+     * stands for one class and one message in flight, neither of which a definition write makes
+     * untrue. Dropping them would hand the same remap over a second time for every class save.
+     */
+    public function testADefinitionWriteLeavesTheClassMarkersAlone(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $trigger->flush();
+
+        $this->writeAClassDefinition();
+
+        $this->assertTrue($this->queue?->hasPendingRemap(self::CLASS_ID) ?? false);
+        $this->assertFalse($this->isStoreMarkedQueued(self::STORE_ID));
+    }
+
+    /**
+     * A settings store that cannot be reached may not fail the class save that is already
+     * committed by then: it is a log line, and the claim it did not drop expires on its own.
+     */
+    public function testADefinitionWriteThatCannotDropTheClaimsIsLoggedAndDoesNotFailTheSave(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $trigger->flush();
+
+        $this->duringScopeRead = static function (): void {
+            throw new Exception('the settings store cannot be reached');
+        };
+        $this->writeAClassDefinition();
+
+        $this->assertSame(1, $this->loggedFailures);
     }
 
     /**
@@ -914,16 +1172,21 @@ final class KeyIndexRemapTriggerTest extends Unit
     }
 
     /**
+     * The class ids each store reaches are held on the fixture rather than captured, so that a test
+     * can move a class into a store half way through the way the class editor does.
+     *
      * @param array<int, list<string>> $targetsByStore the class ids each store reaches
      */
     private function createTrigger(array $targetsByStore): SearchIndexRemapTrigger
     {
+        $this->targetsByStore = $targetsByStore;
+
         return $this->createTriggerWithResolver(
             $this->makeEmpty(SearchIndexRemapTargetResolverInterface::class, [
-                'resolveForStore' => function (int $storeId) use ($targetsByStore): array {
+                'resolveForStore' => function (int $storeId): array {
                     $this->targetLookups++;
 
-                    return $targetsByStore[$storeId] ?? [];
+                    return $this->targetsByStore[$storeId] ?? [];
                 },
             ])
         );
@@ -954,12 +1217,41 @@ final class KeyIndexRemapTriggerTest extends Unit
             new SearchIndexFlagResolver(),
             $targetResolver,
             $this->createQueue(),
+            $this->makeEmpty(Connection::class, [
+                'isTransactionActive' => fn (): bool => $this->transactionActive,
+            ]),
             $this->makeEmpty(LoggerInterface::class, [
                 'error' => function (): void {
                     $this->loggedFailures++;
                 },
             ])
         );
+    }
+
+    /**
+     * The terminate the request or the command ends with, which is the moment a transaction the
+     * caller owned is over whichever way it went
+     * ({@see SearchIndexRemapFlushSubscriber}).
+     */
+    private function terminate(SearchIndexRemapTrigger $trigger): void
+    {
+        (new SearchIndexRemapFlushSubscriber($trigger))->onTerminate();
+    }
+
+    /**
+     * The class definition write the class editor ends with, which is what drops the stores'
+     * coverage claims ({@see SearchIndexRemapStoreCoverageSubscriber}).
+     */
+    private function writeAClassDefinition(): void
+    {
+        (new SearchIndexRemapStoreCoverageSubscriber(
+            $this->createQueue(),
+            $this->makeEmpty(LoggerInterface::class, [
+                'error' => function (): void {
+                    $this->loggedFailures++;
+                },
+            ])
+        ))->onDefinitionWritten();
     }
 
     /**
@@ -1321,6 +1613,15 @@ final class KeyIndexRemapTriggerTest extends Unit
                 unset($this->settings[(string) $scope][$id]);
 
                 return 1;
+            },
+            // the ids are array keys, so a store id comes back out as an int the way the real dao
+            // hands back whatever the column held
+            'getIdsByScope' => function (string $scope): array {
+                if ($this->duringScopeRead !== null) {
+                    ($this->duringScopeRead)($scope);
+                }
+
+                return array_keys($this->settings[$scope] ?? []);
             },
         ]);
     }
