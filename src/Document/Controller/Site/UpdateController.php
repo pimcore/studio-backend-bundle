@@ -53,7 +53,7 @@ final class UpdateController extends AbstractApiController
      * @throws ForbiddenException|ElementSavingFailedException|UserNotFoundException|NotFoundException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_documents_site_update', methods: ['POST'])]
-    #[IsGranted(UserPermissions::DOCUMENTS->value)]
+    #[IsGranted(UserPermissions::SITES->value)]
     #[Post(
         path: self::PREFIX . self::ROUTE,
         operationId: 'document_update_site',
