@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyWriteResult;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
@@ -1159,14 +1160,17 @@ final class ReconcilerTest extends Unit
             ): array => self::inIdentifierPhase($disabledOnly ? $disabledKeys : $enabledKeys, $withIdentifier)
         );
         $keyRepository->method('saveFromArtifact')->willReturnCallback(
-            function (?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyConfig {
+            function (?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyWriteResult {
                 $this->recordWrite(sprintf('key:%s:%s', $entry->getIdentifier(), $entry->getName()));
                 $saved = $config ?? new KeyConfig();
                 $saved->setId(self::KEY_ID);
+                // the definition the row carried when the write took its lock, which is what the
+                // repository reports back for the flag comparison
+                $definitionBefore = $config?->getDefinition();
                 // the column the write leaves behind, encoded the way the repository encodes it
                 $saved->setDefinition((string) json_encode($entry->getDefinition() ?? []));
 
-                return $saved;
+                return new KeyWriteResult($saved, $definitionBefore);
             }
         );
         $keyGroupRelationRepository = $this->createMock(KeyGroupRelationRepositoryInterface::class);

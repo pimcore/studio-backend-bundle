@@ -37,7 +37,9 @@ use function time;
  *
  * - **Who writes it, and when.** {@see enqueueRemap()}, and before `dispatch()` - never after. The
  *   marker is the claim that a message is on its way, so it has to exist for the whole time that is
- *   true, which starts before the hand-over rather than at its end.
+ *   true, which starts before the hand-over rather than at its end. It is written inside the same
+ *   guard as the hand-over, so a marker whose hand-over then failed is not left behind by the
+ *   failure that wrote it.
  * - **Who clears it.** The handler of the message, as the first thing it does, which is the moment
  *   the remap stops being pending
  *   ({@see \Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Messenger\SearchIndexRemapHandler}).
@@ -58,12 +60,26 @@ use function time;
  *   opposite one: two requests racing here each hand a remap over and cost one superfluous
  *   re-index, which converges, where a leaked marker silently converges on the stale mapping.
  *
- * The store-scoped marker beside it obeys the same rules and decides nothing of its own: it is
- * written exactly when a message carrying that store is dispatched and cleared exactly when such a
- * message is handled, so it never outlives the class marker it was written with. All it spares a
- * coalesced save is resolving the store to its classes, which reads every class definition there is
- * ({@see SearchIndexRemapTargetResolver}); whether a remap is skipped is still the class marker's
- * answer alone.
+ * ## The store-scoped marker beside it
+ *
+ * It stands for one thing only: *every* class this store reaches has a remap pending that will
+ * release this marker with it. All it spares a coalesced save is resolving the store to its
+ * classes, which reads every class definition there is ({@see SearchIndexRemapTargetResolver}).
+ *
+ * That is why it is not written here, with the class marker, but claimed separately by
+ * {@see claimStoreCoverage()} - and only by a caller that has just established complete coverage
+ * ({@see SearchIndexRemapTrigger::flush()}). Written per class, as it was, it claimed the store on
+ * the strength of whichever classes that one hand-over happened to carry: a store reaching classes
+ * A and B, with A already queued for a different store, would hand B over, claim the store on B's
+ * marker alone, and then suppress every later flag change of that store for as long as B was
+ * pending - including the ones A was by then the only pending remap for, which its own handler had
+ * already released. The shortcut skipped the class it never covered.
+ *
+ * It is released like the class marker, by {@see releasePendingRemap()}, which the handler calls
+ * with the stores its message answers for. The first of the store's classes to be handled releases
+ * it while the others are still pending, which only costs the next flush one resolve: under-
+ * suppression converges, over-suppression is the stale mapping this whole mechanism exists to
+ * prevent. Whether a remap is skipped is still the class marker's answer alone.
  *
  * @internal
  */
@@ -127,9 +143,11 @@ final readonly class SearchIndexRemapQueue implements SearchIndexRemapQueueInter
      */
     public function enqueueRemap(string $classDefinitionId, array $storeIds): void
     {
-        $this->writeMarkers($classDefinitionId, $storeIds);
-
         try {
+            // inside the guard, so that a marker written and a hand-over that then did not happen
+            // are the same failure and are taken back together
+            $this->writeClassMarker($classDefinitionId);
+
             $this->messageBus->dispatch(
                 new SearchIndexRemapMessage($classDefinitionId, $storeIds),
                 [new DelayStamp(self::DISPATCH_DELAY_MILLISECONDS)]
@@ -144,6 +162,21 @@ final readonly class SearchIndexRemapQueue implements SearchIndexRemapQueueInter
     /**
      * {@inheritdoc}
      */
+    public function claimStoreCoverage(int $storeId): void
+    {
+        $this->settingsStoreResolver->set(
+            (string) $storeId,
+            // the time the coverage was claimed, so a claim nothing ever released stops answering
+            // by itself rather than skipping this store for good
+            time(),
+            self::SETTINGS_STORE_TYPE,
+            self::STORE_SETTINGS_STORE_SCOPE
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function releasePendingRemap(string $classDefinitionId, array $storeIds): void
     {
         $this->settingsStoreResolver->delete($classDefinitionId, self::SETTINGS_STORE_SCOPE);
@@ -153,28 +186,15 @@ final readonly class SearchIndexRemapQueue implements SearchIndexRemapQueueInter
         }
     }
 
-    /**
-     * @param list<int> $storeIds
-     */
-    private function writeMarkers(string $classDefinitionId, array $storeIds): void
+    private function writeClassMarker(string $classDefinitionId): void
     {
-        // the hand-over time, so a marker the handler never got to stops answering by itself
-        $handedOverAt = time();
         $this->settingsStoreResolver->set(
             $classDefinitionId,
-            $handedOverAt,
+            // the hand-over time, so a marker the handler never got to stops answering by itself
+            time(),
             self::SETTINGS_STORE_TYPE,
             self::SETTINGS_STORE_SCOPE
         );
-
-        foreach ($storeIds as $storeId) {
-            $this->settingsStoreResolver->set(
-                (string) $storeId,
-                $handedOverAt,
-                self::SETTINGS_STORE_TYPE,
-                self::STORE_SETTINGS_STORE_SCOPE
-            );
-        }
     }
 
     private function isPending(string $id, string $scope): bool

@@ -210,18 +210,21 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
         $context->record($outcome, $label);
 
         $id = $target?->getId();
-        // read before the save, which writes the file's definition onto this very instance
-        $definitionBefore = $target?->getDefinition();
 
         if ($outcome !== ApplyOutcome::MATCHED_UNCHANGED && !$context->isDryRun()) {
-            $saved = $this->keyRepository->saveFromArtifact($target, (int) $context->getStoreId(), $keyEntry);
+            $write = $this->keyRepository->saveFromArtifact($target, (int) $context->getStoreId(), $keyEntry);
+            $saved = $write->getConfig();
             $id = $saved->getId();
 
             // a key the file creates is in no mapping yet and holds no value, so it changes no index
             if ($outcome !== ApplyOutcome::CREATED) {
+                // the definition the row carried when the write took its lock, never the one this
+                // instance held before the apply read the rest of its sections: an apply runs long
+                // enough for a key endpoint to have committed over it in between, and comparing
+                // against the stale blob would drop that writer's flag change
                 $this->searchIndexRemapTrigger->noteFlagChange(
                     $saved->getStoreId(),
-                    $definitionBefore,
+                    $write->getDefinitionBefore(),
                     $saved->getDefinition()
                 );
             }

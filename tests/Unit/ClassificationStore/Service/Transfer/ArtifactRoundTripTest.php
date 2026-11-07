@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyWriteResult;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
@@ -436,10 +437,13 @@ final class ArtifactRoundTripTest extends Unit
             }
         );
         $keyRepository->method('saveFromArtifact')->willReturnCallback(
-            function (?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyConfig {
+            function (?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyWriteResult {
                 $this->appliedKeys[$entry->getIdentifier()] = $entry;
 
-                return $config ?? $this->createKey($entry->getIdentifier(), $entry->getName(), true);
+                return new KeyWriteResult(
+                    $config ?? $this->createKey($entry->getIdentifier(), $entry->getName(), true),
+                    $config?->getDefinition()
+                );
             }
         );
         // the key a created assignment reads its search index flag default from, as the apply left it

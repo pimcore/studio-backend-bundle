@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuratio
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyWriteResult;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyDetail;
@@ -173,6 +174,14 @@ final class KeyIndexRemapTriggerTest extends Unit
     private ?Closure $duringDispatch = null;
 
     /**
+     * What the settings store does with a marker write, by id and scope, which is how a marker the
+     * store refuses to take is observed.
+     *
+     * @var Closure(string, string): void|null
+     */
+    private ?Closure $duringSettingsWrite = null;
+
+    /**
      * The queue the markers are read back through, so that they are observed through the service
      * that writes them rather than in the stand-in it writes into.
      */
@@ -187,6 +196,7 @@ final class KeyIndexRemapTriggerTest extends Unit
         $this->markedDuringDispatch = [];
         $this->dispatchFailures = 0;
         $this->duringDispatch = null;
+        $this->duringSettingsWrite = null;
         $this->queue = null;
     }
 
@@ -578,6 +588,166 @@ final class KeyIndexRemapTriggerTest extends Unit
     }
 
     /**
+     * The store's marker stands for "every class this store reaches has a remap pending that will
+     * be released with this marker", so it may only be written by a flush that handed every one of
+     * them over itself. A class already queued for a DIFFERENT store is covered by a message that
+     * does not carry this one: claimed on the strength of it, the store would be skipped for as
+     * long as the one class this flush did hand over stayed pending - including after the other
+     * message had been handled and its class had no pending remap left at all.
+     */
+    public function testAStoreIsNotMarkedQueuedWhileOneOfItsClassesIsQueuedForAnotherStore(): void
+    {
+        $trigger = $this->createTrigger([
+            self::OTHER_STORE_ID => [self::CLASS_ID],
+            self::STORE_ID => [self::CLASS_ID, self::OTHER_CLASS_ID],
+        ]);
+
+        // the other store queues the class the two of them share
+        $trigger->noteFlagChange(self::OTHER_STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $trigger->flush();
+
+        // so this store hands over only the class it does not share
+        $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $trigger->flush();
+
+        $this->assertSame([self::CLASS_ID, self::OTHER_CLASS_ID], $this->getRemappedClassIds());
+        $this->assertFalse(
+            $this->isStoreMarkedQueued(self::STORE_ID),
+            'A store one of whose classes was queued elsewhere is not covered and may not be skipped.'
+        );
+
+        // and its next flag change is resolved rather than skipped, so the shared class is handed
+        // over again once the message that covered it has been handled
+        $this->handleQueuedRemaps();
+        $trigger->noteFlagChange(self::STORE_ID, self::NOT_INDEXED, self::INDEXED);
+        $trigger->flush();
+
+        $this->assertSame(
+            [self::CLASS_ID, self::OTHER_CLASS_ID, self::CLASS_ID, self::OTHER_CLASS_ID],
+            $this->getRemappedClassIds()
+        );
+    }
+
+    /**
+     * And one of the hand-overs a claim rests on failing takes the claim back with it, because the
+     * store it was written for is one of the stores the failing message answered for. The class
+     * whose hand-over did reach the transport stays pending, so the flag change after it hands over
+     * the one that did not and nothing twice.
+     */
+    public function testAStoreIsNotLeftMarkedQueuedWhenOneOfItsHandOversFails(): void
+    {
+        $this->dispatchFailures = 1;
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID, self::OTHER_CLASS_ID]]);
+
+        $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $trigger->flush();
+
+        $this->assertSame([self::OTHER_CLASS_ID], $this->getRemappedClassIds());
+        $this->assertSame(1, $this->loggedFailures);
+        $this->assertFalse(
+            $this->isStoreMarkedQueued(self::STORE_ID),
+            'A store whose coverage lost a hand-over is not covered and may not be skipped.'
+        );
+
+        $trigger->noteFlagChange(self::STORE_ID, self::NOT_INDEXED, self::INDEXED);
+        $trigger->flush();
+
+        $this->assertSame([self::OTHER_CLASS_ID, self::CLASS_ID], $this->getRemappedClassIds());
+    }
+
+    /**
+     * A marker write the settings store refuses follows the same path a refused hand-over does: the
+     * markers written for it are taken back and the failure is logged, so nothing is left claiming
+     * a remap that was never handed over. Left behind, such a marker would skip every later flag
+     * change of its class for the whole hour it answers for.
+     */
+    public function testAMarkerWriteThatFailsLeavesNothingClaimingAHandOver(): void
+    {
+        $this->duringSettingsWrite = static function (string $id): void {
+            if ($id === self::CLASS_ID) {
+                throw new Exception('the settings store cannot be written');
+            }
+        };
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $trigger->flush();
+
+        $this->assertSame([], $this->getRemappedClassIds());
+        $this->assertSame(1, $this->loggedFailures);
+        $this->assertFalse($this->queue?->hasPendingRemap(self::CLASS_ID) ?? true);
+        $this->assertFalse($this->isStoreMarkedQueued(self::STORE_ID));
+
+        $this->duringSettingsWrite = null;
+        $trigger->noteFlagChange(self::STORE_ID, self::NOT_INDEXED, self::INDEXED);
+        $trigger->flush();
+
+        $this->assertSame([self::CLASS_ID], $this->getRemappedClassIds());
+    }
+
+    /**
+     * The definition the flag is compared against is the one the write reports from under the lock
+     * it took, never one the caller read a moment earlier. Two requests that both read
+     * `indexed: true`, one storing false and one storing true, would otherwise have the second
+     * compare true against its own stale true, conclude that nothing moved and queue no remap -
+     * leaving the mapping on the first request's answer while the store carries the second's.
+     *
+     * Here the row the write held says the key is not indexed while the snapshot a read before it
+     * would have answered with still says it is: storing true is a change, and it is queued.
+     */
+    public function testTheFlagIsComparedAgainstTheDefinitionTheWriteHeld(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $this->createKeyService($trigger, self::INDEXED, heldDefinition: self::NOT_INDEXED)->updateKey(
+            self::KEY_ID,
+            new KeyUpdate(name: self::KEY_NAME, definition: ['fieldtype' => 'input', 'indexed' => true])
+        );
+
+        $this->assertSame([self::CLASS_ID], $this->getRemappedClassIds());
+    }
+
+    /**
+     * And the other way round, so the comparison cannot pass by being made against the payload
+     * alone: the row the write held already says the key is indexed, so storing true changes
+     * nothing and a whole class is not re-indexed for it - however the stale snapshot reads.
+     */
+    public function testAWriteThatMatchesTheDefinitionItHeldEnqueuesNothing(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $this->createKeyService($trigger, self::NOT_INDEXED, heldDefinition: self::INDEXED)->updateKey(
+            self::KEY_ID,
+            new KeyUpdate(name: self::KEY_NAME, definition: ['fieldtype' => 'input', 'indexed' => true])
+        );
+
+        $this->assertSame([], $this->getRemappedClassIds());
+        $this->assertSame(0, $this->targetLookups);
+    }
+
+    /**
+     * The apply reads its targets and then writes them section by section, so it is the path the
+     * window is widest on - and it compares against the definition its own write held too. Here the
+     * key endpoint has already stored `indexed: false` over the target the apply read, so the file
+     * writing the same thing moves nothing and a whole class is not re-indexed for it.
+     */
+    public function testAnApplyComparesAgainstTheDefinitionItsWriteHeld(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+        $writer = $this->createEntryWriter($trigger, self::NOT_INDEXED);
+
+        $writer->writeKey(
+            $this->createApplyContext(),
+            $this->createStoredKey(self::INDEXED),
+            $this->createKeyEntry(['indexed' => false])
+        );
+        $trigger->flush();
+
+        $this->assertSame([], $this->getRemappedClassIds());
+        $this->assertSame(0, $this->targetLookups);
+    }
+
+    /**
      * A class id may be made of digits alone and a store id always is, so the two markers are kept
      * in scopes of their own: sharing one, the marker of store 2 would answer for the class whose id
      * is the string "2" and skip its remap with nothing queued for it anywhere.
@@ -813,10 +983,17 @@ final class KeyIndexRemapTriggerTest extends Unit
         }
     }
 
+    /**
+     * The key update endpoint. `$heldDefinition` is the definition the row carried when the write
+     * took its lock, which is what the write reports back: left null it is the stored one, and
+     * given it differs from `$storedDefinition` the row is one a competing writer changed between
+     * the snapshot a read before the write would have answered with and the lock the write took.
+     */
     private function createKeyService(
         SearchIndexRemapTrigger $trigger,
         string $storedDefinition,
         ?Exception $failure = null,
+        ?string $heldDefinition = null,
     ): KeyService {
         $stored = $this->createStoredKey($storedDefinition);
 
@@ -827,18 +1004,22 @@ final class KeyIndexRemapTriggerTest extends Unit
             $this->makeEmpty(KeyRepositoryInterface::class, [
                 'getById' => $stored,
                 'create' => $stored,
-                'update' => static function (int $id, KeyUpdate $parameters) use ($stored, $failure): KeyConfig {
+                'update' => static function (
+                    int $id,
+                    KeyUpdate $parameters
+                ) use ($stored, $failure, $heldDefinition): KeyWriteResult {
                     if ($failure !== null) {
                         throw $failure;
                     }
 
+                    $definitionBefore = $heldDefinition ?? $stored->getDefinition();
                     $definition = $parameters->getDefinition();
 
                     if ($definition !== null) {
                         $stored->setDefinition((string) json_encode($definition));
                     }
 
-                    return $stored;
+                    return new KeyWriteResult($stored, $definitionBefore);
                 },
             ]),
             $this->makeEmpty(KeyHydratorInterface::class, [
@@ -848,15 +1029,28 @@ final class KeyIndexRemapTriggerTest extends Unit
         );
     }
 
-    private function createEntryWriter(SearchIndexRemapTrigger $trigger): ArtifactEntryWriter
-    {
+    /**
+     * The configuration apply's key writer. `$heldDefinition` is the definition the row carried
+     * when the write took its lock - left null it is the one the target instance carries, and given
+     * it differs the row is one a competing writer changed while the apply was running.
+     */
+    private function createEntryWriter(
+        SearchIndexRemapTrigger $trigger,
+        ?string $heldDefinition = null,
+    ): ArtifactEntryWriter {
         $parser = new ArtifactParser();
         $matcher = new ArtifactTargetMatcher(new InMemoryKeyLocalizationResolver());
         $diagnostics = new ApplyDiagnostics();
         $refusals = $this->makeEmpty(ApplyRefusalsInterface::class);
         $keyRepository = $this->makeEmpty(KeyRepositoryInterface::class, [
-            'saveFromArtifact' => fn (?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyConfig
-                => $this->createSavedKey($entry->getDefinition()),
+            'saveFromArtifact' => fn (
+                ?KeyConfig $config,
+                int $storeId,
+                ArtifactKeyEntry $entry
+            ): KeyWriteResult => new KeyWriteResult(
+                $this->createSavedKey($entry->getDefinition()),
+                $heldDefinition ?? $config?->getDefinition()
+            ),
         ]);
 
         return new ArtifactEntryWriter(
@@ -1061,8 +1255,9 @@ final class KeyIndexRemapTriggerTest extends Unit
     }
 
     /**
-     * Whether the queue already answers that everything this message stands for is pending, asked
-     * through the queue itself rather than of the stand-in it writes into.
+     * Whether the queue already answers that everything this message stands for is pending - the
+     * class it remaps and the coverage of every store it answers for - asked through the queue
+     * itself rather than of the stand-in it writes into.
      */
     private function isEveryMarkerWritten(SearchIndexRemapMessage $message): bool
     {
@@ -1071,12 +1266,21 @@ final class KeyIndexRemapTriggerTest extends Unit
         }
 
         foreach ($message->getStoreIds() as $storeId) {
-            if (!$this->queue->hasPendingStoreRemap($storeId)) {
+            if (!$this->isStoreMarkedQueued($storeId)) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    /**
+     * Whether the store is marked as having every class it reaches queued, read back through the
+     * queue that writes the marker.
+     */
+    private function isStoreMarkedQueued(int $storeId): bool
+    {
+        return $this->queue?->hasPendingStoreRemap($storeId) ?? false;
     }
 
     /**
@@ -1105,6 +1309,10 @@ final class KeyIndexRemapTriggerTest extends Unit
                 string $type = 'string',
                 ?string $scope = null,
             ): bool {
+                if ($this->duringSettingsWrite !== null) {
+                    ($this->duringSettingsWrite)($id, (string) $scope);
+                }
+
                 $this->settings[(string) $scope][$id] = (int) $data;
 
                 return true;

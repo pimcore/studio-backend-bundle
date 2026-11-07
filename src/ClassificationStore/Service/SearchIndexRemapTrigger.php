@@ -30,6 +30,13 @@ use function sprintf;
  * makes autoconfiguration tag the service `kernel.reset`, so a long-running worker starts each
  * message with no note of the one before it.
  *
+ * A store is skipped on its own marker only when that marker stands for complete coverage, which is
+ * why {@see flush()} decides every class before it claims anything: a store may be marked as queued
+ * only when every class it reaches is one this flush is handing over itself
+ * ({@see SearchIndexRemapQueueInterface::claimStoreCoverage()}). A class another flush queued is
+ * covered by a message that does not carry this store, so claiming on it would suppress this
+ * store's later flag changes for that class after the message had already been handled.
+ *
  * Nothing {@see flush()} does can fail the request it was called from: a store that cannot be
  * resolved to its indices and a remap that cannot be handed over are both logged and nothing more.
  * The key row is committed by then, and failing the request afterwards would cost the operator the
@@ -77,13 +84,31 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
         // forgotten before the hand-over, so a failing one is not retried by the next flush
         $this->noted = [];
         $targets = [];
+        $coverage = [];
 
         foreach ($stores as $storeId) {
-            $this->collectTargets($storeId, $targets);
+            $this->collectTargets($storeId, $targets, $coverage);
         }
 
-        foreach ($targets as $target) {
-            $this->handOver($target['classDefinitionId'], $target['storeIds']);
+        // decided for every collected class before anything is claimed or dispatched, so that the
+        // claim on a store and the hand-overs it stands for are the same answer
+        $handOver = [];
+
+        foreach ($targets as $key => $target) {
+            $handOver[$key] = $this->isHandOverNeeded($target['classDefinitionId']);
+        }
+
+        // claimed before the first hand-over is dispatched, the way the class marker is written
+        // before its own: a hand-over that then fails takes the claim back with it, and so does a
+        // synchronous transport that handles its message inside `dispatch()`
+        foreach ($coverage as $storeId => $keys) {
+            $this->claimCoveredStore($storeId, $keys, $handOver);
+        }
+
+        foreach ($targets as $key => $target) {
+            if ($handOver[$key]) {
+                $this->handOver($target['classDefinitionId'], $target['storeIds']);
+            }
         }
     }
 
@@ -114,15 +139,25 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
      * string the class carries it as. The entry is written whole rather than a member at a time, so
      * no state of `$targets` exists in which an entry is missing its `storeIds`.
      *
+     * What `$coverage` records per store is the entries of `$targets` the store reaches, looked up
+     * by class id the way they were written - never read back out as class ids, because a class id
+     * made of digits is an integer array key by the time it is one. A store whose resolve did not
+     * finish, and one that was skipped on its own marker, is recorded in neither: it may not be
+     * claimed on a coverage nobody established.
+     *
      * @param array<array-key, array{classDefinitionId: string, storeIds: list<int>}> $targets the
      *        classes collected so far and the noted stores reaching each of them
+     * @param array<int, list<array-key>> $coverage the `$targets` entries each resolved store
+     *        reaches, which is what a claim on that store has to cover in full
      */
-    private function collectTargets(int $storeId, array &$targets): void
+    private function collectTargets(int $storeId, array &$targets, array &$coverage): void
     {
         try {
             if ($this->remapQueue->hasPendingStoreRemap($storeId)) {
                 return;
             }
+
+            $reached = [];
 
             foreach ($this->remapTargetResolver->resolveForStore($storeId) as $classDefinitionId) {
                 $storeIds = $targets[$classDefinitionId]['storeIds'] ?? [];
@@ -132,7 +167,10 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
                     'classDefinitionId' => $classDefinitionId,
                     'storeIds' => $storeIds,
                 ];
+                $reached[] = $classDefinitionId;
             }
+
+            $coverage[$storeId] = $reached;
         } catch (Throwable $e) {
             $this->logger->error(sprintf(
                 'Failed to resolve the search indices of the classification store "%d": %s',
@@ -148,15 +186,74 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
      * statements are not held against each other: two requests racing hand one remap over each,
      * which costs one superfluous remap and never a missing one.
      *
+     * Asked once per flush and the answer reused, because the claim on a store and the hand-overs
+     * it stands for have to agree on exactly which classes this flush is handing over. Asked twice,
+     * a class that became pending between the two answers would be claimed for by a message that
+     * does not carry this store, and the store's marker would then outlive it.
+     *
+     * A queue that cannot be read is answered with yes rather than no: the hand-over has a guard of
+     * its own, and the cost of attempting one that was not needed is a superfluous re-index, where
+     * the cost of skipping one that was is the stale mapping.
+     */
+    private function isHandOverNeeded(string $classDefinitionId): bool
+    {
+        try {
+            return !$this->remapQueue->hasPendingRemap($classDefinitionId);
+        } catch (Throwable $e) {
+            $this->logger->error(sprintf(
+                'Failed to read the queued search index remaps of the class "%s": %s',
+                $classDefinitionId,
+                $e->getMessage()
+            ));
+
+            return true;
+        }
+    }
+
+    /**
+     * Claims the store only when every class it reaches is one this flush is handing over itself,
+     * so that the marker standing for "all of them are pending" is written by someone who knows
+     * that it is. A class another flush queued is covered by a message that does not carry this
+     * store, and would be released out from under the claim while the claim still suppressed it.
+     *
+     * A store that reaches no class at all is not claimed either: there is no coverage to stand on,
+     * and a class added to the store inside the window would have its flag changes skipped.
+     *
+     * Failing to claim costs the next flush one resolve of the store, so it is logged like the rest
+     * and nothing more.
+     *
+     * @param list<array-key> $keys the `$targets` entries this store reaches
+     * @param array<array-key, bool> $handOver whether this flush is handing each collected class over
+     */
+    private function claimCoveredStore(int $storeId, array $keys, array $handOver): void
+    {
+        if ($keys === []) {
+            return;
+        }
+
+        foreach ($keys as $key) {
+            if (!($handOver[$key] ?? false)) {
+                return;
+            }
+        }
+
+        try {
+            $this->remapQueue->claimStoreCoverage($storeId);
+        } catch (Throwable $e) {
+            $this->logger->error(sprintf(
+                'Failed to mark the search indices of the classification store "%d" as queued: %s',
+                $storeId,
+                $e->getMessage()
+            ));
+        }
+    }
+
+    /**
      * @param list<int> $storeIds
      */
     private function handOver(string $classDefinitionId, array $storeIds): void
     {
         try {
-            if ($this->remapQueue->hasPendingRemap($classDefinitionId)) {
-                return;
-            }
-
             $this->remapQueue->enqueueRemap($classDefinitionId, $storeIds);
         } catch (Throwable $e) {
             $this->logger->error(sprintf(

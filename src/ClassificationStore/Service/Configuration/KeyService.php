@@ -94,27 +94,28 @@ final readonly class KeyService implements KeyServiceInterface
      * {@inheritdoc}
      *
      * The search index flag lives in the `definition` blob, so only an update that carries one can
-     * change it, and the stored blob is read before the write: the repository mutates the very
-     * instance a read afterwards would answer with, which would compare the new definition to
-     * itself ({@see SearchIndexRemapTriggerInterface::noteFlagChange()}).
+     * change it. The blob it is compared against is the one the write answers with rather than one
+     * read here: the repository holds the key row for its write and reports the definition that row
+     * carried when the lock was taken, which is the only value a comparison can be made against
+     * without a competing writer of the same key invalidating it in between
+     * ({@see \Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyWriteResult}).
      */
     public function updateKey(int $id, KeyUpdate $parameters): KeyDetail
     {
         $definition = $parameters->getDefinition();
-        $storedDefinition = null;
 
         if ($definition !== null) {
             $parameters = $parameters->withDefinition($this->applyOptionsProviderDefaults($definition));
-            $storedDefinition = $this->keyConfigurationRepository->getById($id)->getDefinition();
         }
 
         try {
-            $keyConfig = $this->keyConfigurationRepository->update($id, $parameters);
+            $write = $this->keyConfigurationRepository->update($id, $parameters);
+            $keyConfig = $write->getConfig();
 
             if ($definition !== null) {
                 $this->searchIndexRemapTrigger->noteFlagChange(
                     $keyConfig->getStoreId(),
-                    $storedDefinition,
+                    $write->getDefinitionBefore(),
                     $keyConfig->getDefinition()
                 );
             }

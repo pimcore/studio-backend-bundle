@@ -19,6 +19,7 @@ use Pimcore\Bundle\CoreBundle\OptionsProvider\SelectOptionsOptionsProvider;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyWriteResult;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
@@ -64,7 +65,7 @@ final class KeyServiceTest extends Unit
                     $definition + ['optionsProviderClass' => SelectOptionsOptionsProvider::class]
                 )
             )
-            ->willReturn(new KeyConfig());
+            ->willReturn(new KeyWriteResult(new KeyConfig(), null));
 
         $this->createService($repository)->updateKey(
             29,
@@ -91,7 +92,7 @@ final class KeyServiceTest extends Unit
             ->expects($this->once())
             ->method('update')
             ->with(1, new KeyUpdate('key', definition: $definition))
-            ->willReturn(new KeyConfig());
+            ->willReturn(new KeyWriteResult(new KeyConfig(), null));
 
         $this->createService($repository)->updateKey(1, new KeyUpdate('key', definition: $definition));
     }
@@ -109,7 +110,7 @@ final class KeyServiceTest extends Unit
             ->expects($this->once())
             ->method('update')
             ->with(1, new KeyUpdate('key', 'Title', 'Description', 'input'))
-            ->willReturn(new KeyConfig());
+            ->willReturn(new KeyWriteResult(new KeyConfig(), null));
 
         $this->createService($repository)->updateKey(1, new KeyUpdate('key', 'Title', 'Description', 'input'));
     }
@@ -137,7 +138,7 @@ final class KeyServiceTest extends Unit
             ->expects($this->once())
             ->method('update')
             ->with(1, $parameters)
-            ->willReturn(new KeyConfig());
+            ->willReturn(new KeyWriteResult(new KeyConfig(), null));
 
         $this->createService($repository)->updateKey(1, $parameters);
     }
@@ -238,12 +239,15 @@ final class KeyServiceTest extends Unit
         $repository
             ->method('update')
             ->willReturnCallback(
-                static function (int $id, KeyUpdate $parameters) use ($config, $keyLocalizationResolver): KeyConfig {
+                static function (
+                    int $id,
+                    KeyUpdate $parameters
+                ) use ($config, $keyLocalizationResolver): KeyWriteResult {
                     if ($parameters->isLocalizedSupplied()) {
                         $keyLocalizationResolver->setLocalized($config, $parameters->getLocalized());
                     }
 
-                    return $config;
+                    return new KeyWriteResult($config, $config->getDefinition());
                 }
             );
 
@@ -319,7 +323,7 @@ final class KeyServiceTest extends Unit
             ->willReturn(new KeyConfig());
         $repository
             ->method('update')
-            ->willReturn(new KeyConfig());
+            ->willReturn(new KeyWriteResult(new KeyConfig(), null));
 
         return $repository;
     }
