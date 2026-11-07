@@ -24,13 +24,26 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Messeng
  */
 final readonly class SearchIndexRemapMessage
 {
+    /**
+     * @param list<int> $storeIds the stores whose flag change this remap answers for, carried along so
+     *                            that the markers coalescing their later saves are released with it
+     */
     public function __construct(
         private string $classDefinitionId,
+        private array $storeIds,
     ) {
     }
 
     public function getClassDefinitionId(): string
     {
         return $this->classDefinitionId;
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function getStoreIds(): array
+    {
+        return $this->storeIds;
     }
 }

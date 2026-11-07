@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
-use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Service\ResetInterface;
+use Throwable;
 use function array_keys;
 use function sprintf;
 
@@ -30,8 +30,11 @@ use function sprintf;
  * makes autoconfiguration tag the service `kernel.reset`, so a long-running worker starts each
  * message with no note of the one before it.
  *
- * A remap that cannot be handed over is logged and nothing more. The key row is committed by then,
- * and failing the request afterwards would cost the operator the edit rather than the convergence.
+ * Nothing {@see flush()} does can fail the request it was called from: a store that cannot be
+ * resolved to its indices and a remap that cannot be handed over are both logged and nothing more.
+ * The key row is committed by then, and failing the request afterwards would cost the operator the
+ * edit rather than the convergence - the remap is deferred, so the one thing it may not do is turn
+ * the save it was triggered by into a 500.
  *
  * @internal
  */
@@ -73,17 +76,14 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
         $stores = array_keys($this->noted);
         // forgotten before the hand-over, so a failing one is not retried by the next flush
         $this->noted = [];
-        $handedOver = [];
+        $targets = [];
 
         foreach ($stores as $storeId) {
-            foreach ($this->remapTargetResolver->resolveForStore($storeId) as $classDefinitionId) {
-                if (isset($handedOver[$classDefinitionId])) {
-                    continue;
-                }
+            $this->collectTargets($storeId, $targets);
+        }
 
-                $handedOver[$classDefinitionId] = true;
-                $this->handOver($classDefinitionId);
-            }
+        foreach ($targets as $target) {
+            $this->handOver($target['classDefinitionId'], $target['storeIds']);
         }
     }
 
@@ -101,20 +101,58 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
     }
 
     /**
+     * Which indices a store reaches is a read of every class definition there is, so the store's own
+     * marker is asked first: while it answers, every class the store reaches has a remap queued
+     * already and resolving them would only rediscover that.
+     *
+     * Resolving happens under the same guard as the hand-over, and against Throwable rather than
+     * Exception, because the key row is committed by the time either runs: a store whose classes
+     * cannot be resolved has to cost a log line, not the operator's edit turned into a 500.
+     *
+     * The class a remap is handed over for is read back as the value of its own entry, never as the
+     * key: a class id made of digits is an integer array key, and the queue is handed the id as the
+     * string the class carries it as.
+     *
+     * @param array<array-key, array{classDefinitionId: string, storeIds: list<int>}> $targets the
+     *        classes collected so far and the noted stores reaching each of them
+     */
+    private function collectTargets(int $storeId, array &$targets): void
+    {
+        try {
+            if ($this->remapQueue->hasPendingStoreRemap($storeId)) {
+                return;
+            }
+
+            foreach ($this->remapTargetResolver->resolveForStore($storeId) as $classDefinitionId) {
+                $targets[$classDefinitionId]['classDefinitionId'] = $classDefinitionId;
+                $targets[$classDefinitionId]['storeIds'][] = $storeId;
+            }
+        } catch (Throwable $e) {
+            $this->logger->error(sprintf(
+                'Failed to resolve the search indices of the classification store "%d": %s',
+                $storeId,
+                $e->getMessage()
+            ));
+        }
+    }
+
+    /**
      * A remap already waiting in the queue is one this change has nothing to add to, which is what
      * keeps twenty flag changes of a store from remapping its classes twenty times. The two
      * statements are not held against each other: two requests racing hand one remap over each,
      * which costs one superfluous remap and never a missing one.
+     *
+     * @param list<int> $storeIds
      */
-    private function handOver(string $classDefinitionId): void
+    private function handOver(string $classDefinitionId, array $storeIds): void
     {
         try {
             if ($this->remapQueue->hasPendingRemap($classDefinitionId)) {
                 return;
             }
 
-            $this->remapQueue->enqueueRemap($classDefinitionId);
-        } catch (Exception $e) {
+            $this->remapQueue->enqueueRemap($classDefinitionId, $storeIds);
+        } catch (Throwable $e) {
             $this->logger->error(sprintf(
                 'Failed to queue a search index remap for the class "%s": %s',
                 $classDefinitionId,

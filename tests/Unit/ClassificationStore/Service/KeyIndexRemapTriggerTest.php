@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service;
 
+use Closure;
 use Codeception\Test\Unit;
+use Error;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Message\UpdateClassMappingMessage;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
@@ -63,6 +65,7 @@ use ReflectionNamedType;
 use ReflectionParameter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Exception\TransportException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use function json_encode;
@@ -81,6 +84,13 @@ use function sprintf;
  * The queue is the real one throughout, over an in-memory stand-in for the settings store it keeps
  * its "already queued" marker in, so that the coalescing is observed where it happens rather than
  * on a double that was told to report it.
+ *
+ * The rest is the ordering contract of {@see SearchIndexRemapQueue}, a test per rule: the markers
+ * exist before the hand-over is dispatched, the handler clears them, a marker nobody cleared stops
+ * answering, a synchronous transport that runs the handler inside `dispatch()` is left with nothing
+ * pending, and a `dispatch()` that throws takes its markers back. Nothing on that path may fail the
+ * save it was triggered by - the key row is committed by then - so a store that cannot be resolved
+ * and a queue that cannot be reached are both a log line and nothing more.
  *
  * @internal
  */
@@ -103,6 +113,12 @@ final class KeyIndexRemapTriggerTest extends Unit
     private const string CLASS_ID = 'CAR';
 
     private const string OTHER_CLASS_ID = 'BIKE';
+
+    /**
+     * A class id made of digits alone, which is both a legal class id and the spelling of a store
+     * id - the two markers may not share an entry because of it.
+     */
+    private const string NUMERIC_CLASS_ID = '2';
 
     private const string INDEXED = '{"fieldtype":"input","indexed":true}';
 
@@ -132,11 +148,46 @@ final class KeyIndexRemapTriggerTest extends Unit
      */
     private int $targetLookups = 0;
 
+    /**
+     * How often the trigger logged a failure instead of letting it reach the save.
+     */
+    private int $loggedFailures = 0;
+
+    /**
+     * @var list<bool> whether every marker the message stands for was already written when the
+     *                 transport was handed it, one entry per remap dispatched
+     */
+    private array $markedDuringDispatch = [];
+
+    /**
+     * How many of the remaps still to be dispatched the transport refuses to take.
+     */
+    private int $dispatchFailures = 0;
+
+    /**
+     * What the transport does with a remap inside `dispatch()`: nothing, which is an asynchronous
+     * one, or handle it, which is what a synchronous transport does.
+     *
+     * @var Closure(SearchIndexRemapMessage): void|null
+     */
+    private ?Closure $duringDispatch = null;
+
+    /**
+     * The queue the markers are read back through, so that they are observed through the service
+     * that writes them rather than in the stand-in it writes into.
+     */
+    private ?SearchIndexRemapQueue $queue = null;
+
     public function _before(): void
     {
         $this->dispatched = [];
         $this->settings = [];
         $this->targetLookups = 0;
+        $this->loggedFailures = 0;
+        $this->markedDuringDispatch = [];
+        $this->dispatchFailures = 0;
+        $this->duringDispatch = null;
+        $this->queue = null;
     }
 
     /**
@@ -409,6 +460,145 @@ final class KeyIndexRemapTriggerTest extends Unit
     }
 
     /**
+     * The first rule of the ordering contract: the marker is the claim that a message is on its way,
+     * so it exists for the whole time that is true - which starts before the hand-over, not at its
+     * end. Asked from inside `dispatch()`, the queue already answers that this remap is pending.
+     */
+    public function testEveryMarkerIsWrittenBeforeTheHandOverIsDispatched(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $trigger->flush();
+
+        $this->assertSame([true], $this->markedDuringDispatch);
+    }
+
+    /**
+     * On a synchronous transport the handler runs inside `dispatch()`, so it clears the markers
+     * during the very call that wrote them - and finds them there to clear. Written the other way
+     * round, the release would land on markers that do not exist yet and the write would land behind
+     * it, leaving markers nothing ever clears and every later remap of that class skipped in silence.
+     */
+    public function testASynchronousTransportIsLeftWithNothingPending(): void
+    {
+        $handler = $this->createHandler();
+        $this->duringDispatch = static function (SearchIndexRemapMessage $message) use ($handler): void {
+            $handler($message);
+        };
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $trigger->flush();
+        $trigger->noteFlagChange(self::STORE_ID, self::NOT_INDEXED, self::INDEXED);
+        $trigger->flush();
+
+        $this->assertSame([self::CLASS_ID, self::CLASS_ID], $this->getRemappedClassIds());
+        $this->assertSame([self::CLASS_ID, self::CLASS_ID], $this->getMappingUpdateClassIds());
+    }
+
+    /**
+     * A hand-over that throws after its markers exist takes them back again, so a remap that did not
+     * happen leaves nothing claiming that it did - and the save it was triggered by is answered all
+     * the same, because the key row is committed by then.
+     */
+    public function testAHandOverThatFailsTakesItsMarkersBackAndAnswersTheSave(): void
+    {
+        $this->dispatchFailures = 1;
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $this->createKeyService($trigger, self::INDEXED)->updateKey(
+            self::KEY_ID,
+            new KeyUpdate(name: self::KEY_NAME, definition: ['fieldtype' => 'input', 'indexed' => false])
+        );
+
+        $this->assertSame([], $this->getRemappedClassIds());
+        $this->assertSame(1, $this->loggedFailures);
+
+        $trigger->noteFlagChange(self::STORE_ID, self::NOT_INDEXED, self::INDEXED);
+        $trigger->flush();
+
+        $this->assertSame([self::CLASS_ID], $this->getRemappedClassIds());
+    }
+
+    /**
+     * Resolving a store to its indices happens under the same guard as the hand-over and against
+     * Throwable, because it runs after the key row has been committed: a store that cannot be
+     * resolved costs a log line, not the operator's edit turned into a 500.
+     */
+    public function testAStoreThatCannotBeResolvedIsLoggedAndDoesNotFailTheSave(): void
+    {
+        $trigger = $this->createTriggerWithUnresolvableStore();
+
+        $detail = $this->createKeyService($trigger, self::INDEXED)->updateKey(
+            self::KEY_ID,
+            new KeyUpdate(name: self::KEY_NAME, definition: ['fieldtype' => 'input', 'indexed' => false])
+        );
+
+        $this->assertSame(self::KEY_ID, $detail->getId());
+        $this->assertSame([], $this->getRemappedClassIds());
+        $this->assertSame(1, $this->loggedFailures);
+    }
+
+    /**
+     * The store's own marker is asked before the store is resolved, which is a read of every class
+     * definition there is: the nineteen coalesced saves pay one settings store read each instead.
+     */
+    public function testACoalescedSaveDoesNotResolveTheStoreToItsIndices(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        for ($save = 0; $save < 20; $save++) {
+            $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NOT_INDEXED);
+            $trigger->flush();
+        }
+
+        $this->assertSame([self::CLASS_ID], $this->getRemappedClassIds());
+        $this->assertSame(1, $this->targetLookups);
+    }
+
+    /**
+     * And it decides nothing the class marker does not, because it is released with the very message
+     * it was written with: once that is handled, the next flag change resolves the store again and
+     * hands its own remap over.
+     */
+    public function testTheStoreMarkerIsReleasedWithTheRemapItWasWrittenWith(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $trigger->flush();
+        $this->handleQueuedRemaps();
+
+        $trigger->noteFlagChange(self::STORE_ID, self::NOT_INDEXED, self::INDEXED);
+        $trigger->flush();
+
+        $this->assertSame(2, $this->targetLookups);
+        $this->assertSame([self::CLASS_ID, self::CLASS_ID], $this->getRemappedClassIds());
+    }
+
+    /**
+     * A class id may be made of digits alone and a store id always is, so the two markers are kept
+     * in scopes of their own: sharing one, the marker of store 2 would answer for the class whose id
+     * is the string "2" and skip its remap with nothing queued for it anywhere.
+     */
+    public function testAClassIdAndAStoreIdThatLookAlikeAreNotOneMarker(): void
+    {
+        $trigger = $this->createTrigger([
+            self::OTHER_STORE_ID => [self::CLASS_ID],
+            self::STORE_ID => [self::NUMERIC_CLASS_ID],
+        ]);
+
+        $trigger->noteFlagChange(self::OTHER_STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $trigger->flush();
+
+        $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $trigger->flush();
+
+        $this->assertSame([self::CLASS_ID, self::NUMERIC_CLASS_ID], $this->getRemappedClassIds());
+    }
+
+    /**
      * The queued remap stops being pending when it is handled, and handing it on is the handler's
      * other half: the mapping update a class save hands over is what actually rewrites the mapping,
      * so a flag change after it is a hand-over of its own rather than one dropped forever.
@@ -558,33 +748,56 @@ final class KeyIndexRemapTriggerTest extends Unit
      */
     private function createTrigger(array $targetsByStore): SearchIndexRemapTrigger
     {
-        return new SearchIndexRemapTrigger(
-            new SearchIndexFlagResolver(),
+        return $this->createTriggerWithResolver(
             $this->makeEmpty(SearchIndexRemapTargetResolverInterface::class, [
                 'resolveForStore' => function (int $storeId) use ($targetsByStore): array {
                     $this->targetLookups++;
 
                     return $targetsByStore[$storeId] ?? [];
                 },
-            ]),
-            new SearchIndexRemapQueue($this->createMessageBus(), $this->createSettingsStoreResolver()),
-            $this->makeEmpty(LoggerInterface::class)
+            ])
         );
     }
 
     /**
-     * Drains the queued remaps the way the worker does, which is what releases their marker.
+     * A store whose indices cannot be resolved at all. The failure is an Error rather than an
+     * Exception, because that is the shape a class definition that no longer loads arrives in and
+     * the guard has to hold for it too.
+     */
+    private function createTriggerWithUnresolvableStore(): SearchIndexRemapTrigger
+    {
+        return $this->createTriggerWithResolver(
+            $this->makeEmpty(SearchIndexRemapTargetResolverInterface::class, [
+                'resolveForStore' => function (): array {
+                    $this->targetLookups++;
+
+                    throw new Error('the class definition no longer loads');
+                },
+            ])
+        );
+    }
+
+    private function createTriggerWithResolver(
+        SearchIndexRemapTargetResolverInterface $targetResolver,
+    ): SearchIndexRemapTrigger {
+        return new SearchIndexRemapTrigger(
+            new SearchIndexFlagResolver(),
+            $targetResolver,
+            $this->createQueue(),
+            $this->makeEmpty(LoggerInterface::class, [
+                'error' => function (): void {
+                    $this->loggedFailures++;
+                },
+            ])
+        );
+    }
+
+    /**
+     * Drains the queued remaps the way the worker does, which is what releases their markers.
      */
     private function handleQueuedRemaps(): void
     {
-        $handler = new SearchIndexRemapHandler(
-            $this->makeEmpty(ClassDefinitionResolverInterface::class, [
-                'getById' => fn (string $id): ClassDefinition => $this->createClassDefinition($id),
-            ]),
-            $this->createMessageBus(),
-            new SearchIndexRemapQueue($this->createMessageBus(), $this->createSettingsStoreResolver())
-        );
-
+        $handler = $this->createHandler();
         $queued = [];
 
         foreach ($this->dispatched as $envelope) {
@@ -799,16 +1012,71 @@ final class KeyIndexRemapTriggerTest extends Unit
         return $class;
     }
 
+    /**
+     * The queue under test, over the in-memory settings store, and remembered so that the markers
+     * can be read back through it from inside a dispatch.
+     */
+    private function createQueue(): SearchIndexRemapQueue
+    {
+        $this->queue = new SearchIndexRemapQueue($this->createMessageBus(), $this->createSettingsStoreResolver());
+
+        return $this->queue;
+    }
+
+    private function createHandler(): SearchIndexRemapHandler
+    {
+        return new SearchIndexRemapHandler(
+            $this->makeEmpty(ClassDefinitionResolverInterface::class, [
+                'getById' => fn (string $id): ClassDefinition => $this->createClassDefinition($id),
+            ]),
+            $this->createMessageBus(),
+            $this->createQueue()
+        );
+    }
+
     private function createMessageBus(): MessageBusInterface
     {
         return $this->makeEmpty(MessageBusInterface::class, [
             'dispatch' => function (object $message, array $stamps = []): Envelope {
+                if ($message instanceof SearchIndexRemapMessage) {
+                    $this->markedDuringDispatch[] = $this->isEveryMarkerWritten($message);
+
+                    if ($this->dispatchFailures > 0) {
+                        $this->dispatchFailures--;
+
+                        throw new TransportException('the transport cannot be reached');
+                    }
+                }
+
                 $envelope = new Envelope($message, $stamps);
                 $this->dispatched[] = $envelope;
+
+                if ($message instanceof SearchIndexRemapMessage && $this->duringDispatch !== null) {
+                    ($this->duringDispatch)($message);
+                }
 
                 return $envelope;
             },
         ]);
+    }
+
+    /**
+     * Whether the queue already answers that everything this message stands for is pending, asked
+     * through the queue itself rather than of the stand-in it writes into.
+     */
+    private function isEveryMarkerWritten(SearchIndexRemapMessage $message): bool
+    {
+        if ($this->queue === null || !$this->queue->hasPendingRemap($message->getClassDefinitionId())) {
+            return false;
+        }
+
+        foreach ($message->getStoreIds() as $storeId) {
+            if (!$this->queue->hasPendingStoreRemap($storeId)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

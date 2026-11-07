@@ -46,7 +46,7 @@ final readonly class SearchIndexRemapHandler
 
         // released first: a flag change arriving while this remap is being handed on is a change
         // this remap has not read, so it has to queue its own rather than be taken for a duplicate
-        $this->remapQueue->releasePendingRemap($classDefinitionId);
+        $this->remapQueue->releasePendingRemap($classDefinitionId, $message->getStoreIds());
 
         $classDefinition = $this->classDefinitionResolver->getById($classDefinitionId, true);
 
