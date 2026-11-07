@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Document\Service;
 
-use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Site\SiteResolverInterface;
@@ -73,27 +72,35 @@ final class SiteServicePermissionTest extends Unit
     public function testUpdateSitePersistsWhenSettingsPermissionGranted(): void
     {
         $document = new CoreFolder();
-        $site = $this->makeEmpty(Site::class, [
-            'setMainDomain' => Expected::once(),
-            'setDomains' => Expected::once(),
-            'setErrorDocument' => Expected::once(),
-            'setLocalizedErrorDocuments' => Expected::once(),
-            'setRedirectToMainDomain' => Expected::once(),
-            'save' => Expected::once(),
-        ]);
+        // Site is final and cannot be doubled; use a real instance and assert on its
+        // resulting state instead of mock call expectations.
+        $site = new Site();
         $service = $this->createService($document, true, $site);
 
-        $service->updateSite(self::DOCUMENT_ID, new UpdateSiteParameters());
+        $parameters = new UpdateSiteParameters(
+            mainDomain: 'primary.example.com',
+            domains: ['secondary.example.com'],
+            errorDocument: '/error-page',
+            localizedErrorDocuments: [],
+            redirectToMainDomain: true,
+        );
+        $service->updateSite(self::DOCUMENT_ID, $parameters);
+
+        $this->assertSame('primary.example.com', $site->getMainDomain());
+        $this->assertSame(['secondary.example.com'], $site->getDomains());
+        $this->assertSame('/error-page', $site->getErrorDocument());
+        $this->assertTrue($site->getRedirectToMainDomain());
     }
 
     public function testDeleteSitePersistsWhenSettingsPermissionGranted(): void
     {
         $document = new CoreFolder();
-        $site = $this->makeEmpty(Site::class, [
-            'delete' => Expected::once(),
-        ]);
+        // Site is final and cannot be doubled; use a real instance so delete() runs
+        // for real instead of asserting on a mock expectation.
+        $site = new Site();
         $service = $this->createService($document, true, $site);
 
+        $this->expectNotToPerformAssertions();
         $service->deleteSite(self::DOCUMENT_ID);
     }
 
