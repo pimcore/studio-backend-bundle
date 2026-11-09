@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ClassificationStoreConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Symfony\Contracts\Service\ResetInterface;
@@ -370,7 +371,11 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
     }
 
     /**
-     * The class a relation field points at, when it allows exactly one.
+     * The class a relation field points at, when it allows exactly one. The `folder` pseudo-class is left out
+     * of that count: it names no class definition, and the reader this derivation serves keeps only the
+     * Concrete relation targets (Grid\Column\Resolver\DataObject\AdvancedColumnResolver), so a relation
+     * allowing a folder beside one object class still has a single source class - which is how
+     * Grid\Service\ColumnConfigurationForRelationService reads such a list as well.
      */
     private function getRelatedClassDefinition(?ClassDefinition $classDefinition, string $relation): ?ClassDefinition
     {
@@ -379,10 +384,32 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
             ? $relationDefinition->getClasses()
             : [];
 
-        if (!is_array($classes) || count($classes) !== 1 || !is_string($classes[0]['classes'] ?? null)) {
+        $classNames = is_array($classes) ? $this->objectClassNames($classes) : [];
+
+        if (count($classNames) !== 1) {
             return null;
         }
 
-        return $this->classDefinitionResolver->getByName($classes[0]['classes']);
+        return $this->classDefinitionResolver->getByName($classNames[0]);
+    }
+
+    /**
+     * The object class names of an allowed-class list, without the `folder` pseudo-class.
+     *
+     * @param array<int, mixed> $classes
+     *
+     * @return array<int, string>
+     */
+    private function objectClassNames(array $classes): array
+    {
+        $names = [];
+        foreach ($classes as $class) {
+            $name = is_array($class) ? ($class['classes'] ?? null) : null;
+            if (is_string($name) && $name !== ElementTypes::TYPE_FOLDER) {
+                $names[] = $name;
+            }
+        }
+
+        return $names;
     }
 }

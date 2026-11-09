@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferen
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
@@ -199,6 +200,51 @@ final class ColumnReferenceServiceTest extends Unit
         $source = $columns[0]['config']['advancedColumns'][0]['config'];
         $this->assertSame(self::GROUP_IDENTIFIER, $source['groupIdentifier']);
         $this->assertSame(self::KEY_IDENTIFIER, $source['keyIdentifier']);
+    }
+
+    /**
+     * `folder` is a pseudo-class a relation may allow beside its object class, and the reader keeps only the
+     * Concrete targets anyway, so a relation allowing a folder and one class is not ambiguous: its source
+     * field resolves in the related class's store exactly as a relation allowing that class alone does.
+     */
+    public function testTheFolderPseudoClassDoesNotMakeASingleClassRelationAmbiguous(): void
+    {
+        $advanced = $this->relationColumn('folderOrMaker', 50, 60);
+
+        $columns = $this->createService()->addIdentifiers(self::CLASS_ID, [$advanced]);
+
+        $source = $columns[0]['config']['advancedColumns'][0]['config'];
+        $this->assertSame(self::GROUP_IDENTIFIER, $source['groupIdentifier']);
+        $this->assertSame(self::KEY_IDENTIFIER, $source['keyIdentifier']);
+    }
+
+    /**
+     * The counterpart: two object classes name two possible stores, so the source field is left as stored
+     * rather than stamped out of whichever class happens to be first.
+     */
+    public function testARelationAllowingTwoObjectClassesStaysAmbiguous(): void
+    {
+        $advanced = $this->relationColumn('anyPartner', 50, 60);
+
+        $columns = $this->createService()->addIdentifiers(self::CLASS_ID, [$advanced]);
+
+        $this->assertSame($advanced, $columns[0]);
+    }
+
+    /**
+     * And the local ids of such a column are derived too, instead of being served as whatever the
+     * configuration was saved with elsewhere.
+     */
+    public function testDeriveIdsCoversARelationAllowingAFolderBesideOneClass(): void
+    {
+        $advanced = $this->relationColumn('folderOrMaker', 99, 98);
+        $advanced['config']['advancedColumns'][0]['config']['groupIdentifier'] = self::GROUP_IDENTIFIER;
+        $advanced['config']['advancedColumns'][0]['config']['keyIdentifier'] = self::KEY_IDENTIFIER;
+
+        $columns = $this->createService()->deriveIds(self::CLASS_ID, [$advanced]);
+
+        $source = $columns[0]['config']['advancedColumns'][0]['config'];
+        $this->assertSame([50, 60], [$source['groupId'], $source['keyId']]);
     }
 
     public function testAddFilterIdentifiersStampsOnlyClassificationStoreColumnFilters(): void
@@ -396,6 +442,27 @@ final class ColumnReferenceServiceTest extends Unit
         return $column;
     }
 
+    /**
+     * An advanced column whose single source field is read off the class a relation field points at.
+     *
+     * @return array<string, mixed>
+     */
+    private function relationColumn(string $relation, int $groupId, int $keyId): array
+    {
+        return [
+            'key' => 'adv',
+            'type' => 'dataobject.advanced',
+            'config' => ['advancedColumns' => [
+                ['key' => 'relationField', 'config' => [
+                    'relation' => $relation,
+                    'field' => 'cs',
+                    'groupId' => $groupId,
+                    'keyId' => $keyId,
+                ]],
+            ]],
+        ];
+    }
+
     private function csColumn(string $key, int $groupId, int $keyId): array
     {
         return [
@@ -414,12 +481,10 @@ final class ColumnReferenceServiceTest extends Unit
             'cs' => $this->createField('cs', self::STORE_ID),
             'otherCs' => $this->createField('otherCs', self::OTHER_STORE_ID),
             'name' => $input,
+            'manufacturer' => $this->createRelation('manufacturer', ['Maker']),
+            'folderOrMaker' => $this->createRelation('folderOrMaker', [ElementTypes::TYPE_FOLDER, 'Maker']),
+            'anyPartner' => $this->createRelation('anyPartner', ['Maker', 'Importer']),
         ]);
-
-        $relation = new ManyToOneRelation();
-        $relation->setName('manufacturer');
-        $relation->setClasses([['classes' => 'Maker']]);
-        $classDefinition->setFieldDefinitions([...$classDefinition->getFieldDefinitions(), 'manufacturer' => $relation]);
         $maker = new ClassDefinition();
         $maker->setFieldDefinitions(['cs' => $this->createField('cs', self::OTHER_STORE_ID)]);
 
@@ -438,6 +503,18 @@ final class ColumnReferenceServiceTest extends Unit
             ]),
             new ColumnReferenceLocator(),
         );
+    }
+
+    /**
+     * @param array<int, string> $classNames the relation's allowed-class list, as the class editor stores it
+     */
+    private function createRelation(string $name, array $classNames): ManyToOneRelation
+    {
+        $relation = new ManyToOneRelation();
+        $relation->setName($name);
+        $relation->setClasses(array_map(static fn (string $class) => ['classes' => $class], $classNames));
+
+        return $relation;
     }
 
     private function createField(string $name, int $storeId): Classificationstore
