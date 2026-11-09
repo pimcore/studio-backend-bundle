@@ -91,7 +91,9 @@ The following steps are necessary during updating to newer versions.
   of as a single value, as far as the store's engine reports the capability the write needs. The key's declaration
   alone decides which of the two shapes its slot is read and written in, so a key that has never declared either is
   unchanged, and narrowing a declaration hides the values it no longer permits without clearing them: a write that does
-  not mention a hidden value leaves it where it is.
+  not mention a hidden value leaves it where it is. Taking a key's declaration away altogether is a type change, as
+  turning a select into a date is, and does not preserve the key's qualified values — such a key reads its row as a
+  single value again and the next write of it replaces that value — while narrowing one still hides and keeps them.
 - [Classification Store] Added: a store's whole configuration can be exported and applied again as one file, from the
   store editor and from the console commands `studio-backend-bundle:classificationstore:export` and
   `studio-backend-bundle:classificationstore:apply`. Applying creates and updates but never deletes, so un-assigning a

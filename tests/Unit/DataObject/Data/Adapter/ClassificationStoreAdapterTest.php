@@ -1531,10 +1531,12 @@ final class ClassificationStoreAdapterTest extends Unit
      * whatever that is: the declaration alone decides the shape, and this declaration says the slot
      * holds one value, so the list the row still holds is that value and is published as it stands.
      *
-     * **This is the boundary of the rule, and it is asserted rather than left to be found.** The
-     * entries the removed declaration hid are not read as entries any more, so they are neither
-     * published as entries nor found by the next write to be carried over - a PUT stores the value
-     * it supplied and nothing else. Narrowing a declaration *within* itself keeps hiding and
+     * **This is the boundary of the rule, and it records a decision rather than a defect found:**
+     * taking a declaration away entirely is a type change, the same act as turning a select into a
+     * date, and a type change preserves values nowhere in Pimcore. The entries the removed
+     * declaration hid are not read as entries any more, so they are neither published as entries
+     * nor found by the next write to be carried over - a PUT stores the value it supplied and
+     * nothing else. Narrowing a declaration *within* itself keeps hiding and
      * keeping them, which is what core's `testNarrowingADeclarationKeepsTheValuesItHides` settles
      * and what {@see self::testAPutOfWhatAReadPublishedKeepsTheEntriesTheNarrowedDeclarationHides()}
      * holds here.
