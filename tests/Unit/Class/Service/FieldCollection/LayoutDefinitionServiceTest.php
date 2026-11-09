@@ -15,20 +15,24 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Class\Service\FieldColle
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\FieldCollection\DefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ConfigLayoutDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\FieldCollectionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\LayoutDefinitionService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricherInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Fieldcollection\Definition;
+use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -95,8 +99,14 @@ final class LayoutDefinitionServiceTest extends Unit
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->method('dispatch')->willReturnArgument(0);
 
+        $user = new User();
+
+        $securityService = $this->createMock(SecurityServiceInterface::class);
+        $securityService->method('getCurrentUser')->willReturn($user);
+
         $service = new LayoutDefinitionService(
-            $this->createDataObjectResolver(),
+            $this->createServiceResolver($user),
+            $securityService,
             $dataObjectServiceResolver,
             $this->createClassDefinitionResolver(),
             $this->createDefinitionResolver($definition),
@@ -111,18 +121,23 @@ final class LayoutDefinitionServiceTest extends Unit
         $this->assertSame([self::CALL_ENRICH, self::CALL_TITLES, self::CALL_HYDRATE], $calls);
     }
 
-    private function createDataObjectResolver(): DataObjectResolverInterface
+    private function createServiceResolver(User $user): ServiceResolverInterface
     {
         $dataObject = $this->createMock(Concrete::class);
         $dataObject->method('getClassId')->willReturn(self::CLASS_ID);
+        // The service enforces view permission on the object before it resolves any layout.
+        $dataObject->method('isAllowed')->willReturnCallback(
+            static fn (string $type, ?User $checkedUser = null): bool => $checkedUser === $user
+                && $type === ElementPermissions::VIEW_PERMISSION
+        );
 
-        $dataObjectResolver = $this->createMock(DataObjectResolverInterface::class);
-        $dataObjectResolver
-            ->method('getById')
-            ->with(self::OBJECT_ID)
+        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
+        $serviceResolver
+            ->method('getElementById')
+            ->with(ElementTypes::TYPE_OBJECT, self::OBJECT_ID)
             ->willReturn($dataObject);
 
-        return $dataObjectResolver;
+        return $serviceResolver;
     }
 
     private function createClassDefinitionResolver(): ClassDefinitionResolverInterface
