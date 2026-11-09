@@ -18,6 +18,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectPermissions;
@@ -260,6 +261,71 @@ final class DataServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testUpdateEditableDataSkipsRemoteWritingAdapterWhenRemoteChangesAreNotApplied(): void
+    {
+        $calls = 0;
+        $adapter = new class($calls) implements SetterDataInterface, RemoteStorageDataInterface {
+            public function __construct(private int &$calls)
+            {
+            }
+
+            public function getDataForSetter(
+                Concrete $element,
+                ClassDefinition\Data $fieldDefinition,
+                string $key,
+                array $data,
+                UserInterface $user,
+                ?FieldContextData $contextData = null,
+                bool $isPatch = false
+            ): mixed {
+                $this->calls++;
+
+                return null;
+            }
+        };
+
+        $this->updateWith($adapter, false);
+        $this->assertSame(0, $calls, 'the remote writing adapter must not run for a draft');
+
+        $this->updateWith($adapter, true);
+        $this->assertSame(1, $calls, 'the remote writing adapter runs for a real save');
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateEditableDataStillAppliesOtherAdaptersWhenRemoteChangesAreNotApplied(): void
+    {
+        $calls = 0;
+        $adapter = $this->makeEmpty(SetterDataInterface::class, [
+            'getDataForSetter' => static function () use (&$calls): mixed {
+                $calls++;
+
+                return 'value';
+            },
+        ]);
+
+        $this->updateWith($adapter, false);
+
+        $this->assertSame(1, $calls);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function updateWith(SetterDataInterface $adapter, bool $applyRemoteChanges): void
+    {
+        $this->createUpdateService($adapter)->updateEditableData(
+            $this->createUpdateElement(),
+            ['name' => 'value'],
+            $this->makeEmpty(UserInterface::class),
+            $applyRemoteChanges
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
     private function updateWithAdapterThrowing(Exception $exception): void
     {
         $adapter = $this->makeEmpty(SetterDataInterface::class, [
@@ -267,15 +333,34 @@ final class DataServiceTest extends Unit
                 throw $exception;
             },
         ]);
-        $service = new DataService(
+
+        $this->createUpdateService($adapter)->updateEditableData(
+            $this->createUpdateElement(),
+            ['name' => 'value'],
+            $this->makeEmpty(UserInterface::class)
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function createUpdateService(SetterDataInterface $adapter): DataService
+    {
+        return new DataService(
             $this->makeEmpty(ClassDefinitionResolverInterface::class),
             $this->makeEmpty(DataAdapterServiceInterface::class, ['tryDataAdapter' => $adapter]),
             $this->makeEmpty(InheritanceServiceInterface::class),
             $this->makeEmpty(WorkflowDetailsServiceInterface::class),
         );
-        $class = (new ClassDefinition())->setId('test')->addFieldDefinition('name', (new Input())->setName('name'));
-        $element = $this->makeEmpty(Concrete::class, ['getId' => 1, 'getClass' => $class]);
+    }
 
-        $service->updateEditableData($element, ['name' => 'value'], $this->makeEmpty(UserInterface::class));
+    /**
+     * @throws Exception
+     */
+    private function createUpdateElement(): Concrete
+    {
+        $class = (new ClassDefinition())->setId('test')->addFieldDefinition('name', (new Input())->setName('name'));
+
+        return $this->makeEmpty(Concrete::class, ['getId' => 1, 'getClass' => $class]);
     }
 }

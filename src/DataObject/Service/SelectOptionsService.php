@@ -26,6 +26,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
+use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\DotNotationParserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
@@ -76,7 +78,8 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
             $this->dataService->updateEditableData($object, $changedData, $user);
         }
 
-        $fieldDefinition = $this->getFieldDefinition($selectOptionsParameter, $object);
+        $fieldDefinitionWrapper = $this->parseFieldName($selectOptionsParameter, $object);
+        $fieldDefinition = $this->getSelectFieldDefinition($fieldDefinitionWrapper);
 
         $provider = $this->getProvider($fieldDefinition);
 
@@ -88,6 +91,7 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
 
         $options = $provider->getOptions(
             [
+                ...$fieldDefinitionWrapper->getOptionsProviderContext(),
                 'object' => $object,
                 'fieldname' => $fieldDefinition->getName(),
                 'class' => $class,
@@ -177,17 +181,25 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
      * @throws InvalidArgumentException
      * @throws NotFoundException
      */
-    private function getFieldDefinition(
+    private function parseFieldName(
         SelectOptionsParameter $selectOptionsParameter,
         Concrete $object
-    ): Select|Multiselect {
+    ): FieldDefinitionWrapper {
         try {
-            $fieldDefinition = $this->dotNotationParser
-                ->parse($object, $selectOptionsParameter->getFieldName())
-                ->getFieldDefinition();
+            return $this->dotNotationParser->parse($object, $selectOptionsParameter->getFieldName());
+        } catch (ParseException $exception) {
+            throw new InvalidArgumentException($exception->getMessage(), $exception);
         } catch (Exception) {
             throw new NotFoundException('class', $object->getClassId());
         }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function getSelectFieldDefinition(FieldDefinitionWrapper $fieldDefinitionWrapper): Select|Multiselect
+    {
+        $fieldDefinition = $fieldDefinitionWrapper->getFieldDefinition();
 
         if (!$fieldDefinition instanceof Select && !$fieldDefinition instanceof Multiselect) {
             throw new InvalidArgumentException('Field is not a select or multiselect field');

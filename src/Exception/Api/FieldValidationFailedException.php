@@ -22,10 +22,14 @@ use Throwable;
  */
 final class FieldValidationFailedException extends AbstractApiException
 {
+    /**
+     * @param list<string>|null $viewableLanguages languages the user may view, null for no restriction
+     */
     public function __construct(
         string $message,
         string $errorKey = HttpResponseErrorKeys::ELEMENT_VALIDATION_FAILED->value,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
+        private readonly ?array $viewableLanguages = null,
     ) {
         parent::__construct(
             HttpResponseCodes::UNPROCESSABLE_CONTENT->value,
@@ -33,5 +37,13 @@ final class FieldValidationFailedException extends AbstractApiException
             previous: $previous,
             errorKey: $errorKey,
         );
+    }
+
+    /**
+     * @return list<string>|null
+     */
+    public function getViewableLanguages(): ?array
+    {
+        return $this->viewableLanguages;
     }
 }

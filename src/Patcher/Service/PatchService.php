@@ -18,6 +18,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Utils\Enums\SelectionProcessingMode;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
@@ -42,6 +43,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\FieldKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
@@ -173,7 +175,10 @@ final readonly class PatchService implements PatchServiceInterface
                 $this->patchEditableData(
                     $element,
                     $elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY],
-                    $user
+                    $user,
+                    ElementSaveTasks::appliesRemoteChanges(
+                        $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null
+                    )
                 );
 
                 unset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]);
@@ -248,8 +253,12 @@ final readonly class PatchService implements PatchServiceInterface
     /**
      * @throws Exception
      */
-    private function patchEditableData(Concrete $element, array $data, UserInterface $user): void
-    {
+    private function patchEditableData(
+        Concrete $element,
+        array $data,
+        UserInterface $user,
+        bool $applyRemoteChanges
+    ): void {
         $class = $element->getClass();
         foreach ($data as $key => $value) {
             $fieldDefinition = $class->getFieldDefinition($key);
@@ -259,6 +268,10 @@ final readonly class PatchService implements PatchServiceInterface
 
             $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldtype());
             if ($adapter === null) {
+                continue;
+            }
+
+            if (!$applyRemoteChanges && $adapter instanceof RemoteStorageDataInterface) {
                 continue;
             }
 

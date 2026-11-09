@@ -16,7 +16,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
 /**
  * Marker for data adapters whose field stores its value on other objects than the one being edited
  * (e.g. reverse relations). Edits of such fields are not applied where only the object's own values
- * are read, like the select options lookup. Third-party adapters can implement it as well.
+ * are read, like the select options lookup, and are skipped while an auto-save stores a draft.
+ * Skipped edits are not part of the stored draft, so reopening the draft does not recover them; they
+ * must be sent again with an explicit save. Only the adapter of a top-level field is checked.
+ * Third-party adapters can implement it as well.
  */
 interface RemoteStorageDataInterface
 {
