@@ -46,6 +46,8 @@ final class UpdateServiceTest extends Unit
 {
     private const int ELEMENT_ID = 42;
 
+    private const int NEW_PARENT_ID = 77;
+
     private Asset $element;
 
     private CoauthorContext $coauthorContext;
@@ -420,6 +422,60 @@ final class UpdateServiceTest extends Unit
     }
 
     /**
+     * Moving needs the `create` permission on the destination parent, not on the object itself: with
+     * `create` allowed on the object but denied on the new parent, the move is rejected before any data
+     * is applied or saved.
+     */
+    public function testUpdateOfDataObjectWithPublicationTaskAndMoveChecksCreateOnTheNewParent(): void
+    {
+        $object = $this->makeEmpty(Concrete::class);
+        $newParent = $this->makeEmpty(Folder::class);
+        $saved = false;
+        $applied = false;
+        $createCheckedOn = [];
+
+        $service = $this->createServiceForElement(
+            $object,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$createCheckedOn, $newParent): void {
+                if ($permission !== 'create') {
+                    return;
+                }
+
+                $createCheckedOn[] = $element;
+
+                if ($element === $newParent) {
+                    throw new ForbiddenException('You dont have create permission');
+                }
+            },
+            $this->makeEmpty(DataObjectDataService::class, [
+                'updateEditableData' => static function () use (&$applied): void {
+                    $applied = true;
+                },
+            ]),
+            $newParent,
+            self::NEW_PARENT_ID
+        );
+
+        try {
+            $service->update(
+                ElementTypes::TYPE_DATA_OBJECT,
+                self::ELEMENT_ID,
+                ['task' => 'publish', 'parentId' => self::NEW_PARENT_ID, 'editableData' => ['title' => 'x']]
+            );
+            $this->fail('Expected ForbiddenException was not thrown');
+        } catch (ForbiddenException) {
+            // expected - assertions happen after the try/catch
+        }
+
+        $this->assertSame([$newParent], $createCheckedOn);
+        $this->assertFalse($applied);
+        $this->assertFalse($saved);
+    }
+
+    /**
      * A user who may not publish at all is rejected before any data is applied, whatever travels with it.
      */
     public function testUpdateOfDataObjectWithPublicationTaskWithoutPublishPermissionAppliesNothing(): void
@@ -601,7 +657,9 @@ final class UpdateServiceTest extends Unit
         ElementInterface $element,
         callable $onSave,
         callable $hasElementPermission,
-        ?DataObjectDataService $objectDataService = null
+        ?DataObjectDataService $objectDataService = null,
+        ?ElementInterface $otherElement = null,
+        ?int $otherElementId = null
     ): UpdateService {
         return new UpdateService(
             adapterLoader: $this->makeEmpty(AdapterLoaderInterface::class, [
@@ -623,7 +681,9 @@ final class UpdateServiceTest extends Unit
                 },
             ]),
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
-                'getElementById' => $element,
+                'getElementById' => static fn (string $type, int $id) => $otherElement !== null && $id === $otherElementId
+                    ? $otherElement
+                    : $element,
             ]),
             indexService: $this->makeEmpty(ElementIndexServiceInterface::class),
             elementSaveService: $this->makeEmpty(ElementSaveServiceInterface::class, [
