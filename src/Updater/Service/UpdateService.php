@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedExcept
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentFieldKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
@@ -41,8 +42,11 @@ use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\ValidationException;
+use Pimcore\Model\UserInterface;
 use function array_diff_key;
 use function array_flip;
+use function array_keys;
+use function array_unique;
 use function in_array;
 use function sprintf;
 
@@ -56,13 +60,29 @@ final readonly class UpdateService implements UpdateServiceInterface
 
     private const string PUBLISHED_KEY = 'published';
 
-    /** Payload keys that, next to a publish/unpublish task, still make up a publication-only request. */
-    private const array PUBLICATION_ONLY_KEYS = [
+    /**
+     * Payload keys that a publish/unpublish task on a data object may carry without any permission
+     * beyond publish/unpublish itself (like the classic admin, which lets publish write the edited data).
+     */
+    private const array PUBLICATION_KEYS = [
         ElementSaveServiceInterface::INDEX_TASK,
         self::PUBLISHED_KEY,
         self::USE_DRAFT_DATA_KEY,
         ElementSaveServiceInterface::INDEX_COAUTHOR_TYPE,
         ElementSaveServiceInterface::INDEX_COAUTHOR,
+        self::EDITABLE_DATA_KEY,
+    ];
+
+    /**
+     * Metadata keys that need their own permission next to a publish/unpublish task (mapping as in the
+     * classic admin: rename -> key, settings -> parentId/locked; properties as for reading them).
+     * Every other key needs `save`.
+     */
+    private const array METADATA_KEY_PERMISSIONS = [
+        'key' => ElementPermissions::RENAME_PERMISSION,
+        'parentId' => ElementPermissions::SETTINGS_PERMISSION,
+        'locked' => ElementPermissions::SETTINGS_PERMISSION,
+        PropertyRepositoryInterface::INDEX_KEY => ElementPermissions::PROPERTIES_PERMISSION,
     ];
 
     public function __construct(
@@ -87,8 +107,8 @@ final readonly class UpdateService implements UpdateServiceInterface
         $task = $data[ElementSaveServiceInterface::INDEX_TASK] ?? null;
         $element = $this->getLatestElement($this->getElement($this->serviceResolver, $elementType, $id), $data, $task);
 
-        if ($element instanceof AbstractObject && $this->requiresSavePermission($element, $data, $task)) {
-            $this->securityService->hasElementPermission($element, $user, ElementPermissions::SAVE_PERMISSION);
+        if ($element instanceof AbstractObject) {
+            $this->checkObjectWritePermissions($elementType, $element, $data, $task, $user);
         }
 
         if ($element instanceof Asset) {
@@ -142,24 +162,55 @@ final readonly class UpdateService implements UpdateServiceInterface
     }
 
     /**
-     * Persisting object data (save, autoSave, version or an untasked write) requires the workspace
-     * `save` permission. Only a publication-only request for a data object (a publish/unpublish task,
-     * optionally with the `published` flag, `useDraftData` and coauthor info) is exempt: it is gated
-     * separately by ElementSaveService / PublishAdapter. Any accompanying data or metadata write
-     * (editableData, key, parentId, index, locked, properties, ...) needs `save`, and so does every
-     * write to a folder, which has no publish state and therefore no other gate.
+     * Persisting object data (save, autoSave, version or an untasked write) requires the workspace `save`
+     * permission, and so does every write to a folder: folders have no publish state, so no other gate exists.
+     *
+     * A publish/unpublish task on a data object is gated by ElementSaveService / PublishAdapter. Besides the
+     * edited data it may only carry metadata for which the user holds the matching permission (see
+     * METADATA_KEY_PERMISSIONS); any other key needs `save`.
+     *
+     * @throws ForbiddenException|NotFoundException
      */
-    private function requiresSavePermission(AbstractObject $element, array $data, ?string $task): bool
-    {
-        if (!$element instanceof Concrete) {
-            return true;
+    private function checkObjectWritePermissions(
+        string $elementType,
+        AbstractObject $element,
+        array $data,
+        ?string $task,
+        UserInterface $user
+    ): void {
+        $isPublicationTask = in_array(
+            $task,
+            [ElementSaveTasks::PUBLISH->value, ElementSaveTasks::UNPUBLISH->value],
+            true
+        );
+
+        if (!$element instanceof Concrete || !$isPublicationTask) {
+            $this->securityService->hasElementPermission($element, $user, ElementPermissions::SAVE_PERMISSION);
+
+            return;
         }
 
-        if (!in_array($task, [ElementSaveTasks::PUBLISH->value, ElementSaveTasks::UNPUBLISH->value], true)) {
-            return true;
+        // Checked up front so that no edited data is applied for a user who may not publish at all
+        $permissions = [
+            $task === ElementSaveTasks::PUBLISH->value
+                ? ElementPermissions::PUBLISH_PERMISSION
+                : ElementPermissions::UNPUBLISH_PERMISSION,
+        ];
+        foreach (array_keys(array_diff_key($data, array_flip(self::PUBLICATION_KEYS))) as $key) {
+            $permissions[] = self::METADATA_KEY_PERMISSIONS[$key] ?? ElementPermissions::SAVE_PERMISSION;
         }
 
-        return array_diff_key($data, array_flip(self::PUBLICATION_ONLY_KEYS)) !== [];
+        $this->securityService->hasElementPermissions($element, $user, array_unique($permissions));
+
+        // Moving needs the create permission on the new parent, as in the classic admin
+        $parentId = $data['parentId'] ?? null;
+        if ($parentId !== null && $parentId !== $element->getParentId()) {
+            $this->securityService->hasElementPermission(
+                $this->getElement($this->serviceResolver, $elementType, (int) $parentId),
+                $user,
+                ElementPermissions::CREATE_PERMISSION
+            );
+        }
     }
 
     private function getLatestElement(

@@ -297,11 +297,15 @@ final class UpdateServiceTest extends Unit
     }
 
     /**
-     * A pure publish/unpublish task on a data object is gated by ElementSaveService itself, so it must
-     * not additionally require the workspace `save` permission.
+     * A publish/unpublish task on a data object needs the publish/unpublish permission, checked before any
+     * data is applied, and no `save` permission; the edited data may travel with it (as in the classic admin).
+     *
+     * @dataProvider publicationPayloadProvider
      */
-    public function testUpdateOfDataObjectWithPublishTaskDoesNotRequireSavePermission(): void
-    {
+    public function testUpdateOfDataObjectWithPublicationTaskNeedsOnlyThePublicationPermission(
+        array $data,
+        string $expectedPermission
+    ): void {
         $object = $this->makeEmpty(Concrete::class);
         $saved = false;
         $checkedPermissions = [];
@@ -316,19 +320,150 @@ final class UpdateServiceTest extends Unit
             }
         );
 
-        $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, ['task' => 'publish']);
+        $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, $data);
 
-        $this->assertSame([], $checkedPermissions);
+        $this->assertSame([$expectedPermission], $checkedPermissions);
         $this->assertTrue($saved);
     }
 
+    public static function publicationPayloadProvider(): array
+    {
+        return [
+            'publish task' => [['task' => 'publish'], 'publish'],
+            'unpublish task' => [['task' => 'unpublish'], 'unpublish'],
+            'publish task with published flag' => [['task' => 'publish', 'published' => true], 'publish'],
+            'publish task with coauthor' => [['task' => 'publish', 'coauthorType' => 'agent', 'coauthor' => 'a'], 'publish'],
+            'publish task with draft data' => [['task' => 'publish', 'useDraftData' => false], 'publish'],
+            'publish task with editableData' => [['task' => 'publish', 'editableData' => ['title' => 'changed']], 'publish'],
+            'unpublish task with editableData' => [['task' => 'unpublish', 'editableData' => ['title' => 'x']], 'unpublish'],
+            'publish task with editableData and draft data' => [
+                ['task' => 'publish', 'useDraftData' => true, 'editableData' => ['title' => 'x']],
+                'publish',
+            ],
+        ];
+    }
+
     /**
-     * A publish/unpublish task combined with any data or metadata write is not a publication-only
-     * request: it persists those writes, so it still requires the workspace `save` permission.
+     * Metadata that travels with a publish/unpublish task needs its own permission; anything not
+     * mapped needs `save`. Without the permission nothing is saved.
      *
-     * @dataProvider mixedPublicationPayloadProvider
+     * @dataProvider publicationMetadataProvider
      */
-    public function testUpdateOfDataObjectWithPublishTaskAndDataRequiresSavePermission(array $data): void
+    public function testUpdateOfDataObjectWithPublicationTaskAndMetadataNeedsTheMatchingPermission(
+        array $data,
+        string $missingPermission
+    ): void {
+        $object = $this->makeEmpty(Concrete::class);
+        $saved = false;
+        $checkedPermissions = [];
+
+        $service = $this->createServiceForElement(
+            $object,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions, $missingPermission): void {
+                $checkedPermissions[] = $permission;
+
+                if ($permission === $missingPermission) {
+                    throw new ForbiddenException(sprintf('You dont have %s permission', $permission));
+                }
+            }
+        );
+
+        try {
+            $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, $data);
+            $this->fail('Expected ForbiddenException was not thrown');
+        } catch (ForbiddenException) {
+            // expected - assertions happen after the try/catch
+        }
+
+        $this->assertContains($missingPermission, $checkedPermissions);
+        $this->assertFalse($saved);
+
+        // ... and the same request succeeds once that permission is granted
+        $granted = [];
+        $service = $this->createServiceForElement(
+            $object,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$granted): void {
+                $granted[] = $permission;
+            }
+        );
+
+        $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, $data);
+
+        $this->assertContains($missingPermission, $granted);
+        $this->assertTrue($saved);
+    }
+
+    public static function publicationMetadataProvider(): array
+    {
+        return [
+            'publish with key needs rename' => [['task' => 'publish', 'key' => 'renamed'], 'rename'],
+            'unpublish with key needs rename' => [['task' => 'unpublish', 'key' => 'renamed'], 'rename'],
+            'publish with parentId needs settings' => [['task' => 'publish', 'parentId' => 5], 'settings'],
+            'publish with parentId needs create on the new parent' => [['task' => 'publish', 'parentId' => 5], 'create'],
+            'publish with locked needs settings' => [['task' => 'publish', 'locked' => 'self'], 'settings'],
+            'unpublish with unlock needs settings' => [['task' => 'unpublish', 'locked' => 'unlockPropagate'], 'settings'],
+            'publish with properties needs properties' => [['task' => 'publish', 'properties' => []], 'properties'],
+            'publish with editableData and key needs rename' => [
+                ['task' => 'publish', 'editableData' => ['title' => 'x'], 'key' => 'renamed'],
+                'rename',
+            ],
+            'publish with index needs save' => [['task' => 'publish', 'index' => 3], 'save'],
+            'publish with children sort order needs save' => [['task' => 'publish', 'childrenSortOrder' => 'ASC'], 'save'],
+            'publish with an unmapped key needs save' => [['task' => 'publish', 'somethingElse' => 1], 'save'],
+        ];
+    }
+
+    /**
+     * A user who may not publish at all is rejected before any data is applied, whatever travels with it.
+     */
+    public function testUpdateOfDataObjectWithPublicationTaskWithoutPublishPermissionAppliesNothing(): void
+    {
+        $object = $this->makeEmpty(Concrete::class);
+        $saved = false;
+        $applied = false;
+
+        $service = $this->createServiceForElement(
+            $object,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission): void {
+                throw new ForbiddenException(sprintf('You dont have %s permission', $permission));
+            },
+            $this->makeEmpty(DataObjectDataService::class, [
+                'updateEditableData' => static function () use (&$applied): void {
+                    $applied = true;
+                },
+            ])
+        );
+
+        try {
+            $service->update(
+                ElementTypes::TYPE_DATA_OBJECT,
+                self::ELEMENT_ID,
+                ['task' => 'publish', 'editableData' => ['title' => 'changed']]
+            );
+            $this->fail('Expected ForbiddenException was not thrown');
+        } catch (ForbiddenException) {
+            // expected - assertions happen after the try/catch
+        }
+
+        $this->assertFalse($applied);
+        $this->assertFalse($saved);
+    }
+
+    /**
+     * Untasked and non-publication writes to a data object still need the plain `save` permission.
+     *
+     * @dataProvider nonPublicationTaskProvider
+     */
+    public function testUpdateOfDataObjectWithoutPublicationTaskRequiresSavePermission(array $data): void
     {
         $object = $this->makeEmpty(Concrete::class);
         $saved = false;
@@ -357,57 +492,14 @@ final class UpdateServiceTest extends Unit
         $this->assertFalse($saved);
     }
 
-    public static function mixedPublicationPayloadProvider(): array
+    public static function nonPublicationTaskProvider(): array
     {
         return [
-            'publish with editableData' => [['task' => 'publish', 'editableData' => ['title' => 'changed']]],
-            'unpublish with editableData' => [['task' => 'unpublish', 'editableData' => ['title' => 'changed']]],
-            'publish with key' => [['task' => 'publish', 'key' => 'renamed']],
-            'unpublish with key' => [['task' => 'unpublish', 'key' => 'renamed']],
-            'publish with parentId' => [['task' => 'publish', 'parentId' => 5]],
-            'unpublish with locked' => [['task' => 'unpublish', 'locked' => 'self']],
-            'publish with properties' => [['task' => 'publish', 'properties' => []]],
-            'publish with index' => [['task' => 'publish', 'index' => 3]],
-        ];
-    }
-
-    /**
-     * A publication-only request (task, optionally with the `published` flag, `useDraftData` and
-     * coauthor info) stays exempt from `save`; PublishAdapter / ElementSaveService gate it.
-     *
-     * @dataProvider publicationOnlyPayloadProvider
-     */
-    public function testUpdateOfDataObjectWithPublicationOnlyPayloadDoesNotRequireSavePermission(array $data): void
-    {
-        $object = $this->makeEmpty(Concrete::class);
-        $saved = false;
-        $checkedPermissions = [];
-
-        $service = $this->createServiceForElement(
-            $object,
-            static function () use (&$saved): void {
-                $saved = true;
-            },
-            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
-                $checkedPermissions[] = $permission;
-            }
-        );
-
-        $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, $data);
-
-        $this->assertSame([], $checkedPermissions);
-        $this->assertTrue($saved);
-    }
-
-    public static function publicationOnlyPayloadProvider(): array
-    {
-        return [
-            'publish task' => [['task' => 'publish']],
-            'unpublish task' => [['task' => 'unpublish']],
-            'publish task with published flag' => [['task' => 'publish', 'published' => true]],
-            'unpublish task with published flag' => [['task' => 'unpublish', 'published' => false]],
-            'publish task with coauthor' => [['task' => 'publish', 'coauthorType' => 'agent', 'coauthor' => 'a']],
-            'publish task with draft data' => [['task' => 'publish', 'useDraftData' => false]],
+            'no task, key' => [['key' => 'renamed']],
+            'no task, editableData' => [['editableData' => ['title' => 'x']]],
+            'save task' => [['task' => 'save', 'editableData' => ['title' => 'x']]],
+            'autoSave task' => [['task' => 'autoSave']],
+            'version task' => [['task' => 'version']],
         ];
     }
 
@@ -508,17 +600,27 @@ final class UpdateServiceTest extends Unit
     private function createServiceForElement(
         ElementInterface $element,
         callable $onSave,
-        callable $hasElementPermission
+        callable $hasElementPermission,
+        ?DataObjectDataService $objectDataService = null
     ): UpdateService {
         return new UpdateService(
             adapterLoader: $this->makeEmpty(AdapterLoaderInterface::class, [
                 'loadAdapters' => [],
             ]),
-            objectDataService: $this->makeEmpty(DataObjectDataService::class),
+            objectDataService: $objectDataService ?? $this->makeEmpty(DataObjectDataService::class),
             documentDataService: $this->makeEmpty(DocumentDataService::class),
             securityService: $this->makeEmpty(SecurityServiceInterface::class, [
                 'getCurrentUser' => $this->makeEmpty(UserInterface::class),
                 'hasElementPermission' => $hasElementPermission,
+                'hasElementPermissions' => static function (
+                    ElementInterface $element,
+                    UserInterface $user,
+                    array $permissions
+                ) use ($hasElementPermission): void {
+                    foreach ($permissions as $permission) {
+                        $hasElementPermission($element, $user, $permission);
+                    }
+                },
             ]),
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
                 'getElementById' => $element,
