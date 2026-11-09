@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use JsonException;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use function array_is_list;
 use function is_array;
 use function is_bool;
 use function is_string;
@@ -42,7 +43,10 @@ final readonly class KeyQualifierResolver implements KeyQualifierResolverInterfa
         $declared = $this->accessor($keyConfig, self::VARIANTS_GETTER)
             ?? $this->member($keyConfig, self::VARIANTS_MEMBER);
 
-        if (!is_array($declared)) {
+        // An ordered list of names, so a JSON object is not one: `{"variants":{"label":"metric"}}`
+        // decodes to an array whose keys are its members, and reading its values as names would
+        // turn a key that declares no list at all into one permitting a variant called `metric`.
+        if (!is_array($declared) || !array_is_list($declared)) {
             return null;
         }
 

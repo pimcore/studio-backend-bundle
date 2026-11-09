@@ -52,10 +52,13 @@ final class KeyDetail implements AdditionalAttributesInterface
                 . ' "multiValue" are reserved as well: "variants" is the ordered list of variant names the key'
                 . ' permits a value to carry, where a value carrying no variant addresses the default variant, and'
                 . ' "multiValue" is whether the key holds more than one value per variant. A key that'
-                . ' permits more than the one slot it always had - a non-empty "variants" list, or "multiValue"'
-                . ' true - carries its values in the object data payload as a list of entries rather than as a'
-                . ' single value. A key declaring an empty "variants" list or "multiValue" false permits exactly'
-                . ' that one slot, and its values are carried unchanged.',
+                . ' permits more than the one slot it always had - a "variants" list naming at least one variant,'
+                . ' or "multiValue" true - carries its values in the object data payload as a list of entries'
+                . ' rather than as a single value. A key that names no usable variant and does not declare'
+                . ' "multiValue" true - an absent, empty or non-list "variants" member, with "multiValue" absent'
+                . ' or false - permits exactly that one slot, and its values are carried unchanged; a key naming a'
+                . ' variant carries a list of entries even with "multiValue" false, and a key declaring'
+                . ' "multiValue" true carries one even with no variant named.',
             type: 'object',
             nullable: true
         )]

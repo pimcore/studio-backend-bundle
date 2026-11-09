@@ -43,13 +43,15 @@ interface KeyQualifierResolverInterface
     /**
      * Whether the key's declaration permits more than the one slot it always had, which is what
      * makes its values travel as a list of qualified entries rather than as a single value: a
-     * non-empty list of variant names, or `multiValue` declared true.
+     * variant list holding a usable name, or `multiValue` declared true.
      *
-     * The declaration is read, not its mere presence. A key declaring `variants: []` permits no
-     * variant beside the default one and a key declaring `multiValue: false` holds one value per
-     * variant, so either permits exactly the single default slot and keeps serialising as a single
-     * value - as does a key whose blob carries neither member, and as does every key of every store
-     * that existed before these members did.
+     * The declaration is read, not its mere presence. A key permits exactly the single default slot
+     * - and keeps serialising as a single value - when it names no usable variant AND does not
+     * declare `multiValue` true: `variants: []` permits no variant beside the default one, but a key
+     * naming a variant and declaring `multiValue: false` still carries one value per named variant
+     * and still travels as a list of entries. A key whose blob carries neither member names no
+     * variant and declares no `multiValue`, as does every key of every store that existed before
+     * these members did.
      */
     public function declaresQualifiers(KeyConfig $keyConfig): bool;
 
@@ -57,6 +59,10 @@ interface KeyQualifierResolverInterface
      * The variant names the key permits in the order it declares them, or null where it declares
      * none. A name that is not a non-empty string is left out rather than published as one, so that
      * the default variant - which carries no name - stays distinguishable from a declared one.
+     *
+     * The member has to be an ordered list to be a declaration at all: a member holding anything
+     * else - a string, a boolean, or a JSON object whose members would otherwise be read as the
+     * names - declares none, so that nothing but a list can make a key's values travel as entries.
      *
      * @return string[]|null
      */

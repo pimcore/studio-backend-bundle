@@ -150,6 +150,7 @@ final class KeyQualifierResolverTest extends Unit
             // the shape a core that grew the two columns hands back for a key using neither
             'both, stating the single slot' => [[self::VARIANTS => [], self::MULTI_VALUE => false]],
             'a variants member that is not a list' => [[self::VARIANTS => 'metric']],
+            'a variants member that is an object rather than a list' => [[self::VARIANTS => ['label' => 'metric']]],
             'a multiValue member that is not a boolean' => [[self::MULTI_VALUE => 0]],
             // the only declared name is unusable, so the declaration names no variant at all
             'a variant list holding no usable name' => [[self::VARIANTS => ['']]],
@@ -213,7 +214,23 @@ final class KeyQualifierResolverTest extends Unit
             'a string' => ['metric'],
             'a boolean' => [true],
             'an explicit null' => [null],
+            // `{"variants":{"label":"metric"}}` - an object, so its members are not the names: reading
+            // its values as a list would publish the declaration `['metric']` the key never made
+            'an object rather than a list' => [['label' => 'metric']],
+            'an object whose members are numbered from one' => [[1 => 'metric', 2 => 'imperial']],
         ];
+    }
+
+    /**
+     * An object cannot make a key's values travel as entries: the member is a list of names or it is
+     * no declaration, so the read and the write path both stay on the single value the key has.
+     */
+    public function testAVariantsObjectDoesNotMakeTheKeyDeclareQualifiers(): void
+    {
+        $keyConfig = $this->createKeyConfig([self::VARIANTS => ['label' => 'metric']]);
+
+        $this->assertFalse($this->resolver->declaresQualifiers($keyConfig));
+        $this->assertNull($this->resolver->getVariants($keyConfig));
     }
 
     public function testDeclaringMultiValueAloneIsADeclaration(): void
