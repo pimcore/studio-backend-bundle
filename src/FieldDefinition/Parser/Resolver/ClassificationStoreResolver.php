@@ -83,8 +83,11 @@ final class ClassificationStoreResolver extends AbstractResolver
 
         try {
             $group = $this->groupConfigRepository->getById((int) $groupId);
-        } catch (NotFoundException) {
-            throw new ParseException(sprintf('Classification store group "%s" does not exist', $groupId));
+        } catch (NotFoundException $exception) {
+            throw new ParseException(
+                sprintf('Classification store group "%s" does not exist', $groupId),
+                previous: $exception
+            );
         }
 
         if ($group->getStoreId() !== $storeFieldDefinition->getStoreId()) {
@@ -99,9 +102,10 @@ final class ClassificationStoreResolver extends AbstractResolver
 
         try {
             $keyGroupRelation = $this->keyGroupRelationRepository->getByKeyGroupId((int) $keyId, (int) $groupId);
-        } catch (NotFoundException) {
+        } catch (NotFoundException $exception) {
             throw new ParseException(
-                sprintf('Key "%s" does not exist in classification store group "%s"', $keyId, $groupId)
+                sprintf('Key "%s" does not exist in classification store group "%s"', $keyId, $groupId),
+                previous: $exception
             );
         }
 

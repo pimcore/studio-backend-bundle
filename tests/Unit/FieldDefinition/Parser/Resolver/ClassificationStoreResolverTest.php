@@ -125,10 +125,16 @@ final class ClassificationStoreResolverTest extends Unit
         );
         $resolver->setFieldDefinitions($this->getFieldDefinitions());
 
-        $this->expectException(ParseException::class);
-        $this->expectExceptionMessage('Key "6" does not exist in classification store group "2"');
-
-        $resolver->resolve(['attributes', '2', '6']);
+        try {
+            $resolver->resolve(['attributes', '2', '6']);
+            $this->fail('Expected a ParseException');
+        } catch (ParseException $exception) {
+            $this->assertSame(
+                'Key "6" does not exist in classification store group "2"',
+                $exception->getMessage()
+            );
+            $this->assertInstanceOf(NotFoundException::class, $exception->getPrevious());
+        }
     }
 
     /**
@@ -160,10 +166,13 @@ final class ClassificationStoreResolverTest extends Unit
         );
         $resolver->setFieldDefinitions($this->getFieldDefinitions());
 
-        $this->expectException(ParseException::class);
-        $this->expectExceptionMessage('Classification store group "2" does not exist');
-
-        $resolver->resolve(['attributes', '2', '6']);
+        try {
+            $resolver->resolve(['attributes', '2', '6']);
+            $this->fail('Expected a ParseException');
+        } catch (ParseException $exception) {
+            $this->assertSame('Classification store group "2" does not exist', $exception->getMessage());
+            $this->assertInstanceOf(NotFoundException::class, $exception->getPrevious());
+        }
     }
 
     /**
