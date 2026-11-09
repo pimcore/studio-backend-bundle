@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mercure\Hub;
-use Symfony\Component\Mercure\Jwt\StaticTokenProvider;
 use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -90,9 +89,10 @@ final class PublishService implements PublishServiceInterface
     private function getServerHub(): Hub
     {
         if ($this->publisher === null) {
+            // The hub asks the provider on every publish, so long-running workers never send an expired token
             $this->publisher = new Hub(
                 $this->urlService->getServerSideUrl(),
-                new StaticTokenProvider($this->tokenProvider->getJwt()),
+                $this->tokenProvider,
             );
         }
 
