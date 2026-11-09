@@ -102,6 +102,7 @@ interface KeyRepositoryInterface
     /**
      * The title and the description are written only when the payload supplied them, a supplied
      * empty one clearing the stored value; the definition is written only when it is not null.
+     * The `customMetadata` is written only when the payload supplied it, a supplied null clearing it.
      *
      * The write holds the key row, and the result carries the definition that row carried when the
      * lock was taken. That is what the caller compares the key's resolved search index flag

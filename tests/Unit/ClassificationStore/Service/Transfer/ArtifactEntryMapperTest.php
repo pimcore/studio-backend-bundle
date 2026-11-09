@@ -91,7 +91,7 @@ final class ArtifactEntryMapperTest extends Unit
 
         $entry = $this->createEntryMapper()->mapSubGroup($config);
 
-        $this->assertSame(['identifier', 'name', 'description'], array_keys($entry));
+        $this->assertSame(['identifier', 'name', 'description', 'customMetadata'], array_keys($entry));
     }
 
     public function testTheCollectionEntryCarriesTheIdentifierNameAndDescriptionOnly(): void
@@ -107,7 +107,7 @@ final class ArtifactEntryMapperTest extends Unit
 
         $entry = $this->createEntryMapper()->mapCollection($config);
 
-        $this->assertSame(['identifier', 'name', 'description'], array_keys($entry));
+        $this->assertSame(['identifier', 'name', 'description', 'customMetadata'], array_keys($entry));
     }
 
     /**
@@ -128,7 +128,7 @@ final class ArtifactEntryMapperTest extends Unit
 
         $entry = $this->createEntryMapper()->mapGroup($config);
 
-        $this->assertSame(['identifier', 'name', 'description'], array_keys($entry));
+        $this->assertSame(['identifier', 'name', 'description', 'customMetadata'], array_keys($entry));
         $this->assertArrayNotHasKey('parentId', $entry);
     }
 
@@ -142,11 +142,44 @@ final class ArtifactEntryMapperTest extends Unit
         $entry = $this->createEntryMapper()->mapKey($this->createKey(enabled: true));
 
         $this->assertSame(
-            ['identifier', 'name', 'title', 'description', 'type', 'definition', 'enabled'],
+            ['identifier', 'name', 'title', 'description', 'type', 'definition', 'enabled', 'customMetadata'],
             array_keys($entry)
         );
         $this->assertSame(['fieldtype' => 'input', 'title' => 'Weight'], $entry['definition']);
         $this->assertTrue($entry['enabled']);
+    }
+
+    /**
+     * All four entity levels write `customMetadata` verbatim, as an explicit null where the row holds
+     * none - the member is never left out, which is what tells an apply the entity carries none.
+     */
+    public function testEveryEntityLevelWritesItsPairsAndANullWhereThereAreNone(): void
+    {
+        $mapper = $this->createEntryMapper();
+        $pairs = ['indexed' => 'yes', 'nested' => ['a' => 1]];
+
+        $subGroup = new SubGroupConfig();
+        $subGroup->setName('Dimensions');
+        $collection = new CollectionConfig();
+        $collection->setName('Lighting');
+        $group = new GroupConfig();
+        $group->setName('Measurements');
+        $key = $this->createKey(enabled: true);
+
+        $this->assertNull($mapper->mapSubGroup($subGroup)['customMetadata']);
+        $this->assertNull($mapper->mapCollection($collection)['customMetadata']);
+        $this->assertNull($mapper->mapGroup($group)['customMetadata']);
+        $this->assertNull($mapper->mapKey($key)['customMetadata']);
+
+        $subGroup->setCustomMetadata($pairs);
+        $collection->setCustomMetadata($pairs);
+        $group->setCustomMetadata($pairs);
+        $key->setCustomMetadata($pairs);
+
+        $this->assertSame($pairs, $mapper->mapSubGroup($subGroup)['customMetadata']);
+        $this->assertSame($pairs, $mapper->mapCollection($collection)['customMetadata']);
+        $this->assertSame($pairs, $mapper->mapGroup($group)['customMetadata']);
+        $this->assertSame($pairs, $mapper->mapKey($key)['customMetadata']);
     }
 
     /**

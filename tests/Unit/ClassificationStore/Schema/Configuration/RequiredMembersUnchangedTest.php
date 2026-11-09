@@ -15,13 +15,26 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Sche
 
 use Codeception\Test\Unit;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\CollectionLayout;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\CollectionCreate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\CollectionDetail;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\CollectionUpdate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GroupCreate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GroupDetail;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GroupUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyDetail;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\StoreDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\StoreTreeNode;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\SubGroupCreate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\SubGroupDetail;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\SubGroupUpdate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\GroupLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyGroupRelation;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\SubGroupLayout;
 use ReflectionClass;
 
 /**
@@ -64,6 +77,21 @@ final class RequiredMembersUnchangedTest extends Unit
             ]],
             KeyCreate::class => [KeyCreate::class, ['name', 'storeId']],
             KeyUpdate::class => [KeyUpdate::class, ['name', 'type', 'definition']],
+            CollectionDetail::class => [CollectionDetail::class, [
+                'id', 'name', 'storeId', 'description', 'creationDate', 'modificationDate',
+            ]],
+            GroupDetail::class => [GroupDetail::class, [
+                'id', 'name', 'storeId', 'description', 'creationDate', 'modificationDate',
+            ]],
+            SubGroupDetail::class => [SubGroupDetail::class, [
+                'id', 'name', 'storeId', 'description', 'creationDate', 'modificationDate',
+            ]],
+            CollectionUpdate::class => [CollectionUpdate::class, ['name', 'description']],
+            GroupUpdate::class => [GroupUpdate::class, ['name', 'description']],
+            SubGroupUpdate::class => [SubGroupUpdate::class, ['name', 'description']],
+            CollectionCreate::class => [CollectionCreate::class, ['name', 'storeId']],
+            GroupCreate::class => [GroupCreate::class, ['name', 'storeId']],
+            SubGroupCreate::class => [SubGroupCreate::class, ['name', 'storeId']],
         ];
     }
 
@@ -83,8 +111,36 @@ final class RequiredMembersUnchangedTest extends Unit
     }
 
     /**
-     * No `warnings` array and no other new member joined the key schemas: a declaration a store's
-     * engine cannot serve is accepted and nothing is said about it in the body.
+     * The other surfaces that describe these entities publish no pairs: the layouts the object editor
+     * reads, the store-wide key picker and the assignment grid.
+     *
+     * @dataProvider pairlessSchemaProvider
+     */
+    public function testNoOtherSurfaceGainedTheCustomMetadataMember(string $schema): void
+    {
+        $this->assertNotContains('customMetadata', $this->getConstructorParameterNames($schema));
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function pairlessSchemaProvider(): array
+    {
+        return [
+            KeyLayout::class => [KeyLayout::class],
+            GroupLayout::class => [GroupLayout::class],
+            SubGroupLayout::class => [SubGroupLayout::class],
+            CollectionLayout::class => [CollectionLayout::class],
+            KeyGroupRelation::class => [KeyGroupRelation::class],
+            KeyGroupRelationDetail::class => [KeyGroupRelationDetail::class],
+            StoreDetail::class => [StoreDetail::class],
+            StoreTreeNode::class => [StoreTreeNode::class],
+        ];
+    }
+
+    /**
+     * No `warnings` array and no member but the optional `customMetadata` joined the key detail: a
+     * declaration a store's engine cannot serve is accepted and nothing is said about it in the body.
      */
     public function testTheKeyDetailGainedNoResponseMember(): void
     {
@@ -92,6 +148,7 @@ final class RequiredMembersUnchangedTest extends Unit
             [
                 'id', 'name', 'storeId', 'type', 'enabled', 'description', 'definition',
                 'creationDate', 'modificationDate', 'title', 'identifier', 'localized',
+                'customMetadata',
             ],
             $this->getConstructorParameterNames(KeyDetail::class)
         );

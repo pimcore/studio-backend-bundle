@@ -24,6 +24,7 @@ use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
+use function array_key_exists;
 
 /**
  * Writes the entity sections itself - sub groups, collections, groups and keys - and composes the
@@ -268,6 +269,8 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
         $identifier = (string) $entry[ArtifactField::IDENTIFIER->value];
         $name = (string) $entry[ArtifactField::NAME->value];
         $description = $this->matcher->readNullableString($entry, ArtifactField::DESCRIPTION->value);
+        $customMetadataSupplied = array_key_exists(ArtifactField::CUSTOM_METADATA->value, $entry);
+        $customMetadata = $entry[ArtifactField::CUSTOM_METADATA->value] ?? null;
         $label = $this->diagnostics->label($section, $name);
 
         // the file declares it, which is what a reference to it from a later section asks about
@@ -277,7 +280,10 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
             $target->getName(),
             $target->getDescription(),
             $name,
-            $description
+            $description,
+            $target->getCustomMetadata(),
+            $customMetadataSupplied,
+            $customMetadata
         );
 
         $outcome = match (true) {
@@ -296,7 +302,14 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
         $id = $target?->getId();
 
         if ($outcome !== ApplyOutcome::MATCHED_UNCHANGED && !$context->isDryRun()) {
-            $id = $save($target, $identifier, $name, $description);
+            $id = $save(
+                $target,
+                $identifier,
+                $name,
+                $description,
+                $customMetadataSupplied,
+                $customMetadata
+            );
         }
 
         if ($id !== null) {

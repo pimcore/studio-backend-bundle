@@ -122,6 +122,31 @@ final class ArtifactParserTest extends Unit
         $this->assertFalse($assignment->isSubGroupSupplied());
     }
 
+    /**
+     * The pairs of a key follow the rule of the per assignment columns: left out they are not
+     * supplied, carried as null they are supplied and clear, carried as an object they replace.
+     */
+    public function testTheKeyPairsKeepAnOmittedMemberApartFromANull(): void
+    {
+        $base = [
+            'identifier' => self::KEY_IDENTIFIER,
+            'name' => 'weight',
+            'type' => 'input',
+        ];
+        $parser = new ArtifactParser();
+
+        $omitted = $parser->readKeyEntry($base);
+        $this->assertFalse($omitted->isCustomMetadataSupplied());
+
+        $null = $parser->readKeyEntry([...$base, 'customMetadata' => null]);
+        $this->assertTrue($null->isCustomMetadataSupplied());
+        $this->assertNull($null->getCustomMetadata());
+
+        $pairs = $parser->readKeyEntry([...$base, 'customMetadata' => ['indexed' => 'yes']]);
+        $this->assertTrue($pairs->isCustomMetadataSupplied());
+        $this->assertSame(['indexed' => 'yes'], $pairs->getCustomMetadata());
+    }
+
     public function testAPerAssignmentFieldSuppliedAsNullIsSupplied(): void
     {
         $assignment = (new ArtifactParser())->readAssignmentEntry([
@@ -178,6 +203,61 @@ final class ArtifactParserTest extends Unit
             'a mandatory flag that is a string' => ['keyGroupRelations', ['mandatory' => 'true']],
             'a sorter that is a string' => ['keyGroupRelations', ['sorter' => '1']],
             'a sub group that is not a string' => ['keyGroupRelations', ['subGroup' => 17]],
+            'group pairs that are a string' => ['groups', ['customMetadata' => 'erp']],
+            'key pairs that are a number' => ['keys', ['customMetadata' => 5]],
+        ];
+    }
+
+    /**
+     * The pairs of every entity section are an object or null, wherever the file puts them.
+     *
+     * @dataProvider entitySectionProvider
+     */
+    public function testEntityPairsThatAreNotAnObjectAreRefused(string $section): void
+    {
+        $artifact = $this->createArtifact();
+        $artifact[$section][] = [
+            'identifier' => '01ENTITY',
+            'name' => 'Entity',
+            'description' => null,
+            'customMetadata' => 'erp',
+        ];
+
+        $this->expectException(InvalidArgumentException::class);
+
+        (new ArtifactParser())->parse($this->encode($artifact));
+    }
+
+    /**
+     * @dataProvider entitySectionProvider
+     */
+    public function testEntityPairsThatAreAnObjectOrNullAreAccepted(string $section): void
+    {
+        $artifact = $this->createArtifact();
+        $artifact[$section][] = [
+            'identifier' => '01ENTITY',
+            'name' => 'Entity',
+            'customMetadata' => ['indexed' => 'yes'],
+        ];
+        $artifact[$section][] = ['identifier' => '01OTHER', 'name' => 'Other', 'customMetadata' => null];
+
+        $document = (new ArtifactParser())->parse($this->encode($artifact));
+
+        $entries = $document->getEntries(ArtifactSection::from($section));
+
+        $this->assertSame(['indexed' => 'yes'], $entries['01ENTITY']['customMetadata']);
+        $this->assertNull($entries['01OTHER']['customMetadata']);
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function entitySectionProvider(): array
+    {
+        return [
+            'sub groups' => ['subGroups'],
+            'collections' => ['collections'],
+            'groups' => ['groups'],
         ];
     }
 

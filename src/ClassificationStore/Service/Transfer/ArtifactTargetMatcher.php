@@ -124,8 +124,13 @@ final readonly class ArtifactTargetMatcher implements ArtifactTargetMatcherInter
         ?string $storedDescription,
         string $name,
         ?string $description,
+        ?array $storedCustomMetadata = null,
+        bool $customMetadataSupplied = false,
+        ?array $customMetadata = null,
     ): bool {
-        return $storedName === $name && ($storedDescription ?? '') === ($description ?? '');
+        return $storedName === $name
+            && ($storedDescription ?? '') === ($description ?? '')
+            && (!$customMetadataSupplied || ($storedCustomMetadata ?? []) === ($customMetadata ?? []));
     }
 
     /**
@@ -154,6 +159,8 @@ final readonly class ArtifactTargetMatcher implements ArtifactTargetMatcherInter
             && $target->getType() === $entry->getType()
             && $target->getEnabled() === $entry->isEnabled()
             && $this->describesSameLocalization($target, $entry)
+            && (!$entry->isCustomMetadataSupplied()
+                || ($target->getCustomMetadata() ?? []) === ($entry->getCustomMetadata() ?? []))
             && (is_array($storedDefinition) ? $storedDefinition : []) === ($entry->getDefinition() ?? []);
     }
 

@@ -111,6 +111,8 @@ interface SubGroupRepositoryInterface
         string $identifier,
         string $name,
         ?string $description,
+        bool $customMetadataSupplied = false,
+        ?array $customMetadata = null,
     ): SubGroupConfig;
 
     /**
@@ -124,7 +126,13 @@ interface SubGroupRepositoryInterface
      * @throws InvalidArgumentException
      * @throws ElementSavingFailedException
      */
-    public function update(int $id, string $name, ?string $description): SubGroupConfig;
+    public function update(
+        int $id,
+        string $name,
+        ?string $description,
+        bool $customMetadataSupplied = false,
+        ?array $customMetadata = null,
+    ): SubGroupConfig;
 
     /**
      * Refused while a key assignment of the store still carries the entry, so that deleting a sub

@@ -134,11 +134,17 @@ final readonly class CollectionRepository implements CollectionRepositoryInterfa
         string $identifier,
         string $name,
         ?string $description,
+        bool $customMetadataSupplied = false,
+        ?array $customMetadata = null,
     ): CollectionConfig {
         $config ??= new CollectionConfig();
         $config->setStoreId($storeId);
         $config->setName($name);
         $config->setDescription($description ?? '');
+
+        if ($customMetadataSupplied) {
+            $config->setCustomMetadata($customMetadata);
+        }
 
         try {
             // before the save, so that a new row carries the file's identifier instead of a fresh one
@@ -180,11 +186,20 @@ final readonly class CollectionRepository implements CollectionRepositoryInterfa
     /**
      * {@inheritdoc}
      */
-    public function update(int $id, string $name, ?string $description): CollectionConfig
-    {
+    public function update(
+        int $id,
+        string $name,
+        ?string $description,
+        bool $customMetadataSupplied = false,
+        ?array $customMetadata = null,
+    ): CollectionConfig {
         $config = $this->getById($id);
         $config->setName($name);
         $config->setDescription($description ?? '');
+
+        if ($customMetadataSupplied) {
+            $config->setCustomMetadata($customMetadata);
+        }
 
         try {
             $config->save();

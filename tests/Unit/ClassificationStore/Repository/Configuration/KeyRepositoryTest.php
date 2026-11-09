@@ -351,6 +351,88 @@ final class KeyRepositoryTest extends Unit
     }
 
     /**
+     * The pairs follow the rule of the title: a payload that omits them leaves the stored ones alone,
+     * a supplied object replaces them whole, and a supplied null or empty map clears them.
+     *
+     * @throws Exception
+     */
+    public function testTheUpdateWritesThePairsOnlyWhenThePayloadSuppliedThem(): void
+    {
+        $calls = [];
+        $config = $this->createSavableKeyConfig();
+        $config->setDefinition(self::LOADED_DEFINITION);
+        $repository = $this->createRepository($config, $this->createCommittingConnection($calls));
+
+        $repository->update(
+            self::KEY_ID,
+            new KeyUpdate(name: self::KEY_NAME)
+        );
+        $this->assertFalse($config->isCustomMetadataInitialized());
+
+        $repository->update(
+            self::KEY_ID,
+            new KeyUpdate(name: self::KEY_NAME, customMetadata: ['indexed' => 'yes'])
+        );
+        $this->assertSame(['indexed' => 'yes'], $config->getCustomMetadata());
+
+        $repository->update(
+            self::KEY_ID,
+            new KeyUpdate(name: self::KEY_NAME)
+        );
+        $this->assertSame(['indexed' => 'yes'], $config->getCustomMetadata());
+
+        $repository->update(
+            self::KEY_ID,
+            new KeyUpdate(name: self::KEY_NAME, customMetadata: ['source' => 'erp'])
+        );
+        $this->assertSame(['source' => 'erp'], $config->getCustomMetadata());
+
+        $repository->update(
+            self::KEY_ID,
+            new KeyUpdate(name: self::KEY_NAME, customMetadataSupplied: true)
+        );
+        $this->assertNull($config->getCustomMetadata());
+
+        $repository->update(
+            self::KEY_ID,
+            new KeyUpdate(name: self::KEY_NAME, customMetadata: [])
+        );
+        $this->assertNull($config->getCustomMetadata());
+    }
+
+    /**
+     * The apply's key write takes the pairs only from an entry that supplies them.
+     *
+     * @throws Exception
+     */
+    public function testTheApplyWritesThePairsOnlyWhenTheEntrySuppliesThem(): void
+    {
+        $calls = [];
+        $config = $this->createSavableKeyConfig();
+        $config->setDefinition(self::LOADED_DEFINITION);
+        $config->setCustomMetadata(['indexed' => 'yes']);
+        $repository = $this->createRepository($config, $this->createCommittingConnection($calls));
+
+        $repository->saveFromArtifact($config, 1, $this->createArtifactEntry());
+        $this->assertSame(['indexed' => 'yes'], $config->getCustomMetadata());
+
+        $entry = new ArtifactKeyEntry(
+            self::IDENTIFIER,
+            self::KEY_NAME,
+            self::STORED_TITLE,
+            self::STORED_DESCRIPTION,
+            'input',
+            ['fieldtype' => 'input'],
+            true,
+            null,
+            null,
+            true
+        );
+        $repository->saveFromArtifact($config, 1, $entry);
+        $this->assertNull($config->getCustomMetadata());
+    }
+
+    /**
      * The apply's key write holds its row the same way - it runs long enough for the key endpoint to
      * have committed over the target it read - and holds nothing for a key it creates, which has no
      * row to hold and replaces no definition.

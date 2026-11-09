@@ -36,14 +36,15 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 interface ArtifactEntryWriterInterface
 {
     /**
-     * The entity sections that carry a name and a description only, which is sub groups,
+     * The entity sections that carry a name, a description and pairs only, which is sub groups,
      * collections and groups: the store's rows of the level are walked, each matched against the
      * section, and every entry the walk did not reach is created.
      *
      * `$walk` reads one chunk of rows, by cursor, and is called with the identifier phase
      * ({@see ArtifactTargetMatcherInterface::IDENTIFIER_PHASES}), the cursor and the chunk size;
      * `$save` writes one entry onto the row it was matched to, or onto a new row, and hands back
-     * its id.
+     * its id; it is called with the target, the identifier, the name, the description, whether the
+     * entry supplies `customMetadata`, and that map.
      *
      * @throws DatabaseException
      * @throws ElementSavingFailedException

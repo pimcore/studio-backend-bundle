@@ -91,6 +91,8 @@ final readonly class GroupService implements GroupServiceInterface
                 $id,
                 $parameters->getName(),
                 $parameters->getDescription(),
+                $parameters->hasCustomMetadata(),
+                $parameters->hasCustomMetadata() ? $parameters->getCustomMetadata() : null,
             );
         } finally {
             $this->keyRelationResolver->clear();

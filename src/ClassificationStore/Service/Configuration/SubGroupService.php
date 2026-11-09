@@ -84,6 +84,8 @@ final readonly class SubGroupService implements SubGroupServiceInterface
             $id,
             $parameters->getName(),
             $parameters->getDescription(),
+            $parameters->hasCustomMetadata(),
+            $parameters->hasCustomMetadata() ? $parameters->getCustomMetadata() : null,
         );
 
         return $this->getHydratedSubGroupDetail($subGroupConfig);

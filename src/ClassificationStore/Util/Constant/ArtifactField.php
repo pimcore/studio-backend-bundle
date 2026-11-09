@@ -33,6 +33,7 @@ enum ArtifactField: string
     case DEFINITION = 'definition';
     case ENABLED = 'enabled';
     case LOCALIZED = 'localized';
+    case CUSTOM_METADATA = 'customMetadata';
     case SORTER = 'sorter';
     case MANDATORY = 'mandatory';
     case METADATA = 'metadata';

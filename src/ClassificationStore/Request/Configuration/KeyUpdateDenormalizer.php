@@ -72,9 +72,11 @@ final readonly class KeyUpdateDenormalizer implements DenormalizerInterface, Nor
             type: $this->stringOrNull($data, 'type'),
             definition: $this->arrayOrNull($data, 'definition'),
             localized: $this->boolOrNull($data, 'localized'),
+            customMetadata: $this->arrayOrNull($data, 'customMetadata'),
             titleSupplied: array_key_exists('title', $data),
             descriptionSupplied: array_key_exists('description', $data),
             localizedSupplied: array_key_exists('localized', $data),
+            customMetadataSupplied: array_key_exists('customMetadata', $data),
             // Forwarded so the schema's refusal still fires: this denormalizer replaces the
             // mapping that used to hand a supplied `identifier` to the constructor.
             identifier: array_key_exists('identifier', $data) ? $data['identifier'] : AbsentValue::ABSENT,

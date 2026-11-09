@@ -105,6 +105,30 @@ final class KeyUpdateDenormalizerTest extends Unit
         }
     }
 
+    public function testAnAbsentCustomMetadataIsToldApartFromOneSentAsNull(): void
+    {
+        $absent = $this->denormalize([]);
+        $null = $this->denormalize(['customMetadata' => null]);
+        $pairs = $this->denormalize(['customMetadata' => ['indexed' => 'yes', 'title.de' => 'Gewicht']]);
+
+        $this->assertFalse($absent->isCustomMetadataSupplied());
+        $this->assertTrue($null->isCustomMetadataSupplied());
+        $this->assertNull($null->getCustomMetadata());
+        $this->assertTrue($pairs->isCustomMetadataSupplied());
+        $this->assertSame(['indexed' => 'yes', 'title.de' => 'Gewicht'], $pairs->getCustomMetadata());
+    }
+
+    public function testACustomMetadataThatIsNotAnObjectIsRefusedAsUnprocessable(): void
+    {
+        try {
+            $this->denormalize(['customMetadata' => 5]);
+            $this->fail('Expected the non-object customMetadata to be refused.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame(HttpResponseCodes::UNPROCESSABLE_CONTENT->value, $e->getStatusCode());
+            $this->assertStringContainsString('customMetadata', $e->getMessage());
+        }
+    }
+
     public function testAnEmptyStringCountsAsSupplied(): void
     {
         $parameters = $this->denormalize(['title' => '', 'description' => '']);

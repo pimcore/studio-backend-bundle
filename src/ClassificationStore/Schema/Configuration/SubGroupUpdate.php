@@ -15,7 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configur
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\AbsentValue;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use function is_array;
 
 /**
  * @internal
@@ -41,9 +43,25 @@ final readonly class SubGroupUpdate
             nullable: true
         )]
         private ?string $description = null,
+        #[Property(
+            description: 'Free-form pairs of the sub group. Pimcore reads no member of it and no member is'
+                . ' reserved. Omitting it keeps a stored object alone, a supplied object replaces it whole'
+                . ' rather than merging into it - so one rebuilt from a form without a member drops that'
+                . ' member - and an explicit null clears it altogether.',
+            type: 'object',
+            example: ['source' => 'erp'],
+            nullable: true
+        )]
+        private mixed $customMetadata = AbsentValue::ABSENT,
     ) {
         if (empty($this->name)) {
             throw new InvalidArgumentException('Name cannot be empty.');
+        }
+
+        if ($this->customMetadata !== AbsentValue::ABSENT
+            && $this->customMetadata !== null
+            && !is_array($this->customMetadata)) {
+            throw new InvalidArgumentException('customMetadata has to be an object or null.');
         }
     }
 
@@ -55,5 +73,20 @@ final readonly class SubGroupUpdate
     public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    public function hasCustomMetadata(): bool
+    {
+        return $this->customMetadata !== AbsentValue::ABSENT;
+    }
+
+    /**
+     * Carries a value only when {@see self::hasCustomMetadata()} reports one.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getCustomMetadata(): ?array
+    {
+        return $this->customMetadata;
     }
 }

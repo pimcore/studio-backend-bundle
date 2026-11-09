@@ -64,8 +64,8 @@ final readonly class ArtifactParser implements ArtifactParserInterface
      *
      * Absent and null are the same thing for every optional field, which is what the artifact
      * writes for a column that carries nothing. The one place the two are told apart is the three
-     * per assignment columns, and that is decided on the key being present rather than on its
-     * shape ({@see self::readAssignmentEntry()}).
+     * per assignment columns and the `customMetadata` of the four entity sections, and that is decided
+     * on the key being present rather than on its shape ({@see self::readAssignmentEntry()}).
      */
     private const array ENTRY_SHAPE = [
         ArtifactSection::STORE->value => [
@@ -77,16 +77,19 @@ final readonly class ArtifactParser implements ArtifactParserInterface
             ArtifactField::IDENTIFIER->value => self::REQUIRED_STRING,
             ArtifactField::NAME->value => self::REQUIRED_STRING,
             ArtifactField::DESCRIPTION->value => self::OPTIONAL_STRING,
+            ArtifactField::CUSTOM_METADATA->value => self::OPTIONAL_OBJECT,
         ],
         ArtifactSection::COLLECTIONS->value => [
             ArtifactField::IDENTIFIER->value => self::REQUIRED_STRING,
             ArtifactField::NAME->value => self::REQUIRED_STRING,
             ArtifactField::DESCRIPTION->value => self::OPTIONAL_STRING,
+            ArtifactField::CUSTOM_METADATA->value => self::OPTIONAL_OBJECT,
         ],
         ArtifactSection::GROUPS->value => [
             ArtifactField::IDENTIFIER->value => self::REQUIRED_STRING,
             ArtifactField::NAME->value => self::REQUIRED_STRING,
             ArtifactField::DESCRIPTION->value => self::OPTIONAL_STRING,
+            ArtifactField::CUSTOM_METADATA->value => self::OPTIONAL_OBJECT,
         ],
         ArtifactSection::KEYS->value => [
             ArtifactField::IDENTIFIER->value => self::REQUIRED_STRING,
@@ -97,6 +100,7 @@ final readonly class ArtifactParser implements ArtifactParserInterface
             ArtifactField::DEFINITION->value => self::OPTIONAL_OBJECT,
             ArtifactField::ENABLED->value => self::OPTIONAL_BOOL,
             ArtifactField::LOCALIZED->value => self::OPTIONAL_BOOL,
+            ArtifactField::CUSTOM_METADATA->value => self::OPTIONAL_OBJECT,
         ],
         ArtifactSection::COLLECTION_GROUP_RELATIONS->value => [
             ArtifactField::COLLECTION->value => self::REQUIRED_STRING,
@@ -170,7 +174,9 @@ final readonly class ArtifactParser implements ArtifactParserInterface
             // a key row whose column was never written reads as disabled, which is what it is
             is_bool($enabled) ? $enabled : false,
             // the one optional column whose own NULL is a state: a key that states no flag
-            is_bool($localized) ? $localized : null
+            is_bool($localized) ? $localized : null,
+            $this->readNullableArray($entry, ArtifactField::CUSTOM_METADATA->value, $section),
+            array_key_exists(ArtifactField::CUSTOM_METADATA->value, $entry)
         );
     }
 

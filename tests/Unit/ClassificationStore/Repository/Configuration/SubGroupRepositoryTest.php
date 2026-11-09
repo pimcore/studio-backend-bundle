@@ -90,6 +90,33 @@ final class SubGroupRepositoryTest extends Unit
         $this->assertSame(self::IDENTIFIER, $config->getIdentifier());
     }
 
+    /**
+     * The pairs are written only when the request supplied them: an omitted member never initializes
+     * the model's column, a supplied map replaces it, and a supplied null clears it.
+     */
+    public function testUpdateWritesThePairsOnlyWhenTheyAreSupplied(): void
+    {
+        $repository = $this->createRepository(subGroupRows: [$this->createRow()]);
+
+        $this->assertFalse(
+            $repository->update(self::SUB_GROUP_ID, self::RENAMED, null)->isCustomMetadataInitialized()
+        );
+
+        $pairs = ['indexed' => 'yes', 'title.de' => 'Maße'];
+        $this->assertSame(
+            $pairs,
+            $repository->update(self::SUB_GROUP_ID, self::RENAMED, null, true, $pairs)->getCustomMetadata()
+        );
+
+        $cleared = $repository->update(self::SUB_GROUP_ID, self::RENAMED, null, true, null);
+        $this->assertTrue($cleared->isCustomMetadataInitialized());
+        $this->assertNull($cleared->getCustomMetadata());
+
+        $this->assertNull(
+            $repository->update(self::SUB_GROUP_ID, self::RENAMED, null, true, [])->getCustomMetadata()
+        );
+    }
+
     public function testUpdateOfAnUnknownIdIsNotFound(): void
     {
         $repository = $this->createRepository(subGroupRows: []);

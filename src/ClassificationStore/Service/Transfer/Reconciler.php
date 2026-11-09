@@ -242,14 +242,23 @@ final readonly class Reconciler implements ReconcilerInterface
             $document,
             fn (bool $withIdentifier, int $afterId, int $limit): array => $this->subGroupRepository
                 ->getChunkAfterId($storeId, $afterId, $limit, $withIdentifier),
-            fn (?object $target, string $identifier, string $name, ?string $description): int => (int) $this
+            fn (
+                ?object $target,
+                string $identifier,
+                string $name,
+                ?string $description,
+                bool $customMetadataSupplied,
+                ?array $customMetadata,
+            ): int => (int) $this
                 ->subGroupRepository
                 ->saveFromArtifact(
                     $target instanceof SubGroupConfig ? $target : null,
                     $storeId,
                     $identifier,
                     $name,
-                    $description
+                    $description,
+                    $customMetadataSupplied,
+                    $customMetadata
                 )
                 ->getId()
         );
@@ -265,14 +274,23 @@ final readonly class Reconciler implements ReconcilerInterface
             $document,
             fn (bool $withIdentifier, int $afterId, int $limit): array => $this->collectionRepository
                 ->getChunkAfterId($storeId, $afterId, $limit, $withIdentifier),
-            fn (?object $target, string $identifier, string $name, ?string $description): int => (int) $this
+            fn (
+                ?object $target,
+                string $identifier,
+                string $name,
+                ?string $description,
+                bool $customMetadataSupplied,
+                ?array $customMetadata,
+            ): int => (int) $this
                 ->collectionRepository
                 ->saveFromArtifact(
                     $target instanceof CollectionConfig ? $target : null,
                     $storeId,
                     $identifier,
                     $name,
-                    $description
+                    $description,
+                    $customMetadataSupplied,
+                    $customMetadata
                 )
                 ->getId()
         );
@@ -288,14 +306,23 @@ final readonly class Reconciler implements ReconcilerInterface
             $document,
             fn (bool $withIdentifier, int $afterId, int $limit): array => $this->groupRepository
                 ->getChunkAfterId($storeId, $afterId, $limit, $withIdentifier),
-            fn (?object $target, string $identifier, string $name, ?string $description): int => (int) $this
+            fn (
+                ?object $target,
+                string $identifier,
+                string $name,
+                ?string $description,
+                bool $customMetadataSupplied,
+                ?array $customMetadata,
+            ): int => (int) $this
                 ->groupRepository
                 ->saveFromArtifact(
                     $target instanceof GroupConfig ? $target : null,
                     $storeId,
                     $identifier,
                     $name,
-                    $description
+                    $description,
+                    $customMetadataSupplied,
+                    $customMetadata
                 )
                 ->getId()
         );

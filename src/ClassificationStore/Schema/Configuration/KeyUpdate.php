@@ -111,10 +111,21 @@ final readonly class KeyUpdate
             nullable: true
         )]
         private ?bool $localized = null,
+        #[Property(
+            description: 'Free-form pairs of the key. Pimcore reads no member of it and no member is reserved.'
+                . ' Omitting it keeps a stored object alone, a supplied object replaces it whole rather than'
+                . ' merging into it - so one rebuilt from a form without a member drops that member - and an'
+                . ' explicit null clears it altogether.',
+            type: 'object',
+            example: ['source' => 'erp'],
+            nullable: true
+        )]
+        private ?array $customMetadata = null,
         // Set by KeyUpdateDenormalizer: an absent field leaves the stored value alone, a present empty one clears it.
         private bool $titleSupplied = false,
         private bool $descriptionSupplied = false,
         private bool $localizedSupplied = false,
+        private bool $customMetadataSupplied = false,
         // only refused here, never a property of this schema; the default stands for an absent key
         mixed $identifier = AbsentValue::ABSENT,
     ) {
@@ -158,6 +169,14 @@ final readonly class KeyUpdate
     }
 
     /**
+     * @return array<string, mixed>|null
+     */
+    public function getCustomMetadata(): ?array
+    {
+        return $this->customMetadata;
+    }
+
+    /**
      * A non-null title counts as supplied on its own, so constructing this DTO directly — without
      * the denormalizer that sets the flag — cannot silently drop the value. The flag is what tells
      * a title supplied as null apart from an omitted one, which inference cannot recover.
@@ -177,6 +196,11 @@ final readonly class KeyUpdate
         return $this->localizedSupplied || $this->localized !== null;
     }
 
+    public function isCustomMetadataSupplied(): bool
+    {
+        return $this->customMetadataSupplied || $this->customMetadata !== null;
+    }
+
     /**
      * @throws InvalidArgumentException
      */
@@ -189,9 +213,11 @@ final readonly class KeyUpdate
             type: $this->type,
             definition: $definition,
             localized: $this->localized,
+            customMetadata: $this->customMetadata,
             titleSupplied: $this->titleSupplied,
             descriptionSupplied: $this->descriptionSupplied,
             localizedSupplied: $this->localizedSupplied,
+            customMetadataSupplied: $this->customMetadataSupplied,
         );
     }
 }

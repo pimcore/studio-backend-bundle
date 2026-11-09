@@ -46,6 +46,7 @@ final readonly class KeyHydrator implements KeyHydratorInterface
             $keyConfig->getTitle(),
             $keyConfig->getIdentifier(),
             $this->keyLocalizationResolver->getLocalized($keyConfig),
+            $keyConfig->getCustomMetadata(),
         );
     }
 

@@ -55,6 +55,7 @@ final readonly class ArtifactEntryMapper implements ArtifactEntryMapperInterface
             ArtifactField::IDENTIFIER->value => $config->getIdentifier(),
             ArtifactField::NAME->value => $config->getName(),
             ArtifactField::DESCRIPTION->value => $config->getDescription(),
+            ArtifactField::CUSTOM_METADATA->value => $config->getCustomMetadata(),
         ];
     }
 
@@ -67,6 +68,7 @@ final readonly class ArtifactEntryMapper implements ArtifactEntryMapperInterface
             ArtifactField::IDENTIFIER->value => $config->getIdentifier(),
             ArtifactField::NAME->value => $config->getName(),
             ArtifactField::DESCRIPTION->value => $config->getDescription(),
+            ArtifactField::CUSTOM_METADATA->value => $config->getCustomMetadata(),
         ];
     }
 
@@ -79,6 +81,7 @@ final readonly class ArtifactEntryMapper implements ArtifactEntryMapperInterface
             ArtifactField::IDENTIFIER->value => $config->getIdentifier(),
             ArtifactField::NAME->value => $config->getName(),
             ArtifactField::DESCRIPTION->value => $config->getDescription(),
+            ArtifactField::CUSTOM_METADATA->value => $config->getCustomMetadata(),
         ];
     }
 
@@ -97,6 +100,7 @@ final readonly class ArtifactEntryMapper implements ArtifactEntryMapperInterface
             ArtifactField::TYPE->value => $config->getType(),
             ArtifactField::DEFINITION->value => is_array($definition) ? $definition : null,
             ArtifactField::ENABLED->value => $config->getEnabled(),
+            ArtifactField::CUSTOM_METADATA->value => $config->getCustomMetadata(),
         ];
 
         $localized = $this->keyLocalizationResolver->getLocalized($config);
