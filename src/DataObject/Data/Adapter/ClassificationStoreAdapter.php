@@ -186,11 +186,11 @@ final readonly class ClassificationStoreAdapter implements
         $resolveInheritedValue = $contextData?->shouldResolveInheritedValue() ?? false;
         foreach ($collection as $groupId => $groupDefinitions) {
             foreach ($groupDefinitions as $groupKeyId => $definition) {
+                $keyConfig = $fieldDefinition->getKeyConfiguration($groupKeyId);
                 // an ancestor's qualified slot holds the entry list, which is no value of the key's
                 // own type: where the origin is still reported, the value behind it is not resolved
-                $resolveKeyValue = $resolveInheritedValue && !$this->keyQualifierResolver->declaresQualifiers(
-                    $fieldDefinition->getKeyConfiguration($groupKeyId)
-                );
+                $resolveKeyValue = $resolveInheritedValue
+                    && !$this->keyQualifierResolver->declaresQualifiers($keyConfig);
 
                 foreach ($languages as $language) {
                     $fieldContextData = new FieldContextData(
@@ -198,7 +198,12 @@ final readonly class ClassificationStoreAdapter implements
                         $language,
                         $groupId,
                         $groupKeyId,
-                        resolveInheritedValue: $resolveKeyValue
+                        resolveInheritedValue: $resolveKeyValue,
+                        // the sibling arm of that guard, which does resolve the value: an ancestor's
+                        // slot is read under the key's declaration, so a key declaring nothing reads
+                        // the one value it always did even where the row still holds a list it hides
+                        qualifiedValueSerializer: $this->qualifiedValueSerializer,
+                        classificationStoreKeyConfig: $keyConfig
                     );
                     $inheritedData[$groupId][$language][$groupKeyId] = $this->inheritanceService
                         ->getFieldInheritanceData($object, $definition, $key, $fieldContextData);

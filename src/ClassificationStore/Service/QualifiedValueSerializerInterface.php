@@ -24,6 +24,10 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
  * 0. An absent `var` means the default variant and an absent `p` means position 0, so an entry that
  * carries neither addresses the slot core's single-value path addresses.
  *
+ * The two questions a slot does not answer itself are owned beside it and reached through it: the
+ * read of a supplied payload ({@see QualifiedValueParserInterface}) and the engine's verdict on what
+ * a write addresses ({@see EngineCapabilityGuardInterface}).
+ *
  * @internal
  */
 interface QualifiedValueSerializerInterface
@@ -37,17 +41,10 @@ interface QualifiedValueSerializerInterface
     public const int DEFAULT_POSITION = 0;
 
     /**
-     * The entries a write supplies, validated: the shape, the variant names against the key's
-     * declaration and the uniqueness of the (variant, position) pairs.
+     * The entries a write supplies, validated - {@see QualifiedValueParserInterface::parseEntries()},
+     * which owns the rules a supplied payload is held to and states them.
      *
-     * A payload that is not a list of qualified entries is one entry of the default variant at
-     * position 0, which is what an un-updated client sends. A list holding at least one entry
-     * object - an array carrying `v` - is a list of entries; the array value of a multi-select or a
-     * relation field is not, and such a value keeps travelling whole.
-     *
-     * Every entry is held to the declaration, whatever the row already holds: a stored value the
-     * declaration no longer permits is hidden by {@see self::getVisibleEntries()}, so a client
-     * saving back what a read handed it never names one.
+     * Reached through here so that a caller reading and writing one slot has one place to ask.
      *
      * @return QualifiedValue[]
      *
@@ -66,16 +63,11 @@ interface QualifiedValueSerializerInterface
     public function holdsEntries(mixed $value): bool;
 
     /**
-     * Refuses a write that needs a capability the store's engine does not report.
+     * Refuses a write that needs a capability the store's engine does not report, fail-closed on a
+     * capability set of null - {@see EngineCapabilityGuardInterface::assertSupported()}, which owns
+     * that verdict and states it.
      *
-     * Fail-closed: a capability set of null is a core that could not be asked, and a capability
-     * that could not be confirmed is one the write does not get - it counts the same here as the
-     * empty set an engine reporting none answers with
-     * ({@see StoreEngineResolverInterface::getCapabilitiesOfStore()}). The two stay separate answers
-     * where they are reported rather than acted on.
-     *
-     * Either way only a write that actually needs a capability is refused: one entry carrying no
-     * variant at position 0 needs neither and goes through against any answer.
+     * Reached through here so that a caller reading and writing one slot has one place to ask.
      *
      * @param QualifiedValue[] $values
      * @param string[]|null $capabilities

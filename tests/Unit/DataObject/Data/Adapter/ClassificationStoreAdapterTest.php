@@ -20,8 +20,10 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\De
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\GroupConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\EngineCapabilityGuard;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParser;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializer;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ClassificationStoreAdapter;
@@ -1408,6 +1410,58 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
+     * The sibling arm of that guard, the one that does resolve the value: the slot an ancestor holds
+     * is read under the key's declaration, so a key that has stopped declaring resolves the one
+     * value it always resolved and never the list its row still holds. Asserted on the value the
+     * walk reads, which is both what gets resolved and what decides whether the element holds a
+     * value of its own at all.
+     *
+     * @throws Exception
+     */
+    public function testTheInheritedValueOfAKeyThatStoppedDeclaringIsReadAsItsOneValue(): void
+    {
+        $read = [];
+        $list = [['v' => '80'], ['v' => '176', 'var' => self::IMPERIAL]];
+        // the plain key's row holds the list of a declaration since taken away, which hides both
+        // the variant entry and the list itself without deleting anything
+        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
+            self::QUALIFIED_KEY => $list,
+            self::PLAIN_KEY => $list,
+        ]]];
+        $keyConfigs = $this->qualifiedKeyConfigs();
+        $adapter = $this->createQualifiedAdapter(
+            $keyConfigs,
+            $stored,
+            inheritanceService: $this->makeEmpty(InheritanceServiceInterface::class, [
+                'getFieldInheritanceData' => static function (
+                    Concrete $object,
+                    Data $fieldDefinition,
+                    string $key,
+                    ?FieldContextData $contextData = null
+                ) use (&$read): InheritanceData {
+                    $read[(int) $contextData?->getClassificationStoreKeyId()] =
+                        $contextData?->getFieldValueFromContextObject($key);
+
+                    return new InheritanceData(1);
+                },
+            ])
+        );
+
+        $adapter->getFieldInheritance(
+            $this->makeEmpty(Concrete::class, [
+                'get' => $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]),
+            ]),
+            $this->createQualifiedFieldDefinition($keyConfigs),
+            'myStore',
+            new FieldContextData(resolveInheritedValue: true)
+        );
+
+        // one rule for the whole walk: the declaring key's slot is read the same way, which is what
+        // decides the origin it reports even though the value behind it is not resolved
+        $this->assertSame([self::QUALIFIED_KEY => '80', self::PLAIN_KEY => '80'], $read);
+    }
+
+    /**
      * Two entries of a key whose type is an encrypted field, written through a type adapter that
      * hands the value back wrapped - or, which is what the guard is about, unwrapped.
      *
@@ -2070,7 +2124,11 @@ final class ClassificationStoreAdapterTest extends Unit
             $keyQualifierResolver,
             $keyRelationResolver ?? $this->makeEmpty(KeyRelationResolverInterface::class),
             $languageService ?? $this->makeEmpty(LanguageServiceInterface::class),
-            new QualifiedValueSerializer($keyQualifierResolver),
+            new QualifiedValueSerializer(
+                $keyQualifierResolver,
+                new QualifiedValueParser($keyQualifierResolver),
+                new EngineCapabilityGuard()
+            ),
             $serviceResolver ?? $this->makeEmpty(ServiceResolverInterface::class),
             $securityService ?? $this->makeEmpty(SecurityServiceInterface::class),
             $storeEngineResolver ?? $this->createStoreEngineResolver(null),

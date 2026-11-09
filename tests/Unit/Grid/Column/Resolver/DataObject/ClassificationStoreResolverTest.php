@@ -18,8 +18,10 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\EngineCapabilityGuard;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParser;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializer;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
@@ -365,7 +367,11 @@ final class ClassificationStoreResolverTest extends Unit
             $classificationStoreServiceResolver ?? $this->makeEmpty(ServiceResolverInterface::class),
             $dataService ?? $this->makeEmpty(DataServiceInterface::class),
             $keyQualifierResolver,
-            new QualifiedValueSerializer($keyQualifierResolver),
+            new QualifiedValueSerializer(
+                $keyQualifierResolver,
+                new QualifiedValueParser($keyQualifierResolver),
+                new EngineCapabilityGuard()
+            ),
             $this->makeEmpty(ToolResolverInterface::class),
             $this->makeEmpty(LocalizedFieldResolverInterface::class),
         );

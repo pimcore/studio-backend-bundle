@@ -49,6 +49,12 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolver
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParserInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParser
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\EngineCapabilityGuardInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\EngineCapabilityGuard
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializerInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializer
 

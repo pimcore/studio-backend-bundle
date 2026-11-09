@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\EngineCapabilityGuard;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValue;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParser;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializer;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
@@ -43,7 +45,14 @@ final class QualifiedValueSerializerTest extends Unit
 
     public function _before(): void
     {
-        $this->serializer = new QualifiedValueSerializer(new KeyQualifierResolver());
+        // the real collaborators: the parse and the engine verdict are reached through the
+        // serializer, and what this suite asserts is what a caller of it gets
+        $keyQualifierResolver = new KeyQualifierResolver();
+        $this->serializer = new QualifiedValueSerializer(
+            $keyQualifierResolver,
+            new QualifiedValueParser($keyQualifierResolver),
+            new EngineCapabilityGuard()
+        );
     }
 
     /**

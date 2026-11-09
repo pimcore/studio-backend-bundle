@@ -15,9 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Serv
 
 use Codeception\Test\Unit;
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\EngineCapabilityGuard;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValue;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializer;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
@@ -151,15 +150,15 @@ final class StoreEngineResolverTest extends Unit
      */
     public function testNeitherAnswerLetsAWriteNeedingAnUnconfirmedCapabilityThrough(): void
     {
-        $serializer = new QualifiedValueSerializer(new KeyQualifierResolver());
+        $guard = new EngineCapabilityGuard();
         $needsVariants = [new QualifiedValue('80', 'imperial')];
 
         // and only such a write: the single default slot goes through against either answer
-        $serializer->assertSupported([new QualifiedValue('80')], []);
-        $serializer->assertSupported([new QualifiedValue('80')], null);
+        $guard->assertSupported([new QualifiedValue('80')], []);
+        $guard->assertSupported([new QualifiedValue('80')], null);
 
-        $this->assertTrue($this->isRefused($serializer, $needsVariants, []));
-        $this->assertTrue($this->isRefused($serializer, $needsVariants, null));
+        $this->assertTrue($this->isRefused($guard, $needsVariants, []));
+        $this->assertTrue($this->isRefused($guard, $needsVariants, null));
     }
 
     /**
@@ -169,12 +168,12 @@ final class StoreEngineResolverTest extends Unit
      * @param string[]|null $capabilities
      */
     private function isRefused(
-        QualifiedValueSerializer $serializer,
+        EngineCapabilityGuard $guard,
         array $values,
         ?array $capabilities
     ): bool {
         try {
-            $serializer->assertSupported($values, $capabilities);
+            $guard->assertSupported($values, $capabilities);
         } catch (AbstractApiException) {
             return true;
         }

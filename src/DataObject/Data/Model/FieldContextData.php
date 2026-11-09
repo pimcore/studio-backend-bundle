@@ -15,8 +15,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValue;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\Classificationstore;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\BlockElement;
 use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData as FieldCollectionData;
@@ -40,6 +42,8 @@ final readonly class FieldContextData
         private ?string $containerBrickType = null,
         private bool $historicalVersion = false,
         private ?QualifiedValue $classificationStoreValue = null,
+        private ?QualifiedValueSerializerInterface $qualifiedValueSerializer = null,
+        private ?KeyConfig $classificationStoreKeyConfig = null,
     ) {
     }
 
@@ -183,6 +187,10 @@ final readonly class FieldContextData
             containerFieldName: $containerFieldName,
             containerBrickType: $containerBrickType,
             historicalVersion: $this->historicalVersion,
+            // the key's declaration is the key's, not the element's: the ancestor's slot is read
+            // under the same one, or the walk would read a shape the key does not serialize in
+            qualifiedValueSerializer: $this->qualifiedValueSerializer,
+            classificationStoreKeyConfig: $this->classificationStoreKeyConfig,
         );
     }
 
@@ -207,6 +215,13 @@ final readonly class FieldContextData
      * siblings of the value it is about. The entry is deliberately not carried into
      * {@see self::createFieldContextData()}: the ancestor walk is about the ancestor's own value.
      *
+     * Where no entry is named, the slot is read under the key's declaration: it is the declaration
+     * alone that decides the shape a key is read in, so a key declaring nothing is read as the one
+     * value it has always been read as, whatever its row still holds - a row that holds the list of
+     * a declaration since taken away included. Without the declaration there is nothing to reduce
+     * by and the slot is read raw, which is every context that addresses no classification store
+     * key and every key whose row holds a plain value.
+     *
      * @throws Exception
      */
     private function getDataFromClassificationStore(Classificationstore $classificationstore): mixed
@@ -219,10 +234,16 @@ final readonly class FieldContextData
             return $this->classificationStoreValue->getValue();
         }
 
-        return $classificationstore->getLocalizedKeyValue(
+        $slot = $classificationstore->getLocalizedKeyValue(
             $this->classificationStoreGroupId,
             $this->classificationStoreKeyId,
             $this->language
         );
+
+        if ($this->qualifiedValueSerializer === null || $this->classificationStoreKeyConfig === null) {
+            return $slot;
+        }
+
+        return $this->qualifiedValueSerializer->getDefaultSlotValue($slot, $this->classificationStoreKeyConfig);
     }
 }
