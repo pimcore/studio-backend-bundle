@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configur
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\AbsentValue;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\JsonObjectShapeTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 
 /**
@@ -29,6 +30,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 )]
 final readonly class KeyUpdate
 {
+    use JsonObjectShapeTrait;
+
     /**
      * @throws InvalidArgumentException
      */
@@ -131,6 +134,11 @@ final readonly class KeyUpdate
     ) {
         if (empty($this->name)) {
             throw new InvalidArgumentException('Name cannot be empty.');
+        }
+
+        // the `?array` type stops a scalar, not a JSON list; the member's contract is an object
+        if ($this->customMetadata !== null && !$this->isJsonObject($this->customMetadata)) {
+            throw new InvalidArgumentException('customMetadata has to be an object or null.');
         }
 
         if ($identifier !== AbsentValue::ABSENT) {

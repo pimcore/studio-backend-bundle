@@ -250,6 +250,113 @@ final class ArtifactParserTest extends Unit
     }
 
     /**
+     * `OPTIONAL_OBJECT` means an object, and a JSON list is not one. The file carries it as a PHP
+     * array, so `is_array()` alone let `"customMetadata": ["erp"]` through the only gate in front
+     * of apply and wrote a list into a column every reader takes for a map of pairs.
+     *
+     * @dataProvider entitySectionProvider
+     */
+    public function testEntityPairsSuppliedAsAJsonListAreRefused(string $section): void
+    {
+        $artifact = $this->createArtifact();
+        $artifact[$section][] = [
+            'identifier' => '01ENTITY',
+            'name' => 'Entity',
+            'description' => null,
+            'customMetadata' => ['erp'],
+        ];
+
+        $this->expectException(InvalidArgumentException::class);
+
+        (new ArtifactParser())->parse($this->encode($artifact));
+    }
+
+    /**
+     * The `{}` and `[]` distinction, decided deliberately: `json_decode` hands both back as the
+     * same empty array, so the empty object the artifact may legitimately carry stays accepted.
+     *
+     * @dataProvider entitySectionProvider
+     */
+    public function testEmptyEntityPairsAreAcceptedAsTheDecodedEmptyObject(string $section): void
+    {
+        $artifact = $this->createArtifact();
+        $artifact[$section][] = ['identifier' => '01ENTITY', 'name' => 'Entity', 'customMetadata' => []];
+
+        $document = (new ArtifactParser())->parse($this->encode($artifact));
+
+        $this->assertSame([], $document->getEntries(ArtifactSection::from($section))['01ENTITY']['customMetadata']);
+    }
+
+    /**
+     * The key section asks the same question, and the key reader is reachable on its own.
+     */
+    public function testKeyPairsSuppliedAsAJsonListAreRefused(): void
+    {
+        $entry = [
+            'identifier' => self::KEY_IDENTIFIER,
+            'name' => 'weight',
+            'type' => 'input',
+            'customMetadata' => ['erp'],
+        ];
+
+        $artifact = $this->createArtifact();
+        $artifact['keys'][0]['customMetadata'] = ['erp'];
+
+        $parser = new ArtifactParser();
+
+        try {
+            $parser->readKeyEntry($entry);
+            $this->fail('Expected the key reader to refuse the list shaped pairs.');
+        } catch (InvalidArgumentException) {
+            // the reader guards the field it reads
+        }
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $parser->parse($this->encode($artifact));
+    }
+
+    public function testEmptyKeyPairsAreAcceptedAndSupplied(): void
+    {
+        $entry = (new ArtifactParser())->readKeyEntry([
+            'identifier' => self::KEY_IDENTIFIER,
+            'name' => 'weight',
+            'type' => 'input',
+            'customMetadata' => [],
+        ]);
+
+        $this->assertTrue($entry->isCustomMetadataSupplied());
+        $this->assertSame([], $entry->getCustomMetadata());
+    }
+
+    /**
+     * Two of the three per assignment columns carry the same `object` contract - `subGroup` is a
+     * string - and they go through the same shape table, so the refusal reaches them too.
+     *
+     * @dataProvider assignmentObjectFieldProvider
+     */
+    public function testAssignmentObjectFieldsSuppliedAsAJsonListAreRefused(string $field): void
+    {
+        $artifact = $this->createArtifact();
+        $artifact['keyGroupRelations'][0][$field] = ['erp'];
+
+        $this->expectException(InvalidArgumentException::class);
+
+        (new ArtifactParser())->parse($this->encode($artifact));
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function assignmentObjectFieldProvider(): array
+    {
+        return [
+            'metadata' => ['metadata'],
+            'definitionOverride' => ['definitionOverride'],
+        ];
+    }
+
+    /**
      * @return array<string, array{0: string}>
      */
     public static function entitySectionProvider(): array

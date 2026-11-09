@@ -16,8 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configur
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\AbsentValue;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\JsonObjectShapeTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use function is_array;
 
 /**
  * @internal
@@ -30,6 +30,8 @@ use function is_array;
 )]
 final readonly class CollectionUpdate
 {
+    use JsonObjectShapeTrait;
+
     /**
      * @throws InvalidArgumentException
      */
@@ -62,7 +64,7 @@ final readonly class CollectionUpdate
 
         if ($this->customMetadata !== AbsentValue::ABSENT
             && $this->customMetadata !== null
-            && !is_array($this->customMetadata)) {
+            && !$this->isJsonObject($this->customMetadata)) {
             throw new InvalidArgumentException('customMetadata has to be an object or null.');
         }
 

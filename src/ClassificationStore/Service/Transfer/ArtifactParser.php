@@ -17,6 +17,7 @@ use const JSON_THROW_ON_ERROR;
 use JsonException;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactField;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\JsonObjectShapeTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use function array_key_exists;
 use function is_array;
@@ -31,6 +32,8 @@ use function sprintf;
  */
 final readonly class ArtifactParser implements ArtifactParserInterface
 {
+    use JsonObjectShapeTrait;
+
     /**
      * The endpoints a relation section names its two sides by, per section.
      */
@@ -299,7 +302,8 @@ final readonly class ArtifactParser implements ArtifactParserInterface
                 self::OPTIONAL_STRING => $value === null || is_string($value),
                 self::OPTIONAL_INT => $value === null || is_int($value),
                 self::OPTIONAL_BOOL => $value === null || is_bool($value),
-                default => $value === null || is_array($value),
+                // OPTIONAL_OBJECT: an object, not merely an array, which a JSON list is too
+                default => $value === null || $this->isJsonObject($value),
             };
 
             if (!$valid) {
@@ -367,7 +371,7 @@ final readonly class ArtifactParser implements ArtifactParserInterface
             return null;
         }
 
-        if (!is_array($value)) {
+        if (!$this->isJsonObject($value)) {
             throw $this->invalidField($section, $field, 'an object');
         }
 

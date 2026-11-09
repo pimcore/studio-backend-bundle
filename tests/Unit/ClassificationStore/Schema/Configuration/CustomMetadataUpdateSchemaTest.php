@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Sche
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\CollectionUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GroupUpdate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\SubGroupUpdate;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 
@@ -88,6 +89,59 @@ final class CustomMetadataUpdateSchemaTest extends Unit
         $this->expectException(InvalidArgumentException::class);
 
         new $class(name: self::NAME, customMetadata: 5);
+    }
+
+    /**
+     * A JSON list is a PHP array too, so `is_array()` alone accepted `{"customMetadata": ["erp"]}`
+     * and stored a list under a member whose contract is an object.
+     *
+     * @dataProvider schemaProvider
+     *
+     * @param class-string<CollectionUpdate|GroupUpdate|SubGroupUpdate> $class
+     */
+    public function testANonEmptyListIsRefused(string $class): void
+    {
+        foreach ([['erp'], ['erp', 'pim'], [0 => 'erp', 1 => 'pim']] as $list) {
+            try {
+                new $class(name: self::NAME, customMetadata: $list);
+                $this->fail('Expected the list shaped customMetadata to be refused.');
+            } catch (InvalidArgumentException $e) {
+                $this->assertStringContainsString('customMetadata', $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * The `{}` and `[]` distinction, decided deliberately: `json_decode` hands both back as the
+     * same empty array, so the empty object the contract allows stays accepted and counts as
+     * supplied - which is how a client empties the pairs without clearing the column.
+     *
+     * @dataProvider schemaProvider
+     *
+     * @param class-string<CollectionUpdate|GroupUpdate|SubGroupUpdate> $class
+     */
+    public function testAnEmptyObjectIsAcceptedAndSupplied(string $class): void
+    {
+        $update = new $class(name: self::NAME, customMetadata: []);
+
+        $this->assertTrue($update->hasCustomMetadata());
+        $this->assertSame([], $update->getCustomMetadata());
+    }
+
+    /**
+     * The fourth update schema asks the same question of the same member, and its own `?array`
+     * type stops a scalar without saying anything about a list.
+     */
+    public function testAKeyUpdateRefusesANonEmptyListAndAcceptsAnEmptyObject(): void
+    {
+        $empty = new KeyUpdate(name: self::NAME, customMetadata: []);
+
+        $this->assertTrue($empty->isCustomMetadataSupplied());
+        $this->assertSame([], $empty->getCustomMetadata());
+
+        $this->expectException(InvalidArgumentException::class);
+
+        new KeyUpdate(name: self::NAME, customMetadata: ['erp']);
     }
 
     /**

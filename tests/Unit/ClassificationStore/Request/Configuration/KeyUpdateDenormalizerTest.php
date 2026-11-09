@@ -129,6 +129,48 @@ final class KeyUpdateDenormalizerTest extends Unit
         }
     }
 
+    /**
+     * The member's contract is an `object`, and a JSON list is not one. It reaches the denormalizer
+     * as a PHP array, so `is_array()` alone would have let `{"customMetadata": ["erp"]}` through to
+     * the write and stored a list under a member every reader takes for a map of pairs.
+     */
+    public function testACustomMetadataSentAsAJsonListIsRefusedAsUnprocessable(): void
+    {
+        foreach ([['erp'], ['erp', 'pim'], [0 => 'erp', 1 => 'pim']] as $list) {
+            try {
+                $this->denormalize(['customMetadata' => $list]);
+                $this->fail('Expected the list shaped customMetadata to be refused.');
+            } catch (InvalidArgumentException $e) {
+                $this->assertSame(HttpResponseCodes::UNPROCESSABLE_CONTENT->value, $e->getStatusCode());
+                $this->assertStringContainsString('customMetadata', $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * The other side of that refusal: `json_decode('{}', true)` and `json_decode('[]', true)` are
+     * the same empty array, so the empty object the contract allows has to stay accepted - and it
+     * counts as supplied, which is how a client empties the pairs without clearing the column.
+     */
+    public function testAnEmptyCustomMetadataObjectIsAcceptedAndSupplied(): void
+    {
+        $empty = $this->denormalize(['customMetadata' => []]);
+
+        $this->assertTrue($empty->isCustomMetadataSupplied());
+        $this->assertSame([], $empty->getCustomMetadata());
+    }
+
+    /**
+     * A list *inside* the object is a value like any other: only the member itself has to be an
+     * object, and nothing about what it carries is restricted.
+     */
+    public function testAListNestedInsideTheCustomMetadataIsKept(): void
+    {
+        $pairs = ['units' => ['kg', 'g'], 'source' => 'erp'];
+
+        $this->assertSame($pairs, $this->denormalize(['customMetadata' => $pairs])->getCustomMetadata());
+    }
+
     public function testAnEmptyStringCountsAsSupplied(): void
     {
         $parameters = $this->denormalize(['title' => '', 'description' => '']);

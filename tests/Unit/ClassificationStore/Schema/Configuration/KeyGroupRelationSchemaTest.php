@@ -229,6 +229,55 @@ final class KeyGroupRelationSchemaTest extends Unit
     }
 
     /**
+     * Both `type: 'object'` members, and `get_debug_type() === 'array'` does not decide the
+     * question: PHP carries a JSON list as an array too, so `{"metadata": ["erp"]}` passed that
+     * read and was stored under a member the contract says is an object.
+     *
+     * @dataProvider objectMemberProvider
+     */
+    public function testAnObjectMemberSuppliedAsAJsonListIsRefused(string $member): void
+    {
+        try {
+            new KeyGroupRelationCreate(self::KEY_ID, self::GROUP_ID, ...[$member => ['erp']]);
+            $this->fail('Expected the list shaped ' . $member . ' to be refused.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString($member, $e->getMessage());
+        }
+    }
+
+    /**
+     * `json_decode` hands `{}` and `[]` back as the same empty array, so the empty object the
+     * contract allows stays accepted and still counts as supplied.
+     *
+     * @dataProvider objectMemberProvider
+     */
+    public function testAnObjectMemberSuppliedAsAnEmptyObjectIsAcceptedAndSupplied(string $member): void
+    {
+        $create = new KeyGroupRelationCreate(self::KEY_ID, self::GROUP_ID, ...[$member => []]);
+
+        if ($member === self::COLUMN_METADATA) {
+            $this->assertTrue($create->hasMetadata());
+            $this->assertSame([], $create->getMetadata());
+
+            return;
+        }
+
+        $this->assertTrue($create->hasDefinitionOverride());
+        $this->assertSame([], $create->getDefinitionOverride());
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function objectMemberProvider(): array
+    {
+        return [
+            self::COLUMN_METADATA => [self::COLUMN_METADATA],
+            self::COLUMN_DEFINITION_OVERRIDE => [self::COLUMN_DEFINITION_OVERRIDE],
+        ];
+    }
+
+    /**
      * @return string[]
      */
     private function getConstructorParameterNames(string $class): array
