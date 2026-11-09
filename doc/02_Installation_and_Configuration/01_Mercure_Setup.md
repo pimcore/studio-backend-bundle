@@ -7,17 +7,19 @@ description: Configure Mercure for real-time updates in Pimcore Studio.
 
 ## Start and configure Mercure server
 
-Use Mercure hub **0.24**, e.g. via their docker container (`dunglas/mercure:v0.24`). For details see
-[Mercure docs](https://mercure.rocks/docs/hub/install).
+Use Mercure hub **1.1.3 or later**, e.g. via their docker container (`dunglas/mercure:v1`). For details see
+[Mercure docs](https://mercure.rocks/docs/getting-started/installation).
 
-> Always pin the image to `v0.24` instead of using `latest` or an untagged image. Mercure 1.0 and later contain breaking
-> changes (token format, subscription parameters, hub configuration, development UI), so an unpinned image will pull a
-> hub that this setup is not written for.
+> This bundle still speaks the Mercure 0.x protocol. Enable the hub's compatibility mode by adding
+> `protocol_version_compatibility 8` to the `MERCURE_EXTRA_DIRECTIVES` environment variable. It accepts the 0.x tokens,
+> cookie and subscription parameters this bundle uses, and relaxes access token validation for them.
+> Use the `v1` tag rather than `latest`, so that a future major version cannot break the setup.
 
 ### Mercure configuration
 Following Mercure configuration aspects need to be considered
 - Add same JWT key to `MERCURE_PUBLISHER_JWT_KEY` and `MERCURE_SUBSCRIBER_JWT_KEY`
 - JWT key needs to be minimum 256 bits (or 32 chars) long
+- Add `protocol_version_compatibility 8` to `MERCURE_EXTRA_DIRECTIVES`
 
 ## Example Configuration with docker compose
 Following there are configuration snippets for a setup with docker compose.
@@ -64,13 +66,16 @@ Add Mercure to your docker compose file and make sure to add the configuration f
       - ~/.certs:/etc/nginx/certs
 
   mercure:
-    image: dunglas/mercure:v0.24
+    image: dunglas/mercure:v1
     restart: unless-stopped
     environment:
         # Disable HTTPS
         SERVER_NAME: ':80'
         MERCURE_PUBLISHER_JWT_KEY: '<your-256-bit-secret-min-32-chars>'
         MERCURE_SUBSCRIBER_JWT_KEY: '<your-256-bit-secret-min-32-chars>'
+        MERCURE_EXTRA_DIRECTIVES: |-
+            anonymous
+            protocol_version_compatibility 8
     expose:
         - "80"
     volumes:
@@ -109,7 +114,7 @@ To see if Mercure is up and available, call ``https://your-app-domain.com/hub`` 
 you configured in configuration). This request should return the text
 
 ```
-Missing "topic" parameter.
+missing "match" subscription parameter
 ```
 
 or
@@ -136,14 +141,16 @@ When running Mercure as external service with external URL, make sure to configu
 Sample based on docker compose, important part is the `cors_origins` directive.
 ```yaml
   mercure:
-    image: dunglas/mercure:v0.24
+    image: dunglas/mercure:v1
     restart: unless-stopped
     environment:
       # All other necessary configs ... 
       # ...
       
-      # Add anonymous directives and cors configuration
+      # Add anonymous directives, compatibility mode and cors configuration
       MERCURE_EXTRA_DIRECTIVES: |-
+          anonymous
+          protocol_version_compatibility 8
           cors_origins "https://<YOUR_PIMCORE_URL>"
 ```
 
@@ -174,21 +181,24 @@ For Nginx use following configuration:
 ### Development UI
 The development UI can be helpful to develop new features. It is possible to subscribe and publish messages.
 
-With the configuration below, the development ui is available at `http://localhost:8080/.well-known/mercure/ui/`.
+With the configuration below, the development UI is available at `http://localhost:8080/.well-known/mercure/debug/`.
 
 ```yaml
   mercure:
-    image: dunglas/mercure:v0.24
+    image: dunglas/mercure:v1
     restart: unless-stopped
     environment:
       # All other necessary configs ... 
       # ...
-      
-      # Uncomment the following line to enable the development mode
-      command: /usr/bin/caddy run --config /etc/caddy/dev.Caddyfile
-      ports:
-        - "8080:80"
+      MERCURE_EXTRA_DIRECTIVES: |-
+          anonymous
+          protocol_version_compatibility 8
+          debugger
+    ports:
+      - "8080:80"
 ```
-The UI is available at `http://localhost:8080/.well-known/mercure/ui/` when running Mercure in development mode.
+
+`debugger` only serves the UI, which uses the token you provide, and is safe in production. `playground` also mints an
+all-access token and relaxes the hub's security settings: use it only for local development.
 
 Please note the trailing slash in the URL, without it the UI will not be available.
