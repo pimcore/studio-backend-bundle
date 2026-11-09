@@ -17,7 +17,7 @@ use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver\ClassificationStoreResolver;
@@ -110,14 +110,52 @@ final class ClassificationStoreResolverTest extends Unit
     }
 
     /**
+     * The dot notation addresses the group before the key and the lookup takes them in that same
+     * order, so passing the pair the other way round would silently look up a mirrored relation.
+     * Nothing else in this test asserts the arguments, so the order is pinned here.
+     *
+     * @throws Exception
+     */
+    public function testResolveLooksUpTheRelationByGroupThenKey(): void
+    {
+        $arguments = [];
+
+        $keyGroupRelation = new KeyGroupRelation();
+        $keyGroupRelation->setKeyId(6);
+        $keyGroupRelation->setGroupId(2);
+
+        $resolver = new ClassificationStoreResolver(
+            $this->createGroupConfigRepository(self::STORE_ID),
+            $this->makeEmpty(KeyRelationResolverInterface::class, [
+                'getByGroupAndKey' => static function (int $groupId, int $keyId) use (
+                    &$arguments,
+                    $keyGroupRelation
+                ): KeyGroupRelation {
+                    $arguments = [$groupId, $keyId];
+
+                    return $keyGroupRelation;
+                },
+            ]),
+            $this->makeEmpty(ServiceResolverInterface::class, [
+                'getFieldDefinitionFromKeyConfig' => new Select(),
+            ]),
+        );
+        $resolver->setFieldDefinitions($this->getFieldDefinitions());
+
+        $resolver->resolve(['attributes', '2', '6']);
+
+        $this->assertSame([2, 6], $arguments);
+    }
+
+    /**
      * @throws Exception
      */
     public function testResolveThrowsExceptionForUnknownKeyGroupRelation(): void
     {
         $resolver = new ClassificationStoreResolver(
             $this->createGroupConfigRepository(self::STORE_ID),
-            $this->makeEmpty(KeyGroupRelationRepositoryInterface::class, [
-                'getByKeyGroupId' => static function (): never {
+            $this->makeEmpty(KeyRelationResolverInterface::class, [
+                'getByGroupAndKey' => static function (): never {
                     throw new NotFoundException('KeyGroupRelation', 6);
                 },
             ]),
@@ -161,7 +199,7 @@ final class ClassificationStoreResolverTest extends Unit
                     throw new NotFoundException('group', 2);
                 },
             ]),
-            $this->makeEmpty(KeyGroupRelationRepositoryInterface::class),
+            $this->makeEmpty(KeyRelationResolverInterface::class),
             $this->makeEmpty(ServiceResolverInterface::class),
         );
         $resolver->setFieldDefinitions($this->getFieldDefinitions());
@@ -201,8 +239,8 @@ final class ClassificationStoreResolverTest extends Unit
 
         $resolver = new ClassificationStoreResolver(
             $this->createGroupConfigRepository($groupStoreId),
-            $this->makeEmpty(KeyGroupRelationRepositoryInterface::class, [
-                'getByKeyGroupId' => $keyGroupRelation,
+            $this->makeEmpty(KeyRelationResolverInterface::class, [
+                'getByGroupAndKey' => $keyGroupRelation,
             ]),
             $this->makeEmpty(ServiceResolverInterface::class, [
                 'getFieldDefinitionFromKeyConfig' => $keyDefinition ?? new Select(),
