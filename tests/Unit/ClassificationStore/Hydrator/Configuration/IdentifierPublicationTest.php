@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuratio
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\GroupHydrator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\StoreHydrator;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
@@ -51,7 +52,7 @@ final class IdentifierPublicationTest extends Unit
         $keyConfig = $this->createKeyConfig();
         $keyConfig->setIdentifier(self::IDENTIFIER);
 
-        $storeHydrator = new StoreHydrator();
+        $storeHydrator = new StoreHydrator($this->createMock(StoreEngineResolverInterface::class));
 
         $this->assertSame(self::IDENTIFIER, $storeHydrator->hydrateStoreDetail($storeConfig)->getIdentifier());
         $this->assertSame(self::IDENTIFIER, $storeHydrator->hydrateStoreTreeNode($storeConfig)->getIdentifier());
@@ -74,7 +75,7 @@ final class IdentifierPublicationTest extends Unit
      */
     public function testAnUnsetIdentifierStaysNull(): void
     {
-        $storeHydrator = new StoreHydrator();
+        $storeHydrator = new StoreHydrator($this->createMock(StoreEngineResolverInterface::class));
         $storeConfig = $this->createStoreConfig();
 
         $this->assertNull($storeHydrator->hydrateStoreDetail($storeConfig)->getIdentifier());

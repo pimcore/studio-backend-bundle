@@ -58,6 +58,13 @@ final class KeyGroupRelation implements AdditionalAttributesInterface
             nullable: true
         )]
         private readonly ?bool $localized = null,
+        #[Property(
+            description: 'Data type of the key, as the relation stores it; null where the relation states none',
+            type: 'string',
+            example: 'input',
+            nullable: true
+        )]
+        private readonly ?string $keyType = null,
     ) {
     }
 
@@ -94,5 +101,10 @@ final class KeyGroupRelation implements AdditionalAttributesInterface
     public function getLocalized(): ?bool
     {
         return $this->localized;
+    }
+
+    public function getKeyType(): ?string
+    {
+        return $this->keyType;
     }
 }
