@@ -37,7 +37,9 @@ interface ColumnReferenceServiceInterface
 
     /**
      * Reads the identifiers of the columns in at most one statement per entity type and store, so that the
-     * later resolve() calls of the same columns issue none.
+     * later resolve() calls of the same columns issue none. Priming the same columns for another class keeps
+     * what was read: the memo is keyed by store, and a class-unscoped search whose rows alternate between
+     * classes sharing a store re-primes per row but reads a shared reference once.
      *
      * @throws DatabaseException
      */

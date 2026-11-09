@@ -38,8 +38,10 @@ use function sprintf;
 
 /**
  * The identifiers a request reads are memoised by {@see prime()}, {@see primeFilters()} and every lookup a
- * {@see resolve()} has to make itself, and dropped by {@see reset()} so that a long-running worker never
- * serves the ids it saw first.
+ * {@see resolve()} has to make itself. The memo is keyed by store, which no change of class or of column
+ * collection invalidates, so a re-{@see prime()} keeps it and only the request/message boundary drops it:
+ * implementing ResetInterface makes autoconfiguration tag the service `kernel.reset`, so {@see reset()}
+ * runs there and a long-running worker never serves the ids it saw first.
  *
  * @internal
  */
@@ -115,8 +117,6 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
         if ($this->primedClassId === $classId && $this->primedFor?->get() === $columns) {
             return;
         }
-
-        $this->reset();
 
         $columnArrays = array_map(static fn ($column) => $column->toArray(), $columns->getColumns());
         $this->lookUpIds($classId, $columnArrays, $this->locator->identifierReferences($columnArrays));

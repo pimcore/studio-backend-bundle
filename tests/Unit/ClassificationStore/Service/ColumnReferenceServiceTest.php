@@ -38,6 +38,12 @@ final class ColumnReferenceServiceTest extends Unit
 {
     private const string CLASS_ID = 'EV';
 
+    /**
+     * A second class whose own classification store field points at the same store as the first one's, as the
+     * rows of a class-unscoped search do.
+     */
+    private const string SIBLING_CLASS_ID = 'ICE';
+
     private const string GROUP_IDENTIFIER = 'product-data';
 
     private const string KEY_IDENTIFIER = 'weight';
@@ -364,6 +370,38 @@ final class ColumnReferenceServiceTest extends Unit
     }
 
     /**
+     * A class-unscoped search reuses one column collection and primes it once per row, so the class changes
+     * from row to row. The memo is keyed by store and no class change invalidates it, so two classes sharing
+     * a store read a shared reference once however often the rows alternate - and the reset boundary still
+     * drops what they read.
+     */
+    public function testAlternatingClassesSharingAStoreReadTheSharedReferenceOnce(): void
+    {
+        $config = ['groupIdentifier' => self::GROUP_IDENTIFIER, 'keyIdentifier' => self::KEY_IDENTIFIER];
+        $column = new Column(
+            key: 'cs',
+            locale: null,
+            type: 'dataobject.classificationstore',
+            group: null,
+            config: $config,
+        );
+        $collection = new ColumnCollection([$column]);
+        $service = $this->createService();
+
+        foreach ([self::CLASS_ID, self::SIBLING_CLASS_ID, self::CLASS_ID, self::SIBLING_CLASS_ID] as $classId) {
+            $service->prime($classId, $collection);
+            $service->resolve($classId, 'cs', $config);
+        }
+        $afterRows = $this->statements;
+
+        $service->reset();
+        $service->prime(self::CLASS_ID, $collection);
+
+        $this->assertSame(2, $afterRows);
+        $this->assertSame(4, $this->statements);
+    }
+
+    /**
      * The filters of a class-scoped search are primed as one set, so a reference two filters name costs one
      * statement per entity type and no filter spends a lookup of its own.
      */
@@ -487,10 +525,14 @@ final class ColumnReferenceServiceTest extends Unit
         ]);
         $maker = new ClassDefinition();
         $maker->setFieldDefinitions(['cs' => $this->createField('cs', self::OTHER_STORE_ID)]);
+        $sibling = new ClassDefinition();
+        $sibling->setFieldDefinitions(['cs' => $this->createField('cs', self::STORE_ID)]);
 
         return new ColumnReferenceService(
             $this->makeEmpty(ClassDefinitionResolverInterface::class, [
-                'getById' => $classDefinition,
+                'getById' => static fn (string $classId) => $classId === self::SIBLING_CLASS_ID
+                    ? $sibling
+                    : $classDefinition,
                 'getByName' => $maker,
             ]),
             $this->makeEmpty(GroupRepositoryInterface::class, [
