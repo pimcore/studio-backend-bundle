@@ -32,7 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
@@ -125,8 +124,7 @@ final class BulkImportControllerPermissionTest extends Unit
                     ->willReturn(new BulkImportPrepareResponse('file-id', []));
                 $controller = new PrepareImportController($serializer, $service);
                 $file = new UploadedFile((string) tempnam(sys_get_temp_dir(), 'bulk'), 'import.json', null, null, true);
-                $request = new Request(files: ['file' => $file]);
-                $call = static fn () => $controller->prepareImport($request);
+                $call = static fn () => $controller->prepareImport($file);
 
                 break;
             case 'import':
