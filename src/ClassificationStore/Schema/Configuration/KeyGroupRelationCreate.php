@@ -68,7 +68,10 @@ final readonly class KeyGroupRelationCreate
         #[Property(
             description: 'Partial field definition overriding the one of the key for this assignment. Omitting it'
                 . ' leaves a stored one alone, a supplied object replaces it whole rather than merging into it, and'
-                . ' an explicit null clears it.',
+                . ' an explicit null clears it. A JSON array is refused, the member being an object, and so is the'
+                . ' one object an array cannot be told apart from once decoded - whose member names are the'
+                . ' consecutive integers from zero, such as {"0": "a"} - because the stored form cannot carry that'
+                . ' distinction either.',
             type: 'object',
             example: ['defaultUnit' => 'kg'],
             nullable: true
