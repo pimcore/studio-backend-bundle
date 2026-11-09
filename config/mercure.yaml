@@ -11,10 +11,13 @@ services:
         public: true
         tags: [ 'controller.service_arguments' ]
 
-    Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ServerTokenService: ~
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ServerTokenService:
+        arguments:
+            $issuer: '%pimcore_studio_backend.mercure_settings.issuer%'
 
     Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ClientTokenService:
         arguments:
+            $issuer: '%pimcore_studio_backend.mercure_settings.issuer%'
             $cookieLifetime: '%pimcore_studio_backend.mercure_settings.cookie_lifetime%'
 
     Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface:
@@ -24,6 +27,7 @@ services:
             $cookieLifetime: '%pimcore_studio_backend.mercure_settings.cookie_lifetime%'
             $jwtCookieStrictness: '%pimcore_studio_backend.mercure_settings.jwt_cookie_strictness%'
             $jwtCookieHost: '%pimcore_studio_backend.mercure_settings.jwt_cookie_host%'
+            $cookieName: '%pimcore_studio_backend.mercure_settings.cookie_name%'
 
     Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TopicLoaderInterface:
         class: Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TaggedIteratorAdapter
