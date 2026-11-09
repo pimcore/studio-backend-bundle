@@ -35,6 +35,13 @@ interface ReconcilerInterface
      * report names every one that was found and the transaction is rolled back, so a conflicting
      * file leaves nothing behind.
      *
+     * The transaction is this apply's own only when there was none to join: an apply inside a
+     * transaction a caller opened neither commits nor rolls back, and reports its conflicts to a
+     * caller that decides. Where it does roll back, it also takes back the search index remap notes
+     * its own key writes left - and only those, because the notes of a write that happened earlier
+     * in the same request are about rows this rollback did not touch
+     * (`SearchIndexRemapTriggerInterface::discardSince()`).
+     *
      * A null store is the console command applying a configuration to an installation that does not
      * carry it yet; the endpoint always has the store of its route.
      *

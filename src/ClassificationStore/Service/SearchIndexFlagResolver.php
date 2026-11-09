@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
-use function array_key_exists;
 use function is_array;
 use function json_decode;
 
@@ -25,31 +24,18 @@ use function json_decode;
  */
 final readonly class SearchIndexFlagResolver implements SearchIndexFlagResolverInterface
 {
-    public function isIndexed(?array $metadata): bool
+    public function isIndexed(?string $keyDefinition): bool
     {
-        if ($metadata === null) {
+        if ($keyDefinition === null) {
             return true;
         }
 
-        return ($metadata[self::INDEXED_MEMBER] ?? true) !== false;
-    }
-
-    public function carriesFlag(?array $metadata): bool
-    {
-        return $metadata !== null && array_key_exists(self::INDEXED_MEMBER, $metadata);
-    }
-
-    public function withKeyDefault(?array $metadata, string $keyDefinition): ?array
-    {
         $definition = json_decode($keyDefinition, true);
 
-        if (!is_array($definition) || !array_key_exists(self::INDEXED_MEMBER, $definition)) {
-            return null;
+        if (!is_array($definition)) {
+            return true;
         }
 
-        $metadata ??= [];
-        $metadata[self::INDEXED_MEMBER] = $definition[self::INDEXED_MEMBER];
-
-        return $metadata;
+        return ($definition[self::INDEXED_MEMBER] ?? true) !== false;
     }
 }

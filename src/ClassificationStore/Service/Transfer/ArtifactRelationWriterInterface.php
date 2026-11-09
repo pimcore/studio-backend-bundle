@@ -24,8 +24,7 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
  *
  * Apart from the entity sections ({@see ArtifactEntryWriterInterface}, which publishes these two
  * operations as its own surface and delegates them here) because a relation is written from a pair
- * of endpoint identifiers this run has resolved rather than from a walked row of one level, and
- * because a created assignment reads the key it belongs to, which no entity write does.
+ * of endpoint identifiers this run has resolved rather than from a walked row of one level.
  *
  * @internal
  */
@@ -43,8 +42,8 @@ interface ArtifactRelationWriterInterface
 
     /**
      * One key assignment against the relation row it was matched to, or against none. An assignment
-     * matched to none is a creation, and a creation takes the search index flag of its key where the
-     * entry leaves it without one; the key is read for that, and for that only.
+     * matched to none is a creation, and a creation seeds nothing from its key: `metadata` is a
+     * free-form column the entry owns whole.
      *
      * @param array<string, mixed> $entry
      *

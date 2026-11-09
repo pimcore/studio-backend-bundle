@@ -46,8 +46,9 @@ final class KeyDetail implements AdditionalAttributesInterface
         private readonly ?string $description = null,
         #[Property(
             description: 'Definition of the key, reported as it is stored. The member "indexed" is reserved: it is'
-                . ' the default a newly created assignment of this key takes into its own metadata, where false'
-                . ' excludes the assignment from the search index and anything else leaves it indexed.',
+                . ' this key\'s own search index flag, where false asks for the key to be left out of the search'
+                . ' index wherever it is used and anything else leaves it indexed. Studio stores the flag and queues'
+                . ' a remap when it changes; honouring it is the search index\'s own.',
             type: 'object',
             nullable: true
         )]

@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -43,6 +44,7 @@ final readonly class KeyService implements KeyServiceInterface
         private KeyRelationResolverInterface $keyRelationResolver,
         private KeyRepositoryInterface $keyConfigurationRepository,
         private KeyHydratorInterface $keyHydrator,
+        private SearchIndexRemapTriggerInterface $searchIndexRemapTrigger,
     ) {
     }
 
@@ -90,18 +92,36 @@ final readonly class KeyService implements KeyServiceInterface
 
     /**
      * {@inheritdoc}
+     *
+     * The search index flag lives in the `definition` blob, so only an update that carries one can
+     * change it. The blob it is compared against is the one the write answers with rather than one
+     * read here: the repository holds the key row for its write and reports the definition that row
+     * carried when the lock was taken, which is the only value a comparison can be made against
+     * without a competing writer of the same key invalidating it in between
+     * ({@see \Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyWriteResult}).
      */
     public function updateKey(int $id, KeyUpdate $parameters): KeyDetail
     {
         $definition = $parameters->getDefinition();
+
         if ($definition !== null) {
             $parameters = $parameters->withDefinition($this->applyOptionsProviderDefaults($definition));
         }
 
         try {
-            $keyConfig = $this->keyConfigurationRepository->update($id, $parameters);
+            $write = $this->keyConfigurationRepository->update($id, $parameters);
+            $keyConfig = $write->getConfig();
+
+            if ($definition !== null) {
+                $this->searchIndexRemapTrigger->noteFlagChange(
+                    $keyConfig->getStoreId(),
+                    $write->getDefinitionBefore(),
+                    $keyConfig->getDefinition()
+                );
+            }
         } finally {
             $this->keyRelationResolver->clear();
+            $this->searchIndexRemapTrigger->flush();
         }
 
         return $this->getHydratedKeyDetail($keyConfig);

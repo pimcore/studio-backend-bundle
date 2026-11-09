@@ -82,10 +82,10 @@ The following steps are necessary during updating to newer versions.
   update that carries an identifier is rejected rather than ignored, because the identifier is assigned by the
   system; and adding a key's assignment to a group is rejected when the key id names no key configuration, rather
   than writing an assignment that points at nothing.
-- [Classification Store] Added: `indexed`, a reserved member of the metadata a key's assignment to a group carries,
-  where `false` marks the assignment as not for the search index; a key's own definition can carry the member as the
-  default a newly created assignment of that key takes. The flag is stored and published but not yet honoured by the
-  search index.
+- [Classification Store] Added: `indexed`, a reserved member of a key's own definition and no longer anything an
+  assignment's `metadata` reserves. Studio stores it, publishes it, and enqueues a deferred remap of every search index
+  the key's store reaches when it changes; whether a key marked `false` is then left out of an index is the search
+  index's own answer, not this bundle's.
 - [Classification Store] Added: a store's whole configuration can be exported and applied again as one file, from the
   store editor and from the console commands `studio-backend-bundle:classificationstore:export` and
   `studio-backend-bundle:classificationstore:apply`. Applying creates and updates but never deletes, so un-assigning a

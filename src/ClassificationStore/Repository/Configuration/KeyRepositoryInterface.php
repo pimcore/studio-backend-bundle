@@ -85,9 +85,13 @@ interface KeyRepositoryInterface
      * Writes the artifact's key entry onto the given configuration, or onto a new one when there is
      * none, stamping the identifier on a row that does not carry one yet.
      *
+     * Answers with the definition the row carried when the write took its lock, which is the only
+     * value the key's resolved search index flag may be compared against: see
+     * {@see self::update()} for why a definition the caller read earlier is not one.
+     *
      * @throws ElementSavingFailedException
      */
-    public function saveFromArtifact(?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyConfig;
+    public function saveFromArtifact(?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyWriteResult;
 
     /**
      * @throws ElementSavingFailedException
@@ -98,10 +102,16 @@ interface KeyRepositoryInterface
      * The title and the description are written only when the payload supplied them, a supplied
      * empty one clearing the stored value; the definition is written only when it is not null.
      *
+     * The write holds the key row, and the result carries the definition that row carried when the
+     * lock was taken. That is what the caller compares the key's resolved search index flag
+     * against: a definition the caller read a call earlier belongs to a snapshot a competing
+     * writer can have replaced in between, and comparing against it drops the very flag change it
+     * was read for ({@see KeyWriteResult}).
+     *
      * @throws NotFoundException
      * @throws ElementSavingFailedException
      */
-    public function update(int $id, KeyUpdate $parameters): KeyConfig;
+    public function update(int $id, KeyUpdate $parameters): KeyWriteResult;
 
     /**
      * @throws NotFoundException
