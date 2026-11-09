@@ -348,7 +348,7 @@ class Configuration implements ConfigurationInterface
                     ->scalarNode('hub_url_client')
                         ->info('The url to the mercure hub for the (frontend) client. ' .
                             'If it is not set, the default will be set to ' .
-                            '"http(s)://<YOUR_CURRENT_PIMCORE_HOST>/hub". ' .
+                            '"http(s)://<YOUR_CURRENT_PIMCORE_HOST>/.well-known/mercure". ' .
                             'It is possible to use "<PIMCORE_SCHEMA_HOST>" ' .
                             'as a placeholder for the current schema and host if path to mercure should be different.'
                         )
@@ -358,6 +358,29 @@ class Configuration implements ConfigurationInterface
                         ->info('The key used to sign the JWT token. Must be longer than 256 bits.')
                         ->isRequired()
                         ->defaultValue('some-secret-default')
+                    ->end()
+                    ->scalarNode('issuer')
+                        ->info('Issuer ("iss" claim) of the Mercure access tokens. The hub must trust it, ' .
+                            'e.g. with its MERCURE_TRUSTED_ISSUERS environment variable. ' .
+                            'The default matches the default of the hub, which only suits development.'
+                        )
+                        ->defaultValue('https://localhost')
+                    ->end()
+                    ->scalarNode('resource_identifier')
+                        ->info('Audience ("aud" claim) of the Mercure access tokens: ' .
+                            'the resource identifier of the hub. ' .
+                            'If it is not set, the tokens are valid for hub_url_server and for the origin of ' .
+                            'hub_url_client. Set it, and the same "resource_identifier" directive on the hub, when ' .
+                            'a proxy exposes the hub under another host.'
+                        )
+                        ->defaultNull()
+                    ->end()
+                    ->scalarNode('cookie_name')
+                        ->info('Name of the Mercure authorization cookie. If it is not set, ' .
+                            '"__Secure-mercure_access_token" is used for an https hub_url_client and ' .
+                            '"mercure_access_token" otherwise. Must match the "cookie_name" directive of the hub.'
+                        )
+                        ->defaultNull()
                     ->end()
                      ->integerNode('cookie_lifetime')
                         ->info('Lifetime of the mercure cookie in seconds. Default is one hour.')

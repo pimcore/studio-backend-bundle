@@ -18,7 +18,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant;
  */
 enum Mercure: string
 {
-    case AUTHORIZATION_COOKIE_NAME = 'mercureAuthorization';
+    case CLIENT_ID = 'pimcore-studio';
+    case COOKIE_NAME = 'mercure_access_token';
+    case HUB_PATH = '/.well-known/mercure';
+    case SECURE_COOKIE_NAME = '__Secure-mercure_access_token';
     case HOST_PLACEHOLDER = '<PIMCORE_SCHEMA_HOST>';
     case URL_PATH = 'path';
     case URL_HOST = 'host';
