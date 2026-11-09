@@ -80,17 +80,12 @@ final readonly class KeyGroupRelationCreate
         )]
         private mixed $subGroup = AbsentValue::ABSENT,
         #[Property(
-            description: 'Metadata carried by this assignment. The member "indexed" is reserved: false excludes the'
-                . ' assignment from the search index, and anything else - true, a non boolean or no member at all -'
-                . ' leaves it indexed. A new assignment that carries no "indexed" - because this object is omitted,'
-                . ' explicitly null, or names other members only - takes the one in the definition of its key, where'
-                . ' that definition carries it. An already stored assignment is never seeded from its key, and keeps'
-                . ' what it has stored only while this object is omitted: a supplied object replaces the stored one'
-                . ' whole rather than merging into it, so one rebuilt from a form without "indexed" drops a stored'
-                . ' "indexed", and an explicit null clears the metadata altogether. A client that means to keep the'
-                . ' flag has to send it back.',
+            description: 'Free-form metadata carried by this assignment. No member is reserved. Omitting it keeps a'
+                . ' stored object alone, a supplied object replaces it whole rather than merging into it - so one'
+                . ' rebuilt from a form without a member drops that member - and an explicit null clears it'
+                . ' altogether.',
             type: 'object',
-            example: ['source' => 'erp', 'indexed' => false],
+            example: ['source' => 'erp'],
             nullable: true
         )]
         private mixed $metadata = AbsentValue::ABSENT,

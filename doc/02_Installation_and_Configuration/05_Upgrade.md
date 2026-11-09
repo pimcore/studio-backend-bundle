@@ -82,15 +82,15 @@ The following steps are necessary during updating to newer versions.
   update that carries an identifier is rejected rather than ignored, because the identifier is assigned by the
   system; and adding a key's assignment to a group is rejected when the key id names no key configuration, rather
   than writing an assignment that points at nothing.
-- [Classification Store] Added: `indexed`, a reserved member of the metadata a key's assignment to a group carries,
-  where `false` marks the assignment as not for the search index; a key's own definition can carry the member as the
-  default a newly created assignment of that key takes. The flag is stored and published but not yet honoured by the
-  search index.
+- [Classification Store] Added: `indexed`, a reserved member of a key's own definition and no longer anything an
+  assignment's `metadata` reserves. Studio stores it, publishes it, and enqueues a deferred remap of every search index
+  the key's store reaches when it changes; whether a key marked `false` is then left out of an index is the search
+  index's own answer, not this bundle's.
 - [Classification Store] Added: a key can declare the variants it permits, or that it holds more than one value per
   variant, and the object data endpoints then read and write that key's values as a list of qualified entries instead
   of as a single value, as far as the store's engine reports the capability the write needs. A key that has never
-  declared either is unchanged; a key whose declaration is taken away again keeps the values it holds and keeps
-  reading and writing them as entries.
+  declared either is unchanged; a key whose declaration is taken away again reads and writes a single value once more
+  and keeps the values that declaration hid, which a write that does not mention them does not clear.
 - [Classification Store] Added: a store's whole configuration can be exported and applied again as one file, from the
   store editor and from the console commands `studio-backend-bundle:classificationstore:export` and
   `studio-backend-bundle:classificationstore:apply`. Applying creates and updates but never deletes, so un-assigning a

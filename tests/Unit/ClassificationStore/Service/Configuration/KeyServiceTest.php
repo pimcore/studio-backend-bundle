@@ -19,11 +19,13 @@ use Pimcore\Bundle\CoreBundle\OptionsProvider\SelectOptionsOptionsProvider;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyWriteResult;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
@@ -49,6 +51,9 @@ final class KeyServiceTest extends Unit
 
         $repository = $this->createMock(KeyRepositoryInterface::class);
         $repository
+            ->method('getById')
+            ->willReturn(new KeyConfig());
+        $repository
             ->expects($this->once())
             ->method('update')
             ->with(
@@ -61,7 +66,7 @@ final class KeyServiceTest extends Unit
                     $definition + ['optionsProviderClass' => SelectOptionsOptionsProvider::class]
                 )
             )
-            ->willReturn(new KeyConfig());
+            ->willReturn(new KeyWriteResult(new KeyConfig(), null));
 
         $this->createService($repository)->updateKey(
             29,
@@ -82,10 +87,13 @@ final class KeyServiceTest extends Unit
 
         $repository = $this->createMock(KeyRepositoryInterface::class);
         $repository
+            ->method('getById')
+            ->willReturn(new KeyConfig());
+        $repository
             ->expects($this->once())
             ->method('update')
             ->with(1, new KeyUpdate('key', definition: $definition))
-            ->willReturn(new KeyConfig());
+            ->willReturn(new KeyWriteResult(new KeyConfig(), null));
 
         $this->createService($repository)->updateKey(1, new KeyUpdate('key', definition: $definition));
     }
@@ -97,10 +105,13 @@ final class KeyServiceTest extends Unit
     {
         $repository = $this->createMock(KeyRepositoryInterface::class);
         $repository
+            ->method('getById')
+            ->willReturn(new KeyConfig());
+        $repository
             ->expects($this->once())
             ->method('update')
             ->with(1, new KeyUpdate('key', 'Title', 'Description', 'input'))
-            ->willReturn(new KeyConfig());
+            ->willReturn(new KeyWriteResult(new KeyConfig(), null));
 
         $this->createService($repository)->updateKey(1, new KeyUpdate('key', 'Title', 'Description', 'input'));
     }
@@ -122,10 +133,13 @@ final class KeyServiceTest extends Unit
 
         $repository = $this->createMock(KeyRepositoryInterface::class);
         $repository
+            ->method('getById')
+            ->willReturn(new KeyConfig());
+        $repository
             ->expects($this->once())
             ->method('update')
             ->with(1, $parameters)
-            ->willReturn(new KeyConfig());
+            ->willReturn(new KeyWriteResult(new KeyConfig(), null));
 
         $this->createService($repository)->updateKey(1, $parameters);
     }
@@ -226,12 +240,15 @@ final class KeyServiceTest extends Unit
         $repository
             ->method('update')
             ->willReturnCallback(
-                static function (int $id, KeyUpdate $parameters) use ($config, $keyLocalizationResolver): KeyConfig {
+                static function (
+                    int $id,
+                    KeyUpdate $parameters
+                ) use ($config, $keyLocalizationResolver): KeyWriteResult {
                     if ($parameters->isLocalizedSupplied()) {
                         $keyLocalizationResolver->setLocalized($config, $parameters->getLocalized());
                     }
 
-                    return $config;
+                    return new KeyWriteResult($config, $config->getDefinition());
                 }
             );
 
@@ -309,10 +326,11 @@ final class KeyServiceTest extends Unit
         $repository = $this->createMock(KeyRepositoryInterface::class);
         $repository
             ->method('update')
-            ->willReturnCallback(static function (int $id, KeyUpdate $parameters) use ($keyConfig): KeyConfig {
+            ->willReturnCallback(static function (int $id, KeyUpdate $parameters) use ($keyConfig): KeyWriteResult {
+                $definitionBefore = $keyConfig->getDefinition();
                 $keyConfig->setDefinition((string) json_encode($parameters->getDefinition()));
 
-                return $keyConfig;
+                return new KeyWriteResult($keyConfig, $definitionBefore);
             });
 
         $keyDetail = $this
@@ -339,11 +357,14 @@ final class KeyServiceTest extends Unit
     {
         $repository = $this->createMock(KeyRepositoryInterface::class);
         $repository
+            ->method('getById')
+            ->willReturn(new KeyConfig());
+        $repository
             ->method('create')
             ->willReturn(new KeyConfig());
         $repository
             ->method('update')
-            ->willReturn(new KeyConfig());
+            ->willReturn(new KeyWriteResult(new KeyConfig(), null));
 
         return $repository;
     }
@@ -369,6 +390,7 @@ final class KeyServiceTest extends Unit
             $resolver ?? $this->createMock(KeyRelationResolverInterface::class),
             $repository,
             $keyHydrator,
+            $this->createMock(SearchIndexRemapTriggerInterface::class),
         );
     }
 }

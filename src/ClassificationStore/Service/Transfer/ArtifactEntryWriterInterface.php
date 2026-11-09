@@ -88,7 +88,10 @@ interface ArtifactEntryWriterInterface
     ): void;
 
     /**
-     * One key entry against the key row it was matched to, or against none.
+     * One key entry against the key row it was matched to, or against none. A save that changes the
+     * key's resolved search index flag is noted for the remap the apply hands over when it ends
+     * ({@see SearchIndexRemapTriggerInterface}); a dry run, an unchanged key and a key the file
+     * creates note nothing - a created key is in no mapping yet and holds no value.
      *
      * @param array<string, mixed> $entry
      *
@@ -109,8 +112,8 @@ interface ArtifactEntryWriterInterface
 
     /**
      * One key assignment against the relation row it was matched to, or against none. An assignment
-     * matched to none is a creation, and a creation takes the search index flag of its key where the
-     * entry leaves it without one; the key is read for that, and for that only.
+     * matched to none is a creation, and a creation seeds nothing from its key: `metadata` is a
+     * free-form column the entry owns whole.
      *
      * @param array<string, mixed> $entry
      *

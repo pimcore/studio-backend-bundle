@@ -20,9 +20,10 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyWriteResult;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolver;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyDiagnostics;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusals;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyReport;
@@ -202,29 +203,28 @@ final class ArtifactRoundTripTest extends Unit
     }
 
     /**
-     * The export of a store whose assignment column is NULL writes `"metadata": null`, so a first
-     * apply of that file is the one case the key's search index flag has to fill in - and the export
-     * of the result has to carry the flag, which is what makes the second round trip a no-op rather
-     * than a store that keeps losing the default it was just given.
+     * The export of a store whose assignment column is NULL writes `"metadata": null`, and an apply
+     * of that file leaves the column NULL even under a key whose own definition excludes it from the
+     * search index: nothing is seeded from the key, so the export of the result writes the same
+     * `null` again and the round trip is stable rather than one that keeps inventing a member.
      */
-    public function testAnAssignmentCreatedFromAFileTakesTheSearchIndexFlagOfItsKeyAndExportsIt(): void
+    public function testAnAssignmentCreatedFromAFileSeedsNothingFromItsKeyAndExportsTheSameNull(): void
     {
         $keys = $this->createFixtureKeys(notIndexed: true);
 
-        $report = $this->applyExportOf($keys, keysAreNotIndexed: true, assignmentMetadata: null);
+        $report = $this->applyExportOf($keys, assignmentMetadata: null);
 
         $applied = $this->appliedAssignments[self::GROUP_IDENTIFIER . '->' . self::ENABLED_KEY_IDENTIFIER];
-        $this->assertSame([self::INDEXED_MEMBER => false], $applied->getMetadata());
+        $this->assertNull($applied->getMetadata());
         $this->assertFalse($report->hasConflicts());
 
-        // and the export of what the apply produced carries the flag the assignment now holds
+        // and the export of what the apply produced writes the same null back
         $exported = (new ArtifactParser())->parse($this->export($keys, $applied->getMetadata()));
         $entryKey = self::GROUP_IDENTIFIER
             . ArtifactParserInterface::ENTRY_KEY_SEPARATOR
             . self::ENABLED_KEY_IDENTIFIER;
 
-        $this->assertSame(
-            [self::INDEXED_MEMBER => false],
+        $this->assertNull(
             $exported->getEntries(ArtifactSection::KEY_GROUP_RELATIONS)[$entryKey]['metadata']
         );
     }
@@ -437,10 +437,13 @@ final class ArtifactRoundTripTest extends Unit
             }
         );
         $keyRepository->method('saveFromArtifact')->willReturnCallback(
-            function (?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyConfig {
+            function (?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyWriteResult {
                 $this->appliedKeys[$entry->getIdentifier()] = $entry;
 
-                return $config ?? $this->createKey($entry->getIdentifier(), $entry->getName(), true);
+                return new KeyWriteResult(
+                    $config ?? $this->createKey($entry->getIdentifier(), $entry->getName(), true),
+                    $config?->getDefinition()
+                );
             }
         );
         // the key a created assignment reads its search index flag default from, as the apply left it
@@ -508,11 +511,10 @@ final class ArtifactRoundTripTest extends Unit
                     $diagnostics,
                     $refusals,
                     $collectionRelationRepository,
-                    $keyGroupRelationRepository,
-                    $keyRepository,
-                    new SearchIndexFlagResolver()
+                    $keyGroupRelationRepository
                 ),
-                $keyRepository
+                $keyRepository,
+                $this->makeEmpty(SearchIndexRemapTriggerInterface::class)
             ),
             $diagnostics,
             $collectionRepository,
@@ -521,6 +523,7 @@ final class ArtifactRoundTripTest extends Unit
             $groupRepository,
             $keyGroupRelationRepository,
             $keyRepository,
+            $this->makeEmpty(SearchIndexRemapTriggerInterface::class),
             $storeRepository,
             $subGroupRepository
         );

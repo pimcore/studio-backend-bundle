@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration;
 
+use Closure;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DBALException;
 use Exception;
@@ -29,8 +30,11 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Listing;
+use Throwable;
 use function in_array;
+use function is_string;
 use function json_encode;
 use function sprintf;
 use function strtoupper;
@@ -144,7 +148,18 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function saveFromArtifact(?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyConfig
+    public function saveFromArtifact(?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyWriteResult
+    {
+        return $this->writeHoldingTheRow(
+            $config?->getId(),
+            fn (): KeyConfig => $this->writeArtifactEntry($config, $storeId, $entry)
+        );
+    }
+
+    /**
+     * @throws ElementSavingFailedException
+     */
+    private function writeArtifactEntry(?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyConfig
     {
         $config ??= new KeyConfig();
         $config->setStoreId($storeId);
@@ -202,7 +217,16 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function update(int $id, KeyUpdate $parameters): KeyConfig
+    public function update(int $id, KeyUpdate $parameters): KeyWriteResult
+    {
+        return $this->writeHoldingTheRow($id, fn (): KeyConfig => $this->writeUpdate($id, $parameters));
+    }
+
+    /**
+     * @throws NotFoundException
+     * @throws ElementSavingFailedException
+     */
+    private function writeUpdate(int $id, KeyUpdate $parameters): KeyConfig
     {
         $config = $this->getById($id);
         $config->setName($parameters->getName());
@@ -319,5 +343,75 @@ final readonly class KeyRepository implements KeyRepositoryInterface
         }
 
         $this->searchHelperService->applyKeySearchFilter($listing, $searchFilter->getFilterValue());
+    }
+
+    /**
+     * Runs one key write with the row it writes held, and answers with the definition that row
+     * carried when the lock was taken.
+     *
+     * The lock is what makes the definition answered with comparable to the one the write leaves
+     * behind. Without it the two reads are a check-then-act across two transactions: both requests
+     * read the same `indexed`, the second's comparison is made against a value the first has
+     * already replaced, and the flag change it is the only witness of is never queued
+     * ({@see KeyWriteResult}). Held here rather than at the service boundary because this is where
+     * the write is, and a lock the caller takes a call earlier is a lock the next caller has to
+     * remember to take.
+     *
+     * A row that is already gone is not held and reports no definition; the write itself then
+     * decides what that means - a 404 for an update, a fresh row for an apply.
+     *
+     * A database that fails the transaction or the locking read is reported as the saving failure
+     * it is, so the two writes keep throwing what they declare and a caller has one exception to
+     * handle rather than two.
+     *
+     * @param Closure(): KeyConfig $write
+     *
+     * @throws ElementSavingFailedException
+     * @throws NotFoundException
+     */
+    private function writeHoldingTheRow(?int $id, Closure $write): KeyWriteResult
+    {
+        // an enclosing transaction stays the caller's to finish, the way core's own writes join one
+        $ownTransaction = !$this->connection->isTransactionActive();
+
+        try {
+            if ($ownTransaction) {
+                $this->connection->beginTransaction();
+            }
+
+            $definitionBefore = $id === null ? null : $this->holdKey($id);
+            $config = $write();
+
+            if ($ownTransaction) {
+                $this->connection->commit();
+            }
+        } catch (Throwable $e) {
+            if ($ownTransaction && $this->connection->isTransactionActive()) {
+                $this->connection->rollBack();
+            }
+
+            throw $e instanceof DBALException
+                ? new ElementSavingFailedException($id, $e->getMessage(), $e)
+                : $e;
+        }
+
+        return new KeyWriteResult($config, $definitionBefore);
+    }
+
+    /**
+     * Holds the key row and reports the definition it actually carries, read as of now rather than
+     * from the snapshot of the transaction this runs in and never from the model cache, so that it
+     * is the value a competing writer of this row has to wait behind.
+     *
+     * @throws DBALException
+     */
+    private function holdKey(int $id): ?string
+    {
+        $stored = $this->connection->fetchOne(
+            sprintf('SELECT `definition` FROM `%s` WHERE `id` = ? FOR UPDATE', KeyConfigDao::TABLE_NAME_KEYS),
+            [$id]
+        );
+
+        return is_string($stored) ? $stored : null;
     }
 }

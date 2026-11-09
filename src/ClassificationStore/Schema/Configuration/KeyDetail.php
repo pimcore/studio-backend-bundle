@@ -46,11 +46,12 @@ final class KeyDetail implements AdditionalAttributesInterface
         private readonly ?string $description = null,
         #[Property(
             description: 'Definition of the key, reported as it is stored. The member "indexed" is reserved: it is'
-                . ' the default a newly created assignment of this key takes into its own metadata, where false'
-                . ' excludes the assignment from the search index and anything else leaves it indexed. The members'
-                . ' "variants" and "multiValue" are reserved as well: "variants" is the ordered list of variant'
-                . ' names the key permits a value to carry, where a value carrying no variant addresses the default'
-                . ' variant, and "multiValue" is whether the key holds more than one value per variant. A key that'
+                . ' this key\'s own search index flag, where false asks for the key to be left out of the search'
+                . ' index wherever it is used and anything else leaves it indexed. Studio stores the flag and queues'
+                . ' a remap when it changes; honouring it is the search index\'s own. The members "variants" and'
+                . ' "multiValue" are reserved as well: "variants" is the ordered list of variant names the key'
+                . ' permits a value to carry, where a value carrying no variant addresses the default variant, and'
+                . ' "multiValue" is whether the key holds more than one value per variant. A key that'
                 . ' permits more than the one slot it always had - a non-empty "variants" list, or "multiValue"'
                 . ' true - carries its values in the object data payload as a list of entries rather than as a'
                 . ' single value. A key declaring an empty "variants" list or "multiValue" false permits exactly'

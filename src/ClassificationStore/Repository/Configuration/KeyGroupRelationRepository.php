@@ -18,7 +18,6 @@ use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\ParameterType;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationCreate;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactAssignmentEntry;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryMapperInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
@@ -69,8 +68,6 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
         private ListingFilterInterface $listingFilter,
         private Connection $connection,
         private ArtifactEntryMapperInterface $entryMapper,
-        private KeyRepositoryInterface $keyRepository,
-        private SearchIndexFlagResolverInterface $searchIndexFlagResolver,
     ) {
     }
 
@@ -218,9 +215,8 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
      * An answer the API already has a status for passes through, which is what keeps the 422 of a
      * refused sub group or definition override from arriving as the 500 a failed save is.
      *
-     * Creating an assignment is also the one moment the key has a say in its `metadata`: a pair with
-     * no row yet takes the search index flag of its key where the payload leaves it without one
-     * ({@see self::seedSearchIndexFlag()}). An update never consults the key.
+     * The key has no say in the assignment's `metadata`: the column is free-form and reserves no
+     * member, so neither a creation nor an update reads the key's `definition` for it.
      */
     public function createOrUpdate(KeyGroupRelationCreate $parameters): KeyGroupRelation
     {
@@ -382,10 +378,6 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
      * reads as the value a new relation takes: the same coercion core's own load applies
      * ({@see KeyGroupRelationDao::getById()} casts `mandatory` to bool).
      *
-     * A created assignment takes the search index flag of its key where the payload leaves it
-     * without one, which is the one place the key's `definition` reaches this write
-     * ({@see self::seedSearchIndexFlag()}).
-     *
      * @param array<string, mixed>|null $stored the stored row's `sorter` and `mandatory`, null for none
      *
      * @throws Throwable
@@ -418,48 +410,11 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
             $relation->setSubGroup($parameters->getSubGroup());
         }
 
-        $seeded = $stored === null ? $this->seedSearchIndexFlag($keyId, $parameters) : null;
-
-        if ($seeded !== null) {
-            $relation->setMetadata($seeded);
-        } elseif ($parameters->hasMetadata()) {
+        if ($parameters->hasMetadata()) {
             $relation->setMetadata($parameters->getMetadata());
         }
 
         $relation->save();
-    }
-
-    /**
-     * The `metadata` a created assignment takes from its key, or null where there is nothing to
-     * seed: the key's default fills in for an `indexed` the payload would leave the assignment
-     * without, whether its `metadata` is absent, an explicit null, or an object naming other
-     * members - the supplied members survive alongside it.
-     *
-     * The absent and the null case are deliberately the same here, unlike everywhere else in this
-     * write: an exported assignment always carries an explicit `metadata`
-     * ({@see ArtifactEntryMapperInterface::mapKeyAssignment()}), so refusing null would leave an
-     * exported and reimported store with nothing ever seeded.
-     *
-     * Only a create reaches this. An update has a prior value to keep or to clear, and the key is
-     * not consulted for it - which is also why an explicit `indexed` in the payload is the only
-     * thing that overrides the key, and why a key stating no default seeds nothing at all.
-     *
-     * @return array<string, mixed>|null
-     *
-     * @throws NotFoundException
-     */
-    private function seedSearchIndexFlag(int $keyId, KeyGroupRelationCreate $parameters): ?array
-    {
-        $metadata = $parameters->hasMetadata() ? $parameters->getMetadata() : null;
-
-        if ($this->searchIndexFlagResolver->carriesFlag($metadata)) {
-            return null;
-        }
-
-        return $this->searchIndexFlagResolver->withKeyDefault(
-            $metadata,
-            $this->keyRepository->getById($keyId)->getDefinition()
-        );
     }
 
     /**

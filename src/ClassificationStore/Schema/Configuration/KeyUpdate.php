@@ -47,20 +47,21 @@ final readonly class KeyUpdate
         )]
         private ?string $type = null,
         #[Property(
-            description: 'Values for object brick definition metadata. The member "indexed" is reserved: it is the'
-                . ' default a newly created assignment of this key takes into its own metadata, where false excludes'
-                . ' the assignment from the search index and anything else leaves it indexed. The members "variants"'
-                . ' and "multiValue" are reserved as well: "variants" is the ordered list of variant names the key'
-                . ' permits a value to carry, where a value carrying no variant addresses the default variant, and'
-                . ' "multiValue" is whether the key holds more than one value per variant. A key that permits more'
+            description: 'Values for object brick definition metadata. The member "indexed" is reserved: it is this'
+                . ' key\'s own search index flag, where false asks for the key to be left out of the search index'
+                . ' wherever it is used and anything else leaves it indexed. Changing it queues a remap of every'
+                . ' search index the key\'s store reaches, which converges in the background; honouring the flag is'
+                . ' the search index\'s own. The members "variants" and "multiValue" are reserved as well:'
+                . ' "variants" is the ordered list of variant names the key permits a value to carry, where a value'
+                . ' carrying no variant addresses the default variant, and "multiValue" is whether the key holds'
+                . ' more than one value per variant. A key that permits more'
                 . ' than the one slot it always had - a non-empty "variants" list, or "multiValue" true - carries'
                 . ' its values in the object data payload as a list of entries rather than as a single value, while'
                 . ' a key declaring an empty "variants" list or "multiValue" false permits exactly that one slot and'
                 . ' its values are carried unchanged. Declaring either is accepted whatever the engine of the key\'s'
-                . ' store reports. The'
-                . ' whole object replaces the stored one, so a client that rebuilds it from a form has to send the'
-                . ' member back to keep it. It is unrelated to the "index" member below, which is about the object'
-                . ' query tables.',
+                . ' store reports. The whole object replaces the stored one, so a client that rebuilds it'
+                . ' from a form has to send the member back to keep it. It is unrelated to the "index" member below,'
+                . ' which is about the object query tables.',
             type: 'object',
             example: [
                 'name' => 'weight',

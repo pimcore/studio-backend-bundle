@@ -17,6 +17,7 @@ use Closure;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\ImportReport;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -43,6 +44,7 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
         private ArtifactParserInterface $artifactParser,
         private KeyRelationResolverInterface $keyRelationResolver,
         private ReconcilerInterface $reconciler,
+        private SearchIndexRemapTriggerInterface $searchIndexRemapTrigger,
         private StoreRepositoryInterface $storeRepository,
     ) {
     }
@@ -97,10 +99,16 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
         }
 
         if ($report->hasConflicts()) {
+            // the notes are not touched here: whether the keys this apply wrote are gone is known
+            // to the apply alone, which takes back what it rolled back and nothing a writer before
+            // it in this request left ({@see ReconcilerInterface::apply()})
             throw new ConflictException(
                 'The configuration was not applied: ' . implode('; ', $report->getNamed(ApplyOutcome::CONFLICT))
             );
         }
+
+        // one remap for the whole apply, handed over only now its transaction has committed
+        $this->searchIndexRemapTrigger->flush();
 
         return $this->buildImportReport($report);
     }
@@ -114,10 +122,21 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
         $store = $this->storeRepository->getByIdentifier($document->getStoreIdentifier());
 
         try {
-            return $this->reconciler->apply($document, $store, $dryRun, $onDecision);
+            $report = $this->reconciler->apply($document, $store, $dryRun, $onDecision);
         } finally {
             $this->keyRelationResolver->clear();
         }
+
+        if ($report->hasConflicts()) {
+            // as above: the refused apply has already taken back the notes of the writes it rolled
+            // back, and a note it did not take is not this method's to drop
+            return $report;
+        }
+
+        // a dry run writes no key, so it notes nothing and this hands nothing over
+        $this->searchIndexRemapTrigger->flush();
+
+        return $report;
     }
 
     /**

@@ -27,13 +27,62 @@ use function array_map;
 use function in_array;
 
 /**
- * The production bridge between a write of qualified values and the engine of the store the key
- * belongs to, which this bundle does not own.
+ * The production bridge between the engine of a classification store, which this bundle does not
+ * own, and the two things that ask about it: what the reporting surfaces publish, and what a write
+ * of qualified values is judged against.
+ *
+ * What the bridge answers, and - the part that matters to a client - which of its answers are the
+ * same answer. `null` is not "this engine supports nothing": it is every case where the question
+ * could not be put, and a client must not read core support out of it.
  *
  * @internal
  */
 final class StoreEngineResolverTest extends Unit
 {
+    public function testACoreWithoutTheEngineColumnReportsNoEngine(): void
+    {
+        $resolver = new StoreEngineResolver(null);
+
+        $this->assertNull(
+            $resolver->readEngine(new EngineBlindStoreConfig()),
+            'a store configuration that declares no getEngine() answers nothing, never a guess'
+        );
+    }
+
+    public function testTheStoredEngineIsReportedVerbatim(): void
+    {
+        $storeConfig = new EngineAwareStoreConfig();
+        $storeConfig->engine = 'document';
+
+        $this->assertSame(
+            'document',
+            (new StoreEngineResolver(null))->readEngine($storeConfig),
+            'the engine is reported as the store stores it, not normalised'
+        );
+    }
+
+    public function testAnEngineThatIsNotAStringIsNoEngine(): void
+    {
+        $storeConfig = new EngineAwareStoreConfig();
+        $storeConfig->engine = 42;
+
+        $this->assertNull(
+            (new StoreEngineResolver(null))->readEngine($storeConfig),
+            'a column holding something that is not an engine name answers nothing'
+        );
+    }
+
+    public function testTheDefaultEngineIsNullRatherThanANameOfItsOwn(): void
+    {
+        $storeConfig = new EngineAwareStoreConfig();
+        $storeConfig->engine = null;
+
+        $this->assertNull(
+            (new StoreEngineResolver(null))->readEngine($storeConfig),
+            'a store on the default engine stores no engine, and that is what is published'
+        );
+    }
+
     /**
      * The two capability names a write is judged against are spelled the way the core enum spells
      * its cases, asserted rather than restated, so that a rename in core shows up here.

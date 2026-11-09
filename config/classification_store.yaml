@@ -61,6 +61,30 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolver
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTargetResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTargetResolver
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapQueueInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapQueue
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTrigger
+
+  # The queued remap rides the pimcore_core transport (see config/prepend/classification_store.yaml).
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Messenger\SearchIndexRemapHandler: ~
+
+  #
+  # Event subscribers
+  #
+
+  # Hands over the remaps the write surfaces had to keep because their key writes were still inside
+  # a transaction a caller owned, which is the one case they cannot flush after themselves.
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\EventSubscriber\SearchIndexRemapFlushSubscriber: ~
+
+  # A definition write changes which classes a store reaches, so it drops the coverage claims that
+  # were made against the set of classes as it stood before.
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\EventSubscriber\SearchIndexRemapStoreCoverageSubscriber: ~
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreService
 
@@ -228,8 +252,8 @@ services:
     tags: [ 'serializer.normalizer' ]
 
   # the engine resolver is optional: `composer.json` allows a core that does not ship one, and
-  # against such a core no capability is confirmed and a write needing one is refused, rather than
-  # the bundle failing to boot
+  # against such a core the store reports no engine and no capabilities, and a write needing a
+  # capability is refused because none is confirmed, rather than the bundle failing to boot
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolver
     arguments:

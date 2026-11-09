@@ -18,7 +18,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Model\DataObject\Classificationstore\Engine\EngineFeature;
 use Pimcore\Model\DataObject\Classificationstore\Engine\EngineInterface;
 use Pimcore\Model\DataObject\Classificationstore\Engine\EngineResolver;
+use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
 use function enum_exists;
+use function is_string;
+use function method_exists;
 use function sprintf;
 
 /**
@@ -26,9 +29,36 @@ use function sprintf;
  */
 final readonly class StoreEngineResolver implements StoreEngineResolverInterface
 {
+    private const string ENGINE_GETTER = 'getEngine';
+
     public function __construct(
         private ?EngineResolver $engineResolver = null,
     ) {
+    }
+
+    public function getEngine(StoreConfig $storeConfig): ?string
+    {
+        if (!$this->declaresAccessor(self::ENGINE_GETTER)) {
+            return null;
+        }
+
+        return $this->readEngine($storeConfig);
+    }
+
+    public function getEngineCapabilities(StoreConfig $storeConfig): ?array
+    {
+        if ($this->engineResolver === null || !$this->declaresAccessor(self::ENGINE_GETTER)) {
+            return null;
+        }
+
+        try {
+            // the engine value already loaded, so reading a whole store tree adds no query
+            $engine = $this->engineResolver->resolve($this->readEngine($storeConfig), (int) $storeConfig->getId());
+        } catch (Exception) {
+            return null;
+        }
+
+        return $this->featuresOf($engine);
     }
 
     public function getCapabilitiesOfStore(int $storeId): ?array
@@ -51,6 +81,25 @@ final readonly class StoreEngineResolver implements StoreEngineResolverInterface
     }
 
     /**
+     * {@see self::getEngine()} against any store configuration model.
+     *
+     * Public, and typed on the model rather than on `StoreConfig`, so that both halves of the
+     * bridge can be covered: `StoreConfig` is final and the core this bundle resolves need not
+     * declare the accessor at all, so a real one can only ever exercise one half. Production call
+     * sites bind to {@see StoreEngineResolverInterface} and never reach this.
+     */
+    public function readEngine(object $storeConfig): ?string
+    {
+        if (!method_exists($storeConfig, self::ENGINE_GETTER)) {
+            return null;
+        }
+
+        $engine = $storeConfig->{self::ENGINE_GETTER}();
+
+        return is_string($engine) ? $engine : null;
+    }
+
+    /**
      * Exactly those capability names the engine answers true for, in the order the core enum
      * declares its cases and spelled the way it spells them.
      *
@@ -63,7 +112,8 @@ final readonly class StoreEngineResolver implements StoreEngineResolverInterface
      * Public, and taking the engine rather than the store, so that what this bundle makes of each
      * answer can be read against an engine of a known mind: the step before it is the core's own
      * resolution of a stored store id, which cannot be driven without a database.
-     * {@see self::getCapabilitiesOfStore()} is its production caller.
+     * {@see self::getCapabilitiesOfStore()} and {@see self::getEngineCapabilities()} are its
+     * production callers.
      *
      * @return string[]|null
      */
@@ -81,5 +131,15 @@ final readonly class StoreEngineResolver implements StoreEngineResolverInterface
         }
 
         return $supported;
+    }
+
+    /**
+     * Whether the core's store configuration declares the accessor at all. Asked by name, for the
+     * reason {@see self::readEngine()} asks by name: the method is not this package's and the core
+     * whose it is need not have it.
+     */
+    private function declaresAccessor(string $accessor): bool
+    {
+        return method_exists(StoreConfig::class, $accessor);
     }
 }

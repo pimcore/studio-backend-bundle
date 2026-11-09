@@ -250,9 +250,9 @@ final class ApplyRefusalsTest extends Unit
     }
 
     /**
-     * The search index flag is not overridable per assignment: the per assignment expression of it
-     * is the `metadata` column, so a `definitionOverride` naming it is outside the closed list like
-     * anything else.
+     * The search index flag is not overridable per assignment: that flag belongs to the key, in its
+     * own `definition`, and no assignment overrides it - so a `definitionOverride` naming it is
+     * outside the closed list like anything else.
      */
     public function testAnOverrideNamingTheSearchIndexFlagIsRefused(): void
     {

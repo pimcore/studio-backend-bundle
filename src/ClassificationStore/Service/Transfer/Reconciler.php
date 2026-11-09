@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
@@ -38,6 +39,21 @@ use function sprintf;
  * what one entry becomes is the writer's ({@see ArtifactEntryWriterInterface}), and how a refusal
  * reads is the diagnostics' ({@see ApplyDiagnosticsInterface}).
  *
+ * ## Who takes back the search index remap notes
+ *
+ * The key writes of the sections note the flag changes they make
+ * ({@see SearchIndexRemapTriggerInterface}), and a rolled back apply has to take its own notes back
+ * with the rows they were about. This class is where that decision belongs, because it is the only
+ * one that knows whether a rollback happened at all: it rolls back only the transaction it opened
+ * itself, and an apply that joined a transaction a caller owns leaves both the commit and the
+ * rollback to that caller - including after a refusal, where it reports the conflicts and writes
+ * nothing further.
+ *
+ * So the notes are taken back here, at each of the two places a rollback is performed, and only
+ * back to the mark this apply read before its first section: the notes it found already there
+ * belong to writes it did not make - one request reaches the key endpoint and an apply alike - and
+ * are about rows this rollback did not touch.
+ *
  * @internal
  */
 final readonly class Reconciler implements ReconcilerInterface
@@ -53,6 +69,7 @@ final readonly class Reconciler implements ReconcilerInterface
         private GroupRepositoryInterface $groupRepository,
         private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
         private KeyRepositoryInterface $keyRepository,
+        private SearchIndexRemapTriggerInterface $searchIndexRemapTrigger,
         private StoreRepositoryInterface $storeRepository,
         private SubGroupRepositoryInterface $subGroupRepository,
     ) {
@@ -75,6 +92,10 @@ final readonly class Reconciler implements ReconcilerInterface
             $this->connection->beginTransaction();
         }
 
+        // what this apply's own key writes note from here on, told apart from the notes of whoever
+        // wrote before it in the same request: only the former are taken back by a rollback below
+        $mark = $this->searchIndexRemapTrigger->mark();
+
         try {
             $this->applyStore($context, $document, $store);
             $this->holdTheGroupsOfTheStore($context);
@@ -88,6 +109,9 @@ final readonly class Reconciler implements ReconcilerInterface
             // Throwable, not Exception: an Error has to leave the store as it was just the same
             if ($ownTransaction && $this->connection->isTransactionActive()) {
                 $this->connection->rollBack();
+                // the rows these notes are about are gone with the rollback that just happened,
+                // which is the one case a note may be dropped rather than handed over
+                $this->searchIndexRemapTrigger->discardSince($mark);
             }
 
             throw $e;
@@ -96,7 +120,12 @@ final readonly class Reconciler implements ReconcilerInterface
         $report = $context->getReport();
 
         if ($ownTransaction) {
-            $report->hasConflicts() ? $this->connection->rollBack() : $this->connection->commit();
+            if ($report->hasConflicts()) {
+                $this->connection->rollBack();
+                $this->searchIndexRemapTrigger->discardSince($mark);
+            } else {
+                $this->connection->commit();
+            }
         }
 
         return $report;
