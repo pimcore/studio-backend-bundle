@@ -134,7 +134,6 @@ final class QualifiedValueSerializerTest extends Unit
         return [
             'a multi select value' => [['red', 'green']],
             'a relation value' => [[['type' => 'object', 'id' => 7]]],
-            'an empty list' => [[]],
             'a keyed array' => [['value' => '80']],
             'null' => [null],
             // a legitimate value PHP would otherwise make disappear
@@ -143,6 +142,28 @@ final class QualifiedValueSerializerTest extends Unit
             'the empty string' => [''],
             'false' => [false],
         ];
+    }
+
+    /**
+     * The empty list is the empty *entry* list and not a value: no entry at all.
+     *
+     * It is what a read of a key whose declaration narrowed to hide every entry of its row
+     * publishes, so reading it back as one entry holding the empty array would have a PUT of what
+     * that read handed out manufacture a default entry the row never held - and hand the key's own
+     * scalar adapter an array. The empty array as a *value* of the default slot is still writable,
+     * by naming the slot it belongs to, which is the sibling assertion here.
+     *
+     * The empty list never reaches this parse for a key that declares nothing: such a key's payload
+     * is one value whatever it looks like, so its own stored empty array is untouched by this.
+     */
+    public function testTheEmptyListIsNoEntryRatherThanOneEntryHoldingIt(): void
+    {
+        $this->assertSame([], $this->serializer->parseEntries([], $this->createKeyConfig()));
+
+        $named = $this->serializer->parseEntries([['v' => []]], $this->createKeyConfig());
+
+        $this->assertSame([[null, 0]], $this->describe($named));
+        $this->assertSame([], $named[0]->getValue());
     }
 
     /**

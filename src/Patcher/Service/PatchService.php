@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
@@ -200,12 +201,18 @@ final readonly class PatchService implements PatchServiceInterface
             throw new ElementExistsException(
                 message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())
             );
-        } catch (ForbiddenException $exception) {
-            throw $exception;
         } catch (ValidationException $exception) {
             throw new FieldValidationFailedException($exception->getMessage(), previous: $exception);
+        } catch (AbstractApiException $exception) {
+            // the sibling of the PUT boundary
+            // ({@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataService::updateEditableData()}):
+            // an exception already carrying its own status and error key is the answer and is not
+            // masked as a 500. This is what the ForbiddenException clause here did, widened to
+            // every such exception so a PATCH refusing a Classification Store value answers the
+            // 422 and the error key the refusal states rather than a generic saving failure.
+            throw $exception;
         } catch (Exception $exception) {
-            throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
+            throw new ElementSavingFailedException($element->getId(), $exception->getMessage(), previous: $exception);
         }
     }
 

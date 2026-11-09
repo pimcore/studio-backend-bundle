@@ -520,7 +520,7 @@ final readonly class ClassificationStoreAdapter implements
                 // refuses the write rather than handing back a list this guard would read as one value
                 $converted = $convert(
                     $value,
-                    $this->getCurrentOfSingleValue($storedSlot, $keyConfig, $fieldDefinition),
+                    $this->getCurrentOfSingleValue($storedSlot, $keyConfig),
                     $isPatch
                 );
 
@@ -547,6 +547,19 @@ final readonly class ClassificationStoreAdapter implements
      * asked about the supplied entries alone rather than about the merged list: the stored ones
      * were accepted when they were written, and holding this write to them would make a key
      * uneditable on an engine that no longer reports what it once did.
+     *
+     * Only the supplied entries go through the key's own type adapter, and the merge is onto the
+     * *raw* entries the row holds. A stored entry carried over by the merge was never supplied by
+     * this request, so there is nothing of it to convert: it is already in the shape the row stores
+     * and taking it through the setter a second time hands the adapter its own normalized output -
+     * `ManyToManyRelationAdapter::normalize()` answers with `RelatedElementData` objects and its
+     * setter reads arrays, so an untouched relation sibling would take the whole patch down. The
+     * same raw reading is what the current value handed to the adapter is taken from, which is how
+     * every other context reads this slot
+     * ({@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData}) and what
+     * an adapter resolving a patch against the current value expects, since
+     * {@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataService::getSetterData()}
+     * normalizes it itself.
      *
      * An entry the row holds and the declaration no longer permits is hidden, not deleted: it is
      * carried over untouched, so a write that does not mention it - a PUT of what a read published
@@ -592,17 +605,11 @@ final readonly class ClassificationStoreAdapter implements
 
         $stored = $storedSlot === null
             ? []
-            : $this->normalizeEntries(
-                $this->qualifiedValueSerializer->getVisibleEntries($storedSlot, $keyConfig),
-                $fieldDefinition
-            );
-        $values = $isPatch
-            ? $this->qualifiedValueSerializer->mergeEntries($stored, $supplied)
-            : $supplied;
+            : $this->qualifiedValueSerializer->getVisibleEntries($storedSlot, $keyConfig);
         $current = $this->byQualifier($stored);
 
         $converted = [];
-        foreach ($values as $qualifiedValue) {
+        foreach ($supplied as $qualifiedValue) {
             // a slot the row holds nothing at carries null, so that the current value handed over
             // is always the one entry's and never falls back to reading the whole list
             $currentValue = $current[$qualifiedValue->getQualifier()] ?? $qualifiedValue->withValue(null);
@@ -613,7 +620,7 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         return $this->assembleSlot(
-            $converted,
+            $isPatch ? $this->qualifiedValueSerializer->mergeEntries($stored, $converted) : $converted,
             $storedSlot === null ? [] : $this->qualifiedValueSerializer->getHiddenEntries($storedSlot, $keyConfig)
         );
     }
@@ -623,11 +630,19 @@ final readonly class ClassificationStoreAdapter implements
      * The bare value where that is one default entry alone, which is the slot as it was stored
      * before any key declared anything.
      *
+     * Nothing written and nothing hidden stores nothing, rather than an empty list: a key whose
+     * every entry the write cleared holds what it held before any key declared anything, which is
+     * no value, and a row left holding `[]` would publish a value a read then has to explain.
+     *
      * @param QualifiedValue[] $written
      * @param QualifiedValue[] $hidden
      */
     private function assembleSlot(array $written, array $hidden): mixed
     {
+        if ($hidden === [] && $written === []) {
+            return null;
+        }
+
         if ($hidden === [] && count($written) === 1 && $this->addressesDefaultSlot($written[0])) {
             return $written[0]->getValue();
         }
@@ -639,20 +654,22 @@ final readonly class ClassificationStoreAdapter implements
      * The current value the key's own type adapter sees for a key declaring nothing: the slot's own
      * value where it holds a plain one, handed over as null exactly as before, and the one default
      * entry's where the row holds a list the key no longer declares.
+     *
+     * Raw, for the reason the qualified arm's is raw
+     * ({@see self::getQualifiedSetterData()}): where this hands over null the context reads the
+     * slot itself, unnormalized, so handing a normalized value over here would make one arm of the
+     * same read disagree with the other and with every adapter that normalizes the current value
+     * itself.
      */
     private function getCurrentOfSingleValue(
         mixed $storedSlot,
-        KeyConfig $keyConfig,
-        Data $fieldDefinition
+        KeyConfig $keyConfig
     ): ?QualifiedValue {
         if (!$this->qualifiedValueSerializer->holdsEntries($storedSlot)) {
             return null;
         }
 
-        $visible = $this->normalizeEntries(
-            $this->qualifiedValueSerializer->getVisibleEntries($storedSlot, $keyConfig),
-            $fieldDefinition
-        );
+        $visible = $this->qualifiedValueSerializer->getVisibleEntries($storedSlot, $keyConfig);
 
         return $visible[0] ?? new QualifiedValue(null);
     }
@@ -697,7 +714,7 @@ final readonly class ClassificationStoreAdapter implements
         try {
             return $container->getLocalizedKeyValue($groupId, $keyId, $language, true, true);
         } catch (Exception $exception) {
-            throw new DatabaseException($exception->getMessage());
+            throw new DatabaseException($exception->getMessage(), previous: $exception);
         }
     }
 
@@ -930,7 +947,9 @@ final readonly class ClassificationStoreAdapter implements
                 true
             );
         } catch (Exception $exception) {
-            throw new DatabaseException($exception->getMessage());
+            // the read sibling of self::readStoredSlot(): the same slot, the same wrap, so the same
+            // original type and stack trace survive it
+            throw new DatabaseException($exception->getMessage(), previous: $exception);
         }
 
         $keyConfig = $this->definitionCacheResolver->get($key->getKeyId());

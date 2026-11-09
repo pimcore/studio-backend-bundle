@@ -26,9 +26,9 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDraftData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\DetailValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
@@ -190,10 +190,16 @@ final readonly class DataService implements DataServiceInterface
 
         } catch (ValidationException $e) {
             throw new FieldValidationFailedException($e->getMessage(), previous: $e);
-        } catch (ForbiddenException $e) {
+        } catch (AbstractApiException $e) {
+            // an exception that already states its own status and error key is the answer: wrapping
+            // it would report a 500 and the generic error key for something the API decided about.
+            // ForbiddenException was passed through here for that reason before this widened to
+            // every such exception, which the Classification Store's own refusals needed - a value
+            // naming a variant the key does not declare answers 422 with that error key rather than
+            // a 500 a client cannot tell from a broken database.
             throw $e;
         } catch (Exception $e) {
-            throw new ElementSavingFailedException($element->getId(), $e->getMessage());
+            throw new ElementSavingFailedException($element->getId(), $e->getMessage(), previous: $e);
         }
     }
 

@@ -39,6 +39,12 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
 
     public function parseEntries(mixed $payload, KeyConfig $keyConfig): array
     {
+        if ($payload === []) {
+            // the empty entry list, which is what a narrowed key publishes - no entry, not one
+            // entry holding the empty array
+            return [];
+        }
+
         if (!$this->looksLikeEntryList($payload)) {
             // an un-updated client sends the value itself, which is the default variant at position 0
             return [new QualifiedValue($payload)];

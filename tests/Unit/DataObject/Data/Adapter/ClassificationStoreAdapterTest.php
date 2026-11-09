@@ -20,6 +20,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\De
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\GroupConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface as ElementServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\EngineCapabilityGuard;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
@@ -27,12 +28,16 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValu
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializer;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ClassificationStoreAdapter;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToManyRelationAdapter;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -50,6 +55,7 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\EncryptedField;
 use Pimcore\Model\UserInterface;
 use function array_keys;
+use function array_map;
 use function array_merge;
 use function json_encode;
 use function sprintf;
@@ -799,6 +805,124 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
+     * A patch takes only the entries the request supplied through the key's own type adapter, and
+     * what it carries over from the row it carries over raw.
+     *
+     * The real {@see ManyToManyRelationAdapter} is driven here, because the two shapes that have to
+     * disagree are its own rather than this suite's idea of them: `normalize()` answers with
+     * {@see RelatedElementData} objects and its setter reads `$relation['type']` off each element
+     * it is handed. Taking an untouched sibling through the setter a second time therefore hands
+     * that setter its own normalized output and takes the whole patch down with an `Error` that
+     * names no key - so a patch of one entry of a relation key could not be saved at all while a
+     * sibling existed. The current value handed over is raw for the same reason: that is what every
+     * other context reads this slot as, and what
+     * {@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataService::getSetterData()}
+     * normalizes itself.
+     *
+     * The normalizing data service is stubbed because that is what made the defect reachable: the
+     * write path does not ask for a normalized value at all any more, so the stub is answered zero
+     * times now and was answered for every carried-over entry before.
+     *
+     * @throws Exception
+     */
+    public function testAPatchOfOneRelationEntryLeavesAnUntouchedSiblingRawInTheRow(): void
+    {
+        $sibling = [['type' => 'object', 'id' => 8]];
+        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
+            self::QUALIFIED_KEY => [
+                ['v' => [['type' => 'object', 'id' => 7]]],
+                ['v' => $sibling, 'var' => self::IMPERIAL],
+            ],
+        ]]];
+
+        $relationAdapter = $this->createRelationAdapter();
+        $keyConfigs = $this->qualifiedKeyConfigs();
+        $container = $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]);
+
+        $adapter = $this->createQualifiedAdapter(
+            $keyConfigs,
+            $stored,
+            self::BOTH_CAPABILITIES,
+            dataAdapterService: $this->makeEmpty(DataAdapterServiceInterface::class, [
+                'tryDataAdapter' => $relationAdapter,
+            ]),
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getFieldDefinitionFromKeyConfig' => $this->makeEmpty(Data::class, ['getName' => 'related']),
+            ]),
+            // what the real DataService does: the field's own adapter normalizes the value
+            dataService: $this->makeEmpty(DataServiceInterface::class, [
+                'getNormalizedValue' => static fn (
+                    mixed $value,
+                    Data $fieldDefinition
+                ): mixed => $relationAdapter->normalize($value, $fieldDefinition),
+                'getPreviewFieldName' => self::PREVIEW_FIELD,
+            ])
+        );
+
+        $this->writeKeys(
+            $adapter,
+            $container,
+            $this->createQualifiedFieldDefinition($keyConfigs),
+            [self::QUALIFIED_KEY => [['v' => [['type' => 'object', 'id' => 9]]]]],
+            isPatch: true
+        );
+
+        $slot = $stored[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY];
+
+        // the untouched sibling is byte for byte the entry the row held
+        $this->assertSame(['v' => $sibling, 'var' => self::IMPERIAL], $slot[1]);
+
+        // and the one entry the patch named went through the relation setter
+        $this->assertSame([9], array_map(
+            static fn (Concrete $element): int => $element->getId(),
+            $slot[0]['v']
+        ));
+    }
+
+    /**
+     * The real relation adapter, with the two collaborators it resolves elements through stubbed:
+     * the shapes this is driven for are the adapter's own - `RelatedElementData` out of
+     * `normalize()` and `$relation['type']` into the setter - and neither of them is reached
+     * through the database the unit suite does not have.
+     *
+     * @throws Exception
+     */
+    private function createRelationAdapter(): ManyToManyRelationAdapter
+    {
+        $elements = [];
+        foreach ([7, 8, 9] as $id) {
+            $elements[$id] = $this->makeEmpty(Concrete::class, ['getId' => $id]);
+        }
+
+        return new ManyToManyRelationAdapter(
+            $this->makeEmpty(RelationDataServiceInterface::class, [
+                'getSetterData' => static fn (
+                    Concrete $element,
+                    Data $fieldDefinition,
+                    DataNormalizerInterface $adapter,
+                    bool $isPatch,
+                    ?array $fieldData
+                ): ?array => $fieldData,
+                'getRelationElementsData' => static fn (array $relations): array => array_map(
+                    static fn (array $relation): RelatedElementData => new RelatedElementData(
+                        $relation['id'],
+                        $relation['type'],
+                        'Product',
+                        '/products/' . $relation['id']
+                    ),
+                    $relations
+                ),
+            ]),
+            $this->makeEmpty(ElementServiceResolverInterface::class, [
+                'getElementById' => static fn (
+                    string $type,
+                    int $id
+                ): ?Concrete => $elements[$id] ?? null,
+            ])
+        );
+    }
+
+    /**
      * The current value the key's own type adapter is handed is the one entry's, not the whole
      * list: the list is the state of the key, and an adapter merging into the current value - a
      * multi select or a relation in patch mode - would otherwise read the siblings of the value it
@@ -1162,6 +1286,68 @@ final class ClassificationStoreAdapterTest extends Unit
             [['v' => '80', 'var' => self::METRIC], ['v' => '81', 'p' => 1], ['v' => '176', 'var' => self::IMPERIAL]],
             $stored[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]
         );
+    }
+
+    /**
+     * The case the test above does not reach: narrowing leaves NOTHING visible, so the read
+     * publishes the empty entry list, and a PUT of exactly that has to be lossless as well.
+     *
+     * The empty list is no entry rather than one entry holding the empty array
+     * ({@see \Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParserInterface::parseEntries()}),
+     * so the row keeps the hidden entries and gains no default entry the client never sent - which
+     * for a key of a scalar type would be the empty array handed to its own adapter.
+     *
+     * @throws Exception
+     */
+    public function testAPutOfTheEmptyListAReadPublishedKeepsEveryHiddenEntryAndAddsNone(): void
+    {
+        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
+            self::QUALIFIED_KEY => [
+                ['v' => '176', 'var' => self::IMPERIAL],
+                ['v' => '177', 'var' => self::IMPERIAL, 'p' => 1],
+            ],
+        ]]];
+
+        // every stored entry names a variant the declaration no longer carries
+        $keyConfigs = $this->qualifiedKeyConfigs(['variants' => [self::METRIC], 'multiValue' => true]);
+        $container = $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]);
+        $adapter = $this->createQualifiedAdapter($keyConfigs, $stored, self::BOTH_CAPABILITIES);
+        $fieldDefinition = $this->createQualifiedFieldDefinition($keyConfigs);
+
+        $published = $adapter->getDetailData($this->makeEmpty(Concrete::class), $container, $fieldDefinition);
+        $slot = $published[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY];
+
+        $this->assertSame([], $slot);
+
+        $this->writeKeys($adapter, $container, $fieldDefinition, [self::QUALIFIED_KEY => $slot]);
+
+        $this->assertSame(
+            [['v' => '176', 'var' => self::IMPERIAL], ['v' => '177', 'var' => self::IMPERIAL, 'p' => 1]],
+            $stored[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]
+        );
+    }
+
+    /**
+     * The sibling of the case above, where there is nothing hidden either: a write clearing every
+     * entry of a declaring key leaves the slot holding nothing, which is what the key held before
+     * it declared anything - and not an empty list a read would then have to explain.
+     *
+     * @throws Exception
+     */
+    public function testAWriteOfTheEmptyListLeavesNoValueWhereNothingIsHidden(): void
+    {
+        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
+            self::QUALIFIED_KEY => [['v' => '80'], ['v' => '176', 'var' => self::IMPERIAL]],
+        ]]];
+
+        $written = $this->writeAndRecord(
+            $this->qualifiedKeyConfigs(),
+            [self::QUALIFIED_KEY => []],
+            $stored,
+            capabilities: self::BOTH_CAPABILITIES
+        );
+
+        $this->assertSame([[self::QUALIFIED_GROUP, self::QUALIFIED_KEY, null, self::LANGUAGE]], $written);
     }
 
     /**
@@ -1854,7 +2040,8 @@ final class ClassificationStoreAdapterTest extends Unit
         ?DataAdapterServiceInterface $dataAdapterService = null,
         ?LanguageServiceInterface $languageService = null,
         ?ServiceResolverInterface $serviceResolver = null,
-        ?InheritanceServiceInterface $inheritanceService = null
+        ?InheritanceServiceInterface $inheritanceService = null,
+        ?DataServiceInterface $dataService = null
     ): ClassificationStoreAdapter {
         $relations = [];
         foreach (array_keys($keyConfigs) as $keyId) {
@@ -1878,7 +2065,7 @@ final class ClassificationStoreAdapterTest extends Unit
                     ): mixed => $data[$key],
                 ]),
             ]),
-            dataService: $this->makeEmpty(DataServiceInterface::class, [
+            dataService: $dataService ?? $this->makeEmpty(DataServiceInterface::class, [
                 'getNormalizedValue' => static fn (mixed $value): mixed => $value,
                 'getPreviewFieldData' => static fn (
                     mixed $value,

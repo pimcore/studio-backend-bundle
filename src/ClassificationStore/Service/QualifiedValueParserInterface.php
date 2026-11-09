@@ -39,6 +39,15 @@ interface QualifiedValueParserInterface
      * object - an array carrying `v` - is a list of entries; the array value of a multi-select or a
      * relation field is not, and such a value keeps travelling whole.
      *
+     * The empty list is the empty *entry* list: no entry at all. It is what a key whose declaration
+     * narrowed to hide every entry of its row publishes
+     * ({@see QualifiedValueSerializerInterface::getVisibleEntries()} answers with none, so the read
+     * emits `[]`), and reading it as one entry holding the empty array would have a PUT of what that
+     * read published manufacture a default entry the row never had. A client clearing the default
+     * slot of such a key to an empty array value names it: `[{"v": []}]`. The payload of a key that
+     * declares nothing never reaches here, so its own empty array stays the value it has always
+     * been.
+     *
      * Every entry is held to the declaration, whatever the row already holds: a stored value the
      * declaration no longer permits is hidden by
      * {@see QualifiedValueSerializerInterface::getVisibleEntries()}, so a client saving back what a
