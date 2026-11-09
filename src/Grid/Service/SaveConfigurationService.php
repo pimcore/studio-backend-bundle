@@ -93,6 +93,11 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
             $this->columnReferenceService->addIdentifiers($classId, $gridConfiguration->getColumns())
         );
 
+        $filter = $gridConfiguration->getFilter();
+        if ($filter !== null) {
+            $gridConfiguration->setFilter($this->columnReferenceService->addFilterIdentifiers($classId, $filter));
+        }
+
         if ($configuration->setAsFavorite()) {
             $gridConfiguration = $this->favoriteService
                 ->setDataObjectConfigurationAsFavoriteForCurrentUser(

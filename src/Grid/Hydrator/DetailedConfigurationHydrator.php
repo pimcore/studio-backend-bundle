@@ -36,8 +36,10 @@ final readonly class DetailedConfigurationHydrator implements DetailedConfigurat
 
         $classId = $data->getClassId();
         $columns = $data->getColumns();
+        $filter = $data->getFilter();
         if ($classId !== null) {
             $columns = $this->columnReferenceService->deriveIds($classId, $columns);
+            $filter = $filter === null ? null : $this->columnReferenceService->deriveFilterIds($classId, $filter);
         }
 
         return new DetailedConfiguration(
@@ -49,7 +51,7 @@ final readonly class DetailedConfigurationHydrator implements DetailedConfigurat
             sharedUsers: $users,
             sharedRoles: $roles,
             columns: $columns,
-            filter: $data->getFilter() ?? [],
+            filter: $filter ?? [],
             pageSize: $data->getPageSize(),
             modificationDate: $data->getModificationDate()->getTimestamp(),
             creationDate: $data->getCreationDate()->getTimestamp(),

@@ -112,7 +112,10 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
 
         $configuration->setFilter(null);
         if ($configurationParams->saveFilter()) {
-            $configuration->setFilter($configurationParams->getFilter()->toArray());
+            $configuration->setFilter($this->columnReferenceService->addFilterIdentifiers(
+                $configuration->getClassId(),
+                $configurationParams->getFilter()->toArray()
+            ));
         }
 
         if ($configurationParams->setAsFavorite()) {

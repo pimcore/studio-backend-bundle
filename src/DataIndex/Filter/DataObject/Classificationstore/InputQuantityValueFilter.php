@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classif
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\WildcardSearch;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
@@ -33,7 +34,8 @@ final class InputQuantityValueFilter implements FilterInterface
 
     public function __construct(
         private readonly GroupConfigRepositoryInterface $groupConfigRepository,
-        private readonly KeyRelationResolverInterface $keyRelationResolver
+        private readonly KeyRelationResolverInterface $keyRelationResolver,
+        private readonly ColumnReferenceServiceInterface $columnReferenceService
     ) {
 
     }
@@ -52,7 +54,11 @@ final class InputQuantityValueFilter implements FilterInterface
             $parameters->getColumnFilterByType(ColumnType::CLASSIFICATION_STORE_INPUT_QUANTITY_VALUE->value) as $column
         ) {
 
-            $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
+            $filterValue = $this->getClassificationStoreFilterValue(
+                $column->getFilterValue(),
+                $parameters,
+                $column->getKeyWithOutLocale()
+            );
 
             $key = $this->keyRelationResolver->getByGroupAndKey(
                 $filterValue->getGroupId(),

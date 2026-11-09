@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
+use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToOneRelation;
 use function array_map;
 use function array_search;
 use function range;
@@ -174,6 +175,73 @@ final class ColumnReferenceServiceTest extends Unit
         $this->assertSame(['text' => 'x'], $columns[0]['config']['advancedColumns'][1]['config']);
     }
 
+    /**
+     * The related class (Maker) keeps its field in the other store, so the owner's store would be the wrong one.
+     */
+    public function testAddIdentifiersCoversTheSourceFieldOfARelationField(): void
+    {
+        $advanced = [
+            'key' => 'adv',
+            'type' => 'dataobject.advanced',
+            'config' => ['advancedColumns' => [
+                ['key' => 'relationField', 'config' => [
+                    'relation' => 'manufacturer',
+                    'field' => 'cs',
+                    'groupId' => 50,
+                    'keyId' => 60,
+                ]],
+            ]],
+        ];
+
+        $columns = $this->createService()->addIdentifiers(self::CLASS_ID, [$advanced]);
+
+        $source = $columns[0]['config']['advancedColumns'][0]['config'];
+        $this->assertSame(self::GROUP_IDENTIFIER, $source['groupIdentifier']);
+        $this->assertSame(self::KEY_IDENTIFIER, $source['keyIdentifier']);
+    }
+
+    public function testAddFilterIdentifiersStampsOnlyClassificationStoreColumnFilters(): void
+    {
+        $filter = ['page' => 1, 'columnFilters' => [
+            ['key' => 'name', 'type' => 'input', 'filterValue' => 'x'],
+            ['key' => 'cs', 'type' => 'classificationstore.string', 'filterValue' => [
+                'groupId' => 5,
+                'keyId' => 6,
+                'value' => 'needle',
+            ]],
+        ]];
+
+        $stamped = $this->createService()->addFilterIdentifiers(self::CLASS_ID, $filter);
+
+        $this->assertSame($filter['columnFilters'][0], $stamped['columnFilters'][0]);
+        $this->assertSame([
+            'groupId' => 5,
+            'keyId' => 6,
+            'value' => 'needle',
+            'groupIdentifier' => self::GROUP_IDENTIFIER,
+            'keyIdentifier' => self::KEY_IDENTIFIER,
+        ], $stamped['columnFilters'][1]['filterValue']);
+    }
+
+    public function testDeriveFilterIdsReplacesAStalePairAndLeavesAFilterWithoutColumnFiltersAsStored(): void
+    {
+        $filter = ['columnFilters' => [['key' => 'cs', 'type' => 'classificationstore.string', 'filterValue' => [
+            'groupId' => 99,
+            'keyId' => 98,
+            'groupIdentifier' => self::GROUP_IDENTIFIER,
+            'keyIdentifier' => self::KEY_IDENTIFIER,
+            'value' => 'needle',
+        ]]]];
+
+        $derived = $this->createService()->deriveFilterIds(self::CLASS_ID, $filter);
+
+        $this->assertSame([5, 6], [
+            $derived['columnFilters'][0]['filterValue']['groupId'],
+            $derived['columnFilters'][0]['filterValue']['keyId'],
+        ]);
+        $this->assertSame(['page' => 1], $this->createService()->deriveFilterIds(self::CLASS_ID, ['page' => 1]));
+    }
+
     public function testDeriveIdsReplacesAStalePairWithTheLocalIds(): void
     {
         $column = $this->csColumn('cs', 99, 98);
@@ -275,8 +343,18 @@ final class ColumnReferenceServiceTest extends Unit
             'name' => $input,
         ]);
 
+        $relation = new ManyToOneRelation();
+        $relation->setName('manufacturer');
+        $relation->setClasses([['classes' => 'Maker']]);
+        $classDefinition->setFieldDefinitions([...$classDefinition->getFieldDefinitions(), 'manufacturer' => $relation]);
+        $maker = new ClassDefinition();
+        $maker->setFieldDefinitions(['cs' => $this->createField('cs', self::OTHER_STORE_ID)]);
+
         return new ColumnReferenceService(
-            $this->makeEmpty(ClassDefinitionResolverInterface::class, ['getById' => $classDefinition]),
+            $this->makeEmpty(ClassDefinitionResolverInterface::class, [
+                'getById' => $classDefinition,
+                'getByName' => $maker,
+            ]),
             $this->makeEmpty(GroupRepositoryInterface::class, [
                 'getIdsByIdentifiers' => fn (int $storeId, array $identifiers) => $this->idsOf($this->groups, $storeId, $identifiers),
                 'getIdentifiersByIds' => fn (int $storeId, array $ids) => $this->identifiersOf($this->groups, $storeId, $ids),

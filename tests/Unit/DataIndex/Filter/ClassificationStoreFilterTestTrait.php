@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
@@ -61,7 +62,8 @@ trait ClassificationStoreFilterTestTrait
 
         $filter = new $filterClass(
             $this->makeEmpty(GroupConfigRepositoryInterface::class, ['getById' => $group]),
-            $this->makeEmpty(KeyRelationResolverInterface::class, ['getByGroupAndKey' => $key])
+            $this->makeEmpty(KeyRelationResolverInterface::class, ['getByGroupAndKey' => $key]),
+            $this->makeEmpty(ColumnReferenceServiceInterface::class)
         );
 
         $parameter = $this->getColumnFilterMock(

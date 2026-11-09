@@ -19,15 +19,20 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ClassificationStoreConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
+use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Symfony\Contracts\Service\ResetInterface;
 use WeakReference;
 use function array_filter;
 use function array_map;
+use function count;
 use function is_array;
 use function is_int;
+use function is_object;
 use function is_string;
+use function method_exists;
 use function sprintf;
+use function str_starts_with;
 
 /**
  * The identifiers a request reads are memoised by {@see prime()}, and dropped by {@see reset()} so that a
@@ -40,6 +45,8 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
     private const string ADVANCED_TYPE = 'dataobject.advanced';
 
     private const string CLASSIFICATION_STORE_TYPE = 'dataobject.classificationstore';
+
+    private const string FILTER_TYPE_PREFIX = 'classificationstore.';
 
     private const string GROUP_IDENTIFIER = 'groupIdentifier';
 
@@ -212,6 +219,22 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
         return $columns;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function addFilterIdentifiers(string $classId, array $filter): array
+    {
+        return $this->translateFilter($filter, fn (array $columns) => $this->addIdentifiers($classId, $columns));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deriveFilterIds(string $classId, array $filter): array
+    {
+        return $this->translateFilter($filter, fn (array $columns) => $this->deriveIds($classId, $columns));
+    }
+
     public function reset(): void
     {
         $this->groupIds = [];
@@ -221,8 +244,39 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
     }
 
     /**
+     * The classification store column filters are translated as the columns they filter, then written back.
+     *
+     * @param callable(array<int, array>): array<int, array> $translate
+     */
+    private function translateFilter(array $filter, callable $translate): array
+    {
+        $columns = [];
+        foreach (is_array($filter['columnFilters'] ?? null) ? $filter['columnFilters'] : [] as $index => $columnFilter) {
+            if (
+                is_array($columnFilter)
+                && is_string($columnFilter['type'] ?? null)
+                && str_starts_with($columnFilter['type'], self::FILTER_TYPE_PREFIX)
+                && is_string($columnFilter['key'] ?? null)
+                && is_array($columnFilter['filterValue'] ?? null)
+            ) {
+                $columns[$index] = [
+                    'type' => self::CLASSIFICATION_STORE_TYPE,
+                    'key' => $columnFilter['key'],
+                    'config' => $columnFilter['filterValue'],
+                ];
+            }
+        }
+
+        foreach ($translate($columns) as $index => $column) {
+            $filter['columnFilters'][$index]['filterValue'] = $column['config'];
+        }
+
+        return $filter;
+    }
+
+    /**
      * @param array<int, array> $columns
-     * @param array<int, array{0: int, 1: int|null, 2: string}> $references
+     * @param array<int, array{0: int, 1: int|null, 2: string, 3?: string|null}> $references
      *
      * @return array{0: array<int, array<string, int>>, 1: array<int, array<string, int>>}
      */
@@ -249,7 +303,7 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
     /**
      * References whose field is no classification store field of the class are left out.
      *
-     * @return array<int, array<int, array{0: int, 1: int|null, 2: string}>> references by store id
+     * @return array<int, array<int, array{0: int, 1: int|null, 2: string, 3?: string|null}>> references by store id
      */
     private function groupByStore(string $classId, array $columns, array $references): array
     {
@@ -267,7 +321,7 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
     private function storeIdOf(string $classId, array $reference): ?int
     {
         try {
-            return $this->getStoreId($classId, $reference[2]);
+            return $this->getStoreId($classId, $reference[2], $reference[3] ?? null);
         } catch (InvalidArgumentException) {
             return null;
         }
@@ -276,9 +330,14 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
     /**
      * @throws InvalidArgumentException
      */
-    private function getStoreId(string $classId, string $fieldName): int
+    private function getStoreId(string $classId, string $fieldName, ?string $relation = null): int
     {
-        $fieldDefinition = $this->classDefinitionResolver->getById($classId)?->getFieldDefinition($fieldName);
+        $classDefinition = $this->classDefinitionResolver->getById($classId);
+        if ($relation !== null) {
+            $classDefinition = $this->getRelatedClassDefinition($classDefinition, $relation);
+        }
+
+        $fieldDefinition = $classDefinition?->getFieldDefinition($fieldName);
 
         if (!$fieldDefinition instanceof Classificationstore) {
             throw new InvalidArgumentException(
@@ -290,10 +349,27 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
     }
 
     /**
+     * The class a relation field points at, when it allows exactly one.
+     */
+    private function getRelatedClassDefinition(?ClassDefinition $classDefinition, string $relation): ?ClassDefinition
+    {
+        $relationDefinition = $classDefinition?->getFieldDefinition($relation);
+        $classes = is_object($relationDefinition) && method_exists($relationDefinition, 'getClasses')
+            ? $relationDefinition->getClasses()
+            : [];
+
+        if (!is_array($classes) || count($classes) !== 1 || !is_string($classes[0]['classes'] ?? null)) {
+            return null;
+        }
+
+        return $this->classDefinitionResolver->getByName($classes[0]['classes']);
+    }
+
+    /**
      * A reference is a plain classification store column or the source field of an advanced column:
-     * [column index, advanced column index or null, name of the classification store field].
+     * [column index, advanced column index or null, name of the classification store field, relation or null].
      *
-     * @return array<int, array{0: int, 1: int|null, 2: string}>
+     * @return array<int, array{0: int, 1: int|null, 2: string, 3?: string|null}>
      */
     private function references(array $columns): array
     {
@@ -315,10 +391,9 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
     }
 
     /**
-     * Only the simple field source: a relation field names the field on the related class, which a
-     * column does not know.
+     * The source fields of an advanced column; a relation field names its field on the related class.
      *
-     * @return array<int, array{0: int, 1: int, 2: string}>
+     * @return array<int, array{0: int, 1: int, 2: string, 3: string|null}>
      */
     private function advancedReferences(int $index, array $column): array
     {
@@ -327,8 +402,17 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
 
         foreach (is_array($advancedColumns) ? $advancedColumns : [] as $advancedIndex => $advancedColumn) {
             $field = $advancedColumn['config']['field'] ?? null;
-            if (($advancedColumn['key'] ?? null) === 'simpleField' && is_string($field)) {
-                $references[] = [$index, $advancedIndex, $field];
+            $relation = $advancedColumn['config']['relation'] ?? null;
+            if (!is_string($field)) {
+                continue;
+            }
+
+            if (($advancedColumn['key'] ?? null) === 'simpleField') {
+                $references[] = [$index, $advancedIndex, $field, null];
+            }
+
+            if (($advancedColumn['key'] ?? null) === 'relationField' && is_string($relation)) {
+                $references[] = [$index, $advancedIndex, $field, $relation];
             }
         }
 

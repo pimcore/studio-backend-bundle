@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classif
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\NumberRangeFilter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterModes;
@@ -39,7 +40,8 @@ final class NumberFilter implements FilterInterface
 
     public function __construct(
         private readonly GroupConfigRepositoryInterface $groupConfigRepository,
-        private readonly KeyRelationResolverInterface $keyRelationResolver
+        private readonly KeyRelationResolverInterface $keyRelationResolver,
+        private readonly ColumnReferenceServiceInterface $columnReferenceService
     ) {
 
     }
@@ -55,7 +57,11 @@ final class NumberFilter implements FilterInterface
         }
 
         foreach ($parameters->getColumnFilterByType(ColumnType::CLASSIFICATION_STORE_NUMBER->value) as $column) {
-            $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
+            $filterValue = $this->getClassificationStoreFilterValue(
+                $column->getFilterValue(),
+                $parameters,
+                $column->getKeyWithOutLocale()
+            );
             $value = $filterValue->getValue();
             $mode = $value['setting'] ?? 'is';
             $isValue = $value['is'] ?? null;

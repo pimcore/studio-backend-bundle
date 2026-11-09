@@ -65,4 +65,20 @@ interface ColumnReferenceServiceInterface
      * @throws DatabaseException
      */
     public function deriveIds(string $classId, array $columns): array;
+
+    /**
+     * A saved filter as stored, with the identifiers written into the value of every classification store
+     * column filter, under the rule of addIdentifiers().
+     *
+     * @throws DatabaseException
+     */
+    public function addFilterIdentifiers(string $classId, array $filter): array;
+
+    /**
+     * A saved filter as served, with the integer pair of every classification store column filter
+     * re-derived under the rule of deriveIds().
+     *
+     * @throws DatabaseException
+     */
+    public function deriveFilterIds(string $classId, array $filter): array;
 }

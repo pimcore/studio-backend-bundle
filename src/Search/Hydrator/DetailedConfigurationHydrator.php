@@ -34,8 +34,10 @@ final readonly class DetailedConfigurationHydrator implements DetailedConfigurat
     ): DetailedConfiguration {
         $classId = $data->getClassId();
         $columns = $data->getColumns();
+        $filter = $data->getFilter();
         if ($classId !== null) {
             $columns = $this->columnReferenceService->deriveIds($classId, $columns);
+            $filter = $filter === null ? null : $this->columnReferenceService->deriveFilterIds($classId, $filter);
         }
 
         return new DetailedConfiguration(
@@ -51,7 +53,7 @@ final readonly class DetailedConfigurationHydrator implements DetailedConfigurat
             classId: $classId,
             elementType: $data->getElementType(),
             columns: $columns,
-            filter: $data->getFilter(),
+            filter: $filter,
             modificationDate: $data->getModificationDate()->getTimestamp(),
             creationDate: $data->getCreationDate()->getTimestamp(),
         );

@@ -167,7 +167,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         $configuration->setClassId($parameter->getClassId());
         $configuration->setElementType($parameter->getElementType());
         $configuration->setColumns($this->getColumnsWithIdentifiers($parameter));
-        $configuration->setFilter($parameter->getFilter()?->toArray());
+        $configuration->setFilter($this->getFilterWithIdentifiers($parameter));
         $configuration->setCreateMenuShortcut($parameter->createMenuShortcut());
         $configuration->setMenuShortcutGroup($parameter->getMenuShortcutGroup());
 
@@ -205,7 +205,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         $configuration->setClassId($parameter->getClassId());
         $configuration->setElementType($parameter->getElementType());
         $configuration->setColumns($this->getColumnsWithIdentifiers($parameter));
-        $configuration->setFilter($parameter->getFilter()?->toArray());
+        $configuration->setFilter($this->getFilterWithIdentifiers($parameter));
         $configuration->setCreateMenuShortcut($parameter->createMenuShortcut());
         $configuration->setMenuShortcutGroup($parameter->getMenuShortcutGroup());
 
@@ -258,5 +258,17 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         }
 
         return $this->columnReferenceService->addIdentifiers($classId, $parameter->getColumnsAsArray());
+    }
+
+    private function getFilterWithIdentifiers(SavedSearchParameter $parameter): ?array
+    {
+        $classId = $parameter->getClassId();
+        $filter = $parameter->getFilter()?->toArray();
+
+        if ($classId === null || $filter === null) {
+            return $filter;
+        }
+
+        return $this->columnReferenceService->addFilterIdentifiers($classId, $filter);
     }
 }
