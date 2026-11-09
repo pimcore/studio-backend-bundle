@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
@@ -67,6 +68,49 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  */
 final class GridServiceTest extends Unit
 {
+    /**
+     * A classification store column filter resolves its identifiers in the store of the field of the
+     * filtered class, which it can only find when the filter carries the class id and not just the class
+     * name: a filter whose stored integer pair is stale would otherwise search with that pair, and a filter
+     * that carries identifiers alone would fail validation for a missing groupId.
+     */
+    public function testGetDataObjectGridPutsTheClassIdOnTheFilter(): void
+    {
+        $classDefinition = new ClassDefinition();
+        $classDefinition->setId('EV');
+        $classDefinition->setName('Ev');
+
+        $filter = new FilterParameter(columnFilters: [
+            ['key' => 'cs', 'type' => 'classificationstore.string', 'filterValue' => [
+                'groupId' => 99,
+                'keyId' => 98,
+                'groupIdentifier' => 'product-data',
+                'keyIdentifier' => 'weight',
+                'value' => 'needle',
+            ]],
+            ['key' => 'cs', 'type' => 'classificationstore.number', 'filterValue' => [
+                'groupIdentifier' => 'product-data',
+                'keyIdentifier' => 'height',
+                'value' => ['setting' => 'is', 'is' => 1],
+            ]],
+        ]);
+
+        $service = $this->createService(
+            gridSearch: $this->makeEmpty(GridSearchInterface::class, [
+                'searchDataObjects' => new DataObjectSearchResult([], 1, 10, 0),
+            ]),
+            classDefinitionResolver: $this->makeEmpty(ClassDefinitionResolverInterface::class, [
+                'getById' => $classDefinition,
+            ]),
+        );
+
+        $service->getDataObjectGrid(new GridParameter(folderId: 1, columns: [], filters: $filter), 'EV');
+
+        $this->assertSame('EV', $filter->getClassId());
+        // The class name the index is filtered by stays as it was.
+        $this->assertSame('Ev', $filter->getClassName());
+    }
+
     /**
      * A stale ElasticSearch index can reference an object that no longer exists in the
      * database (sync lag). A single missing element must not break the whole grid: it
@@ -1316,6 +1360,7 @@ final class GridServiceTest extends Unit
         ?LocaleServiceInterface $localeService = null,
         ?EventDispatcherInterface $eventDispatcher = null,
         ?RuntimeCacheResolverInterface $runtimeCacheResolver = null,
+        ?ClassDefinitionResolverInterface $classDefinitionResolver = null,
     ): GridService {
         return new GridService(
             $this->makeEmpty(ColumnDefinitionLoaderInterface::class),
@@ -1327,7 +1372,7 @@ final class GridServiceTest extends Unit
             ]),
             $securityService ?? $this->makeEmpty(SecurityServiceInterface::class),
             $serviceResolver ?? $this->makeEmpty(ServiceResolverInterface::class),
-            $this->makeEmpty(ClassDefinitionResolverInterface::class),
+            $classDefinitionResolver ?? $this->makeEmpty(ClassDefinitionResolverInterface::class),
             $localizedFieldResolver ?? $this->makeEmpty(LocalizedFieldResolverInterface::class),
             $workflowPermissionMerger ?? $this->makeEmpty(WorkflowPermissionMergerInterface::class, [
                 'mergeWorkflowPermissions' => static fn (Permissions $permissions): Permissions => $permissions,

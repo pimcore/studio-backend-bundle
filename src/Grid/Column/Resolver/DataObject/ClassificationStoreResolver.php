@@ -239,7 +239,10 @@ final class ClassificationStoreResolver implements
     public function validateConfig(array $config): ClassificationStoreConfig
     {
         if (!array_key_exists('groupId', $config) || !array_key_exists('keyId', $config)) {
-            throw new InvalidArgumentException('dataobject.classificationstore needs groupId and keyId, or groupIdentifier and keyIdentifier, as config');
+            throw new InvalidArgumentException(
+                'dataobject.classificationstore needs groupId and keyId, '
+                . 'or groupIdentifier and keyIdentifier, as config'
+            );
         }
 
         if (!is_int($config['groupId']) || !is_int($config['keyId'])) {

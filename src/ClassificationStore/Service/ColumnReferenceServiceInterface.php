@@ -29,7 +29,8 @@ interface ColumnReferenceServiceInterface
      * The reference the identifiers of the config name, resolved in the store of the classification store
      * field `$fieldName` of the class. Null when the config does not carry both identifiers.
      *
-     * @throws InvalidArgumentException when the field is no classification store field or an identifier does not resolve
+     * @throws InvalidArgumentException when the field is no classification store field, or an identifier does
+     *                                 not resolve
      * @throws DatabaseException
      */
     public function resolve(string $classId, string $fieldName, array $config): ?ClassificationStoreConfig;
@@ -41,6 +42,16 @@ interface ColumnReferenceServiceInterface
      * @throws DatabaseException
      */
     public function prime(string $classId, ColumnCollection $columns): void;
+
+    /**
+     * Reads the identifiers of the classification store column filters in at most one statement per entity
+     * type and store, so that the filters applied afterwards issue none.
+     *
+     * @param array<int, mixed> $columnFilters as carried by the filter parameter
+     *
+     * @throws DatabaseException
+     */
+    public function primeFilters(string $classId, array $columnFilters): void;
 
     /**
      * Columns as stored, with `groupIdentifier`/`keyIdentifier` written from the integer pair of every

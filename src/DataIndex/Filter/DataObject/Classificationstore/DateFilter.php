@@ -14,13 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DateTimeTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\GetClassificationStoreFilterValueTrait;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreFilterValueResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
 
@@ -29,13 +28,12 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
  */
 final class DateFilter implements FilterInterface
 {
-    use GetClassificationStoreFilterValueTrait;
     use DateTimeTrait;
 
     public function __construct(
         private readonly GroupConfigRepositoryInterface $groupConfigRepository,
         private readonly KeyRelationResolverInterface $keyRelationResolver,
-        private readonly ColumnReferenceServiceInterface $columnReferenceService
+        private readonly ClassificationStoreFilterValueResolverInterface $filterValueResolver
     ) {
 
     }
@@ -51,7 +49,7 @@ final class DateFilter implements FilterInterface
         }
 
         foreach ($parameters->getColumnFilterByType(ColumnType::CLASSIFICATION_STORE_DATE->value) as $column) {
-            $filterValue = $this->getClassificationStoreFilterValue(
+            $filterValue = $this->filterValueResolver->resolve(
                 $column->getFilterValue(),
                 $parameters,
                 $column->getKeyWithOutLocale()

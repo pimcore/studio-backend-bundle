@@ -214,6 +214,9 @@ final class GridService implements GridServiceInterface
             }
 
             $filter->setClassName($classDefinition->getName());
+            // The classification store column filters resolve their identifiers in the store of the field of
+            // this class, so the filter has to carry the id as well as the name.
+            $filter->setClassId($classId);
         }
 
         $result = $this->gridSearch->searchDataObjects($gridParameter);

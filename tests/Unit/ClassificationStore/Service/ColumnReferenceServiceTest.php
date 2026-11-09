@@ -17,6 +17,7 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceLocator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceService;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
@@ -316,6 +317,78 @@ final class ColumnReferenceServiceTest extends Unit
         $this->assertSame(2, $this->statements);
     }
 
+    /**
+     * The filters of a class-scoped search are primed as one set, so a reference two filters name costs one
+     * statement per entity type and no filter spends a lookup of its own.
+     */
+    public function testPrimeFiltersSpendsOneStatementPerEntityTypeAndTheResolvesAfterItNone(): void
+    {
+        $columnFilters = array_map(static fn () => [
+            'key' => 'cs',
+            'type' => 'classificationstore.string',
+            'filterValue' => [
+                'groupIdentifier' => self::GROUP_IDENTIFIER,
+                'keyIdentifier' => self::KEY_IDENTIFIER,
+                'value' => 'needle',
+            ],
+        ], range(1, 20));
+        $service = $this->createService();
+
+        $service->primeFilters(self::CLASS_ID, $columnFilters);
+        $primed = $this->statements;
+        foreach ($columnFilters as $columnFilter) {
+            $service->resolve(self::CLASS_ID, 'cs', $columnFilter['filterValue']);
+        }
+
+        $this->assertSame(2, $primed);
+        $this->assertSame(2, $this->statements);
+    }
+
+    /**
+     * Nothing primes the filters of the advanced column preview or of a saved search served without a class,
+     * so a resolve that has to look a reference up itself memoises what it read.
+     */
+    public function testAnUnprimedResolveMemoisesWhatItLooksUp(): void
+    {
+        $config = ['groupIdentifier' => self::GROUP_IDENTIFIER, 'keyIdentifier' => self::KEY_IDENTIFIER];
+        $service = $this->createService();
+
+        $service->resolve(self::CLASS_ID, 'cs', $config);
+        $afterFirst = $this->statements;
+        $service->resolve(self::CLASS_ID, 'cs', $config);
+        $service->resolve(self::CLASS_ID, 'cs', $config);
+
+        $this->assertSame(2, $afterFirst);
+        $this->assertSame(2, $this->statements);
+    }
+
+    /**
+     * The memo is per store: the same identifier strings in another store are read again.
+     */
+    public function testTheMemoOfOneStoreDoesNotAnswerForAnother(): void
+    {
+        $config = ['groupIdentifier' => self::GROUP_IDENTIFIER, 'keyIdentifier' => self::KEY_IDENTIFIER];
+        $service = $this->createService();
+
+        $service->resolve(self::CLASS_ID, 'cs', $config);
+        $other = $service->resolve(self::CLASS_ID, 'otherCs', $config);
+
+        $this->assertSame([50, 60], [$other->getGroupId(), $other->getKeyId()]);
+        $this->assertSame(4, $this->statements);
+    }
+
+    public function testResetDropsTheMemoOfAnUnprimedResolve(): void
+    {
+        $config = ['groupIdentifier' => self::GROUP_IDENTIFIER, 'keyIdentifier' => self::KEY_IDENTIFIER];
+        $service = $this->createService();
+
+        $service->resolve(self::CLASS_ID, 'cs', $config);
+        $service->reset();
+        $service->resolve(self::CLASS_ID, 'cs', $config);
+
+        $this->assertSame(4, $this->statements);
+    }
+
     private function withoutIdentifiers(array $column): array
     {
         unset($column['config']['groupIdentifier'], $column['config']['keyIdentifier']);
@@ -363,6 +436,7 @@ final class ColumnReferenceServiceTest extends Unit
                 'getIdsByIdentifiers' => fn (int $storeId, array $identifiers) => $this->idsOf($this->keys, $storeId, $identifiers),
                 'getIdentifiersByIds' => fn (int $storeId, array $ids) => $this->identifiersOf($this->keys, $storeId, $ids),
             ]),
+            new ColumnReferenceLocator(),
         );
     }
 

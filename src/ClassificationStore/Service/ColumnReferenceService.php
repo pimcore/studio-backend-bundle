@@ -23,38 +23,34 @@ use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Symfony\Contracts\Service\ResetInterface;
 use WeakReference;
-use function array_filter;
+use function array_diff;
+use function array_keys;
 use function array_map;
+use function array_unique;
+use function array_values;
 use function count;
 use function is_array;
-use function is_int;
 use function is_object;
 use function is_string;
 use function method_exists;
 use function sprintf;
-use function str_starts_with;
 
 /**
- * The identifiers a request reads are memoised by {@see prime()}, and dropped by {@see reset()} so that a
- * long-running worker never serves the ids it saw first.
+ * The identifiers a request reads are memoised by {@see prime()}, {@see primeFilters()} and every lookup a
+ * {@see resolve()} has to make itself, and dropped by {@see reset()} so that a long-running worker never
+ * serves the ids it saw first.
  *
  * @internal
  */
 final class ColumnReferenceService implements ColumnReferenceServiceInterface, ResetInterface
 {
-    private const string ADVANCED_TYPE = 'dataobject.advanced';
+    private const string GROUP_IDENTIFIER = ColumnReferenceLocatorInterface::GROUP_IDENTIFIER;
 
-    private const string CLASSIFICATION_STORE_TYPE = 'dataobject.classificationstore';
+    private const string KEY_IDENTIFIER = ColumnReferenceLocatorInterface::KEY_IDENTIFIER;
 
-    private const string FILTER_TYPE_PREFIX = 'classificationstore.';
+    private const string GROUP_ID = ColumnReferenceLocatorInterface::GROUP_ID;
 
-    private const string GROUP_IDENTIFIER = 'groupIdentifier';
-
-    private const string KEY_IDENTIFIER = 'keyIdentifier';
-
-    private const string GROUP_ID = 'groupId';
-
-    private const string KEY_ID = 'keyId';
+    private const string KEY_ID = ColumnReferenceLocatorInterface::KEY_ID;
 
     /**
      * @var array<int, array<string, int>> group id by identifier, by store id
@@ -74,6 +70,7 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly GroupRepositoryInterface $groupRepository,
         private readonly KeyRepositoryInterface $keyRepository,
+        private readonly ColumnReferenceLocatorInterface $locator,
     ) {
     }
 
@@ -82,7 +79,7 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
      */
     public function resolve(string $classId, string $fieldName, array $config): ?ClassificationStoreConfig
     {
-        if (!$this->hasIdentifiers($config)) {
+        if (!$this->locator->hasIdentifiers($config)) {
             return null;
         }
 
@@ -90,20 +87,16 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
         $groupIdentifier = $config[self::GROUP_IDENTIFIER];
         $keyIdentifier = $config[self::KEY_IDENTIFIER];
 
-        $groupId = $this->groupIds[$storeId][$groupIdentifier]
-            ?? $this->groupRepository->getIdsByIdentifiers($storeId, [$groupIdentifier])[$groupIdentifier]
-            ?? null;
+        [$groupIds, $keyIds] = $this->memoise($storeId, [$groupIdentifier], [$keyIdentifier]);
 
+        $groupId = $groupIds[$groupIdentifier] ?? null;
         if ($groupId === null) {
             throw new InvalidArgumentException(
                 sprintf('Classification store group "%s" does not exist in this installation', $groupIdentifier)
             );
         }
 
-        $keyId = $this->keyIds[$storeId][$keyIdentifier]
-            ?? $this->keyRepository->getIdsByIdentifiers($storeId, [$keyIdentifier])[$keyIdentifier]
-            ?? null;
-
+        $keyId = $keyIds[$keyIdentifier] ?? null;
         if ($keyId === null) {
             throw new InvalidArgumentException(
                 sprintf('Classification store key "%s" does not exist in this installation', $keyIdentifier)
@@ -125,11 +118,7 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
         $this->reset();
 
         $columnArrays = array_map(static fn ($column) => $column->toArray(), $columns->getColumns());
-        $withIdentifiers = array_filter(
-            $this->references($columnArrays),
-            fn (array $reference) => $this->hasIdentifiers($this->configAt($columnArrays, $reference))
-        );
-        [$this->groupIds, $this->keyIds] = $this->lookUpIds($classId, $columnArrays, $withIdentifiers);
+        $this->lookUpIds($classId, $columnArrays, $this->locator->identifierReferences($columnArrays));
 
         $this->primedClassId = $classId;
         $this->primedFor = WeakReference::create($columns);
@@ -138,19 +127,27 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
     /**
      * {@inheritdoc}
      */
+    public function primeFilters(string $classId, array $columnFilters): void
+    {
+        $columns = $this->locator->filterColumns($columnFilters);
+        $this->lookUpIds($classId, $columns, $this->locator->identifierReferences($columns));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function addIdentifiers(string $classId, array $columns): array
     {
         $columns = $this->deriveIds($classId, $columns);
-        $references = array_filter(
-            $this->references($columns),
-            fn (array $reference) => $this->hasIdPair($this->configAt($columns, $reference))
-                && !$this->hasIdentifiers($this->configAt($columns, $reference))
-        );
+        $references = $this->locator->pairReferences($columns);
 
         $groupIdentifiers = [];
         $keyIdentifiers = [];
-        foreach ($this->groupByStore($classId, $columns, $references) as $storeId => $storeReferences) {
-            $configs = array_map(fn (array $reference) => $this->configAt($columns, $reference), $storeReferences);
+        foreach ($this->groupByStore($classId, $references) as $storeId => $storeReferences) {
+            $configs = array_map(
+                fn (array $reference) => $this->locator->configAt($columns, $reference),
+                $storeReferences
+            );
             $groupIdentifiers[$storeId] = $this->groupRepository->getIdentifiersByIds(
                 $storeId,
                 array_map(static fn (array $config) => $config[self::GROUP_ID], $configs)
@@ -167,7 +164,7 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
                 continue;
             }
 
-            $config = $this->configAt($columns, $reference);
+            $config = $this->locator->configAt($columns, $reference);
             unset($config[self::GROUP_IDENTIFIER], $config[self::KEY_IDENTIFIER]);
 
             $groupIdentifier = $groupIdentifiers[$storeId][$config[self::GROUP_ID]] ?? null;
@@ -179,7 +176,7 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
                 $config[self::KEY_IDENTIFIER] = $keyIdentifier;
             }
 
-            $columns = $this->replaceConfig($columns, $reference, $config);
+            $columns = $this->locator->replaceConfig($columns, $reference, $config);
         }
 
         return $columns;
@@ -190,10 +187,7 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
      */
     public function deriveIds(string $classId, array $columns): array
     {
-        $references = array_filter(
-            $this->references($columns),
-            fn (array $reference) => $this->hasIdentifiers($this->configAt($columns, $reference))
-        );
+        $references = $this->locator->identifierReferences($columns);
 
         [$groupIds, $keyIds] = $this->lookUpIds($classId, $columns, $references);
 
@@ -203,7 +197,7 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
                 continue;
             }
 
-            $config = $this->configAt($columns, $reference);
+            $config = $this->locator->configAt($columns, $reference);
             $groupId = $groupIds[$storeId][$config[self::GROUP_IDENTIFIER]] ?? null;
             $keyId = $keyIds[$storeId][$config[self::KEY_IDENTIFIER]] ?? null;
 
@@ -213,7 +207,7 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
 
             $config[self::GROUP_ID] = $groupId;
             $config[self::KEY_ID] = $keyId;
-            $columns = $this->replaceConfig($columns, $reference, $config);
+            $columns = $this->locator->replaceConfig($columns, $reference, $config);
         }
 
         return $columns;
@@ -250,24 +244,9 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
      */
     private function translateFilter(array $filter, callable $translate): array
     {
-        $columns = [];
-        foreach (is_array($filter['columnFilters'] ?? null) ? $filter['columnFilters'] : [] as $index => $columnFilter) {
-            if (
-                is_array($columnFilter)
-                && is_string($columnFilter['type'] ?? null)
-                && str_starts_with($columnFilter['type'], self::FILTER_TYPE_PREFIX)
-                && is_string($columnFilter['key'] ?? null)
-                && is_array($columnFilter['filterValue'] ?? null)
-            ) {
-                $columns[$index] = [
-                    'type' => self::CLASSIFICATION_STORE_TYPE,
-                    'key' => $columnFilter['key'],
-                    'config' => $columnFilter['filterValue'],
-                ];
-            }
-        }
+        $columnFilters = is_array($filter['columnFilters'] ?? null) ? $filter['columnFilters'] : [];
 
-        foreach ($translate($columns) as $index => $column) {
+        foreach ($translate($this->locator->filterColumns($columnFilters)) as $index => $column) {
             $filter['columnFilters'][$index]['filterValue'] = $column['config'];
         }
 
@@ -275,6 +254,9 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
     }
 
     /**
+     * The ids of the identifiers the references carry, by store, memoised so that a reference a request
+     * reads twice is looked up once.
+     *
      * @param array<int, array> $columns
      * @param array<int, array{0: int, 1: int|null, 2: string, 3?: string|null}> $references
      *
@@ -285,14 +267,14 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
         $groupIds = [];
         $keyIds = [];
 
-        foreach ($this->groupByStore($classId, $columns, $references) as $storeId => $storeReferences) {
-            $configs = array_map(fn (array $reference) => $this->configAt($columns, $reference), $storeReferences);
-            $groupIds[$storeId] = $this->groupRepository->getIdsByIdentifiers(
-                $storeId,
-                array_map(static fn (array $config) => $config[self::GROUP_IDENTIFIER], $configs)
+        foreach ($this->groupByStore($classId, $references) as $storeId => $storeReferences) {
+            $configs = array_map(
+                fn (array $reference) => $this->locator->configAt($columns, $reference),
+                $storeReferences
             );
-            $keyIds[$storeId] = $this->keyRepository->getIdsByIdentifiers(
+            [$groupIds[$storeId], $keyIds[$storeId]] = $this->memoise(
                 $storeId,
+                array_map(static fn (array $config) => $config[self::GROUP_IDENTIFIER], $configs),
                 array_map(static fn (array $config) => $config[self::KEY_IDENTIFIER], $configs)
             );
         }
@@ -301,11 +283,50 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
     }
 
     /**
+     * The store's memo, filled with one statement per entity type for the identifiers it does not hold yet.
+     * An identifier that resolves nowhere stays absent and is read again, so that it costs no memory per miss.
+     *
+     * @param array<int, string> $groupIdentifiers
+     * @param array<int, string> $keyIdentifiers
+     *
+     * @return array{0: array<string, int>, 1: array<string, int>}
+     */
+    private function memoise(int $storeId, array $groupIdentifiers, array $keyIdentifiers): array
+    {
+        $missingGroups = $this->notMemoised($this->groupIds[$storeId] ?? [], $groupIdentifiers);
+        if ($missingGroups !== []) {
+            $this->groupIds[$storeId] = ($this->groupIds[$storeId] ?? [])
+                + $this->groupRepository->getIdsByIdentifiers($storeId, $missingGroups);
+        }
+
+        $missingKeys = $this->notMemoised($this->keyIds[$storeId] ?? [], $keyIdentifiers);
+        if ($missingKeys !== []) {
+            $this->keyIds[$storeId] = ($this->keyIds[$storeId] ?? [])
+                + $this->keyRepository->getIdsByIdentifiers($storeId, $missingKeys);
+        }
+
+        return [$this->groupIds[$storeId] ?? [], $this->keyIds[$storeId] ?? []];
+    }
+
+    /**
+     * @param array<string, int> $memo
+     * @param array<int, string> $identifiers
+     *
+     * @return array<int, string>
+     */
+    private function notMemoised(array $memo, array $identifiers): array
+    {
+        return array_values(array_diff(array_unique($identifiers), array_keys($memo)));
+    }
+
+    /**
      * References whose field is no classification store field of the class are left out.
+     *
+     * @param array<int, array{0: int, 1: int|null, 2: string, 3?: string|null}> $references
      *
      * @return array<int, array<int, array{0: int, 1: int|null, 2: string, 3?: string|null}>> references by store id
      */
-    private function groupByStore(string $classId, array $columns, array $references): array
+    private function groupByStore(string $classId, array $references): array
     {
         $byStore = [];
         foreach ($references as $reference) {
@@ -363,100 +384,5 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
         }
 
         return $this->classDefinitionResolver->getByName($classes[0]['classes']);
-    }
-
-    /**
-     * A reference is a plain classification store column or the source field of an advanced column:
-     * [column index, advanced column index or null, name of the classification store field, relation or null].
-     *
-     * @return array<int, array{0: int, 1: int|null, 2: string, 3?: string|null}>
-     */
-    private function references(array $columns): array
-    {
-        $references = [];
-        foreach ($columns as $index => $column) {
-            $type = $column['type'] ?? null;
-            if ($type === self::CLASSIFICATION_STORE_TYPE && is_string($column['key'] ?? null)) {
-                $references[] = [$index, null, $column['key']];
-            }
-
-            if ($type === self::ADVANCED_TYPE) {
-                foreach ($this->advancedReferences($index, $column) as $reference) {
-                    $references[] = $reference;
-                }
-            }
-        }
-
-        return $references;
-    }
-
-    /**
-     * The source fields of an advanced column; a relation field names its field on the related class.
-     *
-     * @return array<int, array{0: int, 1: int, 2: string, 3: string|null}>
-     */
-    private function advancedReferences(int $index, array $column): array
-    {
-        $references = [];
-        $advancedColumns = $column['config']['advancedColumns'] ?? [];
-
-        foreach (is_array($advancedColumns) ? $advancedColumns : [] as $advancedIndex => $advancedColumn) {
-            $field = $advancedColumn['config']['field'] ?? null;
-            $relation = $advancedColumn['config']['relation'] ?? null;
-            if (!is_string($field)) {
-                continue;
-            }
-
-            if (($advancedColumn['key'] ?? null) === 'simpleField') {
-                $references[] = [$index, $advancedIndex, $field, null];
-            }
-
-            if (($advancedColumn['key'] ?? null) === 'relationField' && is_string($relation)) {
-                $references[] = [$index, $advancedIndex, $field, $relation];
-            }
-        }
-
-        return $references;
-    }
-
-    private function configAt(array $columns, array $reference): array
-    {
-        [$index, $advancedIndex] = $reference;
-        $config = $advancedIndex === null
-            ? $columns[$index]['config'] ?? []
-            : $columns[$index]['config']['advancedColumns'][$advancedIndex]['config'] ?? [];
-
-        return is_array($config) ? $config : [];
-    }
-
-    private function replaceConfig(array $columns, array $reference, array $config): array
-    {
-        [$index, $advancedIndex] = $reference;
-
-        if ($advancedIndex === null) {
-            $columns[$index]['config'] = $config;
-
-            return $columns;
-        }
-
-        $columns[$index]['config']['advancedColumns'][$advancedIndex]['config'] = $config;
-
-        return $columns;
-    }
-
-    private function hasIdentifiers(array $config): bool
-    {
-        return $this->isFilled($config[self::GROUP_IDENTIFIER] ?? null)
-            && $this->isFilled($config[self::KEY_IDENTIFIER] ?? null);
-    }
-
-    private function hasIdPair(array $config): bool
-    {
-        return is_int($config[self::GROUP_ID] ?? null) && is_int($config[self::KEY_ID] ?? null);
-    }
-
-    private function isFilled(mixed $identifier): bool
-    {
-        return is_string($identifier) && $identifier !== '';
     }
 }

@@ -11,12 +11,12 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Utils;
+namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Service;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreFilterValueResolver;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\ClassificationStoreFilterValue;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\GetClassificationStoreFilterValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ClassificationStoreConfig;
 /**
  * @internal
  */
-final class GetClassificationStoreFilterValueTraitTest extends Unit
+final class ClassificationStoreFilterValueResolverTest extends Unit
 {
     private const string CLASS_ID = 'EV';
 
@@ -40,6 +40,21 @@ final class GetClassificationStoreFilterValueTraitTest extends Unit
         );
 
         $this->assertSame([5, 6, 'needle'], [$value->getGroupId(), $value->getKeyId(), $value->getValue()]);
+    }
+
+    /**
+     * A filter saved with identifiers alone carries no pair to fall back to, so it only searches at all
+     * because the parameters name the class whose field's store the identifiers are resolved in.
+     */
+    public function testIdentifierOnlyValueResolvesWhenTheParametersNameTheClass(): void
+    {
+        $value = $this->getValue(
+            ['value' => 'needle', ...self::IDENTIFIERS],
+            $this->createParameter(),
+            new ClassificationStoreConfig(5, 6)
+        );
+
+        $this->assertSame([5, 6], [$value->getGroupId(), $value->getKeyId()]);
     }
 
     public function testIntegerPairIsUsedWhenTheValueCarriesNoIdentifiers(): void
@@ -90,14 +105,6 @@ final class GetClassificationStoreFilterValueTraitTest extends Unit
             },
         ]);
 
-        $subject = new class($service) {
-            use GetClassificationStoreFilterValueTrait;
-
-            public function __construct(private readonly ColumnReferenceServiceInterface $columnReferenceService)
-            {
-            }
-        };
-
-        return $subject->getClassificationStoreFilterValue($raw, $parameter, 'cs');
+        return (new ClassificationStoreFilterValueResolver($service))->resolve($raw, $parameter, 'cs');
     }
 }

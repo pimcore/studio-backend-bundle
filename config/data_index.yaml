@@ -54,6 +54,9 @@ services:
     arguments:
       $hydratorLocator: '@search_index.data_object_hydrator.service_locator'
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreFilterValueResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreFilterValueResolver
+
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ElementSearchServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ElementSearchService
 

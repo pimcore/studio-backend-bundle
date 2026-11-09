@@ -17,13 +17,12 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\Num
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\NumberRangeFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\WildcardSearch;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterModes;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\GetClassificationStoreFilterValueTrait;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreFilterValueResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
@@ -36,8 +35,6 @@ use function is_string;
  */
 final class QuantityValueFilter implements FilterInterface
 {
-    use GetClassificationStoreFilterValueTrait;
-
     private const VALUE_FIELD_SUFFIX = '.value';
 
     private const UNIT_FIELD_SUFFIX = '.unitId';
@@ -45,7 +42,7 @@ final class QuantityValueFilter implements FilterInterface
     public function __construct(
         private readonly GroupConfigRepositoryInterface $groupConfigRepository,
         private readonly KeyRelationResolverInterface $keyRelationResolver,
-        private readonly ColumnReferenceServiceInterface $columnReferenceService
+        private readonly ClassificationStoreFilterValueResolverInterface $filterValueResolver
     ) {
 
     }
@@ -64,7 +61,7 @@ final class QuantityValueFilter implements FilterInterface
             $parameters->getColumnFilterByType(ColumnType::CLASSIFICATION_STORE_QUANTITY_VALUE->value) as $column
         ) {
 
-            $filterValue = $this->getClassificationStoreFilterValue(
+            $filterValue = $this->filterValueResolver->resolve(
                 $column->getFilterValue(),
                 $parameters,
                 $column->getKeyWithOutLocale()
