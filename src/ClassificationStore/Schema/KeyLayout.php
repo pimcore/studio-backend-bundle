@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema;
 
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -62,6 +63,24 @@ final readonly class KeyLayout
             nullable: true
         )]
         private ?bool $localized = null,
+        #[Property(
+            description: 'The variant names the key permits, in the order it declares them, as the key stores them;'
+                . ' null where the key declares none. A value carrying no variant addresses the default variant,'
+                . ' which is never one of these names.',
+            type: 'array',
+            items: new Items(type: 'string'),
+            example: ['metric', 'imperial'],
+            nullable: true
+        )]
+        private ?array $variants = null,
+        #[Property(
+            description: 'Whether the key holds more than one value per variant, as the key stores it; null where'
+                . ' the key declares nothing.',
+            type: 'boolean',
+            example: true,
+            nullable: true
+        )]
+        private ?bool $multiValue = null,
     ) {
     }
 
@@ -98,5 +117,15 @@ final readonly class KeyLayout
     public function getLocalized(): ?bool
     {
         return $this->localized;
+    }
+
+    public function getVariants(): ?array
+    {
+        return $this->variants;
+    }
+
+    public function getMultiValue(): ?bool
+    {
+        return $this->multiValue;
     }
 }

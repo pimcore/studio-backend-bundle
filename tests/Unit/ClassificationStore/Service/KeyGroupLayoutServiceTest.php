@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
@@ -212,6 +213,42 @@ final class KeyGroupLayoutServiceTest extends Unit
     }
 
     /**
+     * The layout-by-key path publishes what the key declares about its qualified values, off the
+     * same key configuration its title and its `localized` flag come from. The group layout path
+     * has the same assertion in
+     * {@see GroupServiceTest::testEveryKeyCarriesWhatItDeclaresAboutItsQualifiedValues()}.
+     *
+     * @throws Exception
+     */
+    public function testTheKeyLayoutCarriesWhatTheKeyDeclaresAboutItsValues(): void
+    {
+        $keyConfig = $this->createKeyConfig(self::KEY_ID, self::KEY_NAME);
+        $keyConfig->setDefinition('{"variants":["metric","imperial"],"multiValue":true}');
+
+        $keyLayout = $this->getKeyLayout($keyConfig);
+
+        $this->assertSame(['metric', 'imperial'], $keyLayout->getVariants());
+        $this->assertTrue($keyLayout->getMultiValue());
+    }
+
+    /**
+     * A key declaring neither member reports null for both, and so does a key whose configuration
+     * cannot be loaded at all - the way its title and its `localized` flag do.
+     *
+     * @throws Exception
+     */
+    public function testAKeyDeclaringNothingReportsNullOnBothMembers(): void
+    {
+        $declaringNothing = $this->getKeyLayout($this->createKeyConfig(self::KEY_ID, self::KEY_NAME));
+
+        $this->assertNull($declaringNothing->getVariants());
+        $this->assertNull($declaringNothing->getMultiValue());
+
+        $this->assertNull($this->getKeyLayout(null)->getVariants());
+        $this->assertNull($this->getKeyLayout(null)->getMultiValue());
+    }
+
+    /**
      * @throws Exception
      */
     public function testPreloadKeyTitlesReadsAWholeGroupWithOneCall(): void
@@ -291,7 +328,8 @@ final class KeyGroupLayoutServiceTest extends Unit
             $keyConfigResolver,
             $this->createLabelResolver($labels),
             $this->createLabelLanguageResolver($userLanguage, self::DEFAULT_LANGUAGE),
-            $keyLocalizationResolver
+            $keyLocalizationResolver,
+            new KeyQualifierResolver()
         );
     }
 }

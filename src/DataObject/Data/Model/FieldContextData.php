@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValue;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\Classificationstore;
 use Pimcore\Model\DataObject\Concrete;
@@ -38,6 +39,7 @@ final readonly class FieldContextData
         private ?string $containerFieldName = null,
         private ?string $containerBrickType = null,
         private bool $historicalVersion = false,
+        private ?QualifiedValue $classificationStoreValue = null,
     ) {
     }
 
@@ -196,12 +198,25 @@ final readonly class FieldContextData
     }
 
     /**
+     * The value of the slot this context addresses.
+     *
+     * A key holding qualified values holds a list of them at its (group, key, language) slot, and
+     * the one a caller is working on is one entry of that list. Where the caller names that entry,
+     * its value is the current value - the whole list is the state of the key, not of the value
+     * being written, and handing it over would make every reader of the current value read the
+     * siblings of the value it is about. The entry is deliberately not carried into
+     * {@see self::createFieldContextData()}: the ancestor walk is about the ancestor's own value.
+     *
      * @throws Exception
      */
     private function getDataFromClassificationStore(Classificationstore $classificationstore): mixed
     {
         if ($this->getClassificationStoreKeyId() === null || $this->getClassificationStoreGroupId() === null) {
             return null;
+        }
+
+        if ($this->classificationStoreValue !== null) {
+            return $this->classificationStoreValue->getValue();
         }
 
         return $classificationstore->getLocalizedKeyValue(

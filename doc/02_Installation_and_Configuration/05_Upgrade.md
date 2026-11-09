@@ -86,6 +86,11 @@ The following steps are necessary during updating to newer versions.
   where `false` marks the assignment as not for the search index; a key's own definition can carry the member as the
   default a newly created assignment of that key takes. The flag is stored and published but not yet honoured by the
   search index.
+- [Classification Store] Added: a key can declare the variants it permits, or that it holds more than one value per
+  variant, and the object data endpoints then read and write that key's values as a list of qualified entries instead
+  of as a single value, as far as the store's engine reports the capability the write needs. A key that has never
+  declared either is unchanged; a key whose declaration is taken away again keeps the values it holds and keeps
+  reading and writing them as entries.
 - [Classification Store] Added: a store's whole configuration can be exported and applied again as one file, from the
   store editor and from the console commands `studio-backend-bundle:classificationstore:export` and
   `studio-backend-bundle:classificationstore:apply`. Applying creates and updates but never deletes, so un-assigning a

@@ -43,8 +43,14 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolver
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolver
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializerInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializer
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolver
@@ -220,3 +226,11 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Request\Configuration\KeyUpdateDenormalizer:
     tags: [ 'serializer.normalizer' ]
+
+  # the engine resolver is optional: `composer.json` allows a core that does not ship one, and
+  # against such a core no capability is confirmed and a write needing one is refused, rather than
+  # the bundle failing to boot
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolver
+    arguments:
+      $engineResolver: '@?Pimcore\Model\DataObject\Classificationstore\Engine\EngineResolver'

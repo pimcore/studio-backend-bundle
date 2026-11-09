@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Schema\Configuration;
 
 use Codeception\Test\Unit;
+use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use ReflectionClass;
 
@@ -124,5 +126,82 @@ final class KeyUpdateTest extends Unit
 
         $this->assertTrue($parameters->isLocalizedSupplied());
         $this->assertNull($parameters->getLocalized());
+    }
+
+    /**
+     * `variants` and `multiValue` are reserved members of the definition and nothing else: they are
+     * carried by the definition the request sends and are not properties of this schema, so they
+     * reach the stored blob verbatim and no validation of this schema can touch them.
+     */
+    public function testTheQualifiedValueDeclarationTravelsInTheDefinitionVerbatim(): void
+    {
+        $definition = [
+            'fieldtype' => 'quantityValue',
+            'variants' => ['metric', 'imperial'],
+            'multiValue' => true,
+        ];
+
+        $parameters = new KeyUpdate(name: 'weight', definition: $definition);
+
+        $this->assertSame($definition, $parameters->getDefinition());
+        $this->assertSame($definition, $parameters->withDefinition($definition)->getDefinition());
+    }
+
+    /**
+     * Neither member joined this schema's own properties, so a client that sends them inside the
+     * definition - which is where they live - is not told to send them twice.
+     */
+    public function testNeitherMemberBecameAPropertyOfItsOwn(): void
+    {
+        $names = [];
+        foreach ((new ReflectionClass(KeyUpdate::class))->getConstructor()->getParameters() as $parameter) {
+            $names[] = $parameter->getName();
+        }
+
+        $this->assertNotContains('variants', $names);
+        $this->assertNotContains('multiValue', $names);
+    }
+
+    /**
+     * The reserved members are named in the `definition` description, the way `indexed` already is,
+     * so the generated documentation says what they mean.
+     */
+    public function testTheDefinitionDescriptionNamesTheReservedMembers(): void
+    {
+        $description = $this->getDefinitionDescription(KeyUpdate::class);
+
+        $this->assertStringContainsString('"variants"', $description);
+        $this->assertStringContainsString('"multiValue"', $description);
+        $this->assertStringContainsString('"indexed"', $description);
+    }
+
+    /**
+     * The read side says the same, so a client reading a key and a client writing one are told the
+     * same thing about the two members.
+     */
+    public function testTheKeyDetailDescriptionNamesTheSameReservedMembers(): void
+    {
+        $description = $this->getDefinitionDescription(KeyDetail::class);
+
+        $this->assertStringContainsString('"variants"', $description);
+        $this->assertStringContainsString('"multiValue"', $description);
+        $this->assertStringContainsString('"indexed"', $description);
+    }
+
+    private function getDefinitionDescription(string $schema): string
+    {
+        $parameters = (new ReflectionClass($schema))->getConstructor()->getParameters();
+
+        foreach ($parameters as $parameter) {
+            if ($parameter->getName() !== 'definition') {
+                continue;
+            }
+
+            $attributes = $parameter->getAttributes(Property::class);
+
+            return (string) $attributes[0]->getArguments()['description'];
+        }
+
+        $this->fail('The schema carries no definition property.');
     }
 }

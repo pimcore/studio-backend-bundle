@@ -70,4 +70,48 @@ final class KeyLayoutTest extends Unit
             'a key stating nothing' => [null],
         ];
     }
+
+    /**
+     * Both members are optional and nullable, and a key declaring neither reports null for both
+     * rather than an empty list and false - which a client would read as a key that permits no
+     * variant and holds exactly one value, two decisions the key has not taken.
+     */
+    public function testTheQualifiedValueDeclarationIsOptionalAndNullable(): void
+    {
+        $definition = new Input();
+
+        $declaringNothing = new KeyLayout(42, 'weight', 'The weight', $definition);
+
+        $this->assertNull($declaringNothing->getVariants());
+        $this->assertNull($declaringNothing->getMultiValue());
+
+        $declaring = new KeyLayout(
+            42,
+            'weight',
+            'The weight',
+            $definition,
+            null,
+            null,
+            null,
+            ['metric', 'imperial'],
+            true
+        );
+
+        $this->assertSame(['metric', 'imperial'], $declaring->getVariants());
+        $this->assertTrue($declaring->getMultiValue());
+    }
+
+    /**
+     * Neither member joined the required list, so a client built against the previous document keeps
+     * deserializing a layout that carries neither.
+     */
+    public function testNeitherNewMemberIsRequired(): void
+    {
+        $attributes = (new ReflectionClass(KeyLayout::class))->getAttributes(Schema::class);
+
+        $this->assertSame(
+            ['id', 'name', 'description', 'definition'],
+            $attributes[0]->getArguments()['required']
+        );
+    }
 }

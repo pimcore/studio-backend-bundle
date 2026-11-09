@@ -20,7 +20,11 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\De
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\GroupConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValue;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializerInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DetailDataInterface;
@@ -33,6 +37,8 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -51,9 +57,13 @@ use Pimcore\Model\DataObject\Data\CalculatedValue;
 use Pimcore\Model\DataObject\Data\QuantityValue;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_key_exists;
 use function array_keys;
+use function array_merge;
+use function count;
 use function in_array;
 use function is_array;
+use function is_int;
 
 /**
  * @internal
@@ -75,10 +85,13 @@ final readonly class ClassificationStoreAdapter implements
         private DataServiceInterface $dataService,
         private GroupConfigResolverInterface $groupConfigResolver,
         private InheritanceServiceInterface $inheritanceService,
+        private KeyQualifierResolverInterface $keyQualifierResolver,
         private KeyRelationResolverInterface $keyRelationResolver,
         private LanguageServiceInterface $languageService,
+        private QualifiedValueSerializerInterface $qualifiedValueSerializer,
         private ServiceResolverInterface $serviceResolver,
         private SecurityServiceInterface $securityService,
+        private StoreEngineResolverInterface $storeEngineResolver,
         private ToolResolverInterface $toolResolver,
     ) {
     }
@@ -105,7 +118,7 @@ final readonly class ClassificationStoreAdapter implements
         if ($isPatch) {
             $elementStore = $this->handleNormalize($element->get($key), $fieldDefinition, $user);
             $store['activeGroups'] = $this->getActiveGroupsFromStore($store);
-            $store = array_replace_recursive($elementStore, $store);
+            $store = $this->patchStore($fieldDefinition, $elementStore, $store);
         }
 
         $activeGroups = $store['activeGroups'] ?? [];
@@ -173,13 +186,19 @@ final readonly class ClassificationStoreAdapter implements
         $resolveInheritedValue = $contextData?->shouldResolveInheritedValue() ?? false;
         foreach ($collection as $groupId => $groupDefinitions) {
             foreach ($groupDefinitions as $groupKeyId => $definition) {
+                // an ancestor's qualified slot holds the entry list, which is no value of the key's
+                // own type: where the origin is still reported, the value behind it is not resolved
+                $resolveKeyValue = $resolveInheritedValue && !$this->keyQualifierResolver->declaresQualifiers(
+                    $fieldDefinition->getKeyConfiguration($groupKeyId)
+                );
+
                 foreach ($languages as $language) {
                     $fieldContextData = new FieldContextData(
                         $container,
                         $language,
                         $groupId,
                         $groupKeyId,
-                        resolveInheritedValue: $resolveInheritedValue
+                        resolveInheritedValue: $resolveKeyValue
                     );
                     $inheritedData[$groupId][$language][$groupKeyId] = $this->inheritanceService
                         ->getFieldInheritanceData($object, $definition, $key, $fieldContextData);
@@ -219,6 +238,107 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         return $data;
+    }
+
+    /**
+     * The stored store with the supplied one written over it.
+     *
+     * `array_replace_recursive()` merges two arrays element by element, which is what the group,
+     * language and key buckets need and the wrong thing for the list a qualified key's slot holds:
+     * a write naming one entry would land on the first element of the stored list and keep the rest
+     * of it by position. A qualified slot therefore carries the write's own entries through
+     * unmerged, and they are merged by qualifier in {@see self::getQualifiedSetterData()}, which
+     * reads the row the container holds rather than `$elementStore` - the narrower view of that row
+     * this method merges into, built under the user's language *view* permissions and only over the
+     * groups currently active. A slot missing from that view is one this code cannot see rather
+     * than an empty one, and merging a list against it would drop every entry the write leaves
+     * alone.
+     *
+     * Which qualified slots the patch carries at all is {@see self::patchQualifiedSlots()}.
+     */
+    private function patchStore(
+        ClassificationstoreDefinition $definition,
+        ?array $elementStore,
+        array $store
+    ): array {
+        $patched = array_replace_recursive($elementStore, $store);
+
+        foreach ($patched as $groupId => $groupData) {
+            // `activeGroups` and `groupCollectionMapping` are the two buckets that are not a group
+            if (!is_int($groupId) || !is_array($groupData)) {
+                continue;
+            }
+
+            foreach ($groupData as $language => $keys) {
+                if (!is_array($keys)) {
+                    continue;
+                }
+
+                $patched[$groupId][$language] = $this->patchQualifiedSlots(
+                    $definition,
+                    $keys,
+                    $this->getSuppliedKeys($store, $groupId, $language)
+                );
+            }
+        }
+
+        return $patched;
+    }
+
+    /**
+     * The qualified slots of one (group, language) bucket, held to what the write actually named.
+     *
+     * A slot the write names carries the write's own entries, unmerged. A slot it does not name is
+     * left out of the patch altogether rather than carried in from `$elementStore`: there is no
+     * write to make for it, the row already holds it, and an entry the request never supplied would
+     * otherwise be validated against the key's declaration as it reads now - so a patch of one key
+     * would fail because another key of the same bucket holds a variant an administrator has since
+     * removed from it, or a capability its store's engine does not report.
+     *
+     * Which slots those are is decided by the key's declaration alone, as it is in
+     * {@see self::processGroupKeys()}: a key declaring nothing serializes one value whatever its
+     * row still holds, so its slot is merged like any other single value.
+     *
+     * @param array<array-key, mixed> $keys
+     * @param array<array-key, mixed> $supplied
+     *
+     * @return array<array-key, mixed>
+     */
+    private function patchQualifiedSlots(
+        ClassificationstoreDefinition $definition,
+        array $keys,
+        array $supplied
+    ): array {
+        foreach ($keys as $keyId => $value) {
+            $keyConfig = $definition->getKeyConfiguration((int) $keyId);
+
+            if (!$this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
+                continue;
+            }
+
+            if (array_key_exists($keyId, $supplied)) {
+                $keys[$keyId] = $supplied[$keyId];
+
+                continue;
+            }
+
+            unset($keys[$keyId]);
+        }
+
+        return $keys;
+    }
+
+    /**
+     * The keys of one (group, language) bucket the write itself supplied, as opposed to the ones
+     * {@see self::patchStore()} merged in from the stored store.
+     *
+     * @return array<array-key, mixed>
+     */
+    private function getSuppliedKeys(array $store, int $groupId, int|string $language): array
+    {
+        $keys = $store[$groupId][$language] ?? null;
+
+        return is_array($keys) ? $keys : [];
     }
 
     private function handleNormalize(
@@ -345,9 +465,8 @@ final readonly class ClassificationStoreAdapter implements
         bool $isPatch
     ): void {
         foreach ($keys as $keyId => $value) {
-            $fieldDefinition = $this->serviceResolver->getFieldDefinitionFromKeyConfig(
-                $definition->getKeyConfiguration($keyId)
-            );
+            $keyConfig = $definition->getKeyConfiguration($keyId);
+            $fieldDefinition = $this->serviceResolver->getFieldDefinitionFromKeyConfig($keyConfig);
 
             if ($fieldDefinition === null) {
                 continue;
@@ -358,21 +477,244 @@ final readonly class ClassificationStoreAdapter implements
                 continue;
             }
 
-            $setterData = $adapter->getDataForSetter(
+            // the current value the key's own type adapter sees is the one entry's, not the slot's
+            $convert = fn (
+                mixed $raw,
+                ?QualifiedValue $current = null,
+                bool $patch = false
+            ): mixed => $adapter->getDataForSetter(
                 $element,
                 $fieldDefinition,
                 $fieldDefinition->getName(),
-                [$fieldDefinition->getName() => $value],
+                [$fieldDefinition->getName() => $raw],
                 $user,
-                new FieldContextData($container, $language, $groupId, $keyId),
-                $isPatch
+                new FieldContextData(
+                    $container,
+                    $language,
+                    $groupId,
+                    $keyId,
+                    classificationStoreValue: $current
+                ),
+                $patch
             );
-            if (!$this->validateEncryptedField($fieldDefinition, $setterData)) {
-                continue;
+
+            $storedSlot = $this->readStoredSlot($container, $groupId, $keyId, $language);
+
+            if ($this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
+                $setterData = $this->getQualifiedSetterData(
+                    $value,
+                    $keyConfig,
+                    $fieldDefinition,
+                    $definition->getStoreId(),
+                    $storedSlot,
+                    $isPatch,
+                    $convert
+                );
+            } else {
+                // the entries of a qualified slot are each validated in getQualifiedSetterData(), which
+                // refuses the write rather than handing back a list this guard would read as one value
+                $converted = $convert(
+                    $value,
+                    $this->getCurrentOfSingleValue($storedSlot, $keyConfig, $fieldDefinition),
+                    $isPatch
+                );
+
+                if (!$this->validateEncryptedField($fieldDefinition, $converted)) {
+                    continue;
+                }
+
+                $setterData = $this->assembleSlot(
+                    [new QualifiedValue($converted)],
+                    $this->qualifiedValueSerializer->getHiddenEntries($storedSlot, $keyConfig)
+                );
             }
 
             $container->setLocalizedKeyValue($groupId, $keyId, $setterData, $language);
         }
+    }
+
+    /**
+     * What the slot of a key that declares qualifiers stores: the entries the write supplies, each
+     * value taken through the adapter of the key's own type, as a list carrying their qualifiers.
+     *
+     * A patch merges them over the entries the declaration permits, by qualifier and never by
+     * position in the list, so an entry the write does not name survives as itself. The engine is
+     * asked about the supplied entries alone rather than about the merged list: the stored ones
+     * were accepted when they were written, and holding this write to them would make a key
+     * uneditable on an engine that no longer reports what it once did.
+     *
+     * An entry the row holds and the declaration no longer permits is hidden, not deleted: it is
+     * carried over untouched, so a write that does not mention it - a PUT of what a read published
+     * included - leaves it in the row.
+     *
+     * A write that resolves to the single default slot - one entry, no variant, position 0 - and
+     * leaves nothing hidden stores the value itself instead, which is the slot core's single-value
+     * path addresses and therefore exactly what the key stored before it declared anything.
+     *
+     * The engine is asked here rather than once for the whole field, so that a field holding no
+     * qualified slot at all - every field until one of its keys declares - resolves no engine.
+     *
+     * Each entry's own value is held to the key's type before it is wrapped, because the list the
+     * slot holds is not a value the type's own guard can read: an encrypted key handed the wrapped
+     * list would fail that guard for the whole slot. A value failing it refuses the write here,
+     * since a slot dropped under a successful response is data lost without an answer.
+     *
+     * No entry reaches the key's own type adapter as a patch of anything. The patch of a qualified
+     * slot is resolved above, by qualifier, so what each entry then carries is one whole value of
+     * the key's type and not the partial envelope an adapter in patch mode reads - and the entries
+     * the merge carries over from the row were never supplied by this request at all. Its sibling
+     * arm, the slot that is not qualified, keeps handing the write's patch flag through unchanged.
+     *
+     * @param callable(mixed, ?QualifiedValue): mixed $convert
+     *
+     * @throws EnvironmentException
+     * @throws InvalidArgumentException
+     */
+    private function getQualifiedSetterData(
+        mixed $value,
+        KeyConfig $keyConfig,
+        Data $fieldDefinition,
+        int $storeId,
+        mixed $storedSlot,
+        bool $isPatch,
+        callable $convert
+    ): mixed {
+        $supplied = $this->qualifiedValueSerializer->parseEntries($value, $keyConfig);
+        $this->qualifiedValueSerializer->assertSupported(
+            $supplied,
+            $this->storeEngineResolver->getCapabilitiesOfStore($storeId)
+        );
+
+        $stored = $storedSlot === null
+            ? []
+            : $this->normalizeEntries(
+                $this->qualifiedValueSerializer->getVisibleEntries($storedSlot, $keyConfig),
+                $fieldDefinition
+            );
+        $values = $isPatch
+            ? $this->qualifiedValueSerializer->mergeEntries($stored, $supplied)
+            : $supplied;
+        $current = $this->byQualifier($stored);
+
+        $converted = [];
+        foreach ($values as $qualifiedValue) {
+            // a slot the row holds nothing at carries null, so that the current value handed over
+            // is always the one entry's and never falls back to reading the whole list
+            $currentValue = $current[$qualifiedValue->getQualifier()] ?? $qualifiedValue->withValue(null);
+
+            $converted[] = $qualifiedValue->withValue(
+                $this->getValidatedEntryValue($fieldDefinition, $convert($qualifiedValue->getValue(), $currentValue))
+            );
+        }
+
+        return $this->assembleSlot(
+            $converted,
+            $storedSlot === null ? [] : $this->qualifiedValueSerializer->getHiddenEntries($storedSlot, $keyConfig)
+        );
+    }
+
+    /**
+     * What the slot stores: the written entries followed by the hidden ones the row already holds.
+     * The bare value where that is one default entry alone, which is the slot as it was stored
+     * before any key declared anything.
+     *
+     * @param QualifiedValue[] $written
+     * @param QualifiedValue[] $hidden
+     */
+    private function assembleSlot(array $written, array $hidden): mixed
+    {
+        if ($hidden === [] && count($written) === 1 && $this->addressesDefaultSlot($written[0])) {
+            return $written[0]->getValue();
+        }
+
+        return $this->qualifiedValueSerializer->toPayload(array_merge($written, $hidden));
+    }
+
+    /**
+     * The current value the key's own type adapter sees for a key declaring nothing: the slot's own
+     * value where it holds a plain one, handed over as null exactly as before, and the one default
+     * entry's where the row holds a list the key no longer declares.
+     */
+    private function getCurrentOfSingleValue(
+        mixed $storedSlot,
+        KeyConfig $keyConfig,
+        Data $fieldDefinition
+    ): ?QualifiedValue {
+        if (!$this->qualifiedValueSerializer->holdsEntries($storedSlot)) {
+            return null;
+        }
+
+        $visible = $this->normalizeEntries(
+            $this->qualifiedValueSerializer->getVisibleEntries($storedSlot, $keyConfig),
+            $fieldDefinition
+        );
+
+        return $visible[0] ?? new QualifiedValue(null);
+    }
+
+    /**
+     * One entry's own value, held to the key's type before it is wrapped into the list.
+     *
+     * {@see ValidateObjectDataTrait::validateEncryptedField()} reads one value of the key's type, so
+     * it is asked per entry rather than of the list. A value that does not pass refuses the write:
+     * the sibling arm, the key declaring nothing, skips the slot instead and keeps doing so - that
+     * is what a key without this list has always done - but skipping one entry of a list would
+     * leave the slot holding a shorter list than the write supplied, under a successful response.
+     *
+     * @throws InvalidArgumentException
+     */
+    private function getValidatedEntryValue(Data $fieldDefinition, mixed $value): mixed
+    {
+        if (!$this->validateEncryptedField($fieldDefinition, $value)) {
+            throw new InvalidArgumentException('A value of the key did not come back in the key\'s own type.');
+        }
+
+        return $value;
+    }
+
+    /**
+     * The raw value the row holds at one slot, which is both what the entries of a patch are merged
+     * over, and where the entries the declaration hides are found.
+     *
+     * @throws DatabaseException
+     */
+    private function readStoredSlot(
+        Classificationstore $container,
+        int $groupId,
+        int $keyId,
+        string $language
+    ): mixed {
+        // a container the element does not hold yet: there is no row, so there is nothing stored
+        if ($container->getObject() === null) {
+            return null;
+        }
+
+        try {
+            return $container->getLocalizedKeyValue($groupId, $keyId, $language, true, true);
+        } catch (Exception $exception) {
+            throw new DatabaseException($exception->getMessage());
+        }
+    }
+
+    /**
+     * @param QualifiedValue[] $values
+     *
+     * @return array<string, QualifiedValue>
+     */
+    private function byQualifier(array $values): array
+    {
+        $byQualifier = [];
+        foreach ($values as $value) {
+            $byQualifier[$value->getQualifier()] = $value;
+        }
+
+        return $byQualifier;
+    }
+
+    private function addressesDefaultSlot(QualifiedValue $value): bool
+    {
+        return $value->getVariant() === null
+            && $value->getPosition() === QualifiedValueSerializerInterface::DEFAULT_POSITION;
     }
 
     private function cleanupStoreGroups(Classificationstore $container): void
@@ -600,13 +942,54 @@ final readonly class ClassificationStoreAdapter implements
             $value = $this->getDefaultValue($fieldDefinition);
         }
 
-        if ($isPreview && $data !== null) {
+        $isPreviewRead = $isPreview && $data !== null;
+
+        if ($this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
+            if ($value === null) {
+                // the slot is left out of the payload, the way it is for a key declaring nothing
+                return null;
+            }
+
+            if (!$isPreviewRead) {
+                return $this->qualifiedValueSerializer->toPayload(
+                    $this->normalizeEntries(
+                        $this->qualifiedValueSerializer->getVisibleEntries($value, $keyConfig),
+                        $fieldDefinition
+                    )
+                );
+            }
+        }
+
+        // the declaration alone decides the shape: a key declaring nothing serializes one value,
+        // and a flat label map holds one per key, so the default slot is the one either shows
+        if ($value !== null) {
+            $value = $this->qualifiedValueSerializer->getDefaultSlotValue($value, $keyConfig);
+        }
+
+        if ($isPreviewRead) {
             $data = $this->dataService->getPreviewFieldData($value, $fieldDefinition, $data);
 
             return $data[$this->dataService->getPreviewFieldName($fieldDefinition)];
         }
 
         return $this->dataService->getNormalizedValue($value, $fieldDefinition);
+    }
+
+    /**
+     * @param QualifiedValue[] $values
+     *
+     * @return QualifiedValue[]
+     */
+    private function normalizeEntries(array $values, Data $fieldDefinition): array
+    {
+        $normalized = [];
+        foreach ($values as $value) {
+            $normalized[] = $value->withValue(
+                $this->dataService->getNormalizedValue($value->getValue(), $fieldDefinition)
+            );
+        }
+
+        return $normalized;
     }
 
     private function getDefaultValue(Data $fieldDefinition): ?QuantityValue
