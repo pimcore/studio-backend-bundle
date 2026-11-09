@@ -66,6 +66,16 @@ final class WorkflowActionSubmissionLabelTest extends Unit
         );
     }
 
+    public function testATransitionMissingFromTheDefinitionFallsBackToItsName(): void
+    {
+        $otherTransition = new Transition('other_transition', 'draft', 'done', ['label' => 'Other transition']);
+
+        self::assertSame(
+            sprintf('Submitting action %s failed: %s', self::ACTION_NAME, self::FAILURE),
+            $this->submitFailingTransition($otherTransition)
+        );
+    }
+
     public function testAGlobalActionFailureNamesTheActionByItsLabel(): void
     {
         $globalAction = $this->createMock(GlobalAction::class);
