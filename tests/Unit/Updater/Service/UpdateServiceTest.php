@@ -33,9 +33,15 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Folder;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Property;
 use Pimcore\Model\UserInterface;
+use Pimcore\Model\Version;
 use Pimcore\Model\Version\CoauthorContext;
+use ReflectionClass;
 use RuntimeException;
+use function array_unique;
+use function array_values;
+use function in_array;
 use function sprintf;
 use function str_repeat;
 
@@ -473,6 +479,164 @@ final class UpdateServiceTest extends Unit
         $this->assertSame([$newParent], $createCheckedOn);
         $this->assertFalse($applied);
         $this->assertFalse($saved);
+    }
+
+    /**
+     * Publishing with `useDraftData` writes the draft's metadata, so differences between the draft and the live
+     * object need the same permissions as the same keys in the request. Without them nothing is saved.
+     *
+     * @dataProvider draftMetadataProvider
+     */
+    public function testPublishWithDraftMetadataChangesNeedsTheMatchingPermission(
+        array $draftOverrides,
+        array $requiredPermissions
+    ): void {
+        [$live, $saved, $checked, $service] = $this->createDraftScenario($draftOverrides, ['publish']);
+
+        try {
+            $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, ['task' => 'publish', 'useDraftData' => true]);
+            $this->fail('Expected ForbiddenException was not thrown');
+        } catch (ForbiddenException) {
+            // expected - assertions happen after the try/catch
+        }
+
+        $this->assertFalse($saved());
+        $this->assertContains($requiredPermissions[0], $checked());
+    }
+
+    /**
+     * @dataProvider draftMetadataProvider
+     */
+    public function testPublishWithDraftMetadataChangesIsAllowedWithTheMatchingPermission(
+        array $draftOverrides,
+        array $requiredPermissions
+    ): void {
+        [$live, $saved, $checked, $service] = $this->createDraftScenario(
+            $draftOverrides,
+            ['publish', ...$requiredPermissions]
+        );
+
+        $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, ['task' => 'publish', 'useDraftData' => true]);
+
+        $this->assertTrue($saved());
+        $this->assertSame(in_array('save', $requiredPermissions, true), in_array('save', $checked(), true));
+    }
+
+    /**
+     * Creating the draft required `save`, which covers every field: a user who still holds it can publish it.
+     *
+     * @dataProvider draftMetadataProvider
+     */
+    public function testPublishWithDraftMetadataChangesIsAllowedWithSave(array $draftOverrides): void
+    {
+        [$live, $saved, $checked, $service] = $this->createDraftScenario($draftOverrides, ['publish', 'save']);
+
+        $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, ['task' => 'publish', 'useDraftData' => true]);
+
+        $this->assertTrue($saved());
+    }
+
+    public static function draftMetadataProvider(): array
+    {
+        $property = new Property();
+        $property->setName('title');
+        $property->setType('text');
+        $property->setData('changed');
+
+        return [
+            'key' => [['getKey' => 'draft-key'], ['rename']],
+            'parent' => [['getParentId' => 20], ['settings', 'create']],
+            'lock' => [['getLocked' => 'self'], ['settings']],
+            'properties' => [['getProperties' => ['title' => $property]], ['properties']],
+            'index' => [['getIndex' => 3], ['save']],
+            'children sort order' => [['getChildrenSortOrder' => 'ASC'], ['save']],
+        ];
+    }
+
+    /**
+     * Publishing a draft that carries no metadata changes (the editor flow without pending changes) needs
+     * nothing beyond the publish permission, and everything is checked against the live object.
+     */
+    public function testPublishWithDraftWithoutMetadataChangesNeedsOnlyThePublishPermission(): void
+    {
+        $property = new Property();
+        $property->setName('title');
+        $property->setType('text');
+        $property->setData('same');
+        $inherited = new Property();
+        $inherited->setName('inherited');
+        $inherited->setInherited(true);
+
+        [$live, $saved, $checked, $service, $checkedElements] = $this->createDraftScenario(
+            ['getProperties' => ['title' => $property, 'inherited' => $inherited]],
+            ['publish'],
+            ['getProperties' => ['title' => clone $property]]
+        );
+
+        $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, ['task' => 'publish', 'useDraftData' => true]);
+
+        $this->assertTrue($saved());
+        $this->assertSame(['publish'], $checked());
+        $this->assertSame([$live], $checkedElements());
+    }
+
+    /**
+     * Live object and draft with the same metadata; the draft differs by $draftOverrides.
+     *
+     * @param array<string, mixed> $draftOverrides
+     * @param list<string> $granted
+     * @param array<string, mixed> $liveOverrides
+     *
+     * @return array{0: Concrete, 1: callable, 2: callable, 3: UpdateService, 4: callable}
+     */
+    private function createDraftScenario(array $draftOverrides, array $granted, array $liveOverrides = []): array
+    {
+        $base = [
+            'getKey' => 'live-key',
+            'getParentId' => 10,
+            'getLocked' => null,
+            'getIndex' => 0,
+            'getChildrenSortOrder' => 'DESC',
+            'getProperties' => [],
+        ];
+        $draft = $this->makeEmpty(Concrete::class, array_merge($base, $draftOverrides));
+        $version = (new ReflectionClass(Version::class))->newInstanceWithoutConstructor()->setData($draft);
+        $live = $this->makeEmpty(Concrete::class, array_merge($base, $liveOverrides, [
+            // getLatestVersion() is forwarded to the DAO through __call()
+            '__call' => static fn (string $name) => $name === 'getLatestVersion' ? $version : null,
+        ]));
+
+        $saved = false;
+        $checked = [];
+        $checkedElements = [];
+        $service = $this->createServiceForElement(
+            $live,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checked, &$checkedElements, $granted): void {
+                $checked[] = $permission;
+                $checkedElements[] = $element;
+
+                if (!in_array($permission, $granted, true)) {
+                    throw new ForbiddenException(sprintf('You dont have %s permission', $permission));
+                }
+            }
+        );
+
+        return [
+            $live,
+            static function () use (&$saved): bool {
+                return $saved;
+            },
+            static function () use (&$checked): array {
+                return array_values(array_unique($checked));
+            },
+            $service,
+            static function () use (&$checkedElements): array {
+                return array_values(array_unique($checkedElements, SORT_REGULAR));
+            },
+        ];
     }
 
     /**

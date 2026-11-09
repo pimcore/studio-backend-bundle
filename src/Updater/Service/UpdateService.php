@@ -48,6 +48,7 @@ use function array_flip;
 use function array_keys;
 use function array_unique;
 use function in_array;
+use function ksort;
 use function sprintf;
 
 /**
@@ -105,10 +106,11 @@ final readonly class UpdateService implements UpdateServiceInterface
     {
         $user = $this->securityService->getCurrentUser();
         $task = $data[ElementSaveServiceInterface::INDEX_TASK] ?? null;
-        $element = $this->getLatestElement($this->getElement($this->serviceResolver, $elementType, $id), $data, $task);
+        $liveElement = $this->getElement($this->serviceResolver, $elementType, $id);
+        $element = $this->getLatestElement($liveElement, $data, $task);
 
         if ($element instanceof AbstractObject) {
-            $this->checkObjectWritePermissions($elementType, $element, $data, $task, $user);
+            $this->checkObjectWritePermissions($elementType, $liveElement, $element, $data, $task, $user);
         }
 
         if ($element instanceof Asset) {
@@ -167,17 +169,21 @@ final readonly class UpdateService implements UpdateServiceInterface
      *
      * A publish/unpublish task on a data object is gated by ElementSaveService / PublishAdapter. Besides the
      * edited data it may only carry metadata for which the user holds the matching permission (see
-     * METADATA_KEY_PERMISSIONS); any other key needs `save`.
+     * METADATA_KEY_PERMISSIONS); any other key needs `save`. The same holds for metadata that differs between
+     * the draft loaded for `useDraftData` and the live object, unless the user holds `save` (creating such a
+     * draft required it). Permissions are always checked against the live object.
      *
      * @throws ForbiddenException|NotFoundException
      */
     private function checkObjectWritePermissions(
         string $elementType,
+        ElementInterface $liveElement,
         AbstractObject $element,
         array $data,
         ?string $task,
         UserInterface $user
     ): void {
+        $live = $liveElement instanceof AbstractObject ? $liveElement : $element;
         $isPublicationTask = in_array(
             $task,
             [ElementSaveTasks::PUBLISH->value, ElementSaveTasks::UNPUBLISH->value],
@@ -185,7 +191,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         );
 
         if (!$element instanceof Concrete || !$isPublicationTask) {
-            $this->securityService->hasElementPermission($element, $user, ElementPermissions::SAVE_PERMISSION);
+            $this->securityService->hasElementPermission($live, $user, ElementPermissions::SAVE_PERMISSION);
 
             return;
         }
@@ -200,17 +206,125 @@ final readonly class UpdateService implements UpdateServiceInterface
             $permissions[] = self::METADATA_KEY_PERMISSIONS[$key] ?? ElementPermissions::SAVE_PERMISSION;
         }
 
-        $this->securityService->hasElementPermissions($element, $user, array_unique($permissions));
+        $this->securityService->hasElementPermissions($live, $user, array_unique($permissions));
 
         // Moving needs the create permission on the new parent, as in the classic admin
         $parentId = $data['parentId'] ?? null;
-        if ($parentId !== null && $parentId !== $element->getParentId()) {
-            $this->securityService->hasElementPermission(
-                $this->getElement($this->serviceResolver, $elementType, (int) $parentId),
-                $user,
-                ElementPermissions::CREATE_PERMISSION
-            );
+        if ($parentId !== null && $parentId !== $live->getParentId()) {
+            $this->checkCreateOnNewParent($elementType, (int) $parentId, $user);
         }
+
+        if ($live !== $element) {
+            $this->checkDraftMetadataPermissions($elementType, $live, $element, $user);
+        }
+    }
+
+    /**
+     * Authorizes the metadata a draft would write on publishing. `save` is sufficient: it covers every field
+     * and was needed to create the draft. Without it the matching permission is required for each difference.
+     *
+     * @throws ForbiddenException|NotFoundException
+     */
+    private function checkDraftMetadataPermissions(
+        string $elementType,
+        AbstractObject $live,
+        AbstractObject $draft,
+        UserInterface $user
+    ): void {
+        $changed = $this->getChangedMetadataKeys($live, $draft);
+        if ($changed === []) {
+            return;
+        }
+
+        $permissions = [];
+        foreach ($changed as $key) {
+            $permissions[] = self::METADATA_KEY_PERMISSIONS[$key] ?? ElementPermissions::SAVE_PERMISSION;
+        }
+
+        try {
+            $this->securityService->hasElementPermissions($live, $user, array_unique($permissions));
+
+            if (in_array('parentId', $changed, true)) {
+                $this->checkCreateOnNewParent($elementType, (int) $draft->getParentId(), $user);
+            }
+        } catch (ForbiddenException $exception) {
+            try {
+                $this->securityService->hasElementPermission($live, $user, ElementPermissions::SAVE_PERMISSION);
+            } catch (ForbiddenException) {
+                throw $exception;
+            }
+        }
+    }
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    private function checkCreateOnNewParent(string $elementType, int $parentId, UserInterface $user): void
+    {
+        $this->securityService->hasElementPermission(
+            $this->getElement($this->serviceResolver, $elementType, $parentId),
+            $user,
+            ElementPermissions::CREATE_PERMISSION
+        );
+    }
+
+    /**
+     * @return list<string> keys (as in a request payload) of the metadata the draft changes compared to the live object
+     */
+    private function getChangedMetadataKeys(AbstractObject $live, AbstractObject $draft): array
+    {
+        $changed = [];
+        if ($live->getKey() !== $draft->getKey()) {
+            $changed[] = 'key';
+        }
+
+        if ($live->getParentId() !== $draft->getParentId()) {
+            $changed[] = 'parentId';
+        }
+
+        if ($live->getLocked() !== $draft->getLocked()) {
+            $changed[] = 'locked';
+        }
+
+        if ($live->getIndex() !== $draft->getIndex()) {
+            $changed[] = 'index';
+        }
+
+        if ($live->getChildrenSortOrder() !== $draft->getChildrenSortOrder()) {
+            $changed[] = 'childrenSortOrder';
+        }
+
+        if ($this->getPropertySignature($live) !== $this->getPropertySignature($draft)) {
+            $changed[] = PropertyRepositoryInterface::INDEX_KEY;
+        }
+
+        return $changed;
+    }
+
+    /**
+     * Own (not inherited) properties by name, reduced to comparable values.
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    private function getPropertySignature(AbstractObject $object): array
+    {
+        $signature = [];
+        foreach ($object->getProperties() as $name => $property) {
+            if ($property->isInherited()) {
+                continue;
+            }
+
+            $value = $property->getData();
+            $signature[(string) $name] = [
+                $property->getType(),
+                $property->getInheritable(),
+                $value instanceof ElementInterface ? $value::class . ':' . $value->getId() : $value,
+            ];
+        }
+
+        ksort($signature);
+
+        return $signature;
     }
 
     private function getLatestElement(
