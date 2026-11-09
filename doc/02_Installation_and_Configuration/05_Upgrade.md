@@ -28,6 +28,15 @@ The following steps are necessary during updating to newer versions.
   `oauth.client_credentials.access_token_ttl` seconds (default 900, minimum 60) and carry no refresh token. Nothing
   changes until the switch is turned on. The guarantee that every token acts for a logged-in human no longer holds
   once it is on. See [OAuth Server](./06_OAuth_Server.md#service-user-clients-client-credentials).
+- [Elements] Changed: the `422` response of a failed element validation (`PUT /pimcore-studio/api/assets/{id}`,
+  `.../data-objects/{id}`, `.../documents/{id}` and the synchronous `POST .../assets/add/{parentId}` and
+  `POST .../assets/{id}/replace`) now carries `validationErrors` next to `message` and `errorKey`, one entry per failed
+  field with `field`, `fieldTitle`, `path`, `message`, `messageKey` and `parameters`. `message` and `errorKey` are
+  unchanged. A client that translates the errors needs `pimcore/pimcore` `^2026.4` (`StructuredValidationException`).
+  The synchronous asset upload and replace answer `422` instead of `500` when the validation of the asset fails. An
+  error of a data object in a language the user may not view is reduced to the generic message
+  `The value is not valid.`, its `messageKey` and empty `parameters`; the top-level `message` is then
+  `Validation failed`. `message` is untrusted text and must be escaped before it is rendered.
 - [Authorization] Added: `GET /pimcore-studio/api/session` tells whether the request carries a Studio session
   (`{"authenticated": true|false}`, plus the two-factor step of a login that waits for its code). It always answers 200
   and reveals only the state of the caller's own session. With the matching Studio UI the login page no longer shows a
@@ -88,6 +97,21 @@ The following steps are necessary during updating to newer versions.
 > the login. The login token (`POST /login/token`) still skips the code. While a code is pending, other endpoints
 > answer `401` with the same `twoFactorRequired`, `twoFactorStep` and `digits`, e.g. for a client returning from an OpenID
 > Connect (SSO) login.
+
+## Upgrade to 2026.3.5
+- [Data Objects] Fixed: `POST /data-objects/select-options` resolves the keys of a classification store, so select
+  and multiselect keys with an options provider load their options. They are addressed as
+  `<storeFieldName>.<groupId>.<keyId>`, or `<storeFieldName>.<groupId>.<language>.<keyId>` in the language comparison
+  view. The provider receives the same owner context as on the initial layout load (`ownerType`, `ownerName`, `keyId`,
+  `groupId`, `keyDefinition`). This needs `pimcore/studio-ui-bundle` 2026.3.5 or later, which sends the new field name.
+
+> **Note:** a field name this endpoint cannot resolve now returns `422` with the parse error instead of `404`
+> "Class with ID: ... not found". This applies to every field type, not only classification store keys. The context of
+> the request stays in the nested `context` key of the options provider context and does not overwrite the keys above.
+
+- [Data Objects] Fixed: the auto-save of a data object draft no longer writes the owner objects of a reverse object relation. These edits are applied only on an explicit save (and on updates without a task). The same applies to `PATCH` requests carrying an auto-save task.
+
+> **Note:** edits of such a field that were skipped by an auto-save are not part of the stored draft, so reopening the draft cannot recover them; the client has to send them again with the explicit save. This also applies to custom data adapters that implement the public marker `RemoteStorageDataInterface`: they are skipped while an auto-save stores a draft, and in `POST /data-objects/select-options`. The marker is only checked on the adapter of a top-level field; adapters nested in localized fields, object bricks or field collections are not checked. `DataServiceInterface::updateEditableData()` gained an optional `bool $applyRemoteChanges = true` parameter; the default keeps the previous behavior.
 
 ## Upgrade to 2026.3.4
 - [Translations] Fixed: the `admin` translation domain is maintained in Studio with the website languages, but the
