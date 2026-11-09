@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service;
 
+use DateTimeInterface;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface as DataObjectDataService;
@@ -46,9 +47,13 @@ use Pimcore\Model\UserInterface;
 use function array_diff_key;
 use function array_flip;
 use function array_keys;
+use function array_map;
 use function array_unique;
 use function in_array;
+use function is_array;
+use function is_object;
 use function ksort;
+use function spl_object_id;
 use function sprintf;
 
 /**
@@ -220,8 +225,9 @@ final readonly class UpdateService implements UpdateServiceInterface
     }
 
     /**
-     * Authorizes the metadata a draft would write on publishing. `save` is sufficient: it covers every field
-     * and was needed to create the draft. Without it the matching permission is required for each difference.
+     * Authorizes the metadata a draft would write on publishing. For the metadata itself `save` is sufficient: it
+     * covers every field and was needed to create the draft. Without it the matching permission is required for
+     * each difference. A move additionally always needs the create permission on the new parent.
      *
      * @throws ForbiddenException|NotFoundException
      */
@@ -243,16 +249,17 @@ final readonly class UpdateService implements UpdateServiceInterface
 
         try {
             $this->securityService->hasElementPermissions($live, $user, array_unique($permissions));
-
-            if (in_array('parentId', $changed, true)) {
-                $this->checkCreateOnNewParent($elementType, (int) $draft->getParentId(), $user);
-            }
         } catch (ForbiddenException $exception) {
             try {
                 $this->securityService->hasElementPermission($live, $user, ElementPermissions::SAVE_PERMISSION);
             } catch (ForbiddenException) {
                 throw $exception;
             }
+        }
+
+        // As for a parentId in the request, moving always needs the create permission on the new parent
+        if (in_array('parentId', $changed, true)) {
+            $this->checkCreateOnNewParent($elementType, (int) $draft->getParentId(), $user);
         }
     }
 
@@ -302,6 +309,21 @@ final readonly class UpdateService implements UpdateServiceInterface
     }
 
     /**
+     * Reduces a property value to something comparable between the live object and a draft loaded from a
+     * version, where equal values are distinct objects. Unknown objects never compare equal.
+     */
+    private function normalizePropertyValue(mixed $value): mixed
+    {
+        return match (true) {
+            is_array($value) => array_map($this->normalizePropertyValue(...), $value),
+            $value instanceof DateTimeInterface => 'date:' . $value->format('Y-m-d\TH:i:s.uP'),
+            $value instanceof ElementInterface => 'element:' . $value::class . ':' . $value->getId(),
+            is_object($value) => 'object:' . $value::class . '#' . spl_object_id($value),
+            default => $value,
+        };
+    }
+
+    /**
      * Own (not inherited) properties by name, reduced to comparable values.
      *
      * @return array<string, array<int, mixed>>
@@ -314,11 +336,10 @@ final readonly class UpdateService implements UpdateServiceInterface
                 continue;
             }
 
-            $value = $property->getData();
             $signature[(string) $name] = [
                 $property->getType(),
                 $property->getInheritable(),
-                $value instanceof ElementInterface ? $value::class . ':' . $value->getId() : $value,
+                $this->normalizePropertyValue($property->getData()),
             ];
         }
 

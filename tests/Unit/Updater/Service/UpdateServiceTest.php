@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Updater\Service;
 
 use Codeception\Test\Unit;
+use DateTimeImmutable;
+use DateTimeZone;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface as DataObjectDataService;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DataServiceInterface as DocumentDataService;
@@ -527,9 +529,12 @@ final class UpdateServiceTest extends Unit
      *
      * @dataProvider draftMetadataProvider
      */
-    public function testPublishWithDraftMetadataChangesIsAllowedWithSave(array $draftOverrides): void
+    public function testPublishWithDraftMetadataChangesIsAllowedWithSave(array $draftOverrides, array $requiredPermissions): void
     {
-        [$live, $saved, $checked, $service] = $this->createDraftScenario($draftOverrides, ['publish', 'save']);
+        [$live, $saved, $checked, $service] = $this->createDraftScenario(
+            $draftOverrides,
+            ['publish', 'save', ...(in_array('create', $requiredPermissions, true) ? ['create'] : [])]
+        );
 
         $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, ['task' => 'publish', 'useDraftData' => true]);
 
@@ -551,6 +556,69 @@ final class UpdateServiceTest extends Unit
             'index' => [['getIndex' => 3], ['save']],
             'children sort order' => [['getChildrenSortOrder' => 'ASC'], ['save']],
         ];
+    }
+
+    /**
+     * `save` does not replace the create permission on the new parent: a draft that moves the object is
+     * rejected without it, as the same parentId in a request would be.
+     */
+    public function testPublishWithDraftThatMovesTheObjectAlwaysNeedsCreateOnTheNewParent(): void
+    {
+        [$live, $saved, $checked, $service] = $this->createDraftScenario(['getParentId' => 20], ['publish', 'save']);
+
+        try {
+            $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, ['task' => 'publish', 'useDraftData' => true]);
+            $this->fail('Expected ForbiddenException was not thrown');
+        } catch (ForbiddenException) {
+            // expected - assertions happen after the try/catch
+        }
+
+        $this->assertContains('create', $checked());
+        $this->assertFalse($saved());
+    }
+
+    /**
+     * Equal values are distinct objects in a draft loaded from a version: an unchanged date property is no
+     * change, a different one is.
+     */
+    public function testPublishWithDraftComparesDatePropertiesByValue(): void
+    {
+        $live = new Property();
+        $live->setName('valid-until');
+        $live->setType('date');
+        $live->setData(new DateTimeImmutable('2026-01-01 10:00:00', new DateTimeZone('UTC')));
+        $same = new Property();
+        $same->setName('valid-until');
+        $same->setType('date');
+        $same->setData(new DateTimeImmutable('2026-01-01 10:00:00', new DateTimeZone('UTC')));
+        $other = clone $same;
+        $other->setData(new DateTimeImmutable('2026-02-01 10:00:00', new DateTimeZone('UTC')));
+
+        [, $saved, $checked, $service] = $this->createDraftScenario(
+            ['getProperties' => ['valid-until' => $same]],
+            ['publish'],
+            ['getProperties' => ['valid-until' => $live]]
+        );
+        $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, ['task' => 'publish', 'useDraftData' => true]);
+
+        $this->assertTrue($saved());
+        $this->assertSame(['publish'], $checked());
+
+        [, $saved, $checked, $service] = $this->createDraftScenario(
+            ['getProperties' => ['valid-until' => $other]],
+            ['publish'],
+            ['getProperties' => ['valid-until' => $live]]
+        );
+
+        try {
+            $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, ['task' => 'publish', 'useDraftData' => true]);
+            $this->fail('Expected ForbiddenException was not thrown');
+        } catch (ForbiddenException) {
+            // expected - assertions happen after the try/catch
+        }
+
+        $this->assertContains('properties', $checked());
+        $this->assertFalse($saved());
     }
 
     /**
