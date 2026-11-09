@@ -159,8 +159,8 @@ Beware that the development UI is not working when using a reverse proxy. (See o
 #### Apache Reverse Proxy
 For Apache, for example, enable `http_proxy` in apache and add the following reverse proxy in your apache config:
 ```
-   ProxyPass /hub/ http://localhost:3000/
-   ProxyPassReverse /hub/ http://localhost:3000/
+   ProxyPass /hub http://localhost:3000/.well-known/mercure
+   ProxyPassReverse /hub http://localhost:3000/.well-known/mercure
 ```
 
 #### Nginx Reverse Proxy
