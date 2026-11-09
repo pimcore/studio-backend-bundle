@@ -133,4 +133,30 @@ interface GroupRepositoryInterface
      * @throws NotFoundException
      */
     public function delete(int $id): void;
+
+    /**
+     * The ids of the groups of the store that carry one of the given identifiers, in ONE statement.
+     *
+     * Only the identifiers that resolve are present; a row without an identifier is never matched.
+     *
+     * @param string[] $identifiers duplicates and an empty list are allowed
+     *
+     * @return array<string, int> id by identifier
+     *
+     * @throws DatabaseException
+     */
+    public function getIdsByIdentifiers(int $storeId, array $identifiers): array;
+
+    /**
+     * The identifiers of the given groups of the store, in ONE statement.
+     *
+     * Only the rows that carry an identifier are present.
+     *
+     * @param int[] $ids duplicates and an empty list are allowed
+     *
+     * @return array<int, string> identifier by id
+     *
+     * @throws DatabaseException
+     */
+    public function getIdentifiersByIds(int $storeId, array $ids): array;
 }

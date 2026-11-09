@@ -19,7 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationRe
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\GetClassificationStoreFilterValueTrait;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreFilterValueResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
@@ -30,11 +30,10 @@ use function is_string;
  */
 final class StringFilter implements FilterInterface
 {
-    use GetClassificationStoreFilterValueTrait;
-
     public function __construct(
         private readonly GroupConfigRepositoryInterface $groupConfigRepository,
-        private readonly KeyRelationResolverInterface $keyRelationResolver
+        private readonly KeyRelationResolverInterface $keyRelationResolver,
+        private readonly ClassificationStoreFilterValueResolverInterface $filterValueResolver
     ) {
 
     }
@@ -51,7 +50,11 @@ final class StringFilter implements FilterInterface
 
         foreach ($parameters->getColumnFilterByType(ColumnType::CLASSIFICATION_STORE_STRING->value) as $column) {
 
-            $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
+            $filterValue = $this->filterValueResolver->resolve(
+                $column->getFilterValue(),
+                $parameters,
+                $column->getKeyWithOutLocale()
+            );
 
             $key = $this->keyRelationResolver->getByGroupAndKey(
                 $filterValue->getGroupId(),

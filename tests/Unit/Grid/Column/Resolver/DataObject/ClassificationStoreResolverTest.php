@@ -18,12 +18,14 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\EngineCapabilityGuard;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParser;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializer;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
@@ -31,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject\Classific
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ClassificationStoreConfig;
 use Pimcore\Cache\RuntimeCache;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Classificationstore;
@@ -56,9 +59,24 @@ final class ClassificationStoreResolverTest extends Unit
 
     private const string KEY_CONFIG_CACHE_KEY = 'cs_keyconfig_' . self::KEY_ID;
 
+    private const string GROUP_IDENTIFIER = 'product-data';
+
+    private const string KEY_IDENTIFIER = 'weight';
+
+    /**
+     * @var string[]
+     */
+    private array $primedKeyConfigCacheKeys = [];
+
     protected function _after(): void
     {
         RuntimeCache::getInstance()->offsetUnset(self::KEY_CONFIG_CACHE_KEY);
+
+        foreach ($this->primedKeyConfigCacheKeys as $cacheKey) {
+            RuntimeCache::getInstance()->offsetUnset($cacheKey);
+        }
+
+        $this->primedKeyConfigCacheKeys = [];
     }
 
     /**
@@ -349,6 +367,147 @@ final class ClassificationStoreResolverTest extends Unit
         ];
     }
 
+    /**
+     * Identifiers win over a deliberately wrong integer pair in the same config.
+     */
+    public function testResolveForCoreElementResolvesFromIdentifiersIgnoringTheIntegerPair(): void
+    {
+        $result = $this->createResolverWithReference(new ClassificationStoreConfig(5, 6))->resolveForCoreElement(
+            $this->createColumn([
+                'groupId' => 99,
+                'keyId' => 98,
+                'groupIdentifier' => self::GROUP_IDENTIFIER,
+                'keyIdentifier' => self::KEY_IDENTIFIER,
+            ]),
+            $this->createObject()
+        );
+
+        $this->assertSame('cs.weight', $result->getKey());
+        $this->assertSame('42 kg', $result->getValue());
+        $this->assertSame(5, $result->getAdditionalAttributes()['groupId']);
+        $this->assertSame(6, $result->getAdditionalAttributes()['keyId']);
+    }
+
+    /**
+     * A config without identifiers resolves from the pair exactly as before.
+     */
+    public function testResolveForCoreElementResolvesFromTheIntegerPairWithoutIdentifiers(): void
+    {
+        $result = $this->createResolverWithReference(null)->resolveForCoreElement(
+            $this->createColumn(['groupId' => 5, 'keyId' => 6]),
+            $this->createObject()
+        );
+
+        $this->assertSame('cs.weight', $result->getKey());
+        $this->assertSame('42 kg', $result->getValue());
+        $this->assertSame('input', $result->getFieldType());
+        $this->assertSame(5, $result->getAdditionalAttributes()['groupId']);
+        $this->assertSame(6, $result->getAdditionalAttributes()['keyId']);
+    }
+
+    /**
+     * An identifier-only column is a configured reference: it fails when unresolvable, never renders empty.
+     */
+    public function testResolveForCoreElementThrowsForAnUnresolvableIdentifierPair(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createResolverWithUnresolvableReference()->resolveForCoreElement(
+            $this->createColumn(['groupId' => 5, 'keyId' => 6, 'groupIdentifier' => 'gone', 'keyIdentifier' => 'gone']),
+            $this->createObject()
+        );
+    }
+
+    public function testResolveForExportThrowsForAnUnresolvableIdentifierPair(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createResolverWithUnresolvableReference()->resolveForExport(
+            $this->createColumn(['groupIdentifier' => 'gone', 'keyIdentifier' => 'gone']),
+            $this->createObject(),
+            $this->makeEmpty(UserInterface::class)
+        );
+    }
+
+    public function testIdentifierOnlyColumnIsNotTheEmptyBareColumn(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createResolver()->resolveForCoreElement(
+            $this->createColumn(['groupIdentifier' => self::GROUP_IDENTIFIER, 'keyIdentifier' => self::KEY_IDENTIFIER]),
+            $this->makeEmpty(Concrete::class)
+        );
+    }
+
+    public function testNullIdentifiersAloneStayTheEmptyBareColumn(): void
+    {
+        $result = $this->createResolver()->resolveForCoreElement(
+            $this->createColumn(['groupIdentifier' => null, 'keyIdentifier' => null]),
+            $this->makeEmpty(Concrete::class)
+        );
+
+        $this->assertNull($result->getValue());
+    }
+
+    private function createObject(): Concrete
+    {
+        return $this->makeEmpty(Concrete::class, ['getClassId' => 'EV']);
+    }
+
+    private function createResolverWithUnresolvableReference(): ClassificationStoreResolver
+    {
+        $reference = $this->makeEmpty(ColumnReferenceServiceInterface::class, [
+            'resolve' => static function (): never {
+                throw new InvalidArgumentException('does not exist');
+            },
+        ]);
+
+        return $this->createResolver(reference: $reference);
+    }
+
+    private function createResolverWithReference(?ClassificationStoreConfig $resolved): ClassificationStoreResolver
+    {
+        // the cell now asks the key's own declaration, so the key the reference resolves to is
+        // primed the way {@see self::primeKeyConfig()} primes the one the other cells use: this
+        // key declares no qualifier, so its value reaches the cell untouched
+        $this->primeKeyConfig(['fieldtype' => 'input'], 6);
+
+        $relation = new KeyGroupRelation();
+        $relation->setKeyId(6);
+        $relation->setName('weight');
+        $relation->setType('input');
+
+        $base = $this->makeEmpty(CoreElementColumnResolverInterface::class, [
+            'resolveForCoreElement' => new ColumnData(
+                'cs',
+                null,
+                [5 => ['default' => [6 => '42 kg']]],
+                'x',
+                [5 => ['default' => [6 => new InheritanceData(1, false)]]]
+            ),
+        ]);
+
+        $keyQualifierResolver = new KeyQualifierResolver();
+
+        return new ClassificationStoreResolver(
+            $this->makeEmpty(GridServiceInterface::class, [
+                'getColumnResolvers' => ['dataobject.adapter' => $base],
+            ]),
+            $this->makeEmpty(KeyRelationResolverInterface::class, ['getByGroup' => [6 => $relation]]),
+            $this->makeEmpty(ServiceResolverInterface::class),
+            $this->makeEmpty(DataServiceInterface::class),
+            $keyQualifierResolver,
+            new QualifiedValueSerializer(
+                $keyQualifierResolver,
+                new QualifiedValueParser($keyQualifierResolver),
+                new EngineCapabilityGuard()
+            ),
+            $this->makeEmpty(ToolResolverInterface::class),
+            $this->makeEmpty(LocalizedFieldResolverInterface::class),
+            $this->makeEmpty(ColumnReferenceServiceInterface::class, ['resolve' => $resolved]),
+        );
+    }
+
     private function createBareColumn(): Column
     {
         return $this->createColumn([]);
@@ -393,7 +552,8 @@ final class ClassificationStoreResolverTest extends Unit
     private function createResolver(
         mixed $normalized = null,
         ?ServiceResolverInterface $classificationStoreServiceResolver = null,
-        ?DataServiceInterface $dataService = null
+        ?DataServiceInterface $dataService = null,
+        ?ColumnReferenceServiceInterface $reference = null
     ): ClassificationStoreResolver {
         // the real two: standing them in would leave what a cell and an export show for a list
         // untested here, which is the whole of what this resolver decides about one
@@ -414,6 +574,7 @@ final class ClassificationStoreResolverTest extends Unit
             ),
             $this->makeEmpty(ToolResolverInterface::class),
             $this->makeEmpty(LocalizedFieldResolverInterface::class),
+            $reference ?? $this->makeEmpty(ColumnReferenceServiceInterface::class),
         );
     }
 
@@ -425,14 +586,17 @@ final class ClassificationStoreResolverTest extends Unit
      *
      * @param array<string, mixed> $definition
      */
-    private function primeKeyConfig(array $definition): void
+    private function primeKeyConfig(array $definition, int $keyId = self::KEY_ID): void
     {
         $keyConfig = new KeyConfig();
         $keyConfig->setName('weight');
         $keyConfig->setType('input');
         $keyConfig->setDefinition((string) json_encode($definition));
 
-        RuntimeCache::set(self::KEY_CONFIG_CACHE_KEY, $keyConfig);
+        $cacheKey = 'cs_keyconfig_' . $keyId;
+        $this->primedKeyConfigCacheKeys[] = $cacheKey;
+
+        RuntimeCache::set($cacheKey, $keyConfig);
     }
 
     /**

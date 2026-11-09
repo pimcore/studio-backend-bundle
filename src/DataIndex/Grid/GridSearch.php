@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Source\SystemFieldsOnlySource;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
@@ -59,7 +60,8 @@ final readonly class GridSearch implements GridSearchInterface
         private FilterServiceProviderInterface $filterServiceProvider,
         private QueryFactoryInterface $queryFactory,
         private SecurityServiceInterface $securityService,
-        private ServiceResolverInterface $serviceResolver
+        private ServiceResolverInterface $serviceResolver,
+        private ColumnReferenceServiceInterface $columnReferenceService
     ) {
         $this->filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
     }
@@ -174,6 +176,13 @@ final readonly class GridSearch implements GridSearchInterface
     ): QueryInterface {
         $filter = $gridParameter->getFilters();
         $filter = $this->setFilterPath($filter, $type, $gridParameter->getFolderId(), $user);
+
+        $classId = $filter->getClassId();
+        if ($classId !== null) {
+            // One statement per entity type and store for the whole filter set, so that no classification
+            // store filter spends a lookup of its own on a reference another filter already named.
+            $this->columnReferenceService->primeFilters($classId, $filter->getColumnFilters());
+        }
 
         $query = $this->queryFactory->create($type);
         $query->setUser($user);

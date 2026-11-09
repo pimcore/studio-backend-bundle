@@ -19,8 +19,8 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationRe
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreFilterValueResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\ClassificationStoreFilterValue;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\GetClassificationStoreFilterValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
@@ -32,11 +32,10 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
  */
 final class TimeFilter implements FilterInterface
 {
-    use GetClassificationStoreFilterValueTrait;
-
     public function __construct(
         private readonly GroupConfigRepositoryInterface $groupConfigRepository,
-        private readonly KeyRelationResolverInterface $keyRelationResolver
+        private readonly KeyRelationResolverInterface $keyRelationResolver,
+        private readonly ClassificationStoreFilterValueResolverInterface $filterValueResolver
     ) {
 
     }
@@ -52,7 +51,11 @@ final class TimeFilter implements FilterInterface
         }
 
         foreach ($parameters->getColumnFilterByType(ColumnType::CLASSIFICATION_STORE_TIME->value) as $column) {
-            $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
+            $filterValue = $this->filterValueResolver->resolve(
+                $column->getFilterValue(),
+                $parameters,
+                $column->getKeyWithOutLocale()
+            );
             $key = $this->keyRelationResolver->getByGroupAndKey(
                 $filterValue->getGroupId(),
                 $filterValue->getKeyId()

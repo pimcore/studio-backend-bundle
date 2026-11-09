@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\Service\ConfigurationShareServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\ConfigurationParameter as DataObjectConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -32,6 +33,7 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
         private SecurityServiceInterface $securityService,
         private FavoriteServiceInterface $favoriteService,
         private ConfigurationShareServiceInterface $shareService,
+        private ColumnReferenceServiceInterface $columnReferenceService,
     ) {
     }
 
@@ -103,11 +105,17 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
         $configuration->setName($configurationParams->getName());
         $configuration->setDescription($configurationParams->getDescription());
         $configuration->setSaveFilter($configurationParams->saveFilter());
-        $configuration->setColumns($configurationParams->getColumnsAsArray());
+        $configuration->setColumns($this->columnReferenceService->addIdentifiers(
+            $configuration->getClassId(),
+            $configurationParams->getColumnsAsArray()
+        ));
 
         $configuration->setFilter(null);
         if ($configurationParams->saveFilter()) {
-            $configuration->setFilter($configurationParams->getFilter()->toArray());
+            $configuration->setFilter($this->columnReferenceService->addFilterIdentifiers(
+                $configuration->getClassId(),
+                $configurationParams->getFilter()->toArray()
+            ));
         }
 
         if ($configurationParams->setAsFavorite()) {

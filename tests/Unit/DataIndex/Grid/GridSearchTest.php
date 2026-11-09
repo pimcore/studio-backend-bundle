@@ -22,6 +22,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\DocumentSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Source\SystemFieldsOnlySource;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
@@ -95,6 +96,80 @@ final class GridSearchTest extends Unit
         $this->assertSame(self::FOLDER_PATH, $filter->getPath());
         // The grid reads the column values from the database, so the search fetches only the system fields.
         $this->assertSame(1, $this->countSystemFieldsOnlySources($search));
+    }
+
+    /**
+     * The classification store column filters of a class-scoped search resolve their identifiers in one
+     * statement per entity type and store, instead of one per filter, so the whole filter set is primed
+     * before any filter is applied.
+     */
+    public function testDataObjectGridPrimesTheClassificationStoreFiltersOfTheWholeFilterSet(): void
+    {
+        $user = new User();
+        $folder = $this->createParentElement(DataObjectFolder::class, $user);
+        $columnFilters = [
+            ['key' => 'cs', 'type' => 'classificationstore.string', 'filterValue' => [
+                'groupIdentifier' => 'product-data',
+                'keyIdentifier' => 'weight',
+                'value' => 'needle',
+            ]],
+        ];
+        $filter = new FilterParameter(columnFilters: $columnFilters);
+        $filter->setClassId('EV');
+
+        $primed = [];
+        $gridSearch = $this->createGridSearch(
+            query: $this->makeEmpty(DataObjectQueryInterface::class, ['getSearch' => new DataObjectSearch()]),
+            folder: $folder,
+            dataObjectSearchService: $this->makeEmpty(DataObjectSearchServiceInterface::class, [
+                'searchDataObjects' => new DataObjectSearchResult([], 1, 10, 0),
+            ]),
+            columnReferenceService: $this->makeEmpty(ColumnReferenceServiceInterface::class, [
+                'primeFilters' => Expected::once(
+                    function (string $classId, array $filters) use (&$primed): void {
+                        $primed = [$classId, $filters];
+                    }
+                ),
+            ]),
+        );
+
+        $gridSearch->searchElementsForUser(
+            ElementTypes::TYPE_DATA_OBJECT,
+            new GridParameter(self::FOLDER_ID, [], $filter),
+            $user
+        );
+
+        $this->assertSame(['EV', $columnFilters], $primed);
+    }
+
+    /**
+     * A search that names no class cannot resolve identifiers, so nothing is primed.
+     */
+    public function testDataObjectGridWithoutAClassIdPrimesNothing(): void
+    {
+        $user = new User();
+        $folder = $this->createParentElement(DataObjectFolder::class, $user);
+        $filter = new FilterParameter();
+
+        $gridSearch = $this->createGridSearch(
+            query: $this->makeEmpty(DataObjectQueryInterface::class, ['getSearch' => new DataObjectSearch()]),
+            folder: $folder,
+            dataObjectSearchService: $this->makeEmpty(DataObjectSearchServiceInterface::class, [
+                'searchDataObjects' => new DataObjectSearchResult([], 1, 10, 0),
+            ]),
+            columnReferenceService: $this->makeEmpty(ColumnReferenceServiceInterface::class, [
+                'primeFilters' => Expected::never(),
+            ]),
+        );
+
+        $gridSearch->searchElementsForUser(
+            ElementTypes::TYPE_DATA_OBJECT,
+            new GridParameter(self::FOLDER_ID, [], $filter),
+            $user
+        );
+
+        // The search itself still ran; only the priming was skipped.
+        $this->assertSame(self::FOLDER_PATH, $filter->getPath());
     }
 
     public function testAssetGridSearchesWithViewPermission(): void
@@ -356,6 +431,7 @@ final class GridSearchTest extends Unit
         ?AssetSearchServiceInterface $assetSearchService = null,
         ?DataObjectSearchServiceInterface $dataObjectSearchService = null,
         ?DocumentSearchServiceInterface $documentSearchService = null,
+        ?ColumnReferenceServiceInterface $columnReferenceService = null,
     ): GridSearch {
         $filterService = $this->makeEmpty(SearchIndexFilterInterface::class, [
             'applyFilters' => $query,
@@ -376,6 +452,7 @@ final class GridSearchTest extends Unit
                     return $folder;
                 },
             ]),
+            $columnReferenceService ?? $this->makeEmpty(ColumnReferenceServiceInterface::class),
         );
     }
 
