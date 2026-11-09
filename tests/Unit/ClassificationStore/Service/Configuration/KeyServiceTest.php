@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterf
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function json_encode;
 
 /**
  * @internal
@@ -297,8 +298,48 @@ final class KeyServiceTest extends Unit
     }
 
     /**
+     * Declaring `variants` or `multiValue` on a key of a store whose engine reports neither
+     * capability is accepted: the write goes through, the declaration is stored verbatim, and the
+     * response carries neither an error nor a note about it.
+     *
+     * The stubbed engine is the one reporting the empty capability set, and it is reachable from
+     * nowhere in this service - which is the point: the update path consults no engine at all, so
+     * there is no capability that could refuse the declaration. The object data path is where a
+     * capability is judged, and {@see \Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataObject\Data\Adapter\ClassificationStoreAdapterTest}
+     * covers it.
+     *
      * @throws Exception
      */
+    public function testADeclarationIsStoredWhateverTheStoresEngineReports(): void
+    {
+        $definition = [
+            'fieldtype' => 'quantityValue',
+            'variants' => ['metric', 'imperial'],
+            'multiValue' => true,
+        ];
+
+        $keyConfig = new KeyConfig();
+        $keyConfig->setId(29);
+        $keyConfig->setName('weight');
+        $keyConfig->setType('quantityValue');
+
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->method('update')
+            ->willReturnCallback(static function (int $id, KeyUpdate $parameters) use ($keyConfig): KeyWriteResult {
+                $definitionBefore = $keyConfig->getDefinition();
+                $keyConfig->setDefinition((string) json_encode($parameters->getDefinition()));
+
+                return new KeyWriteResult($keyConfig, $definitionBefore);
+            });
+
+        $keyDetail = $this
+            ->createService($repository, keyHydrator: new KeyHydrator(new InMemoryKeyLocalizationResolver()))
+            ->updateKey(29, new KeyUpdate('weight', null, null, 'quantityValue', $definition));
+
+        $this->assertSame($definition, $keyDetail->getDefinition());
+    }
+
     private function expectClearedOnce(): KeyRelationResolverInterface
     {
         $resolver = $this->createMock(KeyRelationResolverInterface::class);

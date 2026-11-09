@@ -27,10 +27,15 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedExceptio
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Cache\Core\CoreCacheHandler;
+use Pimcore\Element\MarshallerService;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
+use Pimcore\Model\DataObject\ClassDefinition\Loader\DataLoaderInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
+use Pimcore\Model\DataObject\Classificationstore\KeyTypeSupport;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpKernel\KernelInterface;
 
@@ -439,6 +444,18 @@ final class KeyRepositoryTest extends Unit
      * A key config whose save does not need a database: the dao it would otherwise detect is the
      * one part of `KeyConfig::save()` that cannot run without one.
      *
+     * `KeyTypeSupport` is served too, because `KeyConfig::save()` resolves it from the container
+     * before it writes anything: it asks whether the key's field type may be defined at all and
+     * whether the engine of the store can hold it
+     * ({@see \Pimcore\Model\DataObject\Classificationstore\KeyConfig::save()}).
+     *
+     * The real one, because the class is final and cannot be stubbed, over the two collaborators it
+     * reads: a loader that resolves the type to an `input` definition, and a marshaller service
+     * holding no marshaller for the classification store format. Those are the answers core's own
+     * wiring gives for an `input` key, so the gate runs to the verdict it reaches in production -
+     * `input` normalizes to `mixed`, so the two value columns hold it and the engine is never asked
+     * - rather than being skipped.
+     *
      * @throws Exception
      */
     private function createSavableKeyConfig(): KeyConfig
@@ -446,6 +463,13 @@ final class KeyRepositoryTest extends Unit
         $container = new Container();
         $container->set(CoreCacheHandler::class, $this->makeEmpty(CoreCacheHandler::class));
         $container->set('event_dispatcher', new EventDispatcher());
+        $container->set(KeyTypeSupport::class, new KeyTypeSupport(
+            $this->makeEmpty(DataLoaderInterface::class, [
+                'supports' => true,
+                'build' => new Input(),
+            ]),
+            new MarshallerService(new ServiceLocator([]))
+        ));
         Pimcore::setKernel($this->makeEmpty(KernelInterface::class, ['getContainer' => $container]));
 
         $config = $this->createStoredKeyConfig();
