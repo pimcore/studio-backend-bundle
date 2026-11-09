@@ -32,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\SubGroupLayout
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
@@ -46,6 +47,7 @@ use function array_flip;
 use function array_intersect_key;
 use function array_keys;
 use function array_map;
+use function json_encode;
 use function sprintf;
 
 /**
@@ -154,6 +156,103 @@ final class GroupServiceTest extends Unit
         $this->assertTrue($keys[0]->getLocalized());
         $this->assertFalse($keys[1]->getLocalized());
         $this->assertNull($keys[2]->getLocalized());
+    }
+
+    /**
+     * Every key of the group carries what it declares about its qualified values, read off its own
+     * key configuration: the declared variant names in the order it declares them, and its
+     * `multiValue` setting. A key declaring neither reports null for both, rather than an empty list
+     * and false - which a client would read as a key that permits no variant and holds one value.
+     *
+     * The layout-by-key path has the same assertion in
+     * {@see KeyGroupLayoutServiceTest::testTheKeyLayoutCarriesWhatTheKeyDeclaresAboutItsValues()};
+     * both ask the same two methods of {@see KeyGroupLayoutServiceInterface}, which is the single
+     * place either answer comes from.
+     *
+     * @throws Exception
+     */
+    public function testEveryKeyCarriesWhatItDeclaresAboutItsQualifiedValues(): void
+    {
+        $keys = $this
+            ->createServiceWithRealKeyConfigs([
+                11 => ['variants' => ['metric', 'imperial'], 'multiValue' => true],
+                12 => ['multiValue' => false],
+                13 => ['fieldtype' => 'input'],
+            ])
+            ->getLayoutDefinition(self::GROUP_ID, new LayoutParameter(self::FIELD_NAME, self::OBJECT_ID))
+            ->getKeys();
+
+        $this->assertSame(['metric', 'imperial'], $keys[0]->getVariants());
+        $this->assertTrue($keys[0]->getMultiValue());
+
+        $this->assertNull($keys[1]->getVariants());
+        $this->assertFalse($keys[1]->getMultiValue());
+
+        $this->assertNull($keys[2]->getVariants());
+        $this->assertNull($keys[2]->getMultiValue());
+    }
+
+    /**
+     * A group whose keys declare nothing is served exactly as before.
+     *
+     * @throws Exception
+     */
+    public function testAGroupOfKeysDeclaringNothingReportsNullOnBothMembers(): void
+    {
+        $keys = $this
+            ->createServiceWithRealKeyLabels([1 => [self::LANGUAGE => 'Gewicht']])
+            ->getLayoutDefinition(self::GROUP_ID, new LayoutParameter(self::FIELD_NAME, self::OBJECT_ID))
+            ->getKeys();
+
+        $this->assertNull($keys[0]->getVariants());
+        $this->assertNull($keys[0]->getMultiValue());
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $definitions one entry per key of the group
+     *
+     * @throws Exception
+     */
+    private function createServiceWithRealKeyConfigs(array $definitions): GroupService
+    {
+        $relations = [];
+        $keyConfigs = [];
+        foreach ($definitions as $keyId => $definition) {
+            $keyName = sprintf('key%d', $keyId);
+            $relations[$keyId] = $this->createRelation($keyId, $keyName);
+            $keyConfig = $this->createKeyConfig($keyId, $keyName);
+            $keyConfig->setDefinition((string) json_encode($definition));
+            $keyConfigs[$keyId] = $keyConfig;
+        }
+
+        $keyRelationResolver = $this->createMock(KeyRelationResolverInterface::class);
+        $keyRelationResolver
+            ->method('getByGroup')
+            ->with(self::GROUP_ID)
+            ->willReturn($relations);
+
+        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
+        $serviceResolver
+            ->method('getFieldDefinitionFromJson')
+            ->willReturn(new Input());
+
+        $keyConfigResolver = $this->createMock(KeyConfigResolverInterface::class);
+        $keyConfigResolver
+            ->method('getById')
+            ->willReturnCallback(static fn (int $keyId): ?KeyConfig => $keyConfigs[$keyId] ?? null);
+
+        $keyGroupLayoutService = new KeyGroupLayoutService(
+            $serviceResolver,
+            $keyRelationResolver,
+            new ConcreteObjectResolver(),
+            $keyConfigResolver,
+            $this->createLabelResolver([]),
+            $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
+            new InMemoryKeyLocalizationResolver(),
+            new KeyQualifierResolver()
+        );
+
+        return $this->createService($keyRelationResolver, $keyGroupLayoutService);
     }
 
     /**
@@ -287,7 +386,8 @@ final class GroupServiceTest extends Unit
             $keyConfigResolver,
             $this->createLabelResolver($labels),
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
-            new InMemoryKeyLocalizationResolver()
+            new InMemoryKeyLocalizationResolver(),
+            new KeyQualifierResolver()
         );
 
         return $this->createService($keyRelationResolver, $keyGroupLayoutService);

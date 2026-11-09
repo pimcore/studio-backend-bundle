@@ -43,8 +43,20 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolver
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolver
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParserInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParser
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\EngineCapabilityGuardInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\EngineCapabilityGuard
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializerInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializer
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolver
@@ -246,7 +258,8 @@ services:
     tags: [ 'serializer.normalizer' ]
 
   # the engine resolver is optional: `composer.json` allows a core that does not ship one, and
-  # against such a core the store reports no engine and no capabilities rather than failing to boot
+  # against such a core the store reports no engine and no capabilities, and a write needing a
+  # capability is refused because none is confirmed, rather than the bundle failing to boot
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolver
     arguments:

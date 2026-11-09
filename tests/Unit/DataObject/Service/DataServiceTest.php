@@ -27,8 +27,11 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInte
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -230,6 +233,28 @@ final class DataServiceTest extends Unit
         $this->expectException(ForbiddenException::class);
 
         $this->updateWithAdapterThrowing(new ForbiddenException());
+    }
+
+    /**
+     * The sibling of the case above, and the one the Classification Store's own refusals need: a
+     * value the key's declaration does not permit is refused inside the adapter with the status and
+     * the error key that refusal states, and a client has to receive both rather than the 500 and
+     * the generic error key wrapping it would report.
+     *
+     * @throws Exception
+     */
+    public function testUpdateEditableDataKeepsTheStatusAndErrorKeyOfAValidationRefusal(): void
+    {
+        try {
+            $this->updateWithAdapterThrowing(new InvalidArgumentException(
+                'The value names a variant the key does not declare.',
+                errorKey: HttpResponseErrorKeys::UNDECLARED_VARIANT->value
+            ));
+            $this->fail('Expected the refusal to reach the caller');
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(HttpResponseCodes::UNPROCESSABLE_CONTENT->value, $exception->getStatusCode());
+            $this->assertSame(HttpResponseErrorKeys::UNDECLARED_VARIANT->value, $exception->getErrorKey());
+        }
     }
 
     /**

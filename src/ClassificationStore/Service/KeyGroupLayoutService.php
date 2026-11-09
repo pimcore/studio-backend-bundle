@@ -42,6 +42,7 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
         private LabelResolverInterface $labelResolver,
         private LabelLanguageResolverInterface $labelLanguageResolver,
         private KeyLocalizationResolverInterface $keyLocalizationResolver,
+        private KeyQualifierResolverInterface $keyQualifierResolver,
     ) {
     }
 
@@ -109,6 +110,8 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             title: $this->getKeyTitle($key->getKeyId(), $this->labelLanguageResolver->getLabelLanguage()),
             subGroup: $key->getSubGroup(),
             localized: $this->getKeyLocalized($key->getKeyId()),
+            variants: $this->getKeyVariants($key->getKeyId()),
+            multiValue: $this->getKeyMultiValue($key->getKeyId()),
         );
     }
 
@@ -146,5 +149,33 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
         }
 
         return $this->keyLocalizationResolver->getLocalized($keyConfig);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getKeyVariants(int $keyId): ?array
+    {
+        $keyConfig = $this->keyConfigResolver->getById($keyId);
+
+        if (!$keyConfig instanceof KeyConfig) {
+            return null;
+        }
+
+        return $this->keyQualifierResolver->getVariants($keyConfig);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getKeyMultiValue(int $keyId): ?bool
+    {
+        $keyConfig = $this->keyConfigResolver->getById($keyId);
+
+        if (!$keyConfig instanceof KeyConfig) {
+            return null;
+        }
+
+        return $this->keyQualifierResolver->isMultiValue($keyConfig);
     }
 }

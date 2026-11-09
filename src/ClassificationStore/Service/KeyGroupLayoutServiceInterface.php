@@ -61,4 +61,19 @@ interface KeyGroupLayoutServiceInterface
      * and null for a key that states none or cannot be loaded at all.
      */
     public function getKeyLocalized(int $keyId): ?bool;
+
+    /**
+     * The variant names the key declares, in the order it declares them, taken off the same key
+     * configuration for the same reason, and null for a key that declares none or cannot be loaded
+     * at all.
+     *
+     * @return string[]|null
+     */
+    public function getKeyVariants(int $keyId): ?array;
+
+    /**
+     * The key's own `multiValue` setting, taken off the same key configuration, and null for a key
+     * that declares none or cannot be loaded at all.
+     */
+    public function getKeyMultiValue(int $keyId): ?bool;
 }

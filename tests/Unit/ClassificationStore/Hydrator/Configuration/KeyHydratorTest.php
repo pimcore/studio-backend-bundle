@@ -67,6 +67,28 @@ final class KeyHydratorTest extends Unit
     }
 
     /**
+     * `variants` and `multiValue` are reserved members of the definition and survive the decode the
+     * read performs, in the order and with the types they were stored with - nothing resolves them
+     * against the engine of the key's store on the way out.
+     */
+    public function testTheQualifiedValueDeclarationSurvivesTheDecodeVerbatim(): void
+    {
+        $keyConfig = $this->createKeyConfig();
+        $keyConfig->setDefinition(
+            '{"fieldtype":"quantityValue","variants":["metric","imperial"],"multiValue":true}'
+        );
+
+        $this->assertSame(
+            [
+                'fieldtype' => 'quantityValue',
+                'variants' => ['metric', 'imperial'],
+                'multiValue' => true,
+            ],
+            $this->hydrator->hydrateKeyDetail($keyConfig)->getDefinition()
+        );
+    }
+
+    /**
      * The flag is reported exactly as the key stores it and resolved against nothing: the key
      * states true, states false, or states nothing at all, and the third is null rather than either
      * of the first two. The class field's own flag decides only for that third case, and only in

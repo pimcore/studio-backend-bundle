@@ -686,6 +686,10 @@ error_folder_exists: Folder already exists
 error_element_not_found: Element not found
 error_environment: Environment error
 error_invalid_argument: Invalid argument
+error_undeclared_variant: The value names a variant the key does not declare
+error_duplicate_value_qualifier: Two values of the key address the same variant and position
+error_engine_capability_missing: The engine of the key's store does not support this write
+error_key_not_repeatable: The key does not declare that it holds more than one value per variant
 error_inconsistent_asset_type: Inconsistent asset binary type
 error_recycle_bin_restore: Cannot restore element from recycle bin
 error_recycle_bin_restore_missing_parent: Cannot restore element from recycle bin, parent element is missing

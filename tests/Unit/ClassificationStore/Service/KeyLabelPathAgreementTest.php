@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricher;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolverInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
@@ -187,7 +188,8 @@ final class KeyLabelPathAgreementTest extends Unit
             $keyConfigResolver,
             $labelResolver,
             $labelLanguageResolver,
-            new InMemoryKeyLocalizationResolver()
+            new InMemoryKeyLocalizationResolver(),
+            new KeyQualifierResolver()
         );
     }
 
