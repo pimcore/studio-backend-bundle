@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Search\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\Service\ConfigurationShareServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -50,6 +51,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         private SavedSearchConfigurationRepositoryInterface $repository,
         private SecurityServiceInterface $securityService,
         private ConfigurationShareServiceInterface $shareService,
+        private ColumnReferenceServiceInterface $columnReferenceService,
     ) {
     }
 
@@ -164,7 +166,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         $configuration->setOwner($this->securityService->getCurrentUser()->getId());
         $configuration->setClassId($parameter->getClassId());
         $configuration->setElementType($parameter->getElementType());
-        $configuration->setColumns($parameter->getColumnsAsArray());
+        $configuration->setColumns($this->getColumnsWithIdentifiers($parameter));
         $configuration->setFilter($parameter->getFilter()?->toArray());
         $configuration->setCreateMenuShortcut($parameter->createMenuShortcut());
         $configuration->setMenuShortcutGroup($parameter->getMenuShortcutGroup());
@@ -202,7 +204,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         $configuration->setDescription($parameter->getDescription());
         $configuration->setClassId($parameter->getClassId());
         $configuration->setElementType($parameter->getElementType());
-        $configuration->setColumns($parameter->getColumnsAsArray());
+        $configuration->setColumns($this->getColumnsWithIdentifiers($parameter));
         $configuration->setFilter($parameter->getFilter()?->toArray());
         $configuration->setCreateMenuShortcut($parameter->createMenuShortcut());
         $configuration->setMenuShortcutGroup($parameter->getMenuShortcutGroup());
@@ -245,5 +247,16 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         }
 
         $this->repository->delete($configuration);
+    }
+
+    private function getColumnsWithIdentifiers(SavedSearchParameter $parameter): array
+    {
+        $classId = $parameter->getClassId();
+
+        if ($classId === null) {
+            return $parameter->getColumnsAsArray();
+        }
+
+        return $this->columnReferenceService->addIdentifiers($classId, $parameter->getColumnsAsArray());
     }
 }

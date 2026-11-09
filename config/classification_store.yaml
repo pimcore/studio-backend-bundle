@@ -46,6 +46,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolver
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceService
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolver
 

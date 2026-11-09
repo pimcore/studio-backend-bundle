@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Conf
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -130,4 +131,30 @@ interface KeyRepositoryInterface
         string $sortKey,
         string $sortDir,
     ): int;
+
+    /**
+     * The ids of the keys of the store that carry one of the given identifiers, in ONE statement.
+     *
+     * Only the identifiers that resolve are present; a row without an identifier is never matched.
+     *
+     * @param string[] $identifiers duplicates and an empty list are allowed
+     *
+     * @return array<string, int> id by identifier
+     *
+     * @throws DatabaseException
+     */
+    public function getIdsByIdentifiers(int $storeId, array $identifiers): array;
+
+    /**
+     * The identifiers of the given keys of the store, in ONE statement.
+     *
+     * Only the rows that carry an identifier are present.
+     *
+     * @param int[] $ids duplicates and an empty list are allowed
+     *
+     * @return array<int, string> identifier by id
+     *
+     * @throws DatabaseException
+     */
+    public function getIdentifiersByIds(int $storeId, array $ids): array;
 }

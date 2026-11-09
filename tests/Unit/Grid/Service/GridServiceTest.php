@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolve
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
@@ -1336,6 +1337,7 @@ final class GridServiceTest extends Unit
             $toolResolver ?? $this->makeEmpty(ToolResolverInterface::class),
             $localeService ?? $this->makeEmpty(LocaleServiceInterface::class),
             $runtimeCacheResolver ?? $this->makeEmpty(RuntimeCacheResolverInterface::class),
+            $this->makeEmpty(ColumnReferenceServiceInterface::class),
         );
     }
 }

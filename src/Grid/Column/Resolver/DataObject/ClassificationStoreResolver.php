@@ -17,6 +17,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
@@ -59,6 +60,7 @@ final class ClassificationStoreResolver implements
         private readonly DataServiceInterface $dataService,
         private readonly ToolResolverInterface $toolResolver,
         private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
+        private readonly ColumnReferenceServiceInterface $columnReferenceService,
     ) {
     }
 
@@ -84,7 +86,7 @@ final class ClassificationStoreResolver implements
             return $this->getEmptyColumnData($column);
         }
 
-        $config = $this->validateConfig($column->getConfig());
+        $config = $this->getReference($column, $element);
         $baseResolver = $this->gridService->getColumnResolvers()['dataobject.adapter'];
 
         if (!$baseResolver instanceof CoreElementColumnResolverInterface) {
@@ -138,7 +140,7 @@ final class ClassificationStoreResolver implements
             throw new InvalidArgumentException('Element must be a concrete object');
         }
 
-        $config = $this->validateConfig($column->getConfig());
+        $config = $this->getReference($column, $element);
         $keyConfig = KeyConfig::getById(
             $config->getKeyId(),
         );
@@ -208,7 +210,7 @@ final class ClassificationStoreResolver implements
     public function validateConfig(array $config): ClassificationStoreConfig
     {
         if (!array_key_exists('groupId', $config) || !array_key_exists('keyId', $config)) {
-            throw new InvalidArgumentException('dataobject.classificationstore needs groupId and keyId as config');
+            throw new InvalidArgumentException('dataobject.classificationstore needs groupId and keyId, or groupIdentifier and keyIdentifier, as config');
         }
 
         if (!is_int($config['groupId']) || !is_int($config['keyId'])) {
@@ -219,12 +221,36 @@ final class ClassificationStoreResolver implements
     }
 
     /**
-     * A bare classification store field column (neither groupId nor keyId) cannot be resolved to a value.
-     * A column with only one of groupId/keyId is malformed and still goes to validateConfig(), which throws.
+     * The identifiers, when the config carries both, are the reference and the integer pair is not consulted.
+     *
+     * @throws InvalidArgumentException
+     */
+    private function getReference(Column $column, ElementInterface $element): ClassificationStoreConfig
+    {
+        $reference = null;
+        $classId = $element instanceof Concrete ? $element->getClassId() : null;
+        if ($classId !== null) {
+            $reference = $this->columnReferenceService->resolve(
+                $classId,
+                $column->getKey(),
+                $column->getConfig()
+            );
+        }
+
+        return $reference ?? $this->validateConfig($column->getConfig());
+    }
+
+    /**
+     * A bare classification store field column (none of groupId, keyId, groupIdentifier, keyIdentifier) cannot be
+     * resolved to a value. A column with only part of a reference is malformed and still goes to
+     * validateConfig(), which throws.
      */
     private function hasKeyConfig(array $config): bool
     {
-        return array_key_exists('groupId', $config) || array_key_exists('keyId', $config);
+        return array_key_exists('groupId', $config)
+            || array_key_exists('keyId', $config)
+            || ($config['groupIdentifier'] ?? null) !== null
+            || ($config['keyIdentifier'] ?? null) !== null;
     }
 
     private function getEmptyColumnData(Column $column): ColumnData

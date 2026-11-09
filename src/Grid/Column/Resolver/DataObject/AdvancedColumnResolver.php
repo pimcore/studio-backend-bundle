@@ -250,6 +250,11 @@ final class AdvancedColumnResolver implements
                 'groupId' => $fieldConfig->getGroupId(),
                 'keyId' => $fieldConfig->getKeyId(),
             ];
+
+            if ($fieldConfig->getGroupIdentifier() !== null && $fieldConfig->getKeyIdentifier() !== null) {
+                $config['groupIdentifier'] = $fieldConfig->getGroupIdentifier();
+                $config['keyIdentifier'] = $fieldConfig->getKeyIdentifier();
+            }
         }
 
         $resolver = $this->gridService->getColumnResolvers()[$resolverType];

@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration;
 
 use Closure;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DBALException;
+use Doctrine\DBAL\ParameterType;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
@@ -33,6 +35,8 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Listing;
 use Throwable;
+use function array_unique;
+use function array_values;
 use function in_array;
 use function is_string;
 use function json_encode;
@@ -67,6 +71,12 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     private const string STORE_SCOPE_PARAMETER = 'scopeStoreId';
 
     private const string STORE_SCOPE_CONDITION = '`storeId` = :' . self::STORE_SCOPE_PARAMETER;
+
+    private const string IDENTIFIER_QUERY =
+        'SELECT `id`, `identifier` FROM `%s` WHERE `storeId` = ? AND `identifier` IN (?)';
+
+    private const string ID_QUERY =
+        'SELECT `id`, `identifier` FROM `%s` WHERE `storeId` = ? AND `id` IN (?) AND `identifier` IS NOT NULL';
 
     public function __construct(
         private KeyConfigResolverInterface $keyConfigResolver,
@@ -103,6 +113,64 @@ final readonly class KeyRepository implements KeyRepositoryInterface
         }
 
         return $config;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getIdsByIdentifiers(int $storeId, array $identifiers): array
+    {
+        $identifiers = array_values(array_unique($identifiers));
+
+        if (empty($identifiers)) {
+            return [];
+        }
+
+        try {
+            $rows = $this->connection->fetchAllAssociative(
+                sprintf(self::IDENTIFIER_QUERY, KeyConfigDao::TABLE_NAME_KEYS),
+                [$storeId, $identifiers],
+                [ParameterType::INTEGER, ArrayParameterType::STRING]
+            );
+        } catch (DBALException $e) {
+            throw new DatabaseException('Failed to read the keys by identifier: ' . $e->getMessage(), $e);
+        }
+
+        $resolved = [];
+        foreach ($rows as $row) {
+            $resolved[(string) $row['identifier']] = (int) $row['id'];
+        }
+
+        return $resolved;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getIdentifiersByIds(int $storeId, array $ids): array
+    {
+        $ids = array_values(array_unique($ids));
+
+        if (empty($ids)) {
+            return [];
+        }
+
+        try {
+            $rows = $this->connection->fetchAllAssociative(
+                sprintf(self::ID_QUERY, KeyConfigDao::TABLE_NAME_KEYS),
+                [$storeId, $ids],
+                [ParameterType::INTEGER, ArrayParameterType::INTEGER]
+            );
+        } catch (DBALException $e) {
+            throw new DatabaseException('Failed to read the key identifiers: ' . $e->getMessage(), $e);
+        }
+
+        $identifiers = [];
+        foreach ($rows as $row) {
+            $identifiers[(int) $row['id']] = (string) $row['identifier'];
+        }
+
+        return $identifiers;
     }
 
     /**

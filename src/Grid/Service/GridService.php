@@ -20,6 +20,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolve
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
@@ -100,6 +101,7 @@ final class GridService implements GridServiceInterface
         private readonly ToolResolverInterface $toolResolver,
         private readonly LocaleServiceInterface $localeService,
         private readonly RuntimeCacheResolverInterface $runtimeCacheResolver,
+        private readonly ColumnReferenceServiceInterface $columnReferenceService,
     ) {
     }
 
@@ -291,6 +293,11 @@ final class GridService implements GridServiceInterface
                 message: 'Exporting folder elements is not supported',
                 errorKey: Config::ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED->value
             );
+        }
+
+        $classId = $databaseElement instanceof Concrete ? $databaseElement->getClassId() : null;
+        if ($classId !== null) {
+            $this->columnReferenceService->prime($classId, $columnCollection);
         }
 
         $permissions = $this->resolvePermissions($element, $databaseElement, $elementType, $elementId, $coreElement);

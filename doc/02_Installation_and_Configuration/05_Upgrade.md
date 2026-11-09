@@ -3,6 +3,8 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Classification Store] Added: a saved grid column that shows a classification store attribute now also records the
+  stable identifier of its group and key, and configurations saved earlier keep working as they are.
 - [Classification Store] Changed: the key relations of a group are loaded once per request and shared by every
   consumer (the layout endpoints, the data object detail and search preview, the grid column resolver and the
   classification store grid filters), instead of each one running its own listing. The memo is dropped after every

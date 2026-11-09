@@ -59,6 +59,4 @@ interface StoreEngineResolverInterface
      * @return string[]|null
      */
     public function getEngineCapabilities(StoreConfig $storeConfig): ?array;
-
-
 }

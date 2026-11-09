@@ -111,6 +111,8 @@ final readonly class Column
                     field: $advancedColumn['config']['field'],
                     groupId: $advancedColumn['config']['groupId'] ?? null,
                     keyId: $advancedColumn['config']['keyId'] ?? null,
+                    groupIdentifier: $advancedColumn['config']['groupIdentifier'] ?? null,
+                    keyIdentifier: $advancedColumn['config']['keyIdentifier'] ?? null,
                 );
 
                 continue;
@@ -129,6 +131,8 @@ final readonly class Column
                     field: $advancedColumn['config']['field'],
                     groupId: $advancedColumn['config']['groupId'] ?? null,
                     keyId: $advancedColumn['config']['keyId'] ?? null,
+                    groupIdentifier: $advancedColumn['config']['groupIdentifier'] ?? null,
+                    keyIdentifier: $advancedColumn['config']['keyIdentifier'] ?? null,
                 );
 
                 continue;
