@@ -1508,8 +1508,11 @@ final class ClassificationStoreAdapterTest extends Unit
             self::QUALIFIED_KEY => [['v' => 'first'], ['v' => 'second', 'p' => 1], ['v' => 'third', 'p' => 2]],
         ]]];
 
+        // one flag, because one entry was supplied: the two the merge carries over from the row
+        // never reach the key's own type adapter at all, which is asserted over the value they keep
+        // in testAPatchOfOneRelationEntryLeavesAnUntouchedSiblingRawInTheRow()
         $this->assertSame(
-            [false, false, false],
+            [false],
             $this->recordPatchFlagsSeenBySubAdapter(
                 $qualified,
                 [self::QUALIFIED_KEY => [['v' => 'patched', 'p' => 1]]]
