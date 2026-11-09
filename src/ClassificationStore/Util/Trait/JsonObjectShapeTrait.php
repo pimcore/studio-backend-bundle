@@ -31,10 +31,16 @@ use function is_array;
  *
  * The same decoding costs one legal object: `{"0": "a", "1": "b"}`, whose member names happen to be
  * the consecutive integers from zero, is a list once decoded and is refused with the array it cannot
- * be told apart from. Nothing recovers that inside the request - the decoding is done before these
- * boundaries are reached, by Symfony's serializer and by `json_decode($json, true)` in the artifact
- * parser - and a free-form pair named "0" is a far rarer thing to send than a list is to send by
- * mistake, which is the trade taken here.
+ * be told apart from. Both boundaries decode associatively before they are reached - Symfony's
+ * serializer for the request body, `json_decode($json, true)` in the artifact parser - and preserving
+ * the shape there would not recover the object, because the storage cannot carry it either: core's
+ * `CustomMetadataTrait::setCustomMetadata()` and `KeyGroupRelation::setMetadata()` both take a PHP
+ * array, `CustomMetadataDaoTrait` writes the column with `json_encode()` and reads it back with
+ * `json_decode($value, true)`, and `json_encode(['0' => 'a', '1' => 'b'])` is `["a","b"]`. Accepting
+ * such an object would publish a JSON array under a member every read surface publishes as an object,
+ * trading a refusal the client can act on for a response that contradicts its own schema. Carrying
+ * the distinction needs free metadata held as something other than a PHP array all the way into
+ * core's model, which is a change to a released core API and not this boundary's to make.
  *
  * @internal
  */

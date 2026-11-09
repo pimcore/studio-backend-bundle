@@ -49,7 +49,10 @@ final readonly class CollectionUpdate
             description: 'Free-form pairs of the collection. Pimcore reads no member of it and no member is'
                 . ' reserved. Omitting it keeps a stored object alone, a supplied object replaces it whole'
                 . ' rather than merging into it - so one rebuilt from a form without a member drops that'
-                . ' member - and an explicit null clears it altogether.',
+                . ' member - and an explicit null clears it altogether. A JSON array is refused, the member'
+                . ' being an object, and so is the one object an array cannot be told apart from once decoded -'
+                . ' whose member names are the consecutive integers from zero, such as {"0": "a"} - because the'
+                . ' stored form cannot carry that distinction either.',
             type: 'object',
             example: ['source' => 'erp'],
             nullable: true
