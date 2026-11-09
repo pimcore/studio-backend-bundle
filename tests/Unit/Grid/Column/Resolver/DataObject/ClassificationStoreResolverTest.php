@@ -141,8 +141,11 @@ final class ClassificationStoreResolverTest extends Unit
      * than separately: the row holds a list, the cell is handed what the adapter publishes for it
      * under each declaration, and the export is handed the one value it injects for the same row.
      *
-     * The declaration alone decides what each shows, so a key that has stopped declaring shows its
-     * default entry in both and a narrowed one never shows the entry it hides.
+     * The declaration alone decides what each shows, so a narrowed declaration never shows the
+     * entry it hides, in either. A key that declares nothing is not a case of this at all - its
+     * slot holds no entry list to reduce - and is held by
+     * {@see self::testAValueShapedLikeAnEntryListReachesTheCellWhole()} and
+     * {@see self::testAKeyThatDeclaresNothingHasNothingInjectedIntoItsExport()}.
      *
      * @dataProvider slotHoldingEntriesProvider
      *
@@ -152,7 +155,7 @@ final class ClassificationStoreResolverTest extends Unit
      */
     public function testTheCellAndTheExportOfOneColumnShowTheSameValue(array $declaration, mixed $published): void
     {
-        $slot = [['v' => '176', 'var' => 'imperial'], ['v' => '80']];
+        $slot = $this->storedSlot([['v' => '176', 'var' => 'imperial'], ['v' => '80']]);
         $this->primeKeyConfig($declaration);
 
         $injected = null;
@@ -176,9 +179,9 @@ final class ClassificationStoreResolverTest extends Unit
     }
 
     /**
-     * The declarations a key can carry while its slot holds a list, each with what the adapter
-     * publishes for that row - including neither member, and a declaration that has narrowed past
-     * the imperial entry, which are the two the declaration hides entries under.
+     * The declarations under which the slot holds an entry list, each with what the adapter
+     * publishes for that row - including a declaration that has narrowed past the imperial entry,
+     * which is the one that hides an entry.
      *
      * @return array<string, array{0: array<string, mixed>, 1: mixed}>
      */
@@ -190,35 +193,72 @@ final class ClassificationStoreResolverTest extends Unit
                 [['v' => '176', 'var' => 'imperial'], ['v' => '80']],
             ],
             'a key that has narrowed its variants' => [['variants' => ['metric']], [['v' => '80']]],
-            'a key that has stopped declaring them' => [['fieldtype' => 'input'], '80'],
         ];
     }
 
     /**
-     * An entry the declaration hides is shown by neither: a row holding nothing but one hands the
-     * export no value, where a fallback to "the first entry" would publish what the cell hides.
+     * The sibling of that fixture on the other declaration: a key that still declares qualifiers
+     * and hides every entry its row holds. The adapter publishes the empty list for it, and an
+     * empty list is an empty cell - reading it as one value holding `[]` would have the cell render
+     * a value while the export of the very same column selects nothing out of the same row.
      *
      * @throws Exception
      */
-    public function testAHiddenEntryIsNeitherShownInTheCellNorInjectedIntoTheExport(): void
+    public function testAKeyHidingEveryEntryItHoldsShowsAnEmptyCellAndAnEmptyExport(): void
     {
-        $this->primeKeyConfig(['fieldtype' => 'input']);
+        // the stored imperial entry is not a variant this declaration names any more
+        $this->primeKeyConfig(['variants' => ['metric'], 'multiValue' => true]);
 
         $injected = 'untouched';
         $reached = false;
         $resolver = $this->createResolver(
-            null,
+            [],
             $this->createKeyFieldDefinitionResolver(),
             $this->createExportRead($injected, $reached)
         );
+        $element = $this->createElementHolding($this->storedSlot([['v' => '176', 'var' => 'imperial']]));
 
-        $resolver->resolveForExport(
-            $this->createKeyColumn(),
-            $this->createElementHolding([['v' => '176', 'var' => 'imperial']]),
-            $this->makeEmpty(UserInterface::class)
-        );
+        $cell = $resolver->resolveForCoreElement($this->createKeyColumn(), $element);
+        $resolver->resolveForExport($this->createKeyColumn(), $element, $this->makeEmpty(UserInterface::class));
 
+        $this->assertNull($cell->getValue());
         $this->assertTrue($reached);
+        $this->assertNull($injected);
+    }
+
+    /**
+     * The value of a key that declares nothing reaches the cell and the export untouched, however
+     * much it looks like a list of entries: the row of a table key whose one column is named `v`
+     * holds a list of maps carrying `v`, and the key's declaration - not the shape of that value -
+     * decides that this slot holds no entries to reduce.
+     *
+     * The declaration is asked and the value is not, which is the whole of the fix: while the shape
+     * of the value decided, the row of *any* key could be read as an entry list, and this column
+     * then showed the first cell of such a table in the grid and injected it into the export of a
+     * key that declares no qualifier at all.
+     *
+     * @throws Exception
+     */
+    public function testAValueShapedLikeAnEntryListReachesTheCellWhole(): void
+    {
+        $table = [['v' => '80'], ['v' => '81']];
+        $this->primeKeyConfig(['fieldtype' => 'table']);
+
+        $injected = 'untouched';
+        $reached = false;
+        $resolver = $this->createResolver(
+            $table,
+            $this->createKeyFieldDefinitionResolver(),
+            $this->createExportRead($injected, $reached)
+        );
+        $element = $this->createElementHolding($table);
+
+        $cell = $resolver->resolveForCoreElement($this->createKeyColumn(), $element);
+        $resolver->resolveForExport($this->createKeyColumn(), $element, $this->makeEmpty(UserInterface::class));
+
+        $this->assertSame($table, $cell->getValue());
+        // nothing is injected, so the key's own field definition reads the table itself
+        $this->assertFalse($reached);
         $this->assertNull($injected);
     }
 
@@ -393,6 +433,21 @@ final class ClassificationStoreResolverTest extends Unit
         $keyConfig->setDefinition((string) json_encode($definition));
 
         RuntimeCache::set(self::KEY_CONFIG_CACHE_KEY, $keyConfig);
+    }
+
+    /**
+     * The slot as the row holds it at a key that declares qualifiers, which is the same list a read
+     * publishes for that row. The two reach this resolver by two different paths - the cell gets
+     * the published one and the export reads the row - and one reader answers for both, which is
+     * what {@see self::testTheCellAndTheExportOfOneColumnShowTheSameValue()} is about.
+     *
+     * @param array<int, array<string, mixed>> $entries
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function storedSlot(array $entries): array
+    {
+        return $entries;
     }
 
     /**

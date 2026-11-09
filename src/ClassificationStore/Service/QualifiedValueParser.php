@@ -17,8 +17,10 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\QualifiedE
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use function array_is_list;
 use function array_key_exists;
 use function in_array;
+use function is_array;
 use function is_int;
 use function is_string;
 use function sprintf;
@@ -86,7 +88,8 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
      * something else is taken as a list and then refused by {@see self::parseEntry()}, rather than
      * being quietly coerced into one value holding the whole malformed array.
      * {@see QualifiedValueSerializerInterface::holdsEntries()}, which reads what is stored rather
-     * than what was sent, is strict for the opposite reason.
+     * than what was sent, asks the key's declaration first and is then strict for the opposite
+     * reason.
      */
     private function looksLikeEntryList(mixed $payload): bool
     {
@@ -101,6 +104,16 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
         }
 
         return false;
+    }
+
+    /**
+     * Whether a supplied payload could be a list of entries at all: a non-empty list. The empty
+     * array is no list of entries, so a slot holding one keeps travelling whole - the empty *entry*
+     * list is answered before this is asked ({@see self::parseEntries()}).
+     */
+    private function isCandidateList(mixed $payload): bool
+    {
+        return is_array($payload) && $payload !== [] && array_is_list($payload);
     }
 
     /**

@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializerInterface;
-use function array_is_list;
 use function array_key_exists;
 use function is_array;
 
@@ -23,23 +22,17 @@ use function is_array;
  * by {@see \Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParser},
  * which reads what a write supplied, and by
  * {@see \Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializer},
- * which reads what the row holds. The two read a list differently - leniently at the request
- * boundary, strictly out of storage - and they are only allowed to differ in that, so the two
- * predicates they build those readings out of are declared once, here.
+ * which reads what the row holds. The two read a *list* differently - leniently at the request
+ * boundary, and out of storage only where the key's declaration says the slot holds one and then
+ * strictly, down to the members an entry may carry
+ * ({@see \Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializer::isStoredEntry()})
+ * - and each owns its own reading, but the entry those readings are built out of is one thing and
+ * is declared once, here.
  *
  * @internal
  */
 trait QualifiedEntryShapeTrait
 {
-    /**
-     * Whether a value could be a list of entries at all: a non-empty list. The empty array is no
-     * list of entries, so a slot holding one keeps travelling whole.
-     */
-    private function isCandidateList(mixed $payload): bool
-    {
-        return is_array($payload) && $payload !== [] && array_is_list($payload);
-    }
-
     /**
      * One entry object: an array carrying the value member. The qualifiers are both optional - an
      * absent variant is the default one and an absent position is the first - so carrying the value

@@ -23,7 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Model\DataObject\Classificationstore\Engine\EngineFeature;
 use Pimcore\Model\DataObject\Classificationstore\Engine\EngineInterface;
 use function array_map;
+use function enum_exists;
 use function in_array;
+use function interface_exists;
 
 /**
  * The production bridge between the engine of a classification store, which this bundle does not
@@ -88,6 +90,8 @@ final class StoreEngineResolverTest extends Unit
      */
     public function testTheCapabilityNamesAreTheCoreEnumsOwnSpelling(): void
     {
+        $this->requireCoreEngineSupport();
+
         $cases = array_map(static fn (EngineFeature $feature): string => $feature->name, EngineFeature::cases());
 
         $this->assertTrue(in_array(StoreEngineResolverInterface::FEATURE_MULTI_VALUE, $cases, true));
@@ -101,6 +105,8 @@ final class StoreEngineResolverTest extends Unit
      */
     public function testExactlyTheReportedCapabilitiesAreAnswered(): void
     {
+        $this->requireCoreEngineSupport();
+
         $capabilities = (new StoreEngineResolver())->featuresOf(
             $this->createEngine([EngineFeature::Variants, EngineFeature::MultiValue])
         );
@@ -122,7 +128,29 @@ final class StoreEngineResolverTest extends Unit
      */
     public function testAnEngineReportingNothingAnswersWithTheEmptySet(): void
     {
+        $this->requireCoreEngineSupport();
+
         $this->assertSame([], (new StoreEngineResolver())->featuresOf($this->createEngine([])));
+    }
+
+    /**
+     * The three assertions above are about an engine, and a core without engine support has none to
+     * be about: `composer.json` allows such a core and the bundle is wired for it - the engine
+     * resolver is an optional dependency (`config/classification_store.yaml`) and
+     * {@see StoreEngineResolver::featuresOf()} asks `enum_exists()` before it reads a case - so
+     * requiring the two core symbols unconditionally would fail this suite on a core the bundle
+     * supports.
+     *
+     * Only those three are guarded. What the bridge answers *without* an engine is the half that
+     * such a core actually runs, and it stays asserted: the engine-blind store configuration, the
+     * null answer of a core carrying no engine resolver, and the write path's fail-closed verdict
+     * on both answers.
+     */
+    private function requireCoreEngineSupport(): void
+    {
+        if (!enum_exists(EngineFeature::class) || !interface_exists(EngineInterface::class)) {
+            $this->markTestSkipped('The core does not ship Classification Store engine support.');
+        }
     }
 
     /**

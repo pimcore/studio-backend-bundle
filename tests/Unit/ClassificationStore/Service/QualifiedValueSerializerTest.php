@@ -393,7 +393,7 @@ final class QualifiedValueSerializerTest extends Unit
      */
     public function testAStoredSingleValueIsReadAsTheDefaultSlot(): void
     {
-        $values = $this->serializer->readEntries('80');
+        $values = $this->serializer->readEntries('80', $this->createKeyConfig());
 
         $this->assertSame([[null, 0]], $this->describe($values));
         $this->assertSame('80', $values[0]->getValue());
@@ -405,31 +405,167 @@ final class QualifiedValueSerializerTest extends Unit
      */
     public function testAStoredQualifierOfTheWrongShapeFallsBackToTheDefault(): void
     {
-        $values = $this->serializer->readEntries([
-            ['v' => '80', 'var' => self::METRIC, 'p' => 2],
-            ['v' => '81', 'var' => 17, 'p' => '3'],
-        ]);
+        $values = $this->serializer->readEntries(
+            self::storedSlot([
+                ['v' => '80', 'var' => self::METRIC, 'p' => 2],
+                ['v' => '81', 'var' => 17, 'p' => '3'],
+            ]),
+            $this->createKeyConfig()
+        );
 
         $this->assertSame([[self::METRIC, 2], [null, 0]], $this->describe($values));
     }
 
     /**
-     * Reading what is stored is strict about the shape of the list itself, so that it never drops
-     * anything: an array of which only some elements are entries is not the list this bundle wrote,
-     * and is read whole as one value rather than having its other elements silently skipped.
+     * Where the declaration says the slot may hold a list, the shape of that list is then read
+     * strictly, so that the read never drops anything: an array of which only some elements are
+     * entries is not what this bundle wrote, and the whole value is read as the one value it is
+     * rather than having its other elements silently skipped.
      *
      * {@see QualifiedValueSerializer::parseEntries()} reads a *supplied* payload the other way
      * round - any entry makes it a list, and the rest is then refused - because there a malformed
      * element has to reach the validator instead of being coerced away.
      */
-    public function testAStoredArrayThatIsOnlyPartlyEntriesIsReadWholeAndDropsNothing(): void
+    public function testAStoredListThatIsOnlyPartlyEntriesIsReadWholeAndDropsNothing(): void
     {
-        $stored = [['v' => '80'], ['var' => self::IMPERIAL]];
+        $stored = self::storedSlot([['v' => '80'], ['var' => self::IMPERIAL]]);
 
-        $values = $this->serializer->readEntries($stored);
+        $values = $this->serializer->readEntries($stored, $this->createKeyConfig());
 
         $this->assertSame([[null, 0]], $this->describe($values));
         $this->assertSame($stored, $values[0]->getValue());
+    }
+
+    /**
+     * What a write stores is read back as the entries it stored, qualifiers and all - including an
+     * entry whose own value is a list of maps carrying `v`, which the value of a table key whose
+     * one column is named `v` is. The entry holding that table is told from the table itself by
+     * where the list sits, and the list the key's declaration puts it in is the slot.
+     */
+    public function testWhatAWriteStoresIsReadBackAsTheEntriesItStored(): void
+    {
+        $table = [['v' => 'cell'], ['v' => 'other']];
+        $entries = [
+            new QualifiedValue($table),
+            new QualifiedValue('176', self::IMPERIAL),
+            new QualifiedValue('81', null, 1),
+        ];
+
+        $stored = $this->serializer->toPayload($entries);
+        $read = $this->serializer->readEntries($stored, $this->createKeyConfig());
+
+        $this->assertSame([[null, 0], [self::IMPERIAL, 0], [null, 1]], $this->describe($read));
+        $this->assertSame([$table, '176', '81'], array_map(
+            static fn (QualifiedValue $value): mixed => $value->getValue(),
+            $read
+        ));
+        $this->assertSame($table, $this->serializer->getDefaultSlotValue($stored, $this->createKeyConfig()));
+    }
+
+    /**
+     * The value of a key that declares nothing is never read as entries, however much it looks like
+     * them: a table whose first column is named `v` stores a list of maps carrying `v` and comes
+     * back as that table, not as its first cell.
+     *
+     * This is the read half of the rule that the declaration alone decides the shape. The key here
+     * declares nothing, so there is nothing to read entries by and nothing to reduce by - and while
+     * the shape of the value was what decided, this very value was read as two entries and
+     * published as `80`.
+     *
+     * @dataProvider undeclaredSlotProvider
+     */
+    public function testAValueOfAKeyDeclaringNothingIsNeverReadAsEntries(mixed $stored): void
+    {
+        $keyConfig = $this->createKeyConfigFrom(['fieldtype' => 'table']);
+
+        $this->assertFalse($this->serializer->holdsEntries($stored, $keyConfig));
+        $this->assertSame($stored, $this->serializer->getDefaultSlotValue($stored, $keyConfig));
+        $this->assertSame(
+            [$stored],
+            array_map(
+                static fn (QualifiedValue $value): mixed => $value->getValue(),
+                $this->serializer->readEntries($stored, $keyConfig)
+            )
+        );
+        $this->assertSame([], $this->describe($this->serializer->getHiddenEntries($stored, $keyConfig)));
+    }
+
+    /**
+     * Every shape that was read as entries while the value decided, plus the shapes that were not,
+     * so that what this says is "no shape makes it entries" rather than "this one shape does not".
+     *
+     * @return array<string, array{0: mixed}>
+     */
+    public static function undeclaredSlotProvider(): array
+    {
+        return [
+            // the table of a one-column table key named `v`, which TableAdapter stores like this
+            'a table whose one column is named v' => [[['v' => '80'], ['v' => '81']]],
+            'a table whose rows carry more columns' => [[['v' => '80', 'unit' => 'cm']]],
+            'a one-entry-shaped table' => [[['v' => 'cell']]],
+            'a multi select value' => [['red', 'green']],
+            'the empty value of the key\'s own type' => [[]],
+            'a single value' => ['80'],
+            'the string zero' => ['0'],
+            'false' => [false],
+        ];
+    }
+
+    /**
+     * The empty entry list is a state a declaring key's slot can be in, and the cell it shows is
+     * the empty one. The alternative, reading `[]` as one value holding `[]`, is a value the grid
+     * cell would render and the export of the same column would not
+     * ({@see \Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject\ClassificationStoreResolver}).
+     *
+     * `[]` says which of the two it is because the declaration says which shape the slot is in: the
+     * sibling assertion, that `[]` at the slot of a key declaring nothing is that key's own empty
+     * value, is in {@see self::undeclaredSlotProvider()}.
+     */
+    public function testTheEmptyEntryListOfADeclaringKeyIsTheEmptyCell(): void
+    {
+        $keyConfig = $this->createKeyConfig();
+
+        $this->assertTrue($this->serializer->holdsEntries([], $keyConfig));
+        $this->assertSame([], $this->describe($this->serializer->readEntries([], $keyConfig)));
+        $this->assertSame([], $this->describe($this->serializer->getVisibleEntries([], $keyConfig)));
+        $this->assertSame([], $this->describe($this->serializer->getHiddenEntries([], $keyConfig)));
+        $this->assertNull($this->serializer->getDefaultSlotValue([], $keyConfig));
+    }
+
+    /**
+     * The one reading the declaration cannot settle, settled by the members an entry may carry: at
+     * a *declaring* key the slot holds either the entry list or the single value it held before the
+     * key declared, and a stored value whose own type normalizes to a list of objects is that
+     * second one. An entry carries `v`, `var` and `p` and nothing else, so a row with a second
+     * column, a quantity value and a relation descriptor are all read whole.
+     *
+     * What is left of the ambiguity after this is stated where it cannot be removed: a declaring
+     * key whose own type normalizes to a list of maps carrying nothing but `v`, holding a value
+     * written before it declared. {@see self::testWhatAWriteStoresIsReadBackAsTheEntriesItStored()}
+     * holds the other side - that such a table is still carried whole *inside* an entry.
+     *
+     * @dataProvider valueOfTheKeysOwnTypeProvider
+     */
+    public function testAStoredValueOfTheKeysOwnTypeIsNotReadAsEntries(mixed $stored): void
+    {
+        $keyConfig = $this->createKeyConfig();
+
+        $this->assertFalse($this->serializer->holdsEntries($stored, $keyConfig));
+        $this->assertSame($stored, $this->serializer->getDefaultSlotValue($stored, $keyConfig));
+    }
+
+    /**
+     * @return array<string, array{0: mixed}>
+     */
+    public static function valueOfTheKeysOwnTypeProvider(): array
+    {
+        return [
+            'a table row carrying a second column' => [[['v' => '80', 'unit' => 'cm']]],
+            'a quantity value' => [['value' => 30, 'unit' => 'cm']],
+            'a relation descriptor list' => [[['type' => 'object', 'id' => 5521]]],
+            'a structured value carrying v beside something else' => [[['v' => '80', 'label' => 'eighty']]],
+            'a map rather than a list' => [['metric' => ['v' => '80']]],
+        ];
     }
 
     /**
@@ -453,23 +589,29 @@ final class QualifiedValueSerializerTest extends Unit
     public static function defaultSlotProvider(): array
     {
         return [
-            'the entry list, which carries the default slot' => [
-                [['v' => '80'], ['v' => '176', 'var' => self::IMPERIAL]],
+            'the stored entry list, which carries the default slot' => [
+                self::storedSlot([['v' => '80'], ['v' => '176', 'var' => self::IMPERIAL]]),
                 '80',
             ],
-            'the entry list, where the default slot is not first' => [
-                [['v' => '176', 'var' => self::IMPERIAL], ['v' => '80']],
+            'the stored entry list, where the default slot is not first' => [
+                self::storedSlot([['v' => '176', 'var' => self::IMPERIAL], ['v' => '80']]),
                 '80',
             ],
-            'the entry list, holding no default slot at all' => [
-                [['v' => '176', 'var' => self::IMPERIAL]],
+            'the stored entry list, holding no default slot at all' => [
+                self::storedSlot([['v' => '176', 'var' => self::IMPERIAL]]),
                 '176',
             ],
-            'the entry list, where only a hidden entry is not the default slot' => [
-                [['v' => '9', 'var' => 'nautical']],
+            'the stored entry list, where only a hidden entry is not the default slot' => [
+                self::storedSlot([['v' => '9', 'var' => 'nautical']]),
                 null,
             ],
-            // every value of every key that declares nothing comes back untouched
+            // a key whose every entry a write cleared holds no value, and shows none
+            'the stored empty entry list' => [self::storedSlot([]), null],
+            // the value this key's slot held before it declared comes back untouched, whatever it
+            // is. The sibling case - every value of a key that declares nothing, `[]` and a list of
+            // maps carrying `v` included - is
+            // {@see self::testAValueOfAKeyDeclaringNothingIsNeverReadAsEntries()}, which is where it
+            // belongs: under this declaration such a list is the entry list
             'a bare value' => ['80', '80'],
             'a multi select value' => [['red', 'green'], ['red', 'green']],
             'a relation value' => [[['type' => 'object', 'id' => 7]], [['type' => 'object', 'id' => 7]]],
@@ -479,7 +621,6 @@ final class QualifiedValueSerializerTest extends Unit
             'the integer zero' => [0, 0],
             'the empty string' => ['', ''],
             'false' => [false, false],
-            'an empty array' => [[], []],
         ];
     }
 
@@ -582,7 +723,15 @@ final class QualifiedValueSerializerTest extends Unit
 
     /**
      * A stored entry is visible exactly when a written one would be accepted, and every entry is one
-     * or the other: narrowing hides entries and drops none, whichever qualifier it narrows.
+     * or the other: narrowing hides entries and drops none, whichever qualifier it narrows. This
+     * mirrors core's `testNarrowingADeclarationKeepsTheValuesItHides`, which narrows the variants a
+     * key declares and keeps the values the narrowed one hides.
+     *
+     * Narrowing a declaration away *entirely* is the one case this cannot answer, and the last
+     * fixture says so rather than leaving it to be found: a key declaring no qualifier holds one
+     * value, so its slot is not read as a list at all and there is no entry in it to call hidden.
+     * The row is untouched either way - a read writes nothing - but the next write of that key
+     * stores the one value it was given, and the list the row held is not carried over.
      *
      * @dataProvider narrowedDeclarationProvider
      *
@@ -593,11 +742,11 @@ final class QualifiedValueSerializerTest extends Unit
     public function testNarrowingHidesEntriesAndLosesNone(array $definition, array $visible, array $hidden): void
     {
         $keyConfig = $this->createKeyConfigFrom($definition);
-        $stored = [
+        $stored = self::storedSlot([
             ['v' => '80'],
             ['v' => '176', 'var' => self::IMPERIAL],
             ['v' => '81', 'p' => 1],
-        ];
+        ]);
 
         $this->assertSame($visible, $this->describe($this->serializer->getVisibleEntries($stored, $keyConfig)));
         $this->assertSame($hidden, $this->describe($this->serializer->getHiddenEntries($stored, $keyConfig)));
@@ -624,50 +773,90 @@ final class QualifiedValueSerializerTest extends Unit
                 [[null, 0], [self::IMPERIAL, 0]],
                 [[null, 1]],
             ],
+            // the declaration is gone, so the slot holds one value: the whole list the row still
+            // holds, read as the single default entry it is for a key that declares nothing. No
+            // entry of it is visible and none is hidden, because none of it is read as an entry
             'the key declares nothing any more' => [
                 ['fieldtype' => 'input'],
                 [[null, 0]],
-                [[self::IMPERIAL, 0], [null, 1]],
+                [],
             ],
         ];
     }
 
     /**
-     * What a slot holds decides its shape as much as the key's declaration does, so the predicate
-     * the object data path asks and the read that follows it are asserted over one set of fixtures
-     * rather than apart: a slot that holds entries reads as its entries, and one that does not reads
-     * whole as the single value it is.
+     * The predicate the object data path asks and the read that follows it are asserted over one
+     * set of fixtures rather than apart, so that the two cannot disagree: a slot that holds entries
+     * reads as its entries, and one that does not reads whole as the single value it is.
+     *
+     * Each fixture carries the declaration it is read under, because that is the first thing asked
+     * and the only thing asked of a key declaring nothing. The same list appears under both
+     * declarations on purpose.
+     *
+     * @param array<string, mixed> $definition
      *
      * @dataProvider slotShapeProvider
      */
     public function testThePredicateAndTheReadAgreeOnWhatASlotHolds(
+        array $definition,
         mixed $slot,
         bool $holds,
         int $entries
     ): void {
-        $this->assertSame($holds, $this->serializer->holdsEntries($slot));
-        $this->assertCount($entries, $this->serializer->readEntries($slot));
+        $keyConfig = $this->createKeyConfigFrom($definition);
+
+        $this->assertSame($holds, $this->serializer->holdsEntries($slot, $keyConfig));
+        $this->assertCount($entries, $this->serializer->readEntries($slot, $keyConfig));
     }
 
     /**
-     * @return array<string, array{0: mixed, 1: bool, 2: int}>
+     * @return array<string, array{0: array<string, mixed>, 1: mixed, 2: bool, 3: int}>
      */
     public static function slotShapeProvider(): array
     {
+        $declaring = ['variants' => [self::METRIC, self::IMPERIAL], 'multiValue' => true];
+        $declaringNothing = ['fieldtype' => 'table'];
+
         return [
-            'the list this bundle writes' => [[['v' => '80'], ['v' => '176', 'var' => self::IMPERIAL]], true, 2],
-            'a list of one entry' => [[['v' => '80']], true, 1],
-            'a bare value' => ['80', false, 1],
-            'a multi select value' => [['red', 'green'], false, 1],
-            'a relation value' => [[['type' => 'object', 'id' => 7]], false, 1],
-            'an array only partly entries' => [[['v' => '80'], ['var' => self::IMPERIAL]], false, 1],
-            'an empty slot' => [null, false, 1],
-            'an empty array' => [[], false, 1],
+            'the list this bundle writes' => [
+                $declaring,
+                self::storedSlot([['v' => '80'], ['v' => '176', 'var' => self::IMPERIAL]]),
+                true,
+                2,
+            ],
+            'a list of one entry' => [$declaring, self::storedSlot([['v' => '80']]), true, 1],
+            // a key whose every entry a write cleared: the empty entry list, which is no entry
+            'the empty entry list' => [$declaring, self::storedSlot([]), true, 0],
+            'a bare value the key held before it declared' => [$declaring, '80', false, 1],
+            'a multi select value' => [$declaring, ['red', 'green'], false, 1],
+            'a relation value' => [$declaring, [['type' => 'object', 'id' => 7]], false, 1],
+            'a list only partly entries' => [
+                $declaring,
+                self::storedSlot([['v' => '80'], ['var' => self::IMPERIAL]]),
+                false,
+                1,
+            ],
+            'a list of objects carrying a member no entry carries' => [
+                $declaring,
+                [['v' => '80', 'unit' => 'cm']],
+                false,
+                1,
+            ],
+            // the same list, at a key that declares nothing: the declaration refuses on its own, so
+            // it is the value it is - which is what a table whose one column is named `v` holds
+            'the list this bundle writes, at a key declaring nothing' => [
+                $declaringNothing,
+                [['v' => '80'], ['v' => '176']],
+                false,
+                1,
+            ],
+            'the empty array, at a key declaring nothing' => [$declaringNothing, [], false, 1],
+            'an empty slot' => [$declaring, null, false, 1],
             // legitimate values PHP would otherwise make disappear
-            'the string zero' => ['0', false, 1],
-            'the integer zero' => [0, false, 1],
-            'the empty string' => ['', false, 1],
-            'false' => [false, false, 1],
+            'the string zero' => [$declaring, '0', false, 1],
+            'the integer zero' => [$declaring, 0, false, 1],
+            'the empty string' => [$declaring, '', false, 1],
+            'false' => [$declaring, false, false, 1],
         ];
     }
 
@@ -725,6 +914,21 @@ final class QualifiedValueSerializerTest extends Unit
         }
 
         return null;
+    }
+
+    /**
+     * The slot as the row holds it at a key that declares qualifiers, which is the list a read
+     * publishes and a write accepts: one shape, so a client saving back what it read writes the
+     * slot it read. Named rather than spelled out per fixture, so that a fixture meant as a stored
+     * slot says so where it is read under a declaration that is not asserted in the same line.
+     *
+     * @param array<int, array<string, mixed>> $entries
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private static function storedSlot(array $entries): array
+    {
+        return $entries;
     }
 
     /**

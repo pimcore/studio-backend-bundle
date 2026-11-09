@@ -88,9 +88,10 @@ The following steps are necessary during updating to newer versions.
   index's own answer, not this bundle's.
 - [Classification Store] Added: a key can declare the variants it permits, or that it holds more than one value per
   variant, and the object data endpoints then read and write that key's values as a list of qualified entries instead
-  of as a single value, as far as the store's engine reports the capability the write needs. A key that has never
-  declared either is unchanged; a key whose declaration is taken away again reads and writes a single value once more
-  and keeps the values that declaration hid, which a write that does not mention them does not clear.
+  of as a single value, as far as the store's engine reports the capability the write needs. The key's declaration
+  alone decides which of the two shapes its slot is read and written in, so a key that has never declared either is
+  unchanged, and narrowing a declaration hides the values it no longer permits without clearing them: a write that does
+  not mention a hidden value leaves it where it is.
 - [Classification Store] Added: a store's whole configuration can be exported and applied again as one file, from the
   store editor and from the console commands `studio-backend-bundle:classificationstore:export` and
   `studio-backend-bundle:classificationstore:apply`. Applying creates and updates but never deletes, so un-assigning a

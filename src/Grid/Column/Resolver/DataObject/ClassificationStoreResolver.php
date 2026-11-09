@@ -114,7 +114,12 @@ final class ClassificationStoreResolver implements
         }
 
         // one cell holds one value, so a key declaring qualifiers shows its default slot; a key
-        // declaring nothing was published as one value already, whatever its row still holds
+        // declaring nothing was published as one value already, whatever its row still holds.
+        //
+        // The list the adapter published is the list the row holds, so the one reader answers for
+        // both and the cell cannot drift from the export ({@see self::resolveForExport()}). The
+        // empty list a key publishes whose declaration hides every entry it holds reduces to null
+        // here - an empty cell - which is the same nothing the export selects out of that row
         $keyConfig = KeyConfig::getById($config->getKeyId());
         if ($keyConfig instanceof KeyConfig && $this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
             $value = $this->qualifiedValueSerializer->getDefaultSlotValue($value, $keyConfig);
@@ -186,7 +191,7 @@ final class ClassificationStoreResolver implements
         // the cell shows the visible default slot, so the export injects that same one value
         $storedSlot = $this->getStoredSlot($element, $column->getKey(), $config, $locale);
 
-        if ($this->qualifiedValueSerializer->holdsEntries($storedSlot)) {
+        if ($this->qualifiedValueSerializer->holdsEntries($storedSlot, $keyConfig)) {
             $legacyParameters['injectedData'] = $this->qualifiedValueSerializer
                 ->getDefaultSlotValue($storedSlot, $keyConfig);
         }

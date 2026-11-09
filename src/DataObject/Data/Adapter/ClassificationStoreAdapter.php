@@ -60,7 +60,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
 use function array_keys;
 use function array_merge;
-use function count;
 use function in_array;
 use function is_array;
 use function is_int;
@@ -516,22 +515,22 @@ final readonly class ClassificationStoreAdapter implements
                     $convert
                 );
             } else {
+                // the key declares no qualifier, so the slot holds one value and this arm is the
+                // one that ran before this ticket, unchanged: the current value a patch resolves
+                // against is the slot itself, read by the context from the row
+                // ({@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData}),
+                // and never an entry of a list - the declaration decides the shape, and this
+                // declaration says there is no list here to read one out of.
+                //
                 // the entries of a qualified slot are each validated in getQualifiedSetterData(), which
                 // refuses the write rather than handing back a list this guard would read as one value
-                $converted = $convert(
-                    $value,
-                    $this->getCurrentOfSingleValue($storedSlot, $keyConfig),
-                    $isPatch
-                );
+                $converted = $convert($value, null, $isPatch);
 
                 if (!$this->validateEncryptedField($fieldDefinition, $converted)) {
                     continue;
                 }
 
-                $setterData = $this->assembleSlot(
-                    [new QualifiedValue($converted)],
-                    $this->qualifiedValueSerializer->getHiddenEntries($storedSlot, $keyConfig)
-                );
+                $setterData = $this->assembleSlot([new QualifiedValue($converted)], [], $keyConfig);
             }
 
             $container->setLocalizedKeyValue($groupId, $keyId, $setterData, $language);
@@ -621,57 +620,45 @@ final readonly class ClassificationStoreAdapter implements
 
         return $this->assembleSlot(
             $isPatch ? $this->qualifiedValueSerializer->mergeEntries($stored, $converted) : $converted,
-            $storedSlot === null ? [] : $this->qualifiedValueSerializer->getHiddenEntries($storedSlot, $keyConfig)
+            $storedSlot === null ? [] : $this->qualifiedValueSerializer->getHiddenEntries($storedSlot, $keyConfig),
+            $keyConfig
         );
     }
 
     /**
-     * What the slot stores: the written entries followed by the hidden ones the row already holds.
-     * The bare value where that is one default entry alone, which is the slot as it was stored
-     * before any key declared anything.
+     * What the slot stores, decided by the key's declaration and by nothing about the values:
      *
-     * Nothing written and nothing hidden stores nothing, rather than an empty list: a key whose
-     * every entry the write cleared holds what it held before any key declared anything, which is
-     * no value, and a row left holding `[]` would publish a value a read then has to explain.
+     * - a key declaring no qualifier stores the one value it has always stored, which is what makes
+     *   AC1 true at the row and not only in the payload. There is one written entry on that arm and
+     *   never a hidden one, because that key's slot is not read as a list at all
+     *   ({@see QualifiedValueSerializerInterface::holdsEntries()});
+     * - a key declaring one stores the entry list, always - the written entries followed by the
+     *   hidden ones the row already holds - and so the shape of its slot does not depend on how many
+     *   entries happen to be in it. A single default entry used to be collapsed to its bare value
+     *   here, and that was ambiguous in the one direction the declaration cannot resolve: a table
+     *   key's one entry holding `[['v' => 'cell']]` stored exactly what one entry whose value is
+     *   `'cell'` stores, and read back as the second.
+     *
+     * The empty entry list is stored, not nothing. A key whose every entry a write cleared has no
+     * value, and that is a different state from a slot nothing was ever written to: the key's
+     * configured default fills the second one on read ({@see self::getValue()}) and must not fill
+     * the first, or clearing a `quantityValue` key would be answered by the next read with the
+     * default entry, and saving that back would write a value the clearing request never supplied.
+     * `[]` says which of the two it is because the declaration already says which shape the slot is
+     * in - at a declaring key's slot it is the empty entry list, and only at the slot of a key
+     * declaring nothing is it the empty value of the key's own type, a multi-select selecting
+     * nothing included.
      *
      * @param QualifiedValue[] $written
      * @param QualifiedValue[] $hidden
      */
-    private function assembleSlot(array $written, array $hidden): mixed
+    private function assembleSlot(array $written, array $hidden, KeyConfig $keyConfig): mixed
     {
-        if ($hidden === [] && $written === []) {
-            return null;
-        }
-
-        if ($hidden === [] && count($written) === 1 && $this->addressesDefaultSlot($written[0])) {
-            return $written[0]->getValue();
+        if (!$this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
+            return $written === [] ? null : $written[0]->getValue();
         }
 
         return $this->qualifiedValueSerializer->toPayload(array_merge($written, $hidden));
-    }
-
-    /**
-     * The current value the key's own type adapter sees for a key declaring nothing: the slot's own
-     * value where it holds a plain one, handed over as null exactly as before, and the one default
-     * entry's where the row holds a list the key no longer declares.
-     *
-     * Raw, for the reason the qualified arm's is raw
-     * ({@see self::getQualifiedSetterData()}): where this hands over null the context reads the
-     * slot itself, unnormalized, so handing a normalized value over here would make one arm of the
-     * same read disagree with the other and with every adapter that normalizes the current value
-     * itself.
-     */
-    private function getCurrentOfSingleValue(
-        mixed $storedSlot,
-        KeyConfig $keyConfig
-    ): ?QualifiedValue {
-        if (!$this->qualifiedValueSerializer->holdsEntries($storedSlot)) {
-            return null;
-        }
-
-        $visible = $this->qualifiedValueSerializer->getVisibleEntries($storedSlot, $keyConfig);
-
-        return $visible[0] ?? new QualifiedValue(null);
     }
 
     /**
@@ -731,12 +718,6 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         return $byQualifier;
-    }
-
-    private function addressesDefaultSlot(QualifiedValue $value): bool
-    {
-        return $value->getVariant() === null
-            && $value->getPosition() === QualifiedValueSerializerInterface::DEFAULT_POSITION;
     }
 
     private function cleanupStoreGroups(Classificationstore $container): void
@@ -962,6 +943,10 @@ final readonly class ClassificationStoreAdapter implements
             return null;
         }
 
+        // the key's configured default, as it has always been applied: to a slot the row holds
+        // nothing at. A qualified slot a write cleared is not one of those - it holds the empty
+        // entry list ({@see self::assembleSlot()}) - so clearing a key with a default is not
+        // answered by the next read with that default
         if ($value === null) {
             $value = $this->getDefaultValue($fieldDefinition);
         }
