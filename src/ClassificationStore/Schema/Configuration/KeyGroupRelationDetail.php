@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration;
 
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\SelectOption;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
@@ -77,6 +79,43 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
             nullable: true
         )]
         private readonly ?bool $localized = null,
+        #[Property(
+            description: 'Data type of the key, as the key configuration stores it, or null where the key'
+                . ' configuration is gone',
+            type: 'string',
+            example: 'quantityValue',
+            nullable: true
+        )]
+        private readonly ?string $keyType = null,
+        #[Property(
+            description: 'The resolved view of this key\'s option vocabulary for this request, whatever its source:'
+                . ' its own stored options, or the options of an options provider that reports static options,'
+                . ' in the order they are resolved. Null where the key is not a select or multiselect, and where'
+                . ' optionsUnavailableReason says why not. The stored definition remains authoritative for'
+                . ' storage.',
+            type: 'array',
+            items: new Items(ref: SelectOption::class),
+            nullable: true
+        )]
+        private readonly ?array $options = null,
+        #[Property(
+            description: 'Why options is null for a select or multiselect key: "providerNotStatic" where its'
+                . ' options provider reports options that depend on a data object, "resolutionFailed" where the'
+                . ' provider could not be resolved or raised, for instance for a deleted select options'
+                . ' configuration. Null means nothing failed.',
+            type: 'string',
+            example: 'providerNotStatic',
+            nullable: true
+        )]
+        private readonly ?string $optionsUnavailableReason = null,
+        #[Property(
+            description: 'The unit vocabulary of the key\'s own definition, never of an assignment override, and'
+                . ' null where its type holds no units. Where validUnits is null the definition restricts nothing;'
+                . ' the type tells that apart from a type with no units at all.',
+            ref: KeyUnits::class,
+            nullable: true
+        )]
+        private readonly ?KeyUnits $units = null,
     ) {
     }
 
@@ -133,5 +172,28 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
     public function getLocalized(): ?bool
     {
         return $this->localized;
+    }
+
+    /**
+     * @return SelectOption[]|null
+     */
+    public function getOptions(): ?array
+    {
+        return $this->options;
+    }
+
+    public function getOptionsUnavailableReason(): ?string
+    {
+        return $this->optionsUnavailableReason;
+    }
+
+    public function getUnits(): ?KeyUnits
+    {
+        return $this->units;
+    }
+
+    public function getKeyType(): ?string
+    {
+        return $this->keyType;
     }
 }

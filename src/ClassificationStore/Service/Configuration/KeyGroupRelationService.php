@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -64,12 +65,13 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         $items = [];
 
         foreach ($relations as $relation) {
-            [$keyName, $keyDescription, $keyLocalized] = $this->resolveKeyInfo($relation->getKeyId());
+            [$keyName, $keyDescription, $keyLocalized, $keyConfig] = $this->resolveKeyInfo($relation->getKeyId());
             $items[] = $this->getHydratedKeyGroupRelationDetail(
                 $relation,
                 $keyName,
                 $keyDescription,
-                $keyLocalized
+                $keyLocalized,
+                $keyConfig
             );
         }
 
@@ -91,9 +93,15 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
             $this->keyRelationResolver->clear();
         }
 
-        [$keyName, $keyDescription, $keyLocalized] = $this->resolveKeyInfo($relation->getKeyId());
+        [$keyName, $keyDescription, $keyLocalized, $keyConfig] = $this->resolveKeyInfo($relation->getKeyId());
 
-        return $this->getHydratedKeyGroupRelationDetail($relation, $keyName, $keyDescription, $keyLocalized);
+        return $this->getHydratedKeyGroupRelationDetail(
+            $relation,
+            $keyName,
+            $keyDescription,
+            $keyLocalized,
+            $keyConfig
+        );
     }
 
     /**
@@ -112,7 +120,8 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         KeyGroupRelation $relation,
         ?string $keyName = null,
         ?string $keyDescription = null,
-        ?bool $keyLocalized = null
+        ?bool $keyLocalized = null,
+        ?KeyConfig $keyConfig = null
     ): KeyGroupRelationDetail {
         $detail = $this->keyGroupRelationHydrator->hydrateKeyGroupRelationDetail(
             $relation,
@@ -120,6 +129,7 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
             $keyDescription,
             $this->resolveGroupName($relation->getGroupId(), $this->groupConfigurationRepository),
             $keyLocalized,
+            $keyConfig,
         );
         $this->eventDispatcher->dispatch(
             new KeyGroupRelationDetailEvent($detail),
@@ -134,7 +144,7 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
      * description: core's relation has no property of its own for it, so there is nothing on the
      * relation to read it from.
      *
-     * @return array{0: ?string, 1: ?string, 2: ?bool} [keyName, keyDescription, keyLocalized]
+     * @return array{0: ?string, 1: ?string, 2: ?bool, 3: ?KeyConfig} [keyName, keyDescription, keyLocalized, keyConfig]
      */
     private function resolveKeyInfo(int $keyId): array
     {
@@ -145,9 +155,10 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
                 $keyConfig->getName(),
                 $keyConfig->getDescription(),
                 $this->keyLocalizationResolver->getLocalized($keyConfig),
+                $keyConfig,
             ];
         } catch (NotFoundException) {
-            return [null, null, null];
+            return [null, null, null, null];
         }
     }
 }
