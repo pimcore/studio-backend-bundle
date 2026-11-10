@@ -23,6 +23,7 @@ The following steps are necessary during updating to newer versions.
     unchanged.
   - `User::getById()` returns a `ServiceUser` for a service-user id. Code that assumes an id always names a human must
     check `instanceof ServiceUser` first.
+- [Service Users] MCP server sharing: a service user's entry in `access.shared_users` is stored with `canRead` and `canEdit` false, whatever the client sent; `canAccess` is kept as sent. See [MCP Server Management](../04_Development_Details/09_MCP_Server_Management.md#access-and-sharing).
 - [OAuth] Added: the Client Credentials grant for clients bound to a service user, behind
   `pimcore_studio_backend.oauth.client_credentials.enabled` (default `false`). Its tokens last
   `oauth.client_credentials.access_token_ttl` seconds (default 900, minimum 60) and carry no refresh token. Nothing

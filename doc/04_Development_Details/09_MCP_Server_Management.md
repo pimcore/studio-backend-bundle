@@ -116,6 +116,12 @@ capabilities — so clients need not re-derive them.
 > **Back-compat.** Grants stored before `canRead` existed carry no `can_read` key; they default to **read on**,
 > preserving the previous "listed = read" behaviour.
 
+**Service users.** A [service user](../02_Installation_and_Configuration/08_Service_Users.md) is granted by its name in
+`access.shared_users`, like any other user, and a grant with `canAccess` lets it connect to the running server. A
+service user cannot open Studio, so Config Read and Config Edit mean nothing for it: whenever a server is saved, the
+entry of a service user is stored with `canRead: false` and `canEdit: false`, whatever the client sent. `canAccess` is
+kept as sent. A service user is never an implicit editor, not even when its name equals the owner's.
+
 ## Managing servers in Pimcore Studio
 
 The Studio UI presents server management as a **master/detail** screen:

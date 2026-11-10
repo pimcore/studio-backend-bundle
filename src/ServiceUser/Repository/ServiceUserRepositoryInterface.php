@@ -43,4 +43,11 @@ interface ServiceUserRepositoryInterface
      * @throws DatabaseException
      */
     public function deleteServiceUser(ServiceUser $serviceUser): void;
+
+    /**
+     * Whether the name belongs to a service user. False for a human user, a role, a folder or an unknown name.
+     *
+     * @throws DatabaseException
+     */
+    public function isServiceUserName(string $name): bool;
 }
