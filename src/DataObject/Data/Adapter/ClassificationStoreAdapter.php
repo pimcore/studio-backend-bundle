@@ -596,7 +596,20 @@ final readonly class ClassificationStoreAdapter implements
             $named = array_map(static fn (QualifiedValue $entry): ?string => $entry->getVariant(), $entries);
             $held = array_map(static fn (QualifiedValue $entry): ?string => $entry->getVariant(), $stored);
 
-            // clearing is a write of nothing at a slot the store holds: core replaces the slots it is given
+            // Clearing addresses the VARIANT and never a position inside it, because a slot IS a
+            // (language, variant) pair and core replaces one whole: for a key declaring a list
+            // {@see Classificationstore::storeSlot()} drops the entire
+            // `[$language][$variant]` bucket before writing back the positions the write named, so
+            // every position the write dropped is already gone - a stored list at positions 0 and 1
+            // followed by a write naming position 0 alone keeps nothing at position 1. What needs
+            // saying is only the variant the write named NOTHING at, which core is never handed and
+            // so never replaces.
+            //
+            // A null per omitted position would also be strictly worse than this: it makes the write
+            // name the positions it is dropping, and {@see Classificationstore::resolveSlots()} asks
+            // the engine to address the highest position a slot names. Shortening a held list would
+            // then demand the list capability the write itself does not need, which is the same
+            // engine-no-longer-reports case the paragraph above refuses to hold this write to.
             foreach (array_unique(array_diff($held, $named)) as $variant) {
                 $coreEntries[] = new MultiValue(null, $language, $variant);
             }

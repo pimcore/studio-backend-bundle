@@ -800,6 +800,76 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
+     * A PUT naming the first position of a variant the store holds a longer list at drops the higher
+     * positions, and does so without a null entry addressing any of them.
+     *
+     * The non-patch clear is computed per VARIANT on purpose, and the positions inside a variant the
+     * write names are not its business: `Classificationstore::storeSlot()` replaces the whole
+     * (language, variant) slot of a key that declares a list - "the entries ARE the list and the
+     * whole slot is replaced, so a write that drops a value drops it" - before it writes the
+     * positions it was given. A null entry per omitted position would be the write naming positions
+     * it is dropping, and `Classificationstore::resolveSlots()` asks the engine to address the
+     * HIGHEST position a slot names, so clearing a held list would then need the list capability the
+     * write itself does not: a key that grew a second value under an engine that has since stopped
+     * reporting `multiValue` could no longer be shortened back.
+     *
+     * @throws Exception
+     */
+    public function testAPutNamingTheFirstPositionOfAHeldListDropsTheHigherPositions(): void
+    {
+        $stored = [];
+        $slots = [];
+        $written = [];
+        $writtenEntries = [];
+        $keyConfigs = $this->qualifiedKeyConfigs();
+        $container = $this->createRecordingContainer(
+            $stored,
+            [self::QUALIFIED_GROUP => true],
+            $written,
+            $writtenEntries,
+            $slots
+        );
+
+        $this->writeLanguages($container, $keyConfigs, $stored, [self::LANGUAGE => [self::QUALIFIED_KEY => [
+            ['v' => '78'],
+            ['v' => '79', 'p' => 1],
+            ['v' => '80', 'var' => self::METRIC],
+            ['v' => '81', 'var' => self::METRIC, 'p' => 1],
+        ]]]);
+
+        $this->assertSame(
+            [0 => '78', 1 => '79'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY)
+        );
+        $this->assertSame(
+            [0 => '80', 1 => '81'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::METRIC)
+        );
+
+        // a PUT naming position 0 of each held variant and nothing above it
+        $this->writeLanguages($container, $keyConfigs, $stored, [self::LANGUAGE => [self::QUALIFIED_KEY => [
+            ['v' => '78'],
+            ['v' => '80', 'var' => self::METRIC],
+        ]]]);
+
+        $this->assertSame(
+            [['78', self::LANGUAGE, null, 0], ['80', self::LANGUAGE, self::METRIC, 0]],
+            $this->describeCoreEntries($writtenEntries[1]),
+            'a variant the write names carries no null entry: core replaces its whole slot'
+        );
+        $this->assertSame(
+            [0 => '78'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY),
+            'the second position of the default variant is gone'
+        );
+        $this->assertSame(
+            [0 => '80'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::METRIC),
+            'the second position of a named variant is gone'
+        );
+    }
+
+    /**
      * Writing language A and then language B to one `multiValue` key leaves both stored, for the
      * declared variant and for the default one: in one request and in two successive ones.
      *
