@@ -125,9 +125,9 @@ final readonly class DataObjectProvider implements DataProviderInterface
      */
     public function getSingleItemForDownload(int $id): array
     {
-        try {
-            $object = DataObject::getById((int)$id);
-        } catch (NotFoundException) {
+        $object = DataObject::getById($id);
+
+        if ($object === null) {
             throw new NotFoundException('Data Object Not Found', $id);
         }
 

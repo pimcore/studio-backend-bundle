@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Config
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GetPageResponse;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyOptionsResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\GroupInfoResolverTrait;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 
@@ -28,6 +29,7 @@ final readonly class KeyHydrator implements KeyHydratorInterface
 
     public function __construct(
         private KeyLocalizationResolverInterface $keyLocalizationResolver,
+        private KeyOptionsResolverInterface $keyOptionsResolver,
     ) {
     }
 
@@ -47,6 +49,9 @@ final readonly class KeyHydrator implements KeyHydratorInterface
             $keyConfig->getIdentifier(),
             $this->keyLocalizationResolver->getLocalized($keyConfig),
             $keyConfig->getCustomMetadata(),
+            $this->keyOptionsResolver->getOptions($keyConfig),
+            $this->keyOptionsResolver->getOptionsUnavailableReason($keyConfig)?->value,
+            $this->keyOptionsResolver->getUnits($keyConfig),
         );
     }
 

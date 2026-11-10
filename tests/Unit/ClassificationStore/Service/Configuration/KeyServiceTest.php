@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRe
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\NullKeyOptionsResolver;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function json_encode;
@@ -266,7 +267,7 @@ final class KeyServiceTest extends Unit
         $service = $this->createService(
             $repository,
             null,
-            new KeyHydrator(new InMemoryKeyLocalizationResolver())
+            new KeyHydrator(new InMemoryKeyLocalizationResolver(), new NullKeyOptionsResolver())
         );
 
         $first = $service->restoreKey(5);
@@ -326,7 +327,7 @@ final class KeyServiceTest extends Unit
             );
 
         $detail = $this
-            ->createService($repository, null, new KeyHydrator($keyLocalizationResolver))
+            ->createService($repository, null, new KeyHydrator($keyLocalizationResolver, new NullKeyOptionsResolver()))
             ->updateKey(1, new KeyUpdate(name: 'key', localized: $localized, localizedSupplied: true));
 
         $this->assertSame($localized, $keyLocalizationResolver->getLocalized($config));
@@ -364,7 +365,7 @@ final class KeyServiceTest extends Unit
             ->willReturn($created);
 
         $detail = $this
-            ->createService($repository, null, new KeyHydrator(new InMemoryKeyLocalizationResolver()))
+            ->createService($repository, null, new KeyHydrator(new InMemoryKeyLocalizationResolver(), new NullKeyOptionsResolver()))
             ->createKey(new KeyCreate('weight', 3));
 
         $this->assertNull($detail->getLocalized());
@@ -407,7 +408,7 @@ final class KeyServiceTest extends Unit
             });
 
         $keyDetail = $this
-            ->createService($repository, keyHydrator: new KeyHydrator(new InMemoryKeyLocalizationResolver()))
+            ->createService($repository, keyHydrator: new KeyHydrator(new InMemoryKeyLocalizationResolver(), new NullKeyOptionsResolver()))
             ->updateKey(29, new KeyUpdate('weight', null, null, 'quantityValue', $definition));
 
         $this->assertSame($definition, $keyDetail->getDefinition());

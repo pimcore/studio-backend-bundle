@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuratio
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\SubGroupHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\NullKeyOptionsResolver;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
@@ -59,7 +60,7 @@ final class CustomMetadataPublicationTest extends Unit
         );
         $this->assertSame(
             self::PAIRS,
-            (new KeyHydrator(new InMemoryKeyLocalizationResolver()))->hydrateKeyDetail($key)->getCustomMetadata()
+            (new KeyHydrator(new InMemoryKeyLocalizationResolver(), new NullKeyOptionsResolver()))->hydrateKeyDetail($key)->getCustomMetadata()
         );
     }
 
@@ -77,7 +78,7 @@ final class CustomMetadataPublicationTest extends Unit
         $this->assertNull(
             (new SubGroupHydrator())->hydrateSubGroupDetail($this->createSubGroupConfig())->getCustomMetadata()
         );
-        $keyHydrator = new KeyHydrator(new InMemoryKeyLocalizationResolver());
+        $keyHydrator = new KeyHydrator(new InMemoryKeyLocalizationResolver(), new NullKeyOptionsResolver());
         $this->assertNull($keyHydrator->hydrateKeyDetail($this->createKeyConfig())->getCustomMetadata());
     }
 

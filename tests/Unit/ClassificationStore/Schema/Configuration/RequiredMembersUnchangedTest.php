@@ -139,8 +139,9 @@ final class RequiredMembersUnchangedTest extends Unit
     }
 
     /**
-     * No `warnings` array and no member but the optional `customMetadata` joined the key detail: a
-     * declaration a store's engine cannot serve is accepted and nothing is said about it in the body.
+     * No `warnings` array joined the key detail, only the optional `customMetadata` and the three
+     * resolved members `options`, `optionsUnavailableReason` and `units`: a declaration a store's
+     * engine cannot serve is accepted and nothing is said about it in the body.
      */
     public function testTheKeyDetailGainedNoResponseMember(): void
     {
@@ -148,7 +149,7 @@ final class RequiredMembersUnchangedTest extends Unit
             [
                 'id', 'name', 'storeId', 'type', 'enabled', 'description', 'definition',
                 'creationDate', 'modificationDate', 'title', 'identifier', 'localized',
-                'customMetadata',
+                'customMetadata', 'options', 'optionsUnavailableReason', 'units',
             ],
             $this->getConstructorParameterNames(KeyDetail::class)
         );

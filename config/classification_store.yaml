@@ -43,6 +43,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolver
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyOptionsResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyOptionsResolver
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver
 

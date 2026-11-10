@@ -23,6 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyGroupRelati
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
 use ReflectionAttribute;
 use ReflectionClass;
+use ReflectionMethod;
+use ReflectionParameter;
+use function array_map;
 
 /**
  * @internal
@@ -99,5 +102,39 @@ final class KeyDetailTest extends Unit
         }
 
         $this->fail($class . ' carries no `localized` property.');
+    }
+
+    /**
+     * The options, their reason and the unit vocabulary are appended as optional members and join no
+     * required list, so a client reading a key published before them is not told to expect them.
+     */
+    public function testTheResolvedMembersAreAppendedOptionalAndNullable(): void
+    {
+        $detail = new KeyDetail(42, 'weight', 1, 'input', true);
+
+        $this->assertNull($detail->getOptions());
+        $this->assertNull($detail->getOptionsUnavailableReason());
+        $this->assertNull($detail->getUnits());
+
+        $parameters = array_map(
+            static fn (ReflectionParameter $parameter): string => $parameter->getName(),
+            (new ReflectionMethod(KeyDetail::class, '__construct'))->getParameters()
+        );
+
+        $this->assertSame(
+            [
+                'id', 'name', 'storeId', 'type', 'enabled', 'description', 'definition', 'creationDate',
+                'modificationDate', 'title', 'identifier', 'localized', 'customMetadata',
+                'options', 'optionsUnavailableReason', 'units',
+            ],
+            $parameters
+        );
+
+        $attributes = (new ReflectionClass(KeyDetail::class))->getAttributes(Schema::class);
+
+        $this->assertSame(
+            ['id', 'name', 'storeId', 'type', 'enabled', 'description', 'definition', 'creationDate', 'modificationDate'],
+            $attributes[0]->getArguments()['required']
+        );
     }
 }
