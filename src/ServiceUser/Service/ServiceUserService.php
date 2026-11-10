@@ -62,6 +62,7 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
         private SecurityServiceInterface $securityService,
         private ScopeRegistryInterface $scopeRegistry,
         private McpAccessTokenRepositoryInterface $mcpTokenRepository,
+        private bool $clientCredentialsEnabled,
     ) {
     }
 
@@ -196,7 +197,12 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
             throw new NotFoundException('Client of service user', $id);
         }
 
-        return new ServiceUserCredentials($id, $credentials->clientId, $credentials->clientSecret);
+        // Rotation still invalidates the old secret while the grant is off; only the new one is withheld.
+        return new ServiceUserCredentials(
+            $id,
+            $credentials->clientId,
+            $this->secretForResponse($credentials->clientSecret),
+        );
     }
 
     private function newServiceUser(string $name, ?string $email): ServiceUser
@@ -283,8 +289,16 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
         return new ServiceUserCredentials(
             (int) $serviceUser->getId(),
             $credentials->clientId,
-            $credentials->clientSecret,
+            $this->secretForResponse($credentials->clientSecret),
         );
+    }
+
+    /**
+     * The secret is returned only while the client_credentials grant is enabled; otherwise it could not be used.
+     */
+    private function secretForResponse(string $clientSecret): ?string
+    {
+        return $this->clientCredentialsEnabled ? $clientSecret : null;
     }
 
     /**

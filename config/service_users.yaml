@@ -16,6 +16,8 @@ services:
   #
   Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\ServiceUserServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\ServiceUserService
+    arguments:
+      $clientCredentialsEnabled: '%pimcore_studio_backend.oauth.client_credentials_enabled%'
 
   Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\McpTokenServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\McpTokenService

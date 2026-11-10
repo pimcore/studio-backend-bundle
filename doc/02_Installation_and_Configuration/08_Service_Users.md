@@ -73,6 +73,10 @@ works: `clientCredentialsEnabled` is `false` while the grant is off (the client 
 and `mcpTokens` summarises the tokens as `active` (tokens that have not expired) and `latestExpiresAt` (the latest
 expiry among them, `null` without one). Neither the tokens nor their hashes are ever returned.
 
+While the grant is off, the `clientSecret` in the create and rotate responses is `null`, so no unusable secret reaches
+the browser. The OAuth client is still registered on create, and rotating the secret while the grant is off still
+invalidates the old secret, but the new one is withheld; turn the grant on and rotate again to get a usable secret.
+
 ## Deactivation and deletion
 
 - Deactivating a service user stops new client-credentials tokens from being issued, and refuses its OAuth and MCP

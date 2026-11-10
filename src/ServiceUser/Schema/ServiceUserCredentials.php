@@ -38,9 +38,14 @@ final readonly class ServiceUserCredentials
         private int $serviceUserId,
         #[Property(description: 'OAuth client id', type: 'string', example: 'svc_4f1c2b')]
         private string $clientId,
-        #[Property(description: 'OAuth client secret, shown once', type: 'string', example: '<secret>')]
+        #[Property(
+            description: 'OAuth client secret, shown once; null while the client_credentials grant is disabled',
+            type: 'string',
+            example: '<secret>',
+            nullable: true
+        )]
         #[SensitiveParameter]
-        private string $clientSecret,
+        private ?string $clientSecret,
     ) {
     }
 
@@ -54,7 +59,7 @@ final readonly class ServiceUserCredentials
         return $this->clientId;
     }
 
-    public function getClientSecret(): string
+    public function getClientSecret(): ?string
     {
         return $this->clientSecret;
     }

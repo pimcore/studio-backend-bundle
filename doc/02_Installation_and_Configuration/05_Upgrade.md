@@ -28,6 +28,9 @@ The following steps are necessary during updating to newer versions.
   `/service-user/{id}`, and the responses that return it) carries `clientCredentialsEnabled` (whether the OAuth
   `client_credentials` grant is on) and `mcpTokens` (`active`, `latestExpiresAt`; a summary of the MCP access tokens,
   read with one grouped query for the whole collection). Additive; no endpoint, permission or token lifetime changes.
+- [Service Users] Changed: `clientSecret` is nullable in the service-user credentials response (create, create from a
+  user, rotate secret). It is `null` while `pimcore_studio_backend.oauth.client_credentials.enabled` is off; the key is
+  still present. See [Service Users](./08_Service_Users.md#which-credential-to-use).
 - [OAuth] Added: the Client Credentials grant for clients bound to a service user, behind
   `pimcore_studio_backend.oauth.client_credentials.enabled` (default `false`). Its tokens last
   `oauth.client_credentials.access_token_ttl` seconds (default 900, minimum 60) and carry no refresh token. Nothing

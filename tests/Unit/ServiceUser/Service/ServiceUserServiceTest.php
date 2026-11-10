@@ -97,6 +97,51 @@ final class ServiceUserServiceTest extends Unit
         $this->assertSame([[42, 'svc-erp-sync', ['mcp:read']]], $this->registered);
     }
 
+    public function testCreateWithTheGrantOffRegistersTheClientButReturnsNoSecret(): void
+    {
+        $credentials = $this->service(clientCredentialsEnabled: false)->createServiceUser(
+            new CreateParameter(name: 'svc-erp-sync'),
+        );
+
+        $this->assertCount(1, $this->registered, 'the OAuth client is still registered');
+        $this->assertSame('svc_client', $credentials->getClientId());
+        $this->assertNull($credentials->getClientSecret());
+    }
+
+    public function testCreateFromUserWithTheGrantOffReturnsNoSecret(): void
+    {
+        $human = new User();
+        $human->setId(3);
+        $human->setName('jane');
+
+        $credentials = $this->service(
+            userRepository: $this->userRepository($human),
+            clientCredentialsEnabled: false,
+        )->createServiceUserFromUser(3, new CreateFromUserParameter(name: 'svc-jane-sync'));
+
+        $this->assertCount(1, $this->registered, 'the OAuth client is still registered');
+        $this->assertSame('svc_client', $credentials->getClientId());
+        $this->assertNull($credentials->getClientSecret());
+    }
+
+    public function testRotateWithTheGrantOffRotatesTheSecretButReturnsNoSecret(): void
+    {
+        $clientService = $this->makeEmpty(ServiceUserClientServiceInterface::class, [
+            'rotateSecret' => Expected::once(new ClientCredentials('svc_client', 'rotated')),
+        ]);
+        $service = $this->service(
+            repository: $this->repository($this->serviceUser()),
+            clientService: $clientService,
+            clientCredentialsEnabled: false,
+        );
+
+        $credentials = $service->rotateSecret(42);
+
+        $this->assertSame(42, $credentials->getServiceUserId());
+        $this->assertSame('svc_client', $credentials->getClientId());
+        $this->assertNull($credentials->getClientSecret());
+    }
+
     public function testCreateRollsBackTheServiceUserWhenTheClientIsRefused(): void
     {
         $service = $this->service(clientService: $this->makeEmpty(ServiceUserClientServiceInterface::class, [
@@ -281,6 +326,19 @@ final class ServiceUserServiceTest extends Unit
         $this->assertSame('rotated', $credentials->getClientSecret());
     }
 
+    public function testRotateWithTheGrantOnReturnsTheSecret(): void
+    {
+        $service = $this->service(
+            repository: $this->repository($this->serviceUser()),
+            clientService: $this->makeEmpty(ServiceUserClientServiceInterface::class, [
+                'rotateSecret' => new ClientCredentials('svc_client', 'rotated'),
+            ]),
+            clientCredentialsEnabled: true,
+        );
+
+        $this->assertSame('rotated', $service->rotateSecret(42)->getClientSecret());
+    }
+
     public function testRotateWithoutAClientIsNotFound(): void
     {
         $service = $this->service(
@@ -390,6 +448,7 @@ final class ServiceUserServiceTest extends Unit
         ?SecurityServiceInterface $currentUser = null,
         ?EventDispatcherInterface $eventDispatcher = null,
         ?McpAccessTokenRepositoryInterface $tokenRepository = null,
+        ?bool $clientCredentialsEnabled = null,
     ): ServiceUserService {
         return new ServiceUserService(
             $repository ?? $this->repository(),
@@ -443,6 +502,7 @@ final class ServiceUserServiceTest extends Unit
             $currentUser ?? $this->currentUser(isAdmin: false),
             $this->makeEmpty(ScopeRegistryInterface::class, ['all' => ['mcp:read', 'mcp:write']]),
             $tokenRepository ?? $this->makeEmpty(McpAccessTokenRepositoryInterface::class),
+            $clientCredentialsEnabled ?? true,
         );
     }
 
