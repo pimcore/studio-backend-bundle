@@ -46,6 +46,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as ClassificationstoreDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\InputQuantityValue;
+use Pimcore\Model\DataObject\ClassDefinition\Data\MultiValue as MultiValueDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\QuantityValue as QuantityValueDefinition;
 use Pimcore\Model\DataObject\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore as ClassificationstoreModel;
@@ -54,12 +55,16 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\CalculatedValue;
+use Pimcore\Model\DataObject\Data\MultiValue;
 use Pimcore\Model\DataObject\Data\QuantityValue;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_diff;
 use function array_key_exists;
 use function array_keys;
+use function array_map;
 use function array_merge;
+use function array_unique;
 use function in_array;
 use function is_array;
 use function is_int;
@@ -186,8 +191,8 @@ final readonly class ClassificationStoreAdapter implements
         foreach ($collection as $groupId => $groupDefinitions) {
             foreach ($groupDefinitions as $groupKeyId => $definition) {
                 $keyConfig = $fieldDefinition->getKeyConfiguration($groupKeyId);
-                // an ancestor's qualified slot holds the entry list, which is no value of the key's
-                // own type: where the origin is still reported, the value behind it is not resolved
+                // an ancestor's value is resolved for a key declaring nothing alone: the entries of a
+                // `multiValue` key beyond the one value of its default slot have no origin to report
                 $resolveKeyValue = $resolveInheritedValue
                     && !$this->keyQualifierResolver->declaresQualifiers($keyConfig);
 
@@ -197,12 +202,7 @@ final readonly class ClassificationStoreAdapter implements
                         $language,
                         $groupId,
                         $groupKeyId,
-                        resolveInheritedValue: $resolveKeyValue,
-                        // the sibling arm of that guard, which does resolve the value: an ancestor's
-                        // slot is read under the key's declaration, so a key declaring nothing reads
-                        // the one value it always did even where the row still holds a list it hides
-                        qualifiedValueSerializer: $this->qualifiedValueSerializer,
-                        classificationStoreKeyConfig: $keyConfig
+                        resolveInheritedValue: $resolveKeyValue
                     );
                     $inheritedData[$groupId][$language][$groupKeyId] = $this->inheritanceService
                         ->getFieldInheritanceData($object, $definition, $key, $fieldContextData);
@@ -248,17 +248,14 @@ final readonly class ClassificationStoreAdapter implements
      * The stored store with the supplied one written over it.
      *
      * `array_replace_recursive()` merges two arrays element by element, which is what the group,
-     * language and key buckets need and the wrong thing for the list a qualified key's slot holds:
-     * a write naming one entry would land on the first element of the stored list and keep the rest
-     * of it by position. A qualified slot therefore carries the write's own entries through
-     * unmerged, and they are merged by qualifier in {@see self::getQualifiedSetterData()}, which
-     * reads the row the container holds rather than `$elementStore` - the narrower view of that row
-     * this method merges into, built under the user's language *view* permissions and only over the
-     * groups currently active. A slot missing from that view is one this code cannot see rather
-     * than an empty one, and merging a list against it would drop every entry the write leaves
-     * alone.
+     * language and key buckets need and the wrong thing for the list a `multiValue` key's value
+     * travels as: a write naming one entry would land on the first element of the stored list and
+     * keep the rest of it by position. A `multiValue` key therefore carries the write's own entries
+     * through unmerged, and they are merged by qualifier in {@see self::setQualifiedValues()}, which
+     * reads what the store holds rather than `$elementStore` - the narrower view built under the
+     * user's language *view* permissions and only over the groups currently active.
      *
-     * Which qualified slots the patch carries at all is {@see self::patchQualifiedSlots()}.
+     * Which keys the patch carries at all is {@see self::patchQualifiedSlots()}.
      */
     private function patchStore(
         ClassificationstoreDefinition $definition,
@@ -290,18 +287,14 @@ final readonly class ClassificationStoreAdapter implements
     }
 
     /**
-     * The qualified slots of one (group, language) bucket, held to what the write actually named.
+     * The `multiValue` keys of one (group, language) bucket, held to what the write actually named.
      *
-     * A slot the write names carries the write's own entries, unmerged. A slot it does not name is
-     * left out of the patch altogether rather than carried in from `$elementStore`: there is no
-     * write to make for it, the row already holds it, and an entry the request never supplied would
-     * otherwise be validated against the key's declaration as it reads now - so a patch of one key
-     * would fail because another key of the same bucket holds a variant an administrator has since
-     * removed from it, or a capability its store's engine does not report.
+     * A key the write names carries the write's own entries, unmerged. One it does not name is left
+     * out of the patch altogether rather than carried in from `$elementStore`: there is no write to
+     * make for it, and the store already holds it.
      *
-     * Which slots those are is decided by the key's declaration alone, as it is in
-     * {@see self::processGroupKeys()}: a key declaring nothing serializes one value whatever its
-     * row still holds, so its slot is merged like any other single value.
+     * Which keys those are is decided by the key's type alone, as it is in
+     * {@see self::processGroupKeys()}: any other key is merged like any other single value.
      *
      * @param array<array-key, mixed> $keys
      * @param array<array-key, mixed> $supplied
@@ -502,115 +495,85 @@ final readonly class ClassificationStoreAdapter implements
                 $patch
             );
 
-            $storedSlot = $this->readStoredSlot($container, $groupId, $keyId, $language);
-
             if ($this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
-                $setterData = $this->getQualifiedSetterData(
+                $this->setQualifiedValues(
+                    $container,
+                    $groupId,
+                    $keyId,
+                    $language,
                     $value,
                     $keyConfig,
                     $fieldDefinition,
                     $definition->getStoreId(),
-                    $storedSlot,
                     $isPatch,
                     $convert
                 );
-            } else {
-                // the key declares no qualifier, so the slot holds one value and this arm is the
-                // one that ran before this ticket, unchanged: the current value a patch resolves
-                // against is the slot itself, read by the context from the row
-                // ({@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData}),
-                // and never an entry of a list - the declaration decides the shape, and this
-                // declaration says there is no list here to read one out of.
-                //
-                // the entries of a qualified slot are each validated in getQualifiedSetterData(), which
-                // refuses the write rather than handing back a list this guard would read as one value
-                $converted = $convert($value, null, $isPatch);
 
-                if (!$this->validateEncryptedField($fieldDefinition, $converted)) {
-                    continue;
-                }
-
-                $setterData = $this->assembleSlot([new QualifiedValue($converted)], [], $keyConfig);
+                continue;
             }
 
-            $container->setLocalizedKeyValue($groupId, $keyId, $setterData, $language);
+            // the key declares no qualifier, so the slot holds one value of the key's own type
+            $converted = $convert($value, null, $isPatch);
+
+            if (!$this->validateEncryptedField($fieldDefinition, $converted)) {
+                continue;
+            }
+
+            $container->setLocalizedKeyValue($groupId, $keyId, $converted, $language);
         }
     }
 
     /**
-     * What the slot of a key that declares qualifiers stores: the entries the write supplies, each
-     * value taken through the adapter of the key's own type, as a list carrying their qualifiers.
+     * Writes the values of a `multiValue` key in one language through core's `setKeyValues()`, each
+     * value taken through the adapter of the key's own type, one entry per slot value.
      *
-     * A patch merges them over the entries the declaration permits, by qualifier and never by
-     * position in the list, so an entry the write does not name survives as itself. The engine is
-     * asked about the supplied entries alone rather than about the merged list: the stored ones
-     * were accepted when they were written, and holding this write to them would make a key
-     * uneditable on an engine that no longer reports what it once did.
+     * A patch merges the supplied entries over the stored ones by qualifier and never by position
+     * in the list, so an entry the write does not name survives as itself. Anything else replaces
+     * the key in this language: a slot the write does not name is cleared, and the other languages
+     * are slots of their own that the write does not address.
      *
-     * Only the supplied entries go through the key's own type adapter, and the merge is onto the
-     * *raw* entries the row holds. A stored entry carried over by the merge was never supplied by
-     * this request, so there is nothing of it to convert: it is already in the shape the row stores
-     * and taking it through the setter a second time hands the adapter its own normalized output -
-     * `ManyToManyRelationAdapter::normalize()` answers with `RelatedElementData` objects and its
-     * setter reads arrays, so an untouched relation sibling would take the whole patch down. The
-     * same raw reading is what the current value handed to the adapter is taken from, which is how
-     * every other context reads this slot
-     * ({@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData}) and what
-     * an adapter resolving a patch against the current value expects, since
-     * {@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataService::getSetterData()}
-     * normalizes it itself.
+     * The engine is asked about the supplied entries alone rather than about the merged list: the
+     * stored ones were accepted when they were written, and holding this write to them would make a
+     * key uneditable on an engine that no longer reports what it once did.
      *
-     * An entry the row holds and the declaration no longer permits is hidden, not deleted: it is
-     * carried over untouched, so a write that does not mention it - a PUT of what a read published
-     * included - leaves it in the row.
-     *
-     * A write that resolves to the single default slot - one entry, no variant, position 0 - and
-     * leaves nothing hidden stores the value itself instead, which is the slot core's single-value
-     * path addresses and therefore exactly what the key stored before it declared anything.
-     *
-     * The engine is asked here rather than once for the whole field, so that a field holding no
-     * qualified slot at all - every field until one of its keys declares - resolves no engine.
-     *
-     * Each entry's own value is held to the key's type before it is wrapped, because the list the
-     * slot holds is not a value the type's own guard can read: an encrypted key handed the wrapped
-     * list would fail that guard for the whole slot. A value failing it refuses the write here,
-     * since a slot dropped under a successful response is data lost without an answer.
-     *
-     * No entry reaches the key's own type adapter as a patch of anything. The patch of a qualified
-     * slot is resolved above, by qualifier, so what each entry then carries is one whole value of
-     * the key's type and not the partial envelope an adapter in patch mode reads - and the entries
-     * the merge carries over from the row were never supplied by this request at all. Its sibling
-     * arm, the slot that is not qualified, keeps handing the write's patch flag through unchanged.
+     * Only the supplied entries go through the key's own type adapter, and never as a patch of
+     * anything: what each entry carries is one whole value of the key's type. A value failing the
+     * key's type refuses the write, since a slot dropped under a successful response is data lost
+     * without an answer.
      *
      * @param callable(mixed, ?QualifiedValue): mixed $convert
      *
+     * @throws DatabaseException
      * @throws EnvironmentException
      * @throws InvalidArgumentException
      */
-    private function getQualifiedSetterData(
+    private function setQualifiedValues(
+        Classificationstore $container,
+        int $groupId,
+        int $keyId,
+        string $language,
         mixed $value,
         KeyConfig $keyConfig,
         Data $fieldDefinition,
         int $storeId,
-        mixed $storedSlot,
         bool $isPatch,
         callable $convert
-    ): mixed {
+    ): void {
         $supplied = $this->qualifiedValueSerializer->parseEntries($value, $keyConfig);
         $this->qualifiedValueSerializer->assertSupported(
             $supplied,
             $this->storeEngineResolver->getCapabilitiesOfStore($storeId)
         );
 
-        $stored = $storedSlot === null
+        $stored = $container->getObject() === null
             ? []
-            : $this->qualifiedValueSerializer->getVisibleEntries($storedSlot, $keyConfig);
+            : $this->qualifiedValueSerializer->readStoredEntries($container, $groupId, $keyId, $language, $keyConfig);
         $current = $this->byQualifier($stored);
 
         $converted = [];
         foreach ($supplied as $qualifiedValue) {
             // a slot the row holds nothing at carries null, so that the current value handed over
-            // is always the one entry's and never falls back to reading the whole list
+            // is always the one entry's
             $currentValue = $current[$qualifiedValue->getQualifier()] ?? $qualifiedValue->withValue(null);
 
             $converted[] = $qualifiedValue->withValue(
@@ -618,91 +581,50 @@ final readonly class ClassificationStoreAdapter implements
             );
         }
 
-        return $this->assembleSlot(
-            $isPatch ? $this->qualifiedValueSerializer->mergeEntries($stored, $converted) : $converted,
-            $storedSlot === null ? [] : $this->qualifiedValueSerializer->getHiddenEntries($storedSlot, $keyConfig),
-            $keyConfig
-        );
-    }
+        $entries = $isPatch ? $this->qualifiedValueSerializer->mergeEntries($stored, $converted) : $converted;
 
-    /**
-     * What the slot stores, decided by the key's declaration and by nothing about the values:
-     *
-     * - a key declaring no qualifier stores the one value it has always stored, which is what makes
-     *   AC1 true at the row and not only in the payload. There is one written entry on that arm and
-     *   never a hidden one, because that key's slot is not read as a list at all
-     *   ({@see QualifiedValueSerializerInterface::holdsEntries()});
-     * - a key declaring one stores the entry list, always - the written entries followed by the
-     *   hidden ones the row already holds - and so the shape of its slot does not depend on how many
-     *   entries happen to be in it. A single default entry used to be collapsed to its bare value
-     *   here, and that was ambiguous in the one direction the declaration cannot resolve: a table
-     *   key's one entry holding `[['v' => 'cell']]` stored exactly what one entry whose value is
-     *   `'cell'` stores, and read back as the second.
-     *
-     * The empty entry list is stored, not nothing. A key whose every entry a write cleared has no
-     * value, and that is a different state from a slot nothing was ever written to: the key's
-     * configured default fills the second one on read ({@see self::getValue()}) and must not fill
-     * the first, or clearing a `quantityValue` key would be answered by the next read with the
-     * default entry, and saving that back would write a value the clearing request never supplied.
-     * `[]` says which of the two it is because the declaration already says which shape the slot is
-     * in - at a declaring key's slot it is the empty entry list, and only at the slot of a key
-     * declaring nothing is it the empty value of the key's own type, a multi-select selecting
-     * nothing included.
-     *
-     * @param QualifiedValue[] $written
-     * @param QualifiedValue[] $hidden
-     */
-    private function assembleSlot(array $written, array $hidden, KeyConfig $keyConfig): mixed
-    {
-        if (!$this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
-            return $written === [] ? null : $written[0]->getValue();
+        $coreEntries = [];
+        foreach ($entries as $entry) {
+            $coreEntries[] = new MultiValue($entry->getValue(), $language, $entry->getVariant(), $entry->getPosition());
         }
 
-        return $this->qualifiedValueSerializer->toPayload(array_merge($written, $hidden));
+        if (!$isPatch) {
+            $named = array_map(static fn (QualifiedValue $entry): ?string => $entry->getVariant(), $entries);
+            $held = array_map(static fn (QualifiedValue $entry): ?string => $entry->getVariant(), $stored);
+
+            // clearing is a write of nothing at a slot the store holds: core replaces the slots it is given
+            foreach (array_unique(array_diff($held, $named)) as $variant) {
+                $coreEntries[] = new MultiValue(null, $language, $variant);
+            }
+        }
+
+        if ($coreEntries !== []) {
+            $container->setKeyValues($groupId, $keyId, $coreEntries);
+        }
     }
 
     /**
-     * One entry's own value, held to the key's type before it is wrapped into the list.
+     * One entry's own value, held to the key's type before it is stored.
      *
      * {@see ValidateObjectDataTrait::validateEncryptedField()} reads one value of the key's type, so
-     * it is asked per entry rather than of the list. A value that does not pass refuses the write:
-     * the sibling arm, the key declaring nothing, skips the slot instead and keeps doing so - that
-     * is what a key without this list has always done - but skipping one entry of a list would
-     * leave the slot holding a shorter list than the write supplied, under a successful response.
+     * it is asked of the type the `multiValue` key wraps. A value that does not pass refuses the
+     * write: the sibling arm, the key declaring nothing, skips the slot instead and keeps doing so,
+     * but skipping one entry of a list would leave the key holding fewer values than the write
+     * supplied, under a successful response.
      *
      * @throws InvalidArgumentException
      */
     private function getValidatedEntryValue(Data $fieldDefinition, mixed $value): mixed
     {
-        if (!$this->validateEncryptedField($fieldDefinition, $value)) {
+        $valueDefinition = $fieldDefinition instanceof MultiValueDefinition
+            ? ($fieldDefinition->getDelegate() ?? $fieldDefinition)
+            : $fieldDefinition;
+
+        if (!$valueDefinition instanceof Data || !$this->validateEncryptedField($valueDefinition, $value)) {
             throw new InvalidArgumentException('A value of the key did not come back in the key\'s own type.');
         }
 
         return $value;
-    }
-
-    /**
-     * The raw value the row holds at one slot, which is both what the entries of a patch are merged
-     * over, and where the entries the declaration hides are found.
-     *
-     * @throws DatabaseException
-     */
-    private function readStoredSlot(
-        Classificationstore $container,
-        int $groupId,
-        int $keyId,
-        string $language
-    ): mixed {
-        // a container the element does not hold yet: there is no row, so there is nothing stored
-        if ($container->getObject() === null) {
-            return null;
-        }
-
-        try {
-            return $container->getLocalizedKeyValue($groupId, $keyId, $language, true, true);
-        } catch (Exception $exception) {
-            throw new DatabaseException($exception->getMessage(), previous: $exception);
-        }
     }
 
     /**
@@ -928,8 +850,7 @@ final readonly class ClassificationStoreAdapter implements
                 true
             );
         } catch (Exception $exception) {
-            // the read sibling of self::readStoredSlot(): the same slot, the same wrap, so the same
-            // original type and stack trace survive it
+            // the same wrap the qualified read makes, so the original type and stack trace survive it
             throw new DatabaseException($exception->getMessage(), previous: $exception);
         }
 
@@ -944,9 +865,7 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         // the key's configured default, as it has always been applied: to a slot the row holds
-        // nothing at. A qualified slot a write cleared is not one of those - it holds the empty
-        // entry list ({@see self::assembleSlot()}) - so clearing a key with a default is not
-        // answered by the next read with that default
+        // nothing at
         if ($value === null) {
             $value = $this->getDefaultValue($fieldDefinition);
         }
@@ -954,25 +873,28 @@ final readonly class ClassificationStoreAdapter implements
         $isPreviewRead = $isPreview && $data !== null;
 
         if ($this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
-            if ($value === null) {
+            $entries = $this->qualifiedValueSerializer->readStoredEntries(
+                $classificationstore,
+                $groupId,
+                $key->getKeyId(),
+                $language,
+                $keyConfig
+            );
+
+            if ($entries === []) {
                 // the slot is left out of the payload, the way it is for a key declaring nothing
                 return null;
             }
 
             if (!$isPreviewRead) {
                 return $this->qualifiedValueSerializer->toPayload(
-                    $this->normalizeEntries(
-                        $this->qualifiedValueSerializer->getVisibleEntries($value, $keyConfig),
-                        $fieldDefinition
-                    )
+                    $this->normalizeEntries($entries, $fieldDefinition)
                 );
             }
-        }
 
-        // the declaration alone decides the shape: a key declaring nothing serializes one value,
-        // and a flat label map holds one per key, so the default slot is the one either shows
-        if ($value !== null) {
-            $value = $this->qualifiedValueSerializer->getDefaultSlotValue($value, $keyConfig);
+            $value = $this->qualifiedValueSerializer->getDefaultSlotValue(
+                $this->qualifiedValueSerializer->toPayload($entries)
+            );
         }
 
         if ($isPreviewRead) {

@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\VariantLayout;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
@@ -63,17 +64,23 @@ interface KeyGroupLayoutServiceInterface
     public function getKeyLocalized(int $keyId): ?bool;
 
     /**
-     * The variant names the key declares, in the order it declares them, taken off the same key
-     * configuration for the same reason, and null for a key that declares none or cannot be loaded
-     * at all.
+     * The variants a `multiValue` key declares, in the order it declares them, taken off the same key
+     * configuration for the same reason, and null for a key of any other type or one that cannot be
+     * loaded at all.
      *
-     * @return string[]|null
+     * @return VariantLayout[]|null
      */
     public function getKeyVariants(int $keyId): ?array;
 
     /**
      * The key's own `multiValue` setting, taken off the same key configuration, and null for a key
-     * that declares none or cannot be loaded at all.
+     * that is not of type `multiValue` or cannot be loaded at all.
      */
     public function getKeyMultiValue(int $keyId): ?bool;
+
+    /**
+     * The most values one slot of a `multiValue` key may hold, taken off the same key configuration,
+     * and null where it declares no limit, for a key of any other type, or one that cannot be loaded.
+     */
+    public function getKeyMaximum(int $keyId): ?int;
 }

@@ -41,25 +41,27 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\MultiValueServiceResolver;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as ClassificationstoreDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField as EncryptedFieldDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
-use Pimcore\Model\DataObject\ClassDefinition\Data\QuantityValue as QuantityValueDefinition;
 use Pimcore\Model\DataObject\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\EncryptedField;
-use Pimcore\Model\DataObject\Data\QuantityValue;
+use Pimcore\Model\DataObject\Data\MultiValue;
 use Pimcore\Model\UserInterface;
+use function array_filter;
 use function array_keys;
 use function array_map;
 use function array_merge;
 use function json_encode;
+use function ksort;
 use function sprintf;
 
 /**
@@ -645,32 +647,7 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
-     * The other round trip of the same ambiguity, on the declaring arm: one entry of a declaring
-     * key whose value is itself a list of objects carrying `v`. It is stored as the one-entry list
-     * the declaration puts it in - never collapsed to the bare value, which is what the table alone
-     * would be - and read back as the one entry holding the whole table.
-     *
-     * @throws Exception
-     */
-    public function testAStoredEntryHoldingAnEntryShapedValueSurvivesTheRoundTrip(): void
-    {
-        $table = [['v' => 'cell'], ['v' => 'other']];
-        $stored = [];
-
-        $detail = $this->roundTrip($stored, [self::QUALIFIED_KEY => [['v' => $table]]]);
-
-        $this->assertSame(
-            [['v' => $table]],
-            $stored[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]
-        );
-        $this->assertSame(
-            [['v' => $table]],
-            $detail[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]
-        );
-    }
-
-    /**
-     * Every declaration that permits exactly the one slot a key always had, so that the two
+     * Every blob of a key that is not of type `multiValue`, which holds exactly the one slot a key always had, so that the two
      * assertions above are made of each of them and not only of a blob carrying neither member.
      *
      * A key carrying `variants: []` or `multiValue: false` declares a member and still permits only
@@ -687,164 +664,235 @@ final class ClassificationStoreAdapterTest extends Unit
             'no variant beside the default one' => [['variants' => []]],
             'one value per variant' => [['multiValue' => false]],
             'both, stating the single slot' => [['variants' => [], 'multiValue' => false]],
+            // the key is not of type `multiValue`, so what its blob carries declares nothing
+            'a variant beside the default one' => [['variants' => [self::METRIC, self::IMPERIAL]]],
+            'a list of values per variant' => [['multiValue' => true]],
+            'both, naming variants and a list' => [['variants' => [self::METRIC], 'multiValue' => true]],
         ];
     }
 
     /**
-     * A key declaring either member carries its values at the same slot as an ordered list of
-     * entries, each holding the normalized value plus only the qualifiers it has: an entry with no
-     * qualifiers is emitted without `var` and without `p`.
+     * A `multiValue` key carries its values at the one slot as an ordered list of entries - the
+     * default variant first, then each declared variant in the order the key declares it - read
+     * through core's `getKeyValues()`, one call per slot. A key with no value is left out.
      *
      * @throws Exception
      */
-    public function testAQualifiedKeySerialisesItsValuesAsAnOrderedListOfEntries(): void
+    public function testAMultiValueKeyIsReadAsAnOrderedListOfEntries(): void
     {
-        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
-            self::QUALIFIED_KEY => self::storedSlot([
-                ['v' => '80'],
-                ['v' => '176', 'var' => self::IMPERIAL],
-                ['v' => '81', 'p' => 1],
-            ]),
-        ]]];
-
-        $adapter = $this->createQualifiedAdapter($this->qualifiedKeyConfigs(), $stored);
-
-        $detail = $adapter->getDetailData(
-            $this->makeEmpty(Concrete::class),
-            $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]),
-            $this->createQualifiedFieldDefinition($this->qualifiedKeyConfigs())
-        );
-
-        $this->assertSame(
-            [
-                ['v' => '80'],
-                ['v' => '176', 'var' => self::IMPERIAL],
-                ['v' => '81', 'p' => 1],
-            ],
-            $detail[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]
-        );
-    }
-
-    /**
-     * A metric and an imperial value set on one key through the write path are read back separately
-     * from the read path, over the one container they were written to.
-     *
-     * @throws Exception
-     */
-    public function testTwoVariantsWrittenToOneKeyAreReadBackSeparately(): void
-    {
-        $stored = [];
-        $detail = $this->roundTrip(
-            $stored,
-            [self::QUALIFIED_KEY => [
-                ['v' => '80', 'var' => self::METRIC],
-                ['v' => '176', 'var' => self::IMPERIAL],
-            ]]
-        );
-
-        $this->assertSame(
-            [
-                ['v' => '80', 'var' => self::METRIC],
-                ['v' => '176', 'var' => self::IMPERIAL],
-            ],
-            $detail[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]
-        );
-    }
-
-    /**
-     * A repeatable key's list is read back in the order it was written, which the positions and not
-     * the order of the stored array carry.
-     *
-     * @throws Exception
-     */
-    public function testARepeatableKeysListIsReadBackInTheOrderItWasWritten(): void
-    {
-        $stored = [];
-        $detail = $this->roundTrip(
-            $stored,
-            [self::QUALIFIED_KEY => [
-                ['v' => 'first'],
-                ['v' => 'second', 'p' => 1],
-                ['v' => 'third', 'p' => 2],
-            ]]
-        );
-
-        $this->assertSame(
-            [
-                ['v' => 'first'],
-                ['v' => 'second', 'p' => 1],
-                ['v' => 'third', 'p' => 2],
-            ],
-            $detail[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]
-        );
-    }
-
-    /**
-     * A patch carrying one entry changes the value in that slot only and leaves the other entries of
-     * the key's list intact, matched by qualifier and never by position in the array.
-     *
-     * @throws Exception
-     */
-    public function testAPatchOfOneEntryLeavesTheOtherEntriesOfTheListIntact(): void
-    {
-        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
-            self::QUALIFIED_KEY => self::storedSlot([
-                ['v' => 'first'],
-                ['v' => 'second', 'p' => 1],
-                ['v' => 'third', 'p' => 2],
-            ]),
-        ]]];
-
-        $written = $this->writeAndRecord(
-            $this->qualifiedKeyConfigs(),
-            [self::QUALIFIED_KEY => [['v' => 'patched', 'p' => 1]]],
-            $stored,
-            isPatch: true,
-            capabilities: self::BOTH_CAPABILITIES
-        );
-
-        $this->assertSame(
-            [[self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::storedSlot([
-                ['v' => 'first'],
-                ['v' => 'patched', 'p' => 1],
-                ['v' => 'third', 'p' => 2],
-            ]), self::LANGUAGE]],
-            $written
-        );
-    }
-
-    /**
-     * The merge base is the row, not the view of it the patch merges into.
-     *
-     * `$elementStore` is built under the user's language *view* permissions, so a language this
-     * user may edit and may not view is missing from it entirely. Merging the write's one entry
-     * against that absence would drop the two entries it leaves alone, which is why the merge reads
-     * the container instead.
-     *
-     * @throws Exception
-     */
-    public function testAPatchKeepsTheEntriesOfALanguageTheNormalizedViewCannotSee(): void
-    {
-        $stored = [self::QUALIFIED_GROUP => [self::GERMAN => [
-            self::QUALIFIED_KEY => self::storedSlot([
-                ['v' => 'first'],
-                ['v' => 'second', 'p' => 1],
-                ['v' => 'third', 'p' => 2],
-            ]),
-        ]]];
-
-        $written = [];
+        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => '80']]];
+        $slots = [self::QUALIFIED_GROUP => [self::QUALIFIED_KEY => [self::LANGUAGE => [
+            '' => [1 => '81'],
+            self::IMPERIAL => [0 => '176'],
+        ]]]];
         $keyConfigs = $this->qualifiedKeyConfigs();
-        $container = $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true], $written);
+        $written = [];
+        $writtenEntries = [];
 
-        $adapter = $this->createQualifiedAdapter(
+        $detail = $this->createQualifiedAdapter($keyConfigs, $stored)->getDetailData(
+            $this->makeEmpty(Concrete::class),
+            $this->createRecordingContainer(
+                $stored,
+                [self::QUALIFIED_GROUP => true],
+                $written,
+                $writtenEntries,
+                $slots
+            ),
+            $this->createQualifiedFieldDefinition($keyConfigs)
+        );
+
+        $this->assertSame(
+            [
+                ['v' => '80'],
+                ['v' => '81', 'p' => 1],
+                ['v' => '176', 'var' => self::IMPERIAL],
+            ],
+            $detail[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]
+        );
+        $this->assertArrayNotHasKey(self::PLAIN_KEY, $detail[self::QUALIFIED_GROUP][self::LANGUAGE]);
+    }
+
+    /**
+     * A `multiValue` key written through the object-editor data path is stored through core's
+     * `setKeyValues()` and read back through `getKeyValues()`, not as one list in the default slot: a
+     * value written against a declared variant is readable by core's own qualified reader at that
+     * variant, and `getLocalizedKeyValue()` answers with position 0 of the default one.
+     *
+     * Then one variant is cleared and is gone while the other is untouched, by a patch naming it
+     * with no value and by a PUT that leaves it out.
+     *
+     * @throws Exception
+     */
+    public function testAMultiValueKeyIsStoredThroughSetKeyValuesAndReadBackThroughGetKeyValues(): void
+    {
+        $stored = [];
+        $slots = [];
+        $written = [];
+        $writtenEntries = [];
+        $keyConfigs = $this->qualifiedKeyConfigs();
+        $container = $this->createRecordingContainer(
+            $stored,
+            [self::QUALIFIED_GROUP => true],
+            $written,
+            $writtenEntries,
+            $slots
+        );
+
+        $this->writeLanguages($container, $keyConfigs, $stored, [self::LANGUAGE => [self::QUALIFIED_KEY => [
+            ['v' => '78'],
+            ['v' => '80', 'var' => self::METRIC],
+            ['v' => '176', 'var' => self::IMPERIAL],
+        ]]]);
+
+        $this->assertSame([], $written, 'no list is written as the one value of the default slot');
+        $this->assertCount(1, $writtenEntries);
+        $this->assertSame(
+            [['78', self::LANGUAGE, null, 0], ['80', self::LANGUAGE, self::METRIC, 0], ['176', self::LANGUAGE, self::IMPERIAL, 0]],
+            $this->describeCoreEntries($writtenEntries[0])
+        );
+        $this->assertSame([0 => '78'], $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY));
+        $this->assertSame(
+            [0 => '80'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::METRIC)
+        );
+        $this->assertSame(
+            [0 => '176'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::IMPERIAL)
+        );
+        $this->assertSame('78', $container->getLocalizedKeyValue(self::QUALIFIED_GROUP, self::QUALIFIED_KEY));
+
+        // a patch naming the imperial variant with no value clears it and leaves the others alone
+        $this->writeLanguages(
+            $container,
+            $keyConfigs,
+            $stored,
+            [self::LANGUAGE => [self::QUALIFIED_KEY => [['v' => null, 'var' => self::IMPERIAL]]]],
+            isPatch: true
+        );
+
+        $this->assertSame(
+            [],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::IMPERIAL)
+        );
+        $this->assertSame(
+            [0 => '80'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::METRIC)
+        );
+        $this->assertSame([0 => '78'], $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY));
+
+        // a PUT leaving the metric variant out clears it, and the default one is replaced
+        $this->writeLanguages(
+            $container,
+            $keyConfigs,
+            $stored,
+            [self::LANGUAGE => [self::QUALIFIED_KEY => [['v' => '79']]]]
+        );
+
+        $this->assertSame(
+            [],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::METRIC)
+        );
+        $this->assertSame([0 => '79'], $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY));
+    }
+
+    /**
+     * Writing language A and then language B to one `multiValue` key leaves both stored, for the
+     * declared variant and for the default one: in one request and in two successive ones.
+     *
+     * @throws Exception
+     */
+    public function testWritingTwoLanguagesOfOneMultiValueKeyLeavesBothStored(): void
+    {
+        $german = [self::GERMAN => [self::QUALIFIED_KEY => [
+            ['v' => 'de-default'],
+            ['v' => 'de-metric', 'var' => self::METRIC],
+        ]]];
+        $default = [self::LANGUAGE => [self::QUALIFIED_KEY => [
+            ['v' => 'en-default'],
+            ['v' => 'en-imperial', 'var' => self::IMPERIAL],
+        ]]];
+
+        $oneRequest = $this->writeAndReadLanguages([$default + $german]);
+        $twoRequests = $this->writeAndReadLanguages([$default, $german]);
+
+        foreach ([$oneRequest, $twoRequests] as $container) {
+            $this->assertSame([0 => 'en-default'], $container(self::LANGUAGE, null));
+            $this->assertSame([0 => 'en-imperial'], $container(self::LANGUAGE, self::IMPERIAL));
+            $this->assertSame([0 => 'de-default'], $container(self::GERMAN, null));
+            $this->assertSame([0 => 'de-metric'], $container(self::GERMAN, self::METRIC));
+            // and neither write put a value into the other's slot of the other variant
+            $this->assertSame([], $container(self::LANGUAGE, self::METRIC));
+            $this->assertSame([], $container(self::GERMAN, self::IMPERIAL));
+        }
+    }
+
+    /**
+     * A patch carrying one entry changes the value at that position only and leaves the other values
+     * of the key as they are, matched by qualifier and never by position in the array.
+     *
+     * @throws Exception
+     */
+    public function testAPatchOfOneEntryLeavesTheOtherValuesOfTheKeyIntact(): void
+    {
+        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => 'first']]];
+        $slots = [self::QUALIFIED_GROUP => [self::QUALIFIED_KEY => [self::LANGUAGE => [
+            '' => [1 => 'second', 2 => 'third'],
+        ]]]];
+        $written = [];
+        $writtenEntries = [];
+        $container = $this->createRecordingContainer(
+            $stored,
+            [self::QUALIFIED_GROUP => true],
+            $written,
+            $writtenEntries,
+            $slots
+        );
+
+        $this->writeLanguages(
+            $container,
+            $this->qualifiedKeyConfigs(),
+            $stored,
+            [self::LANGUAGE => [self::QUALIFIED_KEY => [['v' => 'patched', 'p' => 1]]]],
+            isPatch: true
+        );
+
+        $this->assertSame(
+            [0 => 'first', 1 => 'patched', 2 => 'third'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY)
+        );
+    }
+
+    /**
+     * The merge base is the store, not the view of it the patch merges into: `$elementStore` is built
+     * under the user's language *view* permissions, so a language this user may edit and may not view
+     * is missing from it entirely, and merging against that absence would drop the values the write
+     * leaves alone.
+     *
+     * @throws Exception
+     */
+    public function testAPatchKeepsTheValuesOfALanguageTheNormalizedViewCannotSee(): void
+    {
+        $stored = [self::QUALIFIED_GROUP => [self::GERMAN => [self::QUALIFIED_KEY => 'first']]];
+        $slots = [self::QUALIFIED_GROUP => [self::QUALIFIED_KEY => [self::GERMAN => [
+            '' => [1 => 'second', 2 => 'third'],
+        ]]]];
+        $written = [];
+        $writtenEntries = [];
+        $keyConfigs = $this->qualifiedKeyConfigs();
+        $container = $this->createRecordingContainer(
+            $stored,
+            [self::QUALIFIED_GROUP => true],
+            $written,
+            $writtenEntries,
+            $slots
+        );
+
+        $this->createQualifiedAdapter(
             $keyConfigs,
             $stored,
             self::BOTH_CAPABILITIES,
             languageService: $this->createLanguageService(viewable: [], editable: [self::GERMAN])
-        );
-
-        $adapter->getDataForSetter(
+        )->getDataForSetter(
             $this->makeEmpty(Concrete::class, ['get' => $container]),
             $this->createQualifiedFieldDefinition($keyConfigs, isLocalized: true),
             'myStore',
@@ -859,49 +907,38 @@ final class ClassificationStoreAdapterTest extends Unit
         );
 
         $this->assertSame(
-            [[self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::storedSlot([
-                ['v' => 'first'],
-                ['v' => 'patched', 'p' => 1],
-                ['v' => 'third', 'p' => 2],
-            ]), self::GERMAN]],
-            $written
+            [0 => 'first', 1 => 'patched', 2 => 'third'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::GERMAN)
         );
     }
 
     /**
      * A patch takes only the entries the request supplied through the key's own type adapter, and
-     * what it carries over from the row it carries over raw.
+     * what it carries over from the store it carries over as it is.
      *
      * The real {@see ManyToManyRelationAdapter} is driven here, because the two shapes that have to
-     * disagree are its own rather than this suite's idea of them: `normalize()` answers with
-     * {@see RelatedElementData} objects and its setter reads `$relation['type']` off each element
-     * it is handed. Taking an untouched sibling through the setter a second time therefore hands
-     * that setter its own normalized output and takes the whole patch down with an `Error` that
-     * names no key - so a patch of one entry of a relation key could not be saved at all while a
-     * sibling existed. The current value handed over is raw for the same reason: that is what every
-     * other context reads this slot as, and what
-     * {@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataService::getSetterData()}
-     * normalizes itself.
-     *
-     * The normalizing data service is stubbed because that is what made the defect reachable: the
-     * write path does not ask for a normalized value at all any more, so the stub is answered zero
-     * times now and was answered for every carried-over entry before.
+     * disagree are its own: `normalize()` answers with {@see RelatedElementData} objects and its
+     * setter reads `$relation['type']` off each element it is handed, so an untouched sibling taken
+     * through the setter a second time would take the whole patch down.
      *
      * @throws Exception
      */
-    public function testAPatchOfOneRelationEntryLeavesAnUntouchedSiblingRawInTheRow(): void
+    public function testAPatchOfOneRelationEntryLeavesAnUntouchedSiblingAsItIs(): void
     {
         $sibling = [['type' => 'object', 'id' => 8]];
-        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
-            self::QUALIFIED_KEY => self::storedSlot([
-                ['v' => [['type' => 'object', 'id' => 7]]],
-                ['v' => $sibling, 'var' => self::IMPERIAL],
-            ]),
-        ]]];
-
+        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => [['type' => 'object', 'id' => 7]]]]];
+        $slots = [self::QUALIFIED_GROUP => [self::QUALIFIED_KEY => [self::LANGUAGE => [self::IMPERIAL => [0 => $sibling]]]]];
         $relationAdapter = $this->createRelationAdapter();
         $keyConfigs = $this->qualifiedKeyConfigs();
-        $container = $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]);
+        $written = [];
+        $writtenEntries = [];
+        $container = $this->createRecordingContainer(
+            $stored,
+            [self::QUALIFIED_GROUP => true],
+            $written,
+            $writtenEntries,
+            $slots
+        );
 
         $adapter = $this->createQualifiedAdapter(
             $keyConfigs,
@@ -912,14 +949,6 @@ final class ClassificationStoreAdapterTest extends Unit
             ]),
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
                 'getFieldDefinitionFromKeyConfig' => $this->makeEmpty(Data::class, ['getName' => 'related']),
-            ]),
-            // what the real DataService does: the field's own adapter normalizes the value
-            dataService: $this->makeEmpty(DataServiceInterface::class, [
-                'getNormalizedValue' => static fn (
-                    mixed $value,
-                    Data $fieldDefinition
-                ): mixed => $relationAdapter->normalize($value, $fieldDefinition),
-                'getPreviewFieldName' => self::PREVIEW_FIELD,
             ])
         );
 
@@ -931,16 +960,238 @@ final class ClassificationStoreAdapterTest extends Unit
             isPatch: true
         );
 
-        $slot = $stored[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY];
+        $this->assertCount(1, $writtenEntries);
+        $entries = $writtenEntries[0];
+        $this->assertCount(2, $entries);
 
-        // the untouched sibling is byte for byte the entry the row held
-        $this->assertSame(['v' => $sibling, 'var' => self::IMPERIAL], $slot[1]);
-
-        // and the one entry the patch named went through the relation setter
+        // the one entry the patch named went through the relation setter
+        $this->assertNull($entries[0]->getVariant());
         $this->assertSame([9], array_map(
             static fn (Concrete $element): int => $element->getId(),
-            $slot[0]['v']
+            $entries[0]->getValue()
         ));
+        // and the untouched sibling is the value the store held
+        $this->assertSame(self::IMPERIAL, $entries[1]->getVariant());
+        $this->assertSame($sibling, $entries[1]->getValue());
+    }
+
+    /**
+     * The value of a `multiValue` key whose own type normalizes to a list of objects carrying `v`
+     * travels whole inside its entry, in both directions.
+     *
+     * @throws Exception
+     */
+    public function testAnEntryHoldingAnEntryShapedValueSurvivesTheRoundTrip(): void
+    {
+        $table = [['v' => 'cell'], ['v' => 'other']];
+        $stored = [];
+
+        $detail = $this->roundTrip($stored, [self::QUALIFIED_KEY => [['v' => $table]]]);
+
+        $this->assertSame($table, $stored[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]);
+        $this->assertSame([['v' => $table]], $detail[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]);
+    }
+
+    /**
+     * The single default slot needs no capability, so it is written on an engine reporting none, for
+     * a client sending a list and for one sending the value itself, and declaring a variant does not
+     * make the key uneditable.
+     *
+     * @throws Exception
+     */
+    public function testTheSingleDefaultSlotIsWrittenOnAnEngineReportingNoCapability(): void
+    {
+        $expected = [['80', self::LANGUAGE, null, 0]];
+
+        foreach ([[['v' => '80']], '80'] as $payload) {
+            $writtenEntries = [];
+            $this->writeAndRecord(
+                $this->qualifiedKeyConfigs(['variants' => [self::METRIC, self::IMPERIAL]]),
+                [self::QUALIFIED_KEY => $payload],
+                capabilities: [],
+                writtenEntries: $writtenEntries
+            );
+
+            $this->assertCount(1, $writtenEntries);
+            $this->assertSame($expected, $this->describeCoreEntries($writtenEntries[0]));
+        }
+    }
+
+    /**
+     * A write needing a capability is refused where the core cannot be asked, and nothing is
+     * written; the single default slot stays open.
+     *
+     * @throws Exception
+     */
+    public function testAWriteNeedingACapabilityIsRefusedWhereTheCoreCannotBeAsked(): void
+    {
+        $writtenEntries = [];
+
+        try {
+            $this->writeAndRecord(
+                $this->qualifiedKeyConfigs(),
+                [self::QUALIFIED_KEY => [
+                    ['v' => '80', 'var' => self::METRIC],
+                    ['v' => '176', 'var' => self::IMPERIAL],
+                ]],
+                capabilities: null,
+                writtenEntries: $writtenEntries
+            );
+            $this->fail('Expected the write to be refused.');
+        } catch (AbstractApiException $exception) {
+            $this->assertSame(
+                HttpResponseErrorKeys::ENGINE_CAPABILITY_MISSING->value,
+                $exception->getErrorKey()
+            );
+        }
+
+        $this->assertSame([], $writtenEntries);
+    }
+
+    /**
+     * The current value the key's own type adapter is handed is the one entry's, not the whole
+     * list, matched by qualifier and null where the store holds no value there.
+     *
+     * @throws Exception
+     */
+    public function testTheKeysTypeAdapterSeesTheCurrentValueOfTheOneEntryItConverts(): void
+    {
+        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => 'first']]];
+        $slots = [self::QUALIFIED_GROUP => [self::QUALIFIED_KEY => [self::LANGUAGE => [
+            '' => [1 => 'second', 2 => 'third'],
+        ]]]];
+
+        $seen = $this->recordCurrentValuesSeenBySubAdapter(
+            $stored,
+            [self::QUALIFIED_KEY => [
+                ['v' => 'A'],
+                ['v' => 'B', 'p' => 1],
+                ['v' => 'C', 'p' => 2],
+                ['v' => 'D', 'var' => self::IMPERIAL],
+            ]],
+            $slots
+        );
+
+        $this->assertSame(['first', 'second', 'third', null], $seen);
+    }
+
+    /**
+     * The search preview shows one value: the default variant at position 0, the first value where
+     * there is none.
+     *
+     * @throws Exception
+     */
+    public function testTheSearchPreviewShowsTheDefaultSlotOfAMultiValueKey(): void
+    {
+        $keyConfigs = $this->qualifiedKeyConfigs();
+        $key = 'Measurements - key-' . self::QUALIFIED_KEY;
+        $written = [];
+        $writtenEntries = [];
+
+        $withDefault = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => '80']]];
+        $slots = [self::QUALIFIED_GROUP => [self::QUALIFIED_KEY => [self::LANGUAGE => [self::IMPERIAL => [0 => '176']]]]];
+        $withoutDefault = [];
+
+        foreach ([[&$withDefault, '80'], [&$withoutDefault, '176']] as [&$stored, $expected]) {
+            $data = $this->createQualifiedAdapter($keyConfigs, $stored)->getPreviewFieldData(
+                $this->createRecordingContainer(
+                    $stored,
+                    [self::QUALIFIED_GROUP => true],
+                    $written,
+                    $writtenEntries,
+                    $slots
+                ),
+                $this->createQualifiedFieldDefinition($keyConfigs),
+                []
+            );
+
+            $this->assertSame($expected, $data[self::PREVIEW_FIELD][$key]);
+        }
+    }
+
+    /**
+     * @param array<int, MultiValue> $entries
+     *
+     * @return array<int, array{0: mixed, 1: ?string, 2: ?string, 3: ?int}>
+     */
+    private function describeCoreEntries(array $entries): array
+    {
+        return array_map(
+            static fn (MultiValue $entry): array => [
+                $entry->getValue(),
+                $entry->getLanguage(),
+                $entry->getVariant(),
+                $entry->getPosition(),
+            ],
+            $entries
+        );
+    }
+
+    /**
+     * @param array<int, KeyConfig> $keyConfigs
+     * @param array<int, array<string, array<int, mixed>>> $stored
+     * @param array<string, array<int, mixed>> $byLanguage
+     *
+     * @throws Exception
+     */
+    private function writeLanguages(
+        Classificationstore $container,
+        array $keyConfigs,
+        array &$stored,
+        array $byLanguage,
+        bool $isPatch = false
+    ): void {
+        $this->createQualifiedAdapter(
+            $keyConfigs,
+            $stored,
+            self::BOTH_CAPABILITIES,
+            toolResolver: $this->makeEmpty(ToolResolverInterface::class, ['getValidLanguages' => [self::GERMAN]])
+        )->getDataForSetter(
+            $this->makeEmpty(Concrete::class, ['get' => $container]),
+            $this->createQualifiedFieldDefinition($keyConfigs, isLocalized: true),
+            'myStore',
+            ['myStore' => [
+                self::QUALIFIED_GROUP => $byLanguage,
+                'activeGroups' => [self::QUALIFIED_GROUP => true],
+            ]],
+            $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
+            isPatch: $isPatch
+        );
+    }
+
+    /**
+     * Writes each request in turn over one container and answers a reader of what core's
+     * `getKeyValues()` then holds, by language and variant.
+     *
+     * @param array<int, array<string, array<int, mixed>>> $requests
+     *
+     * @throws Exception
+     */
+    private function writeAndReadLanguages(array $requests): callable
+    {
+        $stored = [];
+        $slots = [];
+        $written = [];
+        $writtenEntries = [];
+        $keyConfigs = $this->qualifiedKeyConfigs();
+        $container = $this->createRecordingContainer(
+            $stored,
+            [self::QUALIFIED_GROUP => true],
+            $written,
+            $writtenEntries,
+            $slots
+        );
+
+        foreach ($requests as $byLanguage) {
+            $this->writeLanguages($container, $keyConfigs, $stored, $byLanguage);
+        }
+
+        return static fn (string $language, ?string $variant): array => $container->getKeyValues(
+            self::QUALIFIED_GROUP,
+            self::QUALIFIED_KEY,
+            $language,
+            $variant
+        );
     }
 
     /**
@@ -987,73 +1238,6 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
-     * The current value the key's own type adapter is handed is the one entry's, not the whole
-     * list: the list is the state of the key, and an adapter merging into the current value - a
-     * multi select or a relation in patch mode - would otherwise read the siblings of the value it
-     * is about.
-     *
-     * @throws Exception
-     */
-    public function testTheKeysTypeAdapterSeesTheCurrentValueOfTheOneEntryItConverts(): void
-    {
-        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
-            self::QUALIFIED_KEY => self::storedSlot([
-                ['v' => 'first'],
-                ['v' => 'second', 'p' => 1],
-                ['v' => 'third', 'p' => 2],
-            ]),
-        ]]];
-
-        $seen = $this->recordCurrentValuesSeenBySubAdapter(
-            $stored,
-            [self::QUALIFIED_KEY => [
-                ['v' => 'A'],
-                ['v' => 'B', 'p' => 1],
-                ['v' => 'C', 'p' => 2],
-                ['v' => 'D', 'var' => self::IMPERIAL],
-            ]]
-        );
-
-        // one current value per entry, matched by qualifier, and null where the row holds no entry
-        $this->assertSame(['first', 'second', 'third', null], $seen);
-    }
-
-    /**
-     * On a store whose engine reports neither capability, a write that resolves to the single
-     * default slot - one entry, no variant, position 0 - succeeds, and stores it as the one-entry
-     * list the key's declaration puts it in rather than as the bare value.
-     *
-     * The shape of a declaring key's slot does not depend on how many entries are in it, which is
-     * what {@see self::testAStoredEntryHoldingAnEntryShapedValueSurvivesTheRoundTrip()} needs: the
-     * bare value this used to collapse to was indistinguishable from the value of a key whose own
-     * type normalizes to a list of entry-shaped objects.
-     *
-     * @throws Exception
-     */
-    public function testTheSingleDefaultSlotIsWrittenOnAnEngineReportingNoCapability(): void
-    {
-        $this->assertSame(
-            [[self::QUALIFIED_GROUP, self::QUALIFIED_KEY, [['v' => '80']], self::LANGUAGE]],
-            $this->writeAndRecord(
-                $this->qualifiedKeyConfigs(),
-                [self::QUALIFIED_KEY => [['v' => '80']]],
-                capabilities: []
-            )
-        );
-
-        // and the same for a client that sends the value itself rather than a list: what it sends
-        // decides which entry is written, never which shape the slot is stored in
-        $this->assertSame(
-            [[self::QUALIFIED_GROUP, self::QUALIFIED_KEY, [['v' => '80']], self::LANGUAGE]],
-            $this->writeAndRecord(
-                $this->qualifiedKeyConfigs(),
-                [self::QUALIFIED_KEY => '80'],
-                capabilities: []
-            )
-        );
-    }
-
-    /**
      * Only a write that actually needs the missing capability is refused, and it is refused before
      * anything is written.
      *
@@ -1080,26 +1264,6 @@ final class ClassificationStoreAdapterTest extends Unit
         }
 
         $this->assertSame([], $written);
-    }
-
-    /**
-     * Declaring a variant never makes the key uneditable: the same declaration that refuses a
-     * two-entry list on this engine still accepts the default slot.
-     *
-     * @throws Exception
-     */
-    public function testDeclaringAVariantDoesNotMakeTheKeyUneditable(): void
-    {
-        $written = $this->writeAndRecord(
-            $this->qualifiedKeyConfigs(['variants' => [self::METRIC, self::IMPERIAL]]),
-            [self::QUALIFIED_KEY => [['v' => '80']]],
-            capabilities: []
-        );
-
-        $this->assertSame(
-            [[self::QUALIFIED_GROUP, self::QUALIFIED_KEY, [['v' => '80']], self::LANGUAGE]],
-            $written
-        );
     }
 
     /**
@@ -1152,50 +1316,6 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
-     * The capability gate is fail-closed on the one answer the production resolver gives against a
-     * core that ships no engine resolver at all - null, from
-     * {@see StoreEngineResolverInterface::getCapabilitiesOfStore()}. That is the very core the gate
-     * exists to protect, so a write needing a capability is refused there rather than going through
-     * unchecked, and nothing is written.
-     *
-     * @throws Exception
-     */
-    public function testAWriteNeedingACapabilityIsRefusedWhereTheCoreCannotBeAsked(): void
-    {
-        $written = [];
-
-        try {
-            $this->writeAndRecord(
-                $this->qualifiedKeyConfigs(),
-                [self::QUALIFIED_KEY => [
-                    ['v' => '80', 'var' => self::METRIC],
-                    ['v' => '176', 'var' => self::IMPERIAL],
-                ]],
-                capabilities: null,
-                written: $written
-            );
-            $this->fail('Expected the write to be refused.');
-        } catch (AbstractApiException $exception) {
-            $this->assertSame(
-                HttpResponseErrorKeys::ENGINE_CAPABILITY_MISSING->value,
-                $exception->getErrorKey()
-            );
-        }
-
-        $this->assertSame([], $written);
-
-        // and the sibling case stays open: the single default slot needs no capability to be written
-        $this->assertSame(
-            [[self::QUALIFIED_GROUP, self::QUALIFIED_KEY, [['v' => '80']], self::LANGUAGE]],
-            $this->writeAndRecord(
-                $this->qualifiedKeyConfigs(),
-                [self::QUALIFIED_KEY => [['v' => '80']]],
-                capabilities: null
-            )
-        );
-    }
-
-    /**
      * A value of an encrypted key that did not come back encrypted refuses the write.
      *
      * {@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait::validateEncryptedField()}
@@ -1221,437 +1341,6 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
-     * The sibling case: a value that did come back encrypted is stored, as the entry list carrying
-     * it. So the refusal above is the guard firing on a value that went missing, and not encrypted
-     * keys being closed to qualified writes.
-     *
-     * @throws Exception
-     */
-    public function testAnEncryptedEntryThatCameBackEncryptedIsStored(): void
-    {
-        $written = $this->writeEncryptedEntries(wrapped: true);
-
-        $this->assertCount(1, $written);
-        $this->assertSame(
-            [self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE],
-            [$written[0][0], $written[0][1], $written[0][3]]
-        );
-
-        $entries = $written[0][2];
-
-        $this->assertSame([['v'], ['v', 'var']], [array_keys($entries[0]), array_keys($entries[1])]);
-        $this->assertSame(
-            ['80', '176'],
-            [$entries[0]['v']->getPlain(), $entries[1]['v']->getPlain()]
-        );
-    }
-
-    /**
-     * A patch is held to what the request actually named.
-     *
-     * {@see ClassificationStoreAdapter} merges the stored store into the write, so a slot the
-     * request never supplied arrives inside this bundle's own patch. It must not then be judged
-     * against the key's declaration as that declaration reads now, or a patch touching one key
-     * would fail because another key of the same bucket holds a variant an administrator has since
-     * removed from it.
-     *
-     * @throws Exception
-     */
-    public function testAPatchIsNotRefusedByAnEntryItNeverSupplied(): void
-    {
-        $keyConfigs = [
-            self::QUALIFIED_KEY => $this->createKeyConfig([
-                'variants' => [self::METRIC, self::IMPERIAL],
-                'multiValue' => true,
-            ]),
-            // the declaration has narrowed: the stored imperial entry below is no longer permitted
-            self::OTHER_QUALIFIED_KEY => $this->createKeyConfig(['variants' => [self::METRIC]]),
-        ];
-
-        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
-            self::QUALIFIED_KEY => self::storedSlot([['v' => '80'], ['v' => '81', 'p' => 1]]),
-            self::OTHER_QUALIFIED_KEY => self::storedSlot([['v' => '176', 'var' => self::IMPERIAL]]),
-        ]]];
-
-        $written = [];
-        $container = $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true], $written);
-        $adapter = $this->createQualifiedAdapter($keyConfigs, $stored, self::BOTH_CAPABILITIES);
-
-        $adapter->getDataForSetter(
-            $this->makeEmpty(Concrete::class, ['get' => $container]),
-            $this->createQualifiedFieldDefinition($keyConfigs),
-            'myStore',
-            ['myStore' => [
-                self::QUALIFIED_GROUP => [
-                    self::LANGUAGE => [self::QUALIFIED_KEY => [['v' => 'patched', 'p' => 1]]],
-                ],
-                'activeGroups' => [self::QUALIFIED_GROUP => true],
-            ]],
-            $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
-            isPatch: true
-        );
-
-        // the named key alone is written, and the slot the request never named keeps what it held
-        $this->assertSame(
-            [[self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::storedSlot([
-                ['v' => '80'],
-                ['v' => 'patched', 'p' => 1],
-            ]), self::LANGUAGE]],
-            $written
-        );
-        $this->assertSame(
-            self::storedSlot([['v' => '176', 'var' => self::IMPERIAL]]),
-            $stored[self::QUALIFIED_GROUP][self::LANGUAGE][self::OTHER_QUALIFIED_KEY]
-        );
-    }
-
-    /**
-     * Narrowing a declaration HIDES the entries it no longer permits - a read does not publish them
-     * - and a write that does not mention them leaves them in the row: absence from a payload is
-     * not a clear.
-     *
-     * The test that can fail is the last assertion: the ROW read after the PUT of exactly what the
-     * GET returned, not the GET itself. Deleting the carry-over in the write path turns it red.
-     *
-     * @throws Exception
-     */
-    public function testAPutOfWhatAReadPublishedKeepsTheEntriesTheNarrowedDeclarationHides(): void
-    {
-        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
-            self::QUALIFIED_KEY => self::storedSlot([
-                ['v' => '80', 'var' => self::METRIC],
-                ['v' => '176', 'var' => self::IMPERIAL],
-            ]),
-        ]]];
-
-        // the declaration has narrowed: `imperial` has left it, and the stored imperial value stays
-        $keyConfigs = [
-            self::QUALIFIED_KEY => $this->createKeyConfig(['variants' => [self::METRIC], 'multiValue' => true]),
-            self::PLAIN_KEY => $this->createKeyConfig(['fieldtype' => 'input']),
-        ];
-
-        $container = $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]);
-        $adapter = $this->createQualifiedAdapter($keyConfigs, $stored, self::BOTH_CAPABILITIES);
-        $fieldDefinition = $this->createQualifiedFieldDefinition($keyConfigs);
-
-        $published = $adapter->getDetailData($this->makeEmpty(Concrete::class), $container, $fieldDefinition);
-        $slot = $published[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY];
-
-        $this->assertSame([['v' => '80', 'var' => self::METRIC]], $slot);
-
-        $this->writeKeys($adapter, $container, $fieldDefinition, [self::QUALIFIED_KEY => $slot]);
-
-        $this->assertSame(
-            self::storedSlot([['v' => '80', 'var' => self::METRIC], ['v' => '176', 'var' => self::IMPERIAL]]),
-            $stored[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]
-        );
-
-        // a PATCH of the same slot keeps it too, and an entry the write adds sits beside it
-        $this->writeKeys(
-            $adapter,
-            $container,
-            $fieldDefinition,
-            [self::QUALIFIED_KEY => [['v' => '81', 'p' => 1]]],
-            isPatch: true
-        );
-
-        $this->assertSame(
-            self::storedSlot([
-                ['v' => '80', 'var' => self::METRIC],
-                ['v' => '81', 'p' => 1],
-                ['v' => '176', 'var' => self::IMPERIAL],
-            ]),
-            $stored[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]
-        );
-    }
-
-    /**
-     * The case the test above does not reach: narrowing leaves NOTHING visible, so the read
-     * publishes the empty entry list, and a PUT of exactly that has to be lossless as well.
-     *
-     * The empty list is no entry rather than one entry holding the empty array
-     * ({@see \Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParserInterface::parseEntries()}),
-     * so the row keeps the hidden entries and gains no default entry the client never sent - which
-     * for a key of a scalar type would be the empty array handed to its own adapter.
-     *
-     * @throws Exception
-     */
-    public function testAPutOfTheEmptyListAReadPublishedKeepsEveryHiddenEntryAndAddsNone(): void
-    {
-        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
-            self::QUALIFIED_KEY => self::storedSlot([
-                ['v' => '176', 'var' => self::IMPERIAL],
-                ['v' => '177', 'var' => self::IMPERIAL, 'p' => 1],
-            ]),
-        ]]];
-
-        // every stored entry names a variant the declaration no longer carries
-        $keyConfigs = $this->qualifiedKeyConfigs(['variants' => [self::METRIC], 'multiValue' => true]);
-        $container = $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]);
-        $adapter = $this->createQualifiedAdapter($keyConfigs, $stored, self::BOTH_CAPABILITIES);
-        $fieldDefinition = $this->createQualifiedFieldDefinition($keyConfigs);
-
-        $published = $adapter->getDetailData($this->makeEmpty(Concrete::class), $container, $fieldDefinition);
-        $slot = $published[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY];
-
-        $this->assertSame([], $slot);
-
-        $this->writeKeys($adapter, $container, $fieldDefinition, [self::QUALIFIED_KEY => $slot]);
-
-        $this->assertSame(
-            self::storedSlot([
-                ['v' => '176', 'var' => self::IMPERIAL],
-                ['v' => '177', 'var' => self::IMPERIAL, 'p' => 1],
-            ]),
-            $stored[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]
-        );
-    }
-
-    /**
-     * The sibling of the case above, where there is nothing hidden either: a write clearing every
-     * entry of a declaring key leaves the slot holding the empty entry list, and a read of it
-     * publishes the empty list it was handed.
-     *
-     * Not nothing: a slot nothing was ever written to is where the key's configured default
-     * applies, and a cleared key must not be refilled from it
-     * ({@see self::testClearingAKeyWithADefaultIsNotAnsweredByTheNextReadWithThatDefault()}).
-     *
-     * `[]` can be stored at this slot and mean the empty entry list because the key's declaration
-     * says which shape the slot is in. At the slot of a key declaring nothing the same `[]` is that
-     * key's own empty value - the multi-select selecting nothing - and is read as one, which
-     * `QualifiedValueSerializerTest::testAValueOfAKeyDeclaringNothingIsNeverReadAsEntries()` holds.
-     *
-     * @throws Exception
-     */
-    public function testAWriteOfTheEmptyListStoresTheEmptyEntryListWhereNothingIsHidden(): void
-    {
-        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
-            self::QUALIFIED_KEY => self::storedSlot([['v' => '80'], ['v' => '176', 'var' => self::IMPERIAL]]),
-        ]]];
-
-        $written = $this->writeAndRecord(
-            $this->qualifiedKeyConfigs(),
-            [self::QUALIFIED_KEY => []],
-            $stored,
-            capabilities: self::BOTH_CAPABILITIES
-        );
-
-        $this->assertSame(
-            [[self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::storedSlot([]), self::LANGUAGE]],
-            $written
-        );
-    }
-
-    /**
-     * A key with a configured default, cleared: the next read publishes the empty list and not that
-     * default, so a PUT of what it publishes adds nothing the clearing request never supplied.
-     *
-     * `quantityValue` and `inputQuantityValue` are the two key types that carry a default
-     * ({@see ClassificationStoreAdapter::getDefaultValue()}), and the default is applied to a slot
-     * the row holds nothing at - which, after a clearing write, this slot is not.
-     *
-     * Both arms are asserted over the one key, because the default has to keep applying where it
-     * always did: a slot nothing was ever written to still publishes it, as the entry the
-     * declaration makes it.
-     *
-     * @throws Exception
-     */
-    public function testClearingAKeyWithADefaultIsNotAnsweredByTheNextReadWithThatDefault(): void
-    {
-        $stored = [];
-        $keyConfigs = $this->qualifiedKeyConfigs();
-        $container = $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]);
-        $adapter = $this->createQualifiedAdapter(
-            $keyConfigs,
-            $stored,
-            self::BOTH_CAPABILITIES,
-            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
-                'getFieldDefinitionFromKeyConfig' => $this->make(QuantityValueDefinition::class, [
-                    'getName' => 'weight',
-                    'getDefaultValue' => 5.0,
-                    'getDefaultUnit' => null,
-                ]),
-            ])
-        );
-        $fieldDefinition = $this->createQualifiedFieldDefinition($keyConfigs);
-
-        // nothing was ever written: the key's default applies, as the entry the declaration makes it
-        $published = $adapter->getDetailData($this->makeEmpty(Concrete::class), $container, $fieldDefinition);
-        $slot = $published[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY];
-
-        $this->assertCount(1, $slot);
-        $this->assertInstanceOf(QuantityValue::class, $slot[0]['v']);
-        $this->assertSame(5.0, $slot[0]['v']->getValue());
-
-        // and a write clearing the key is answered with the empty list rather than with it again
-        $this->writeKeys($adapter, $container, $fieldDefinition, [self::QUALIFIED_KEY => []]);
-
-        $this->assertSame(
-            self::storedSlot([]),
-            $stored[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]
-        );
-
-        $published = $adapter->getDetailData($this->makeEmpty(Concrete::class), $container, $fieldDefinition);
-
-        $this->assertSame([], $published[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]);
-    }
-
-    /**
-     * The declaration decides on the write as it does on the read, with no leniency for what the
-     * row holds: the hidden variant is refused when a write names it, as is one never declared.
-     *
-     * @throws Exception
-     */
-    public function testAWriteNamingAnEntryTheDeclarationHidesIsRefused(): void
-    {
-        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
-            self::QUALIFIED_KEY => self::storedSlot([['v' => '176', 'var' => self::IMPERIAL]]),
-        ]]];
-        $keyConfigs = $this->qualifiedKeyConfigs(['variants' => [self::METRIC], 'multiValue' => true]);
-        $container = $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]);
-        $adapter = $this->createQualifiedAdapter($keyConfigs, $stored, self::BOTH_CAPABILITIES);
-
-        foreach ([self::IMPERIAL, 'nautical'] as $variant) {
-            try {
-                $this->writeKeys(
-                    $adapter,
-                    $container,
-                    $this->createQualifiedFieldDefinition($keyConfigs),
-                    [self::QUALIFIED_KEY => [['v' => '7', 'var' => $variant]]]
-                );
-                $this->fail('Expected the write to be refused.');
-            } catch (AbstractApiException $exception) {
-                $this->assertSame(HttpResponseErrorKeys::UNDECLARED_VARIANT->value, $exception->getErrorKey());
-            }
-        }
-    }
-
-    /**
-     * A key that has stopped declaring both members serializes as the single value its row holds,
-     * whatever that is: the declaration alone decides the shape, and this declaration says the slot
-     * holds one value, so the list the row still holds is that value and is published as it stands.
-     *
-     * **This is the boundary of the rule, and it records a decision rather than a defect found:**
-     * taking a declaration away entirely is a type change, the same act as turning a select into a
-     * date, and a type change preserves values nowhere in Pimcore. The entries the removed
-     * declaration hid are not read as entries any more, so they are neither published as entries
-     * nor found by the next write to be carried over - a PUT stores the value it supplied and
-     * nothing else. Narrowing a declaration *within* itself keeps hiding and
-     * keeping them, which is what core's `testNarrowingADeclarationKeepsTheValuesItHides` settles
-     * and what {@see self::testAPutOfWhatAReadPublishedKeepsTheEntriesTheNarrowedDeclarationHides()}
-     * holds here.
-     *
-     * The alternative is the rule this ticket removed - deciding the shape by what the value looks
-     * like - under which an ordinary table value was read as an entry list and reduced to its first
-     * cell for a key that declares nothing at all.
-     *
-     * Asserted on the row, so that neither half can pass on the slot travelling through untouched.
-     *
-     * @throws Exception
-     */
-    public function testAKeyThatStoppedDeclaringSerialisesTheOneValueItsRowHolds(): void
-    {
-        $list = [
-            ['v' => '176', 'var' => self::IMPERIAL],
-            ['v' => '80', 'p' => 0],
-        ];
-        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
-            self::QUALIFIED_KEY => $list,
-        ]]];
-
-        $keyConfigs = $this->qualifiedKeyConfigs(['fieldtype' => 'input']);
-
-        $container = $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]);
-        $adapter = $this->createQualifiedAdapter($keyConfigs, $stored, self::BOTH_CAPABILITIES);
-        $fieldDefinition = $this->createQualifiedFieldDefinition($keyConfigs);
-
-        $published = $adapter->getDetailData($this->makeEmpty(Concrete::class), $container, $fieldDefinition);
-
-        $this->assertSame($list, $published[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]);
-
-        // a PUT stores the one value it supplied, as the slot of a key declaring nothing has always
-        // stored it
-        $this->writeKeys($adapter, $container, $fieldDefinition, [self::QUALIFIED_KEY => '99']);
-        $this->assertSame('99', $stored[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]);
-    }
-
-    /**
-     * The sibling: a row holding only entries the *declaration it still has* hides publishes
-     * nothing, rather than falling back to the first entry it holds, and a write adds the default
-     * entry beside them. The key declares a variant it does not hold, so its slot is still read as
-     * the entry list it is - which is what tells this case from
-     * {@see self::testAKeyThatStoppedDeclaringSerialisesTheOneValueItsRowHolds()}.
-     *
-     * @throws Exception
-     */
-    public function testAKeyPublishesNoHiddenEntryAsItsValue(): void
-    {
-        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
-            self::QUALIFIED_KEY => self::storedSlot([['v' => '176', 'var' => self::IMPERIAL]]),
-        ]]];
-        $keyConfigs = $this->qualifiedKeyConfigs(['variants' => [self::METRIC]]);
-
-        $container = $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]);
-        $adapter = $this->createQualifiedAdapter($keyConfigs, $stored, self::BOTH_CAPABILITIES);
-        $fieldDefinition = $this->createQualifiedFieldDefinition($keyConfigs);
-
-        $published = $adapter->getDetailData($this->makeEmpty(Concrete::class), $container, $fieldDefinition);
-        $this->assertSame([], $published[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]);
-
-        $this->writeKeys($adapter, $container, $fieldDefinition, [self::QUALIFIED_KEY => [['v' => '80']]]);
-        $this->assertSame(
-            self::storedSlot([['v' => '80'], ['v' => '176', 'var' => self::IMPERIAL]]),
-            $stored[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]
-        );
-    }
-
-    /**
-     * The sibling of the patch test above, for the key that declares nothing any more: a patch it
-     * does not name is not refused for what its row holds - the engine here reports nothing, which
-     * the carried-over second position would need - and the hidden entries are still in the row.
-     *
-     * @throws Exception
-     */
-    public function testAPatchIsNotRefusedByAStoppedDeclaringKeyItNeverSuppliedAndKeepsItsRow(): void
-    {
-        $keyConfigs = [
-            self::QUALIFIED_KEY => $this->createKeyConfig([
-                'variants' => [self::METRIC, self::IMPERIAL],
-                'multiValue' => true,
-            ]),
-            // the declaration is gone, and the two values the slot holds have stayed
-            self::OTHER_QUALIFIED_KEY => $this->createKeyConfig(['fieldtype' => 'input']),
-        ];
-
-        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
-            self::QUALIFIED_KEY => self::storedSlot([['v' => '80']]),
-            self::OTHER_QUALIFIED_KEY => self::storedSlot([['v' => 'a'], ['v' => 'b', 'p' => 1]]),
-        ]]];
-
-        $container = $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]);
-        $adapter = $this->createQualifiedAdapter($keyConfigs, $stored, capabilities: []);
-
-        $this->writeKeys(
-            $adapter,
-            $container,
-            $this->createQualifiedFieldDefinition($keyConfigs),
-            [self::QUALIFIED_KEY => [['v' => 'patched']]],
-            isPatch: true
-        );
-
-        $this->assertSame(
-            self::storedSlot([['v' => 'patched']]),
-            $stored[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]
-        );
-        // the key the patch never named was not written at all, so whatever its row holds is
-        // untouched - which is how a patch leaves a slot it does not address
-        $this->assertSame(
-            [['v' => 'a'], ['v' => 'b', 'p' => 1]],
-            $stored[self::QUALIFIED_GROUP][self::LANGUAGE][self::OTHER_QUALIFIED_KEY]
-        );
-    }
-
-    /**
      * No entry of a qualified slot reaches the key's own type adapter as a patch.
      *
      * The patch of such a slot is resolved by qualifier before the entries are converted, so what
@@ -1663,13 +1352,7 @@ final class ClassificationStoreAdapterTest extends Unit
      */
     public function testNoEntryOfAQualifiedSlotIsHandedToTheKeysAdapterAsAPatch(): void
     {
-        $qualified = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
-            self::QUALIFIED_KEY => self::storedSlot([
-                ['v' => 'first'],
-                ['v' => 'second', 'p' => 1],
-                ['v' => 'third', 'p' => 2],
-            ]),
-        ]]];
+        $qualified = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => 'first']]];
 
         // one flag, because one entry was supplied: the two the merge carries over from the row
         // never reach the key's own type adapter at all, which is asserted over the value they keep
@@ -1689,33 +1372,6 @@ final class ClassificationStoreAdapterTest extends Unit
             [true],
             $this->recordPatchFlagsSeenBySubAdapter($plain, [self::PLAIN_KEY => 'patched'])
         );
-    }
-
-    /**
-     * What a grid cell shows for a slot serving a list, read through the one place that decides it,
-     * so that the cell and the search preview cannot disagree on which value they show.
-     *
-     * @throws Exception
-     */
-    public function testTheSearchPreviewShowsTheDefaultSlotOfAQualifiedKey(): void
-    {
-        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
-            self::QUALIFIED_KEY => self::storedSlot([
-                ['v' => '176', 'var' => self::IMPERIAL],
-                ['v' => '80'],
-            ]),
-        ]]];
-
-        $keyConfigs = $this->qualifiedKeyConfigs();
-        $adapter = $this->createQualifiedAdapter($keyConfigs, $stored);
-
-        $data = $adapter->getPreviewFieldData(
-            $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]),
-            $this->createQualifiedFieldDefinition($keyConfigs),
-            []
-        );
-
-        $this->assertSame('80', $data[self::PREVIEW_FIELD]['Measurements - key-' . self::QUALIFIED_KEY]);
     }
 
     /**
@@ -1759,60 +1415,6 @@ final class ClassificationStoreAdapterTest extends Unit
         );
 
         $this->assertSame([self::QUALIFIED_KEY => false, self::PLAIN_KEY => true], $resolved);
-    }
-
-    /**
-     * The sibling arm of that guard, the one that does resolve the value: the slot an ancestor holds
-     * is read under the key's declaration and under nothing else, so the declaring key resolves the
-     * default entry of its list and the key that declares nothing resolves the one value its row
-     * holds - which is that whole list, because no shape a value has makes it entries for a key
-     * declaring none. Asserted on the value the walk reads, which is both what gets resolved and
-     * what decides whether the element holds a value of its own at all.
-     *
-     * @throws Exception
-     */
-    public function testTheInheritedValueOfEachKeyIsReadUnderItsOwnDeclaration(): void
-    {
-        $read = [];
-        $list = self::storedSlot([['v' => '80'], ['v' => '176', 'var' => self::IMPERIAL]]);
-        // the plain key's row holds the list of a declaration since taken away: it is read as the
-        // one value the key now holds, and nothing of it is deleted by being read
-        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [
-            self::QUALIFIED_KEY => $list,
-            self::PLAIN_KEY => $list,
-        ]]];
-        $keyConfigs = $this->qualifiedKeyConfigs();
-        $adapter = $this->createQualifiedAdapter(
-            $keyConfigs,
-            $stored,
-            inheritanceService: $this->makeEmpty(InheritanceServiceInterface::class, [
-                'getFieldInheritanceData' => static function (
-                    Concrete $object,
-                    Data $fieldDefinition,
-                    string $key,
-                    ?FieldContextData $contextData = null
-                ) use (&$read): InheritanceData {
-                    $read[(int) $contextData?->getClassificationStoreKeyId()] =
-                        $contextData?->getFieldValueFromContextObject($key);
-
-                    return new InheritanceData(1);
-                },
-            ])
-        );
-
-        $adapter->getFieldInheritance(
-            $this->makeEmpty(Concrete::class, [
-                'get' => $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]),
-            ]),
-            $this->createQualifiedFieldDefinition($keyConfigs),
-            'myStore',
-            new FieldContextData(resolveInheritedValue: true)
-        );
-
-        // one rule for the whole walk, asked of each key's own declaration: the declaring key's
-        // slot reduces to the default entry, and the key declaring nothing holds the one value its
-        // row holds
-        $this->assertSame([self::QUALIFIED_KEY => '80', self::PLAIN_KEY => $list], $read);
     }
 
     /**
@@ -1945,11 +1547,19 @@ final class ClassificationStoreAdapterTest extends Unit
      *
      * @throws Exception
      */
-    private function recordCurrentValuesSeenBySubAdapter(array &$stored, array $keys): array
+    private function recordCurrentValuesSeenBySubAdapter(array &$stored, array $keys, array &$slots = []): array
     {
         $seen = [];
         $keyConfigs = $this->qualifiedKeyConfigs();
-        $container = $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]);
+        $written = [];
+        $writtenEntries = [];
+        $container = $this->createRecordingContainer(
+            $stored,
+            [self::QUALIFIED_GROUP => true],
+            $written,
+            $writtenEntries,
+            $slots
+        );
 
         $subAdapter = $this->makeEmpty(SetterDataInterface::class, [
             'getDataForSetter' => static function (
@@ -2034,33 +1644,19 @@ final class ClassificationStoreAdapterTest extends Unit
         $declaration ??= ['variants' => [self::METRIC, self::IMPERIAL], 'multiValue' => true];
 
         return [
-            self::QUALIFIED_KEY => $this->createKeyConfig($declaration),
+            self::QUALIFIED_KEY => $this->createKeyConfig($declaration, MultiValueServiceResolver::MULTI_VALUE_TYPE),
             self::PLAIN_KEY => $this->createKeyConfig(['fieldtype' => 'input']),
         ];
     }
 
     /**
-     * The slot as the row holds it at a key that declares qualifiers: the entry list, which is the
-     * same list a read publishes and a write supplies. Named rather than spelled out, so that a
-     * fixture meant as a *stored* slot says so where the declaration it is read under is set up
-     * lines away.
-     *
-     * @param array<int, array<string, mixed>> $entries
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    private static function storedSlot(array $entries): array
-    {
-        return $entries;
-    }
-
-    /**
      * @param array<string, mixed> $definition
      */
-    private function createKeyConfig(array $definition): KeyConfig
+    private function createKeyConfig(array $definition, string $type = 'input'): KeyConfig
     {
         $keyConfig = new KeyConfig();
         $keyConfig->setName('weight');
+        $keyConfig->setType($type);
         $keyConfig->setDefinition((string) json_encode($definition));
 
         return $keyConfig;
@@ -2088,9 +1684,15 @@ final class ClassificationStoreAdapterTest extends Unit
         ?array $capabilities = null,
         array &$written = [],
         ?DataAdapterServiceInterface $dataAdapterService = null,
-        ?ServiceResolverInterface $serviceResolver = null
+        ?ServiceResolverInterface $serviceResolver = null,
+        array &$writtenEntries = []
     ): array {
-        $container = $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true], $written);
+        $container = $this->createRecordingContainer(
+            $stored,
+            [self::QUALIFIED_GROUP => true],
+            $written,
+            $writtenEntries
+        );
         $adapter = $this->createQualifiedAdapter(
             $keyConfigs,
             $stored,
@@ -2165,19 +1767,26 @@ final class ClassificationStoreAdapterTest extends Unit
 
     /**
      * The storage boundary, held in the array handed in: the values this suite has no database for
-     * go in on setLocalizedKeyValue and come back out on getLocalizedKeyValue, so a read asserts
-     * what the write actually left behind.
+     * go in on setLocalizedKeyValue and setKeyValues and come back out on getLocalizedKeyValue and
+     * getKeyValues, so a read asserts what the write actually left behind.
+     *
+     * `setKeyValues()` is core's: it replaces every (language, variant) slot its entries name and
+     * leaves every other slot alone, and position 0 of the default variant is the value
+     * `$stored` holds at (group, language, key).
      *
      * @param array<int, array<string, array<int, mixed>>> $stored
      * @param array<int, bool> $activeGroups
      * @param array<int, array<int, mixed>> $written
+     * @param array<int, array<int, MultiValue[]>> $writtenEntries one list per setKeyValues call
      *
      * @throws Exception
      */
     private function createRecordingContainer(
         array &$stored,
         array $activeGroups,
-        array &$written = []
+        array &$written = [],
+        array &$writtenEntries = [],
+        array &$slots = []
     ): Classificationstore {
         $container = $this->make(Classificationstore::class, [
             'getObject' => $this->makeEmpty(Concrete::class),
@@ -2204,6 +1813,50 @@ final class ClassificationStoreAdapterTest extends Unit
             ) use (&$stored): mixed {
                 return $stored[$groupId][$language][$keyId] ?? null;
             },
+            'setKeyValues' => function (
+                int $groupId,
+                int $keyId,
+                array $entries
+            ) use (&$stored, &$slots, &$writtenEntries, &$container) {
+                $writtenEntries[] = $entries;
+
+                $replaced = [];
+                foreach ($entries as $entry) {
+                    $language = $entry->getLanguage() ?? 'default';
+                    $variant = $entry->getVariant() ?? '';
+                    $replaced[$language][$variant][$entry->getPosition() ?? 0] = $entry->getValue();
+                }
+
+                foreach ($replaced as $language => $variants) {
+                    foreach ($variants as $variant => $values) {
+                        $values = array_filter($values, static fn (mixed $value): bool => $value !== null);
+                        ksort($values);
+                        $slots[$groupId][$keyId][$language][$variant] = $values;
+
+                        if ($variant === '') {
+                            $stored[$groupId][$language][$keyId] = $values[0] ?? null;
+                        }
+                    }
+                }
+
+                return $container;
+            },
+            'getKeyValues' => static function (
+                int $groupId,
+                int $keyId,
+                ?string $language = null,
+                ?string $variant = null
+            ) use (&$stored, &$slots): array {
+                $language ??= 'default';
+                $values = $slots[$groupId][$keyId][$language][$variant ?? ''] ?? [];
+
+                if ($variant === null && ($stored[$groupId][$language][$keyId] ?? null) !== null) {
+                    $values[0] = $stored[$groupId][$language][$keyId];
+                    ksort($values);
+                }
+
+                return $values;
+            },
         ]);
 
         return $container;
@@ -2224,7 +1877,8 @@ final class ClassificationStoreAdapterTest extends Unit
         ?LanguageServiceInterface $languageService = null,
         ?ServiceResolverInterface $serviceResolver = null,
         ?InheritanceServiceInterface $inheritanceService = null,
-        ?DataServiceInterface $dataService = null
+        ?DataServiceInterface $dataService = null,
+        ?ToolResolverInterface $toolResolver = null
     ): ClassificationStoreAdapter {
         $relations = [];
         foreach (array_keys($keyConfigs) as $keyId) {
@@ -2277,6 +1931,7 @@ final class ClassificationStoreAdapterTest extends Unit
                 ]),
             ]),
             storeEngineResolver: $this->createStoreEngineResolver($capabilities),
+            toolResolver: $toolResolver,
         );
     }
 
@@ -2482,7 +2137,7 @@ final class ClassificationStoreAdapterTest extends Unit
     ): ClassificationStoreAdapter {
         // the real two: both are pure readers of the key's own declaration, and standing them in
         // would leave what `variants` and `multiValue` mean untested on this path
-        $keyQualifierResolver = new KeyQualifierResolver();
+        $keyQualifierResolver = new KeyQualifierResolver(new MultiValueServiceResolver());
 
         return new ClassificationStoreAdapter(
             $dataObjectServiceResolver ?? $this->makeEmpty(DataObjectServiceResolverInterface::class),

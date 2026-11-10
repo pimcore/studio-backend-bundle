@@ -189,7 +189,7 @@ final class KeyLabelPathAgreementTest extends Unit
             $labelResolver,
             $labelLanguageResolver,
             new InMemoryKeyLocalizationResolver(),
-            new KeyQualifierResolver()
+            new KeyQualifierResolver($serviceResolver)
         );
     }
 

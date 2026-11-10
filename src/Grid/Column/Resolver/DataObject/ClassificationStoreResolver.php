@@ -115,16 +115,11 @@ final class ClassificationStoreResolver implements
             $value = null;
         }
 
-        // one cell holds one value, so a key declaring qualifiers shows its default slot; a key
-        // declaring nothing was published as one value already, whatever its row still holds.
-        //
-        // The list the adapter published is the list the row holds, so the one reader answers for
-        // both and the cell cannot drift from the export ({@see self::resolveForExport()}). The
-        // empty list a key publishes whose declaration hides every entry it holds reduces to null
-        // here - an empty cell - which is the same nothing the export selects out of that row
+        // one cell holds one value, so a `multiValue` key shows its default slot - the same reduction
+        // the export makes ({@see self::resolveForExport()})
         $keyConfig = KeyConfig::getById($config->getKeyId());
         if ($keyConfig instanceof KeyConfig && $this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
-            $value = $this->qualifiedValueSerializer->getDefaultSlotValue($value, $keyConfig);
+            $value = $this->qualifiedValueSerializer->getDefaultSlotValue($value);
         }
 
         $keyGroupRelation = $this->findKeyGroupRelation($config->getGroupId(), $config->getKeyId());
@@ -190,12 +185,13 @@ final class ClassificationStoreResolver implements
             'language' => $locale,
         ]];
 
-        // the cell shows the visible default slot, so the export injects that same one value
-        $storedSlot = $this->getStoredSlot($element, $column->getKey(), $config, $locale);
+        // the cell shows the default slot of a `multiValue` key, so the export injects that same one value
+        $defaultValue = $this->keyQualifierResolver->declaresQualifiers($keyConfig)
+            ? $this->getDefaultSlotValue($element, $column->getKey(), $config, $locale, $keyConfig)
+            : null;
 
-        if ($this->qualifiedValueSerializer->holdsEntries($storedSlot, $keyConfig)) {
-            $legacyParameters['injectedData'] = $this->qualifiedValueSerializer
-                ->getDefaultSlotValue($storedSlot, $keyConfig);
+        if ($defaultValue !== null) {
+            $legacyParameters['injectedData'] = $defaultValue;
         }
 
         $value = $this->dataService->getExportFieldValue(
@@ -273,22 +269,22 @@ final class ClassificationStoreResolver implements
     }
 
     /**
-     * The value the row holds at one slot, read the way the export's own read reads it.
+     * The one value a `multiValue` key shows at a (group, key, language): the values the store holds,
+     * reduced the way the grid cell reduces the payload the object data endpoint publishes.
      *
      * The export is formatted by the key's own field definition, which reads the slot itself and
      * cannot be handed a value - except through `injectedData`, which
      * {@see \Pimcore\Model\DataObject\ClassDefinition\Data::getDataFromObjectParam()} honours ahead
-     * of its own read and {@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\EncryptedFieldAdapter}
-     * already uses. So the slot is read here, reduced, and injected, rather than the definition
-     * being handed the list {@see self::resolveForCoreElement()} reduces away for the cell.
+     * of its own read.
      *
      * @throws Exception
      */
-    private function getStoredSlot(
+    private function getDefaultSlotValue(
         Concrete $element,
         string $fieldName,
         ClassificationStoreConfig $config,
-        string $locale
+        string $locale,
+        KeyConfig $keyConfig
     ): mixed {
         // the guard core's own read of this slot makes, so that a saved column naming a field the
         // class no longer has keeps exporting an empty cell rather than failing the export
@@ -302,12 +298,16 @@ final class ClassificationStoreResolver implements
             return null;
         }
 
-        return $container->getLocalizedKeyValue(
-            $config->getGroupId(),
-            $config->getKeyId(),
-            $locale,
-            true,
-            true
+        return $this->qualifiedValueSerializer->getDefaultSlotValue(
+            $this->qualifiedValueSerializer->toPayload(
+                $this->qualifiedValueSerializer->readStoredEntries(
+                    $container,
+                    $config->getGroupId(),
+                    $config->getKeyId(),
+                    $locale,
+                    $keyConfig
+                )
+            )
         );
     }
 

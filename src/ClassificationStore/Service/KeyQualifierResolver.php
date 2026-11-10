@@ -14,93 +14,73 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use JsonException;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
+use Pimcore\Model\DataObject\ClassDefinition\Data\MultiValue;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
-use function array_is_list;
+use ReflectionProperty;
 use function is_array;
-use function is_bool;
-use function is_string;
 use function json_decode;
-use function method_exists;
 
 /**
  * @internal
  */
 final readonly class KeyQualifierResolver implements KeyQualifierResolverInterface
 {
-    private const string VARIANTS_GETTER = 'getVariants';
+    private const string TYPE_PROPERTY = 'type';
 
-    private const string MULTI_VALUE_GETTER = 'getMultiValue';
+    public function __construct(
+        private ServiceResolverInterface $serviceResolver,
+    ) {
+    }
 
     public function declaresQualifiers(KeyConfig $keyConfig): bool
     {
-        $variants = $this->getVariants($keyConfig);
-
-        return ($variants !== null && $variants !== []) || $this->isMultiValue($keyConfig) === true;
+        return $this->getDeclaration($keyConfig) !== null;
     }
 
     public function getVariants(KeyConfig $keyConfig): ?array
     {
-        $declared = $this->accessor($keyConfig, self::VARIANTS_GETTER)
-            ?? $this->member($keyConfig, self::VARIANTS_MEMBER);
+        return $this->getDeclaration($keyConfig)?->getVariantNames();
+    }
 
-        // An ordered list of names, so a JSON object is not one: `{"variants":{"label":"metric"}}`
-        // decodes to an array whose keys are its members, and reading its values as names would
-        // turn a key that declares no list at all into one permitting a variant called `metric`.
-        if (!is_array($declared) || !array_is_list($declared)) {
-            return null;
-        }
-
-        $names = [];
-        foreach ($declared as $name) {
-            if (is_string($name) && $name !== '') {
-                $names[] = $name;
-            }
-        }
-
-        return $names;
+    public function getVariantDeclarations(KeyConfig $keyConfig): ?array
+    {
+        return $this->getDeclaration($keyConfig)?->getVariants();
     }
 
     public function isMultiValue(KeyConfig $keyConfig): ?bool
     {
-        $declared = $this->accessor($keyConfig, self::MULTI_VALUE_GETTER)
-            ?? $this->member($keyConfig, self::MULTI_VALUE_MEMBER);
+        return $this->getDeclaration($keyConfig)?->isMultiValue();
+    }
 
-        return is_bool($declared) ? $declared : null;
+    public function getMaximum(KeyConfig $keyConfig): ?int
+    {
+        return $this->getDeclaration($keyConfig)?->getMaximum();
     }
 
     /**
-     * The member as the key's `definition` blob carries it, which is where the declaration lives.
-     * A blob that is absent or not readable as JSON declares nothing rather than failing the read.
+     * The key's field definition, resolved from its type and its `definition` blob, when that is a
+     * core `multiValue` definition. A blob that is not readable as JSON declares nothing.
      */
-    private function member(KeyConfig $keyConfig, string $member): mixed
+    private function getDeclaration(KeyConfig $keyConfig): ?MultiValue
     {
-        $definition = $keyConfig->getDefinition();
-
-        if ($definition === '') {
+        // `$type` has no default: a key config that was never hydrated has no type to resolve by
+        if (!(new ReflectionProperty($keyConfig, self::TYPE_PROPERTY))->isInitialized($keyConfig)) {
             return null;
         }
 
         try {
-            $decoded = json_decode($definition, true, 512, JSON_THROW_ON_ERROR);
+            $decoded = json_decode($keyConfig->getDefinition(), true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
             return null;
         }
 
-        return is_array($decoded) ? ($decoded[$member] ?? null) : null;
-    }
-
-    /**
-     * The accessor by name: a later core may carry the declaration as a column of its own, and
-     * against one that does not the member of the `definition` blob is what answers. Asked by name
-     * for the reason {@see KeyLocalizationResolver::accessor()} asks by name - the method is not
-     * this package's and the core whose it is need not have it.
-     */
-    private function accessor(KeyConfig $keyConfig, string $accessor): mixed
-    {
-        if (!method_exists($keyConfig, $accessor)) {
+        if (!is_array($decoded)) {
             return null;
         }
 
-        return $keyConfig->$accessor();
+        $definition = $this->serviceResolver->getFieldDefinitionFromJson($decoded, $keyConfig->getType());
+
+        return $definition instanceof MultiValue ? $definition : null;
     }
 }

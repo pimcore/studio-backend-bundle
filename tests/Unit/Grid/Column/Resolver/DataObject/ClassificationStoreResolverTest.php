@@ -34,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ClassificationStoreConfig;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\MultiValueServiceResolver;
 use Pimcore\Cache\RuntimeCache;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Classificationstore;
@@ -58,6 +59,8 @@ final class ClassificationStoreResolverTest extends Unit
     private const string COLUMN_TYPE = 'dataobject.classificationstore';
 
     private const string KEY_CONFIG_CACHE_KEY = 'cs_keyconfig_' . self::KEY_ID;
+
+    private const string INPUT_TYPE = 'input';
 
     private const string GROUP_IDENTIFIER = 'product-data';
 
@@ -109,9 +112,9 @@ final class ClassificationStoreResolverTest extends Unit
     }
 
     /**
-     * One grid cell holds one value, so a key serving a list of qualified ones shows its default
-     * slot rather than being handed the whole list - the cell is typed on the key's own field type,
-     * which cannot render a list of entry objects.
+     * One grid cell holds one value, so a `multiValue` key serving a list of qualified ones shows its
+     * default slot rather than being handed the whole list - the cell is typed on the key's own field
+     * type, which cannot render a list of entry objects.
      *
      * @dataProvider cellValueProvider
      *
@@ -119,9 +122,13 @@ final class ClassificationStoreResolverTest extends Unit
      *
      * @throws Exception
      */
-    public function testACellShowsTheDefaultSlotOfTheKeysSlot(array $declaration, mixed $normalized, mixed $expected): void
-    {
-        $this->primeKeyConfig($declaration);
+    public function testACellShowsTheDefaultSlotOfTheKeysSlot(
+        string $type,
+        array $declaration,
+        mixed $normalized,
+        mixed $expected
+    ): void {
+        $this->primeKeyConfig($declaration, $type);
 
         $result = $this->createResolver($normalized)->resolveForCoreElement(
             $this->createKeyColumn(),
@@ -132,49 +139,57 @@ final class ClassificationStoreResolverTest extends Unit
     }
 
     /**
-     * @return array<string, array{0: array<string, mixed>, 1: mixed, 2: mixed}>
+     * @return array<string, array{0: string, 1: array<string, mixed>, 2: mixed, 3: mixed}>
      */
     public static function cellValueProvider(): array
     {
+        $multiValue = MultiValueServiceResolver::MULTI_VALUE_TYPE;
         $declaring = ['variants' => ['metric', 'imperial'], 'multiValue' => true];
         $plain = ['fieldtype' => 'input'];
 
         return [
             'a list of qualified entries' => [
+                $multiValue,
                 $declaring,
                 [['v' => '176', 'var' => 'imperial'], ['v' => '80']],
                 '80',
             ],
-            // every key that declares nothing keeps reaching the cell untouched
-            'a single value' => [$plain, '80', '80'],
-            'a multi select value' => [$plain, ['red', 'green'], ['red', 'green']],
-            'the string zero' => [$plain, '0', '0'],
-            'an empty slot' => [$plain, null, null],
-            'an empty qualified slot' => [$declaring, null, null],
+            'an empty qualified slot' => [$multiValue, $declaring, null, null],
+            // every key that is not of type `multiValue` keeps reaching the cell untouched
+            'a single value' => [self::INPUT_TYPE, $plain, '80', '80'],
+            'a multi select value' => [self::INPUT_TYPE, $plain, ['red', 'green'], ['red', 'green']],
+            'the string zero' => [self::INPUT_TYPE, $plain, '0', '0'],
+            'an empty slot' => [self::INPUT_TYPE, $plain, null, null],
+            'a blob naming variants on another type' => [
+                self::INPUT_TYPE,
+                $declaring,
+                [['v' => '176', 'var' => 'imperial'], ['v' => '80']],
+                [['v' => '176', 'var' => 'imperial'], ['v' => '80']],
+            ],
         ];
     }
 
     /**
-     * The cell and the export of one column show the same value, asserted over one fixture rather
-     * than separately: the row holds a list, the cell is handed what the adapter publishes for it
-     * under each declaration, and the export is handed the one value it injects for the same row.
-     *
-     * The declaration alone decides what each shows, so a narrowed declaration never shows the
-     * entry it hides, in either. A key that declares nothing is not a case of this at all - its
-     * slot holds no entry list to reduce - and is held by
-     * {@see self::testAValueShapedLikeAnEntryListReachesTheCellWhole()} and
-     * {@see self::testAKeyThatDeclaresNothingHasNothingInjectedIntoItsExport()}.
+     * The cell and the export of one `multiValue` column show the same value: the default variant at
+     * position 0, the first visible value where there is none, and nothing where the key holds
+     * nothing. The cell is handed what the object data endpoint published for the row, and the
+     * export is handed the one value it injects for the same store.
      *
      * @dataProvider slotHoldingEntriesProvider
      *
-     * @param array<string, mixed> $declaration
+     * @param array<string, array<int, mixed>> $storedVariants the values core holds, by variant
      *
      * @throws Exception
      */
-    public function testTheCellAndTheExportOfOneColumnShowTheSameValue(array $declaration, mixed $published): void
-    {
-        $slot = $this->storedSlot([['v' => '176', 'var' => 'imperial'], ['v' => '80']]);
-        $this->primeKeyConfig($declaration);
+    public function testTheCellAndTheExportOfOneColumnShowTheSameValue(
+        mixed $published,
+        array $storedVariants,
+        mixed $expected
+    ): void {
+        $this->primeKeyConfig(
+            ['variants' => ['metric', 'imperial'], 'multiValue' => true],
+            MultiValueServiceResolver::MULTI_VALUE_TYPE
+        );
 
         $injected = null;
         $reached = false;
@@ -183,65 +198,38 @@ final class ClassificationStoreResolverTest extends Unit
             $this->createKeyFieldDefinitionResolver(),
             $this->createExportRead($injected, $reached)
         );
-        $element = $this->createElementHolding($slot);
-
-        $cell = $resolver->resolveForCoreElement($this->createKeyColumn(), $element);
-        $export = $resolver->resolveForExport(
-            $this->createKeyColumn(),
-            $element,
-            $this->makeEmpty(UserInterface::class)
-        );
-
-        $this->assertSame('80', $injected);
-        $this->assertSame($cell->getValue(), $export->getValue());
-    }
-
-    /**
-     * The declarations under which the slot holds an entry list, each with what the adapter
-     * publishes for that row - including a declaration that has narrowed past the imperial entry,
-     * which is the one that hides an entry.
-     *
-     * @return array<string, array{0: array<string, mixed>, 1: mixed}>
-     */
-    public static function slotHoldingEntriesProvider(): array
-    {
-        return [
-            'a key declaring its qualifiers' => [
-                ['variants' => ['metric', 'imperial'], 'multiValue' => true],
-                [['v' => '176', 'var' => 'imperial'], ['v' => '80']],
-            ],
-            'a key that has narrowed its variants' => [['variants' => ['metric']], [['v' => '80']]],
-        ];
-    }
-
-    /**
-     * The sibling of that fixture on the other declaration: a key that still declares qualifiers
-     * and hides every entry its row holds. The adapter publishes the empty list for it, and an
-     * empty list is an empty cell - reading it as one value holding `[]` would have the cell render
-     * a value while the export of the very same column selects nothing out of the same row.
-     *
-     * @throws Exception
-     */
-    public function testAKeyHidingEveryEntryItHoldsShowsAnEmptyCellAndAnEmptyExport(): void
-    {
-        // the stored imperial entry is not a variant this declaration names any more
-        $this->primeKeyConfig(['variants' => ['metric'], 'multiValue' => true]);
-
-        $injected = 'untouched';
-        $reached = false;
-        $resolver = $this->createResolver(
-            [],
-            $this->createKeyFieldDefinitionResolver(),
-            $this->createExportRead($injected, $reached)
-        );
-        $element = $this->createElementHolding($this->storedSlot([['v' => '176', 'var' => 'imperial']]));
+        $element = $this->createElementHolding($storedVariants['default'][0] ?? null, $storedVariants);
 
         $cell = $resolver->resolveForCoreElement($this->createKeyColumn(), $element);
         $resolver->resolveForExport($this->createKeyColumn(), $element, $this->makeEmpty(UserInterface::class));
 
-        $this->assertNull($cell->getValue());
-        $this->assertTrue($reached);
-        $this->assertNull($injected);
+        $this->assertSame($expected, $cell->getValue());
+        $this->assertSame($expected, $injected);
+    }
+
+    /**
+     * @return array<string, array{0: mixed, 1: array<string, array<int, mixed>>, 2: mixed}>
+     */
+    public static function slotHoldingEntriesProvider(): array
+    {
+        return [
+            'two variants beside the default one' => [
+                [['v' => '80'], ['v' => '176', 'var' => 'imperial']],
+                ['default' => [0 => '80'], 'imperial' => [0 => '176']],
+                '80',
+            ],
+            'the default one listed after a variant' => [
+                [['v' => '176', 'var' => 'imperial'], ['v' => '80']],
+                ['default' => [0 => '80'], 'imperial' => [0 => '176']],
+                '80',
+            ],
+            'no default value' => [
+                [['v' => '176', 'var' => 'imperial']],
+                ['imperial' => [0 => '176']],
+                '176',
+            ],
+            'nothing at all' => [null, [], null],
+        ];
     }
 
     /**
@@ -260,7 +248,7 @@ final class ClassificationStoreResolverTest extends Unit
     public function testAValueShapedLikeAnEntryListReachesTheCellWhole(): void
     {
         $table = [['v' => '80'], ['v' => '81']];
-        $this->primeKeyConfig(['fieldtype' => 'table']);
+        $this->primeKeyConfig(['fieldtype' => 'table', 'variants' => ['metric'], 'multiValue' => true]);
 
         $injected = 'untouched';
         $reached = false;
@@ -317,7 +305,7 @@ final class ClassificationStoreResolverTest extends Unit
      */
     public function testAColumnNamingAFieldTheClassNoLongerHasExportsAnEmptyCell(): void
     {
-        $this->primeKeyConfig(['variants' => ['metric'], 'multiValue' => true]);
+        $this->primeKeyConfig(['variants' => ['metric'], 'multiValue' => true], MultiValueServiceResolver::MULTI_VALUE_TYPE);
 
         $injected = 'untouched';
         $reached = false;
@@ -470,7 +458,7 @@ final class ClassificationStoreResolverTest extends Unit
         // the cell now asks the key's own declaration, so the key the reference resolves to is
         // primed the way {@see self::primeKeyConfig()} primes the one the other cells use: this
         // key declares no qualifier, so its value reaches the cell untouched
-        $this->primeKeyConfig(['fieldtype' => 'input'], 6);
+        $this->primeKeyConfig(['fieldtype' => 'input'], keyId: 6);
 
         $relation = new KeyGroupRelation();
         $relation->setKeyId(6);
@@ -487,7 +475,7 @@ final class ClassificationStoreResolverTest extends Unit
             ),
         ]);
 
-        $keyQualifierResolver = new KeyQualifierResolver();
+        $keyQualifierResolver = new KeyQualifierResolver(new MultiValueServiceResolver());
 
         return new ClassificationStoreResolver(
             $this->makeEmpty(GridServiceInterface::class, [
@@ -557,7 +545,7 @@ final class ClassificationStoreResolverTest extends Unit
     ): ClassificationStoreResolver {
         // the real two: standing them in would leave what a cell and an export show for a list
         // untested here, which is the whole of what this resolver decides about one
-        $keyQualifierResolver = new KeyQualifierResolver();
+        $keyQualifierResolver = new KeyQualifierResolver(new MultiValueServiceResolver());
 
         return new ClassificationStoreResolver(
             $this->createGridService($normalized),
@@ -586,11 +574,14 @@ final class ClassificationStoreResolverTest extends Unit
      *
      * @param array<string, mixed> $definition
      */
-    private function primeKeyConfig(array $definition, int $keyId = self::KEY_ID): void
-    {
+    private function primeKeyConfig(
+        array $definition,
+        string $type = 'input',
+        int $keyId = self::KEY_ID
+    ): void {
         $keyConfig = new KeyConfig();
         $keyConfig->setName('weight');
-        $keyConfig->setType('input');
+        $keyConfig->setType($type);
         $keyConfig->setDefinition((string) json_encode($definition));
 
         $cacheKey = 'cs_keyconfig_' . $keyId;
@@ -600,31 +591,25 @@ final class ClassificationStoreResolverTest extends Unit
     }
 
     /**
-     * The slot as the row holds it at a key that declares qualifiers, which is the same list a read
-     * publishes for that row. The two reach this resolver by two different paths - the cell gets
-     * the published one and the export reads the row - and one reader answers for both, which is
-     * what {@see self::testTheCellAndTheExportOfOneColumnShowTheSameValue()} is about.
-     *
-     * @param array<int, array<string, mixed>> $entries
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    private function storedSlot(array $entries): array
-    {
-        return $entries;
-    }
-
-    /**
      * An element whose classification store field holds the one slot under test.
      *
      * @throws Exception
      */
-    private function createElementHolding(mixed $slot): Concrete
+    /**
+     * @param array<string, array<int, mixed>> $storedVariants the values core holds, by variant
+     */
+    private function createElementHolding(mixed $slot, array $storedVariants = []): Concrete
     {
         $element = new StoreFieldAwareObject();
         $element->setId(1);
         $element->classificationStore = $this->make(Classificationstore::class, [
             'getLocalizedKeyValue' => static fn (): mixed => $slot,
+            'getKeyValues' => static fn (
+                int $groupId,
+                int $keyId,
+                ?string $language = null,
+                ?string $variant = null
+            ): array => $storedVariants[$variant ?? 'default'] ?? [],
         ]);
 
         return $element;

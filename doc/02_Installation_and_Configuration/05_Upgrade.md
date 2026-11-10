@@ -90,14 +90,11 @@ The following steps are necessary during updating to newer versions.
   assignment's `metadata` reserves. Studio stores it, publishes it, and enqueues a deferred remap of every search index
   the key's store reaches when it changes; whether a key marked `false` is then left out of an index is the search
   index's own answer, not this bundle's.
-- [Classification Store] Added: a key can declare the variants it permits, or that it holds more than one value per
-  variant, and the object data endpoints then read and write that key's values as a list of qualified entries instead
-  of as a single value, as far as the store's engine reports the capability the write needs. The key's declaration
-  alone decides which of the two shapes its slot is read and written in, so a key that has never declared either is
-  unchanged, and narrowing a declaration hides the values it no longer permits without clearing them: a write that does
-  not mention a hidden value leaves it where it is. Taking a key's declaration away altogether is a type change, as
-  turning a select into a date is, and does not preserve the key's qualified values — such a key reads its row as a
-  single value again and the next write of it replaces that value — while narrowing one still hides and keeps them.
+- [Classification Store] Added: a key declares qualified values - variants, and more than one value per variant - by
+  being of type `multiValue`, and the object data endpoints then read and write that key through the core store's own
+  qualified API, with its `variants` published as objects carrying a `name` and an optional `label`, and a `maximum`.
+  `variants` or `multiValue` written into the definition of a key of any other type are ignored, not migrated: such a
+  key keeps holding one value of its own type, and a value already stored for it is left as it is.
 - [Classification Store] Added: a store's whole configuration can be exported and applied again as one file, from the
   store editor and from the console commands `studio-backend-bundle:classificationstore:export` and
   `studio-backend-bundle:classificationstore:apply`. Applying creates and updates but never deletes, so un-assigning a

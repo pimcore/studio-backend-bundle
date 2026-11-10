@@ -20,9 +20,18 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValu
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParserInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializer;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\MultiValueAdapter;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterService;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\MultiValueDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorColumnDefinitionLoader;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\Yaml\Yaml;
 use function dirname;
 use function sprintf;
 
@@ -55,5 +64,52 @@ final class QualifiedValueWiringTest extends Unit
             );
             $this->assertSame($implementation, $container->getDefinition($interface)->getClass());
         }
+    }
+
+    public function testTheMultiValueAdapterIsTaggedMappedAndResolvable(): void
+    {
+        $config = dirname(__DIR__, 3) . '/config';
+        $container = new ContainerBuilder();
+        $loader = new YamlFileLoader($container, new FileLocator($config));
+        $loader->load('data_objects.yaml');
+
+        $this->assertTrue($container->hasDefinition(MultiValueAdapter::class));
+        $this->assertArrayHasKey(
+            DataAdapterLoaderInterface::ADAPTER_TAG,
+            $container->getDefinition(MultiValueAdapter::class)->getTags()
+        );
+
+        $adapterConfig = Yaml::parseFile($config . '/pimcore/data_object_adapters.yaml');
+        $mapping = $adapterConfig['pimcore_studio_backend']['data_object_data_adapter_mapping'];
+        $this->assertSame(['multiValue'], $mapping[MultiValueAdapter::class]);
+
+        $adapter = new MultiValueAdapter(
+            $this->createMock(DataAdapterServiceInterface::class),
+            $this->createMock(DataServiceInterface::class)
+        );
+        $adapterLoader = $this->createMock(DataAdapterLoaderInterface::class);
+        $adapterLoader->method('loadAdapter')->with(MultiValueAdapter::class)->willReturn($adapter);
+
+        $this->assertInstanceOf(
+            SetterDataInterface::class,
+            (new DataAdapterService($mapping, $adapterLoader))->tryDataAdapter('multiValue')
+        );
+    }
+
+    public function testTheMultiValueGridColumnDefinitionIsRegisteredAndTagged(): void
+    {
+        $container = new ContainerBuilder();
+        $loader = new YamlFileLoader($container, new FileLocator(dirname(__DIR__, 3) . '/config'));
+        $loader->load('grid.yaml');
+
+        $this->assertTrue($container->hasDefinition(MultiValueDefinition::class));
+        $this->assertArrayHasKey(
+            'pimcore.studio_backend.grid_column_definition',
+            $container->getDefinition(MultiValueDefinition::class)->getTags()
+        );
+
+        $definitions = (new TaggedIteratorColumnDefinitionLoader([new MultiValueDefinition()]))
+            ->loadColumnDefinitions();
+        $this->assertArrayHasKey('data-object.multiValue', $definitions);
     }
 }

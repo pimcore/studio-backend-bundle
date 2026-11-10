@@ -156,6 +156,7 @@ final readonly class GroupService implements GroupServiceInterface
                 localized: $this->keyGroupLayoutService->getKeyLocalized($key->getKeyId()),
                 variants: $this->keyGroupLayoutService->getKeyVariants($key->getKeyId()),
                 multiValue: $this->keyGroupLayoutService->getKeyMultiValue($key->getKeyId()),
+                maximum: $this->keyGroupLayoutService->getKeyMaximum($key->getKeyId()),
             );
         }
 

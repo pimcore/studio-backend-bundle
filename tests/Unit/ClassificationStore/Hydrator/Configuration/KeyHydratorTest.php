@@ -67,9 +67,9 @@ final class KeyHydratorTest extends Unit
     }
 
     /**
-     * `variants` and `multiValue` are reserved members of the definition and survive the decode the
-     * read performs, in the order and with the types they were stored with - nothing resolves them
-     * against the engine of the key's store on the way out.
+     * The detail endpoint publishes the definition blob opaquely: `variants` and `multiValue` survive
+     * the decode the read performs, in the order and with the types they were stored with, whatever the
+     * key's type is - whether they declare anything is the key type's answer, not this read's.
      */
     public function testTheQualifiedValueDeclarationSurvivesTheDecodeVerbatim(): void
     {

@@ -64,23 +64,30 @@ final readonly class KeyLayout
         )]
         private ?bool $localized = null,
         #[Property(
-            description: 'The variant names the key permits, in the order it declares them, as the key stores them;'
-                . ' null where the key declares none. A value carrying no variant addresses the default variant,'
-                . ' which is never one of these names.',
+            description: 'The variants a key of type `multiValue` permits, in the order it declares them, each a name'
+                . ' and an optional label; null for a key of any other type. A value carrying no variant addresses'
+                . ' the default variant, which is never one of these names.',
             type: 'array',
-            items: new Items(type: 'string'),
-            example: ['metric', 'imperial'],
+            items: new Items(ref: VariantLayout::class),
             nullable: true
         )]
         private ?array $variants = null,
         #[Property(
-            description: 'Whether the key holds more than one value per variant, as the key stores it; null where'
-                . ' the key declares nothing.',
+            description: 'Whether a key of type `multiValue` holds more than one value per variant; null for a key'
+                . ' of any other type.',
             type: 'boolean',
             example: true,
             nullable: true
         )]
         private ?bool $multiValue = null,
+        #[Property(
+            description: 'How many values one slot of a key of type `multiValue` may hold; null where it declares no'
+                . ' limit and for a key of any other type. It is published, not enforced by this endpoint.',
+            type: 'integer',
+            example: 3,
+            nullable: true
+        )]
+        private ?int $maximum = null,
     ) {
     }
 
@@ -127,5 +134,10 @@ final readonly class KeyLayout
     public function getMultiValue(): ?bool
     {
         return $this->multiValue;
+    }
+
+    public function getMaximum(): ?int
+    {
+        return $this->maximum;
     }
 }
