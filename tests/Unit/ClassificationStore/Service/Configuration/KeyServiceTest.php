@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\NullKeyOptionsResolver;
@@ -218,6 +219,78 @@ final class KeyServiceTest extends Unit
         $resolver = $this->expectClearedOnce();
 
         $this->createService($this->writableRepository(), $resolver)->softDeleteKey(1);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRestoreKeyClearsTheKeyRelationMemo(): void
+    {
+        $resolver = $this->expectClearedOnce();
+
+        $this->createService($this->restorableRepository(), $resolver)->restoreKey(1);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRestoreKeyClearsTheKeyRelationMemoWhenTheRepositoryThrows(): void
+    {
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->method('restore')
+            ->willThrowException(new NotFoundException('key configuration', 1));
+        $resolver = $this->expectClearedOnce();
+
+        $this->expectException(NotFoundException::class);
+
+        $this->createService($repository, $resolver)->restoreKey(1);
+    }
+
+    /**
+     * Restoring a key twice answers the same enabled detail both times, with no refusal.
+     *
+     * @throws Exception
+     */
+    public function testRestoreKeyIsIdempotent(): void
+    {
+        $config = new KeyConfig();
+        $config->setId(5);
+        $config->setName('weight');
+        $config->setType('input');
+        $config->setEnabled(true);
+        $config->setDefinition('{"fieldtype":"input"}');
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->method('restore')
+            ->willReturn($config);
+        $service = $this->createService(
+            $repository,
+            null,
+            new KeyHydrator(new InMemoryKeyLocalizationResolver(), new NullKeyOptionsResolver())
+        );
+
+        $first = $service->restoreKey(5);
+        $second = $service->restoreKey(5);
+
+        $this->assertTrue($first->isEnabled());
+        $this->assertSame($first->getId(), $second->getId());
+        $this->assertSame($first->getName(), $second->getName());
+        $this->assertSame($first->getDefinition(), $second->getDefinition());
+        $this->assertTrue($second->isEnabled());
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function restorableRepository(): KeyRepositoryInterface
+    {
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->method('restore')
+            ->willReturn(new KeyConfig());
+
+        return $repository;
     }
 
     /**

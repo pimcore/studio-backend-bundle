@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Cache\Core\CoreCacheHandler;
@@ -72,6 +73,9 @@ final class KeyRepositoryTest extends Unit
 
     private const string HOLD_KEY_QUERY =
         'SELECT `definition` FROM `classificationstore_keys` WHERE `id` = ? FOR UPDATE';
+
+    private const string HOLD_ENABLED_QUERY =
+        'SELECT * FROM `classificationstore_keys` WHERE `id` = ? FOR UPDATE';
 
     private ?KernelInterface $kernelBeforeStub = null;
 
@@ -520,6 +524,230 @@ final class KeyRepositoryTest extends Unit
         $this->assertSame([self::BEGIN, self::HOLD_KEY_QUERY, self::COMMIT], $calls);
         $this->assertSame(self::HELD_DEFINITION, $result->getDefinitionBefore());
         $this->assertSame('{"fieldtype":"input"}', $result->getConfig()->getDefinition());
+    }
+
+    /**
+     * The relation claim of the restore (no relation row, no DELETE) is core's `KeyConfig\Dao::save()`
+     * to keep, and that dao is replaced here, so it cannot be observed in this suite. What is asserted
+     * is what the repository itself asks of the database: it holds the row, reads the stored flag
+     * from it, and commits - and the model it saves carries nothing but the flag changed.
+     *
+     * @throws Exception
+     */
+    public function testRestoreWritesTheEnabledFlagAndNothingElseWithTheRowHeld(): void
+    {
+        $calls = [];
+        $saves = 0;
+        $config = $this->createSavableKeyConfig();
+        $config->setEnabled(false);
+        $config->setDao($this->makeEmpty(KeyConfigDao::class, [
+            'save' => static function () use (&$saves): void {
+                ++$saves;
+            },
+        ]));
+        $repository = $this->createRepository($config, $this->createRestoreConnection($calls, 0));
+
+        $restored = $repository->restore(self::KEY_ID);
+
+        $this->assertSame($config, $restored);
+        $this->assertTrue($restored->getEnabled());
+        $this->assertSame(1, $saves);
+        $this->assertSame(self::KEY_NAME, $restored->getName());
+        $this->assertSame(self::STORED_TITLE, $restored->getTitle());
+        $this->assertSame(self::STORED_DESCRIPTION, $restored->getDescription());
+        $this->assertSame(
+            [self::BEGIN, self::HOLD_KEY_QUERY, self::HOLD_ENABLED_QUERY, self::COMMIT],
+            $calls,
+            'The restore holds the row for the whole write and commits.'
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRestoringAnEnabledKeyWritesNothing(): void
+    {
+        $calls = [];
+        $saves = 0;
+        $config = $this->createSavableKeyConfig();
+        $config->setEnabled(true);
+        $config->setDao($this->makeEmpty(KeyConfigDao::class, [
+            'save' => static function () use (&$saves): void {
+                ++$saves;
+            },
+        ]));
+
+        $restored = $this->createRepository($config, $this->createRestoreConnection($calls, 1))
+            ->restore(self::KEY_ID);
+
+        $this->assertTrue($restored->getEnabled());
+        $this->assertSame(0, $saves);
+    }
+
+    /**
+     * The model may be a cached one: the flag that decides the write is the held row's.
+     *
+     * @throws Exception
+     */
+    public function testRestoreDecidesOnTheStoredFlagAndNotOnTheModel(): void
+    {
+        $saves = 0;
+        $dao = $this->makeEmpty(KeyConfigDao::class, [
+            'save' => static function () use (&$saves): void {
+                ++$saves;
+            },
+        ]);
+        $calls = [];
+
+        $staleEnabled = $this->createSavableKeyConfig();
+        $staleEnabled->setEnabled(true);
+        $staleEnabled->setDao($dao);
+        $this->createRepository($staleEnabled, $this->createRestoreConnection($calls, 0))->restore(self::KEY_ID);
+        $this->assertSame(1, $saves, 'A row still disabled is written although the model says enabled.');
+
+        $staleDisabled = $this->createSavableKeyConfig();
+        $staleDisabled->setEnabled(false);
+        $staleDisabled->setDao($dao);
+        $restored = $this->createRepository($staleDisabled, $this->createRestoreConnection($calls, 1))
+            ->restore(self::KEY_ID);
+        $this->assertSame(1, $saves, 'A row already enabled is not written although the model says disabled.');
+        $this->assertTrue($restored->getEnabled());
+    }
+
+    /**
+     * `save()` writes every column, so a cached model is refreshed from the held row first.
+     *
+     * @throws Exception
+     */
+    public function testRestoreRefreshesAStaleModelFromTheHeldRowBeforeSaving(): void
+    {
+        $savedTitle = null;
+        $config = $this->createSavableKeyConfig();
+        $config->setEnabled(false);
+        $config->setTitle('stale title');
+        $dao = $this->makeEmpty(KeyConfigDao::class, [
+            'save' => static function () use (&$savedTitle, $config): void {
+                $savedTitle = $config->getTitle();
+            },
+        ]);
+        $config->setDao($dao);
+        $connection = $this->makeEmpty(Connection::class, [
+            'isTransactionActive' => false,
+            'fetchOne' => self::HELD_DEFINITION,
+            'fetchAssociative' => ['id' => self::KEY_ID, 'enabled' => 0, 'title' => 'newer title'],
+        ]);
+
+        $this->createRepository($config, $connection)->restore(self::KEY_ID);
+
+        $this->assertSame('newer title', $savedTitle);
+        $this->assertTrue($config->getEnabled());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testThePageIsScopedToTheViewItIsAskedFor(): void
+    {
+        foreach ([false, true] as $disabledOnly) {
+            $queries = [];
+            $connection = $this->makeEmpty(Connection::class, [
+                'fetchAssociative' => static function (string $query) use (&$queries): array {
+                    $queries[] = $query;
+
+                    return ['name' => 'weight', 'position' => 1];
+                },
+            ]);
+
+            $this->createRepository($this->createStoredKeyConfig(), $connection)
+                ->getPageForId('keys', self::KEY_ID, 1, 10, 'name', 'ASC', $disabledOnly);
+
+            $this->assertCount(2, $queries);
+            foreach ($queries as $query) {
+                $this->assertSame(
+                    $disabledOnly,
+                    str_contains($query, '(enabled IS NULL OR enabled = 0)'),
+                    $query
+                );
+                $this->assertSame(!$disabledOnly, str_contains($query, 'AND enabled = 1'), $query);
+            }
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRestoringAnUnknownKeyIsNotFound(): void
+    {
+        $calls = [];
+        $repository = new KeyRepository(
+            $this->makeEmpty(KeyConfigResolverInterface::class, ['getById' => null]),
+            $this->keyLocalizationResolver,
+            $this->makeEmpty(ListingFilterInterface::class),
+            $this->makeEmpty(SearchHelperServiceInterface::class),
+            $this->createRestoreConnection($calls, 0),
+        );
+
+        $this->expectException(NotFoundException::class);
+
+        $repository->restore(self::KEY_ID);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAFailingSaveWhileRestoringIsAnElementSavingFailure(): void
+    {
+        $config = $this->createSavableKeyConfig();
+        // a stale cached model: it says enabled while the held row (answered 0 below) is disabled
+        $config->setEnabled(true);
+        $config->setDao($this->makeEmpty(KeyConfigDao::class, [
+            'save' => static function (): void {
+                throw new Exception('database is gone');
+            },
+        ]));
+
+        $this->expectException(ElementSavingFailedException::class);
+
+        $calls = [];
+        try {
+            $this->createRepository($config, $this->createRestoreConnection($calls, 0))->restore(self::KEY_ID);
+        } finally {
+            $this->assertFalse($config->getEnabled(), 'A failed write left the cached model reporting enabled.');
+        }
+    }
+
+    /**
+     * A connection that records the transaction and the two locking reads of a restore, and answers
+     * the stored `enabled` flag with the given value.
+     *
+     * @param list<string> $calls
+     *
+     * @throws Exception
+     */
+    private function createRestoreConnection(array &$calls, int $storedEnabled): Connection
+    {
+        return $this->makeEmpty(Connection::class, [
+            'isTransactionActive' => false,
+            'beginTransaction' => static function () use (&$calls): void {
+                $calls[] = self::BEGIN;
+            },
+            'fetchOne' => static function (string $query) use (&$calls): string {
+                $calls[] = $query;
+
+                return self::HELD_DEFINITION;
+            },
+            'fetchAssociative' => static function (string $query) use (&$calls, $storedEnabled): array {
+                $calls[] = $query;
+
+                return ['id' => self::KEY_ID, 'enabled' => $storedEnabled];
+            },
+            'commit' => static function () use (&$calls): void {
+                $calls[] = self::COMMIT;
+            },
+            'rollBack' => static function () use (&$calls): void {
+                $calls[] = 'ROLLBACK';
+            },
+        ]);
     }
 
     /**

@@ -90,9 +90,11 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getListing(FilterParameter $parameters, int $storeId): Listing
+    public function getListing(FilterParameter $parameters, int $storeId, bool $disabledOnly = false): Listing
     {
         $listing = new Listing();
+        // core's `includeDisabled` swaps the enabled condition for the disabled one, it never unions them
+        $listing->setIncludeDisabled($disabledOnly);
         $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
 
         $this->applySearchCondition($listing, $parameters);
@@ -357,6 +359,61 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     /**
      * {@inheritdoc}
      */
+    public function restore(int $id): KeyConfig
+    {
+        return $this->writeHoldingTheRow($id, fn (): KeyConfig => $this->writeRestore($id))->getConfig();
+    }
+
+    /**
+     * Runs with the row held. The model may be a cached one, so it is refreshed from the held row
+     * before anything is decided or saved: a stale flag must neither skip the write of a key that is
+     * still disabled nor cause one for a key that is already enabled, and `save()` - which writes
+     * every column - must not put stale values over what a competing writer stored. The flag is
+     * then the only value that differs from the row.
+     *
+     * @throws NotFoundException
+     * @throws ElementSavingFailedException
+     */
+    private function writeRestore(int $id): KeyConfig
+    {
+        $config = $this->getById($id);
+        $row = $this->connection->fetchAssociative(
+            sprintf('SELECT * FROM `%s` WHERE `id` = ? FOR UPDATE', KeyConfigDao::TABLE_NAME_KEYS),
+            [$id]
+        );
+
+        if (!is_array($row)) {
+            throw new NotFoundException('key configuration', $id);
+        }
+
+        $storedEnabled = (bool) ($row['enabled'] ?? false);
+        unset($row['enabled']);
+        $config->setValues($row);
+
+        if ($storedEnabled) {
+            $config->setEnabled(true);
+
+            return $config;
+        }
+
+        $config->setEnabled(true);
+
+        try {
+            $config->save();
+        } catch (Exception $e) {
+            // the held row is disabled (checked above), so the cached model must report disabled,
+            // whatever it said before
+            $config->setEnabled(false);
+
+            throw new ElementSavingFailedException($id, $e->getMessage(), $e);
+        }
+
+        return $config;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getPageForId(
         string $table,
         int $id,
@@ -364,6 +421,7 @@ final readonly class KeyRepository implements KeyRepositoryInterface
         int $pageSize,
         string $sortKey,
         string $sortDir,
+        bool $disabledOnly = false,
     ): int {
         $sortKey = in_array($sortKey, self::ALLOWED_SORT_KEYS, true) ? $sortKey : 'name';
         $sortDir = in_array(strtoupper($sortDir), self::ALLOWED_SORT_DIRECTIONS, true)
@@ -371,10 +429,14 @@ final readonly class KeyRepository implements KeyRepositoryInterface
             : 'ASC';
 
         $tableName = 'classificationstore_' . ($table === 'groups' ? 'groups' : 'keys');
-        $enabledCondition = $tableName === 'classificationstore_keys' ? ' AND enabled = 1' : '';
+        // each view counts positions with the condition its listing uses
+        $viewCondition = '';
+        if ($tableName === 'classificationstore_keys') {
+            $viewCondition = $disabledOnly ? ' AND (enabled IS NULL OR enabled = 0)' : ' AND enabled = 1';
+        }
 
         $referenceRow = $this->connection->fetchAssociative(
-            sprintf('SELECT `%s` FROM `%s` WHERE id = ?', $sortKey, $tableName),
+            sprintf('SELECT `%s` FROM `%s` WHERE id = ?%s', $sortKey, $tableName, $viewCondition),
             [$id]
         );
 
@@ -394,7 +456,7 @@ final readonly class KeyRepository implements KeyRepositoryInterface
             $comparison,
             $sortKey,
             $comparison,
-            $enabledCondition,
+            $viewCondition,
         );
 
         try {

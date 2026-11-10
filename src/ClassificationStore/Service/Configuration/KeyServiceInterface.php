@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration;
 
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\KeyCollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GetPageParameters;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GetPageResponse;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyCreate;
@@ -22,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
@@ -34,7 +34,7 @@ interface KeyServiceInterface
      * @throws InvalidArgumentException
      */
     public function listKeys(
-        CollectionFilterParameter $parameters,
+        KeyCollectionParameters $parameters,
         int $storeId,
     ): Collection;
 
@@ -55,6 +55,12 @@ interface KeyServiceInterface
      * @throws ElementSavingFailedException
      */
     public function softDeleteKey(int $id): void;
+
+    /**
+     * @throws NotFoundException
+     * @throws ElementSavingFailedException
+     */
+    public function restoreKey(int $id): KeyDetail;
 
     /**
      * @throws DatabaseException

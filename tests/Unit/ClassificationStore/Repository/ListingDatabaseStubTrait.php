@@ -38,6 +38,11 @@ trait ListingDatabaseStubTrait
      */
     private array $executedQueries = [];
 
+    /**
+     * @var list<string>
+     */
+    private array $executedCountQueries = [];
+
     private ?KernelInterface $kernelBeforeStub = null;
 
     private bool $kernelStubbed = false;
@@ -56,13 +61,21 @@ trait ListingDatabaseStubTrait
                 return $rows;
             },
             // the COUNT(*) a listing answers getTotalCount() with
-            'fetchOne' => static fn (): int => $totalCount,
+            'fetchOne' => function (string $query) use ($totalCount): int {
+                $this->executedCountQueries[] = $query;
+
+                return $totalCount;
+            },
         ]);
 
         $container = new Container();
         $container->set(self::CONNECTION_SERVICE_ID, $connection);
 
-        $this->kernelBeforeStub = Pimcore::getKernel();
+        // A test may stub twice (two listings in one test): only the first call sees the real kernel,
+        // a second capture would record the first stub and leak it into the next test.
+        if (!$this->kernelStubbed) {
+            $this->kernelBeforeStub = Pimcore::getKernel();
+        }
         $this->kernelStubbed = true;
         Pimcore::setKernel($this->makeEmpty(KernelInterface::class, ['getContainer' => $container]));
     }
@@ -74,9 +87,17 @@ trait ListingDatabaseStubTrait
         return $this->executedQueries[0];
     }
 
+    private function getExecutedCountQuery(): string
+    {
+        $this->assertCount(1, $this->executedCountQueries, 'Expected the entry point to run a single count.');
+
+        return $this->executedCountQueries[0];
+    }
+
     protected function _after(): void
     {
         $this->executedQueries = [];
+        $this->executedCountQueries = [];
 
         if (!$this->kernelStubbed) {
             return;

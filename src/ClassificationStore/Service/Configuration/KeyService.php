@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configu
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event\Configuration\GetPageEvent;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event\Configuration\KeyDetailEvent;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\KeyCollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GetPageParameters;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GetPageResponse;
@@ -25,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\OptionsProviderDefaultsTrait;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
@@ -52,12 +52,13 @@ final readonly class KeyService implements KeyServiceInterface
      * {@inheritdoc}
      */
     public function listKeys(
-        CollectionFilterParameter $parameters,
+        KeyCollectionParameters $parameters,
         int $storeId,
     ): Collection {
         $listing = $this->keyConfigurationRepository->getListing(
             $this->filterMapper->getFilterParameters($parameters),
-            $storeId
+            $storeId,
+            $parameters->isDisabledOnly()
         );
         $configs = $listing->load();
         $items = [];
@@ -142,6 +143,20 @@ final readonly class KeyService implements KeyServiceInterface
     /**
      * {@inheritdoc}
      */
+    public function restoreKey(int $id): KeyDetail
+    {
+        try {
+            $keyConfig = $this->keyConfigurationRepository->restore($id);
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
+
+        return $this->getHydratedKeyDetail($keyConfig);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getPage(GetPageParameters $parameters): GetPageResponse
     {
         $page = $this->keyConfigurationRepository->getPageForId(
@@ -151,6 +166,7 @@ final readonly class KeyService implements KeyServiceInterface
             $parameters->getPageSize(),
             $parameters->getSortKey(),
             $parameters->getSortDir(),
+            $parameters->isDisabledOnly(),
         );
         $response = $this->keyHydrator->hydrateGetPageResponse($page);
         $this->eventDispatcher->dispatch(

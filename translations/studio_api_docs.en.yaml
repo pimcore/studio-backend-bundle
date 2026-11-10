@@ -2078,6 +2078,10 @@ classification_store_configuration_sub_group_delete_success_response: Successful
 classification_store_configuration_key_collection_description: |
   Get a paginated list of classification store key configurations.
   Supports filtering, sorting, and pagination via the collection request body.
+  By default the list holds the enabled keys only. Setting `disabledOnly` to true switches the list to the
+  disabled keys only, including keys that were never enabled; it never adds them to the enabled ones.
+  Filters, sorting, paging and the total count apply within the selected list.
+classification_store_configuration_key_collection_disabled_only: Return the disabled keys instead of the enabled ones
 classification_store_configuration_key_collection_summary: List key configurations
 classification_store_configuration_key_collection_success_response: Paginated list of key configurations
 classification_store_configuration_key_create_description: Create a new classification store key configuration within a store
@@ -2091,6 +2095,16 @@ classification_store_configuration_key_delete_description: |
   The key is not permanently removed but disabled (enabled is set to false).
 classification_store_configuration_key_delete_summary: Disable a key (soft-delete)
 classification_store_configuration_key_delete_success_response: Successfully disabled key configuration
+classification_store_configuration_key_restore_description: |
+  Re-enable a disabled classification store key configuration by ID.
+  Re-enabling restores the key configuration. This endpoint neither deletes nor re-creates any group assignment —
+  whether a key's assignments survive being disabled is decided by the disable itself.
+  The endpoint writes the key's enabled flag and nothing else. A key that is already enabled is returned unchanged.
+  Note: disabling a key removes its group assignments, so a restored key belongs to no group, and its sorter,
+  mandatory flags and per-assignment overrides are gone. This endpoint creates no assignment and nothing else restores
+  them.
+classification_store_configuration_key_restore_summary: Re-enable a disabled key
+classification_store_configuration_key_restore_success_response: The re-enabled key configuration
 classification_store_configuration_collection_collection_description: |
   Get a paginated list of classification store collection configurations.
   Supports filtering, sorting, and pagination via the collection filter parameter.
@@ -2134,6 +2148,7 @@ classification_store_configuration_key_group_relation_delete_success_response: S
 classification_store_configuration_get_page_description: |
   Calculate the page number where a specific item (key or group) is located within a paginated listing.
   Useful for navigating directly to the page containing a specific item.
+classification_store_configuration_get_page_disabled_only: Locate a key in the list of disabled keys instead of the enabled ones (keys only)
 classification_store_configuration_get_page_summary: Get page number for a specific item
 classification_store_configuration_get_page_success_response: Page number where the item is located
 data_object_get_grid_preview_description: Gives you a preview of an Advanced Column Grid for a given Data Object.

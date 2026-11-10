@@ -25,6 +25,7 @@ final readonly class GetPageParameters
         private int $pageSize = 15,
         private string $sortKey = 'name',
         private string $sortDir = 'ASC',
+        private bool $disabledOnly = false,
     ) {
     }
 
@@ -56,5 +57,10 @@ final readonly class GetPageParameters
     public function getSortDir(): string
     {
         return $this->sortDir;
+    }
+
+    public function isDisabledOnly(): bool
+    {
+        return $this->disabledOnly;
     }
 }
