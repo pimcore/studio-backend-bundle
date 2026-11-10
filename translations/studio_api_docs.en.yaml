@@ -2102,7 +2102,7 @@ classification_store_configuration_key_restore_description: |
   The endpoint writes the key's enabled flag and nothing else. A key that is already enabled is returned unchanged.
   Note: disabling a key removes its group assignments, so a restored key belongs to no group, and its sorter,
   mandatory flags and per-assignment overrides are gone. This endpoint creates no assignment and nothing else restores
-  them (pimcore/pimcore, issue 1665 changes only what triggers that removal).
+  them.
 classification_store_configuration_key_restore_summary: Re-enable a disabled key
 classification_store_configuration_key_restore_success_response: The re-enabled key configuration
 classification_store_configuration_collection_collection_description: |
