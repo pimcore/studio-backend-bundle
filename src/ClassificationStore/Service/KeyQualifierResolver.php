@@ -20,9 +20,9 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use ReflectionProperty;
 use Symfony\Contracts\Service\ResetInterface;
 use function array_key_exists;
+use function hash;
 use function is_array;
 use function json_decode;
-use function md5;
 
 /**
  * @internal
@@ -30,6 +30,14 @@ use function md5;
 final class KeyQualifierResolver implements KeyQualifierResolverInterface, ResetInterface
 {
     private const string TYPE_PROPERTY = 'type';
+
+    /**
+     * The digest the memo key spells a `definition` blob as. Deliberately a NON-cryptographic hash:
+     * the memo key only has to tell two blobs apart, it is never stored, compared against a secret
+     * or shown to anyone, and a cryptographic digest here reads to a security review as a weak hash
+     * standing in for one that matters.
+     */
+    private const string MEMO_HASH = 'xxh128';
 
     /**
      * The declaration of every key already resolved, keyed by the key's type and the hash of its
@@ -100,12 +108,15 @@ final class KeyQualifierResolver implements KeyQualifierResolverInterface, Reset
             return null;
         }
 
-        $memoKey = $keyConfig->getType() . "\0" . md5($keyConfig->getDefinition());
+        $memoKey = $keyConfig->getType() . "\0" . hash(self::MEMO_HASH, $keyConfig->getDefinition());
         if (array_key_exists($memoKey, $this->declarations)) {
             return $this->declarations[$memoKey];
         }
 
-        return $this->declarations[$memoKey] = $this->resolveDeclaration($keyConfig);
+        $declaration = $this->resolveDeclaration($keyConfig);
+        $this->declarations[$memoKey] = $declaration;
+
+        return $declaration;
     }
 
     /**

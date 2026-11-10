@@ -22,6 +22,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\Se
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeySlot;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValue;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializerInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolverInterface;
@@ -499,14 +500,10 @@ final readonly class ClassificationStoreAdapter implements
 
             if ($this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
                 $this->setQualifiedValues(
-                    $container,
-                    $groupId,
-                    $keyId,
-                    $language,
+                    new KeySlot($container, $definition->getStoreId(), $groupId, $keyId, $language),
                     $value,
                     $keyConfig,
                     $fieldDefinition,
-                    $definition->getStoreId(),
                     $isPatch,
                     $convert
                 );
@@ -550,26 +547,31 @@ final readonly class ClassificationStoreAdapter implements
      * @throws InvalidArgumentException
      */
     private function setQualifiedValues(
-        Classificationstore $container,
-        int $groupId,
-        int $keyId,
-        string $language,
+        KeySlot $slot,
         mixed $value,
         KeyConfig $keyConfig,
         Data $fieldDefinition,
-        int $storeId,
         bool $isPatch,
         callable $convert
     ): void {
         $supplied = $this->qualifiedValueSerializer->parseEntries($value, $keyConfig);
         $this->qualifiedValueSerializer->assertSupported(
             $supplied,
-            $this->storeEngineResolver->getCapabilitiesOfStore($storeId)
+            $this->storeEngineResolver->getCapabilitiesOfStore($slot->getStoreId())
         );
+
+        $container = $slot->getContainer();
+        $language = $slot->getLanguage();
 
         $stored = $container->getObject() === null
             ? []
-            : $this->qualifiedValueSerializer->readStoredEntries($container, $groupId, $keyId, $language, $keyConfig);
+            : $this->qualifiedValueSerializer->readStoredEntries(
+                $container,
+                $slot->getGroupId(),
+                $slot->getKeyId(),
+                $language,
+                $keyConfig
+            );
         $current = $this->byQualifier($stored);
 
         $converted = [];
@@ -601,7 +603,7 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         if ($coreEntries !== []) {
-            $this->writeKeyValues($container, $groupId, $keyId, $coreEntries);
+            $this->writeKeyValues($slot, $coreEntries);
         }
     }
 
@@ -635,14 +637,10 @@ final readonly class ClassificationStoreAdapter implements
      * @throws DatabaseException
      * @throws InvalidArgumentException
      */
-    private function writeKeyValues(
-        Classificationstore $container,
-        int $groupId,
-        int $keyId,
-        array $entries
-    ): void {
+    private function writeKeyValues(KeySlot $slot, array $entries): void
+    {
         try {
-            $container->setKeyValues($groupId, $keyId, $entries);
+            $slot->getContainer()->setKeyValues($slot->getGroupId(), $slot->getKeyId(), $entries);
         } catch (UnsupportedEngineFeatureException $exception) {
             throw new InvalidArgumentException(
                 $exception->getMessage(),
