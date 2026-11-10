@@ -669,7 +669,8 @@ final class KeyRepositoryTest extends Unit
     public function testAFailingSaveWhileRestoringIsAnElementSavingFailure(): void
     {
         $config = $this->createSavableKeyConfig();
-        $config->setEnabled(false);
+        // a stale cached model: it says enabled while the held row (answered 0 below) is disabled
+        $config->setEnabled(true);
         $config->setDao($this->makeEmpty(KeyConfigDao::class, [
             'save' => static function (): void {
                 throw new Exception('database is gone');

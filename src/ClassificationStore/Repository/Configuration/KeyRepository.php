@@ -386,14 +386,13 @@ final readonly class KeyRepository implements KeyRepositoryInterface
             return $config;
         }
 
-        $previouslyEnabled = $config->getEnabled();
         $config->setEnabled(true);
 
         try {
             $config->save();
         } catch (Exception $e) {
-            // the model is core's per-request cached instance: it must not report a write that did not happen
-            $config->setEnabled($previouslyEnabled);
+            // the held row is disabled (checked above), so the cached model must report disabled, whatever it said before
+            $config->setEnabled(false);
 
             throw new ElementSavingFailedException($id, $e->getMessage(), $e);
         }
