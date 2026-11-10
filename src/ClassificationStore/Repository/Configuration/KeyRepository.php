@@ -365,9 +365,11 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     }
 
     /**
-     * Runs with the row held. Whether the key is enabled is read from the held row, not from the
-     * model, which may be a cached one: a stale flag must neither skip the write of a key that is
-     * still disabled nor cause one for a key that is already enabled.
+     * Runs with the row held. The model may be a cached one, so it is refreshed from the held row
+     * before anything is decided or saved: a stale flag must neither skip the write of a key that is
+     * still disabled nor cause one for a key that is already enabled, and `save()` - which writes
+     * every column - must not put stale values over what a competing writer stored. The flag is
+     * then the only value that differs from the row.
      *
      * @throws NotFoundException
      * @throws ElementSavingFailedException
@@ -375,12 +377,20 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     private function writeRestore(int $id): KeyConfig
     {
         $config = $this->getById($id);
-        $storedEnabled = $this->connection->fetchOne(
-            sprintf('SELECT `enabled` FROM `%s` WHERE `id` = ? FOR UPDATE', KeyConfigDao::TABLE_NAME_KEYS),
+        $row = $this->connection->fetchAssociative(
+            sprintf('SELECT * FROM `%s` WHERE `id` = ? FOR UPDATE', KeyConfigDao::TABLE_NAME_KEYS),
             [$id]
         );
 
-        if ((bool) $storedEnabled) {
+        if (!is_array($row)) {
+            throw new NotFoundException('key configuration', $id);
+        }
+
+        $storedEnabled = (bool) ($row['enabled'] ?? false);
+        unset($row['enabled']);
+        $config->setValues($row);
+
+        if ($storedEnabled) {
             $config->setEnabled(true);
 
             return $config;
@@ -391,7 +401,7 @@ final readonly class KeyRepository implements KeyRepositoryInterface
         try {
             $config->save();
         } catch (Exception $e) {
-            // the held row is disabled (checked above), so the cached model must report disabled, whatever it said before
+            // the held row is disabled, so the cached model must report disabled, whatever it said before
             $config->setEnabled(false);
 
             throw new ElementSavingFailedException($id, $e->getMessage(), $e);

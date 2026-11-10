@@ -75,7 +75,7 @@ final class KeyRepositoryTest extends Unit
         'SELECT `definition` FROM `classificationstore_keys` WHERE `id` = ? FOR UPDATE';
 
     private const string HOLD_ENABLED_QUERY =
-        'SELECT `enabled` FROM `classificationstore_keys` WHERE `id` = ? FOR UPDATE';
+        'SELECT * FROM `classificationstore_keys` WHERE `id` = ? FOR UPDATE';
 
     private ?KernelInterface $kernelBeforeStub = null;
 
@@ -615,6 +615,35 @@ final class KeyRepositoryTest extends Unit
     }
 
     /**
+     * `save()` writes every column, so a cached model is refreshed from the held row first.
+     *
+     * @throws Exception
+     */
+    public function testRestoreRefreshesAStaleModelFromTheHeldRowBeforeSaving(): void
+    {
+        $savedTitle = null;
+        $config = $this->createSavableKeyConfig();
+        $config->setEnabled(false);
+        $config->setTitle('stale title');
+        $dao = $this->makeEmpty(KeyConfigDao::class, [
+            'save' => static function () use (&$savedTitle, $config): void {
+                $savedTitle = $config->getTitle();
+            },
+        ]);
+        $config->setDao($dao);
+        $connection = $this->makeEmpty(Connection::class, [
+            'isTransactionActive' => false,
+            'fetchOne' => self::HELD_DEFINITION,
+            'fetchAssociative' => ['id' => self::KEY_ID, 'enabled' => 0, 'title' => 'newer title'],
+        ]);
+
+        $this->createRepository($config, $connection)->restore(self::KEY_ID);
+
+        $this->assertSame('newer title', $savedTitle);
+        $this->assertTrue($config->getEnabled());
+    }
+
+    /**
      * @throws Exception
      */
     public function testThePageIsScopedToTheViewItIsAskedFor(): void
@@ -702,10 +731,15 @@ final class KeyRepositoryTest extends Unit
             'beginTransaction' => static function () use (&$calls): void {
                 $calls[] = self::BEGIN;
             },
-            'fetchOne' => static function (string $query) use (&$calls, $storedEnabled): string|int {
+            'fetchOne' => static function (string $query) use (&$calls): string {
                 $calls[] = $query;
 
-                return $query === self::HOLD_ENABLED_QUERY ? $storedEnabled : self::HELD_DEFINITION;
+                return self::HELD_DEFINITION;
+            },
+            'fetchAssociative' => static function (string $query) use (&$calls, $storedEnabled): array {
+                $calls[] = $query;
+
+                return ['id' => self::KEY_ID, 'enabled' => $storedEnabled];
             },
             'commit' => static function () use (&$calls): void {
                 $calls[] = self::COMMIT;
