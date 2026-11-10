@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Event\VersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Response\Collection;
+use Pimcore\Model\Element\AbstractElement;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version;
@@ -129,7 +130,9 @@ final readonly class VersionService implements VersionServiceInterface
             throw new InvalidElementTypeException($class);
         }
 
-        $existingVersion = $this->isPreparedVersion($version, $currentElement) ? $version : null;
+        $existingVersion = $this->supportsPublishingInPlace() && $this->isPreparedVersion($version, $currentElement)
+            ? $version
+            : null;
         $this->versionPublisherLocator->get($class)->publish(
             $element,
             $user,
@@ -156,6 +159,15 @@ final readonly class VersionService implements VersionServiceInterface
         }
 
         return $lastVersion->getId();
+    }
+
+    /**
+     * Publishing in place needs the core's `existingVersion` save parameter (pimcore/pimcore 12.3.28, LTS). With an
+     * older core it would be ignored and a new version created, so every version is published as a new version then
+     */
+    private function supportsPublishingInPlace(): bool
+    {
+        return method_exists(AbstractElement::class, 'resolveExistingVersionParameter');
     }
 
     /**

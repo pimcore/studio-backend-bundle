@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInter
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionService;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Element\AbstractElement;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version;
 use ReflectionClass;
@@ -50,6 +51,10 @@ final class VersionServiceTest extends Unit
      */
     public function testPublishVersionPublishesAPreparedVersionItself(): void
     {
+        if (!self::coreSupportsPublishingInPlace()) {
+            $this->markTestSkipped('The installed pimcore/pimcore does not support publishing a version in place');
+        }
+
         $user = $this->createMock(UserInterface::class);
         $version = $this->createVersion(versionCount: self::ELEMENT_VERSION_COUNT + 1, date: self::ELEMENT_MODIFICATION_DATE + 60);
         $versionElement = $this->createMock(Concrete::class);
@@ -81,6 +86,45 @@ final class VersionServiceTest extends Unit
         $service = $this->createService($repository, $serviceResolver, $securityService, $publisher);
 
         $this->assertSame(self::VERSION_ID, $service->publishVersion(self::VERSION_ID, $user));
+    }
+
+    /**
+     * With a core that doesn't support publishing in place (pimcore/pimcore < 12.3.28), a prepared version is
+     * published as a new version, as before, and the published version is the newest one
+     */
+    public function testPublishVersionPublishesAPreparedVersionAsANewVersionWithAnOlderCore(): void
+    {
+        if (self::coreSupportsPublishingInPlace()) {
+            $this->markTestSkipped('The installed pimcore/pimcore supports publishing a version in place');
+        }
+
+        $user = $this->createMock(UserInterface::class);
+        $version = $this->createVersion(versionCount: self::ELEMENT_VERSION_COUNT + 1, date: self::ELEMENT_MODIFICATION_DATE + 60);
+        $versionElement = $this->createMock(Concrete::class);
+        $versionElement->method('getId')->willReturn(self::ELEMENT_ID);
+
+        $repository = $this->createMock(VersionRepositoryInterface::class);
+        $repository->method('getVersionById')->willReturn($version);
+        $repository->method('getElementFromVersion')->willReturn($versionElement);
+        $repository->expects($this->once())
+            ->method('getLastVersion')
+            ->with(self::ELEMENT_ID, 'object', $user)
+            ->willReturn($this->createVersion(self::VERSION_ID + 1));
+
+        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
+        $serviceResolver->method('getElementById')->willReturn($this->createCurrentElement());
+
+        $publisher = $this->createMock(DataObjectVersionPublisherInterface::class);
+        $publisher->expects($this->once())->method('publish')->with($versionElement, $user, null);
+
+        $service = $this->createService(
+            $repository,
+            $serviceResolver,
+            $this->createMock(SecurityServiceInterface::class),
+            $publisher
+        );
+
+        $this->assertSame(self::VERSION_ID + 1, $service->publishVersion(self::VERSION_ID, $user));
     }
 
     /**
@@ -178,6 +222,8 @@ final class VersionServiceTest extends Unit
         bool $autoSave,
         bool $publishedInPlace
     ): void {
+        // an older core publishes every version as a new version
+        $publishedInPlace = $publishedInPlace && self::coreSupportsPublishingInPlace();
         $user = $this->createMock(UserInterface::class);
         $version = $this->createVersion(versionCount: $versionCount, date: $date);
         $version->setAutoSave($autoSave);
@@ -235,6 +281,11 @@ final class VersionServiceTest extends Unit
 
         $this->expectException(InvalidElementTypeException::class);
         $service->publishVersion(self::VERSION_ID, $user);
+    }
+
+    private static function coreSupportsPublishingInPlace(): bool
+    {
+        return method_exists(AbstractElement::class, 'resolveExistingVersionParameter');
     }
 
     private function createService(
