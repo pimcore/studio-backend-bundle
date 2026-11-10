@@ -76,7 +76,13 @@ final readonly class QualifiedValueSerializer implements QualifiedValueSerialize
             try {
                 $slot = $store->getKeyValues($groupId, $keyId, $language, $variant);
             } catch (UnsupportedEngineFeatureException) {
-                // an engine that cannot address the variant holds nothing there
+                // an engine that cannot address the variant holds nothing there.
+                //
+                // Only a NAMED variant ever reaches this: core asserts the engine's capability for a
+                // variant other than the default one, and for a position above 0, and for nothing
+                // else ({@see Classificationstore::getKeyValues()}), so the default slot - the one
+                // slot every key has - is either read or it throws below. A read that could not
+                // answer at all is therefore never published as a key holding nothing.
                 continue;
             } catch (Exception $exception) {
                 throw new DatabaseException($exception->getMessage(), previous: $exception);

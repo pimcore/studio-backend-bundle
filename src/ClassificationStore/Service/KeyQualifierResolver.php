@@ -18,19 +18,48 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\Se
 use Pimcore\Model\DataObject\ClassDefinition\Data\MultiValue;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use ReflectionProperty;
+use Symfony\Contracts\Service\ResetInterface;
+use function array_key_exists;
 use function is_array;
 use function json_decode;
+use function md5;
 
 /**
  * @internal
  */
-final readonly class KeyQualifierResolver implements KeyQualifierResolverInterface
+final class KeyQualifierResolver implements KeyQualifierResolverInterface, ResetInterface
 {
     private const string TYPE_PROPERTY = 'type';
 
+    /**
+     * The declaration of every key already resolved, keyed by the key's type and the hash of its
+     * `definition` blob - the two the resolution reads and nothing else.
+     *
+     * Rebuilding a whole core field definition from the blob is what every read here costs, and the
+     * same key is asked repeatedly: one group layout asks three times per key (its variants, its
+     * `multiValue` flag, its maximum) and the object data path asks again per key and language, on
+     * the read and on the write.
+     *
+     * Keyed by what it is resolved FROM rather than by the key's id, so nothing has to invalidate
+     * it: a configuration write that changes a key's type or its blob resolves another entry, and
+     * one that changes neither cannot change the declaration.
+     *
+     * @var array<string, MultiValue|null>
+     */
+    private array $declarations = [];
+
     public function __construct(
-        private ServiceResolverInterface $serviceResolver,
+        private readonly ServiceResolverInterface $serviceResolver,
     ) {
+    }
+
+    /**
+     * Drops the memo, so that a long-running worker does not carry the declarations of every key it
+     * has ever seen - implementing the interface is what tags this service `kernel.reset`.
+     */
+    public function reset(): void
+    {
+        $this->declarations = [];
     }
 
     public function declaresQualifiers(KeyConfig $keyConfig): bool
@@ -61,6 +90,8 @@ final readonly class KeyQualifierResolver implements KeyQualifierResolverInterfa
     /**
      * The key's field definition, resolved from its type and its `definition` blob, when that is a
      * core `multiValue` definition. A blob that is not readable as JSON declares nothing.
+     *
+     * Resolved once per (type, blob) and served from {@see self::$declarations} afterwards.
      */
     private function getDeclaration(KeyConfig $keyConfig): ?MultiValue
     {
@@ -69,6 +100,19 @@ final readonly class KeyQualifierResolver implements KeyQualifierResolverInterfa
             return null;
         }
 
+        $memoKey = $keyConfig->getType() . "\0" . md5($keyConfig->getDefinition());
+        if (array_key_exists($memoKey, $this->declarations)) {
+            return $this->declarations[$memoKey];
+        }
+
+        return $this->declarations[$memoKey] = $this->resolveDeclaration($keyConfig);
+    }
+
+    /**
+     * @see self::getDeclaration()
+     */
+    private function resolveDeclaration(KeyConfig $keyConfig): ?MultiValue
+    {
         try {
             $decoded = json_decode($keyConfig->getDefinition(), true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException) {

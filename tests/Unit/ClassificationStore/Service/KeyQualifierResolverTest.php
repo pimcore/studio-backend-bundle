@@ -126,6 +126,39 @@ final class KeyQualifierResolverTest extends Unit
     }
 
     /**
+     * The declaration is rebuilt from the blob once per (type, blob) and served from memory
+     * afterwards: one group layout asks three times per key and the object data path asks again per
+     * key and language, and rebuilding a whole core field definition each time is what that costs.
+     */
+    public function testTheDeclarationIsResolvedOncePerKey(): void
+    {
+        $resolved = 0;
+        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
+        $serviceResolver->method('getFieldDefinitionFromJson')->willReturnCallback(
+            static function () use (&$resolved): Data {
+                $resolved++;
+
+                return new MultiValue();
+            }
+        );
+        $resolver = new KeyQualifierResolver($serviceResolver);
+        $keyConfig = $this->createKeyConfig(self::MULTI_VALUE_TYPE, ['variants' => [['name' => 'metric']]]);
+
+        $resolver->declaresQualifiers($keyConfig);
+        $resolver->getVariants($keyConfig);
+        $resolver->getVariantDeclarations($keyConfig);
+        $resolver->isMultiValue($keyConfig);
+        $resolver->getMaximum($keyConfig);
+
+        $this->assertSame(1, $resolved);
+
+        // another blob is another declaration, which is why nothing has to invalidate the memo
+        $resolver->declaresQualifiers($this->createKeyConfig(self::MULTI_VALUE_TYPE, ['multiValue' => true]));
+
+        $this->assertSame(2, $resolved);
+    }
+
+    /**
      * @param array<string, mixed> $definition
      */
     private function createKeyConfig(string $type, array $definition): KeyConfig

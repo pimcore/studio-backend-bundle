@@ -43,6 +43,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as ClassificationstoreDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\InputQuantityValue;
@@ -57,6 +58,7 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\CalculatedValue;
 use Pimcore\Model\DataObject\Data\MultiValue;
 use Pimcore\Model\DataObject\Data\QuantityValue;
+use Pimcore\Model\DataObject\Exception\UnsupportedEngineFeatureException;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_diff;
@@ -599,7 +601,48 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         if ($coreEntries !== []) {
-            $container->setKeyValues($groupId, $keyId, $coreEntries);
+            $this->writeKeyValues($container, $groupId, $keyId, $coreEntries);
+        }
+    }
+
+    /**
+     * The one core call of the qualified write path, with what it can refuse answered the way the
+     * sibling read of the same slots answers it rather than left to fail the whole object save.
+     *
+     * An engine that cannot hold what the write addresses is the 422 the capability guard raises for
+     * the same write ({@see QualifiedValueSerializerInterface::assertSupported()}), reached where the
+     * guard's view of the engine - the capabilities the store reports - and core's - what the
+     * engine's own DAO supports - disagree. Anything else is a database failure and is wrapped as
+     * {@see self::getValue()} wraps the read's.
+     *
+     * Core's own refusal of entries that do not fit the declaration
+     * ({@see Classificationstore::setKeyValues()} throws `InvalidConfigException` for an undeclared
+     * variant, a duplicate qualifier or a position the key does not permit) is deliberately not
+     * answered as a client error here: every one of those is refused at the request boundary first
+     * ({@see QualifiedValueParserInterface::parseEntries()}), so core raising one means Studio and
+     * core read the key's declaration differently - which is not something the request can correct.
+     *
+     * @param MultiValue[] $entries
+     *
+     * @throws DatabaseException
+     * @throws InvalidArgumentException
+     */
+    private function writeKeyValues(
+        Classificationstore $container,
+        int $groupId,
+        int $keyId,
+        array $entries
+    ): void {
+        try {
+            $container->setKeyValues($groupId, $keyId, $entries);
+        } catch (UnsupportedEngineFeatureException $exception) {
+            throw new InvalidArgumentException(
+                $exception->getMessage(),
+                previous: $exception,
+                errorKey: HttpResponseErrorKeys::ENGINE_CAPABILITY_MISSING->value
+            );
+        } catch (Exception $exception) {
+            throw new DatabaseException($exception->getMessage(), previous: $exception);
         }
     }
 
@@ -864,15 +907,21 @@ final readonly class ClassificationStoreAdapter implements
             return null;
         }
 
-        // the key's configured default, as it has always been applied: to a slot the row holds
-        // nothing at
-        if ($value === null) {
-            $value = $this->getDefaultValue($fieldDefinition);
-        }
-
         $isPreviewRead = $isPreview && $data !== null;
 
-        if ($this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
+        if (!$this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
+            // the key's configured default, as it has always been applied: to a slot the row holds
+            // nothing at.
+            //
+            // A `multiValue` key is left out of this on purpose, and its declaration says so: its
+            // values are the slots core holds, read below, and a key holding none publishes no
+            // entry. Publishing the configured default of its inner type would invent an entry at
+            // the default slot that the row does not hold, which the next write of the key would
+            // store as a value nobody entered.
+            if ($value === null) {
+                $value = $this->getDefaultValue($fieldDefinition);
+            }
+        } else {
             $entries = $this->qualifiedValueSerializer->readStoredEntries(
                 $classificationstore,
                 $groupId,

@@ -39,22 +39,26 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\MultiValueServiceResolver;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as ClassificationstoreDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField as EncryptedFieldDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore;
+use Pimcore\Model\DataObject\Classificationstore\Engine\EngineFeature;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\EncryptedField;
 use Pimcore\Model\DataObject\Data\MultiValue;
+use Pimcore\Model\DataObject\Exception\UnsupportedEngineFeatureException;
 use Pimcore\Model\UserInterface;
 use function array_filter;
 use function array_keys;
@@ -1049,6 +1053,85 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
+     * Core refusing the write because the engine cannot hold what it addresses answers the same 422
+     * and the same error key as the capability guard does for the same write, rather than failing
+     * the whole object save: the guard reads the capabilities the store reports and core asks the
+     * engine's own DAO ({@see Classificationstore::setKeyValues()}), so the two can disagree.
+     *
+     * @throws Exception
+     */
+    public function testCoreRefusingTheWriteOnTheEnginesCapabilityAnswersTheGuardsError(): void
+    {
+        try {
+            $this->writeThroughAFailingCore(new UnsupportedEngineFeatureException(
+                EngineFeature::Variants,
+                self::QUALIFIED_GROUP,
+                self::QUALIFIED_KEY,
+                'input'
+            ));
+            $this->fail('Expected the write to be refused.');
+        } catch (AbstractApiException $exception) {
+            $this->assertSame(HttpResponseErrorKeys::ENGINE_CAPABILITY_MISSING->value, $exception->getErrorKey());
+            $this->assertSame(HttpResponseCodes::UNPROCESSABLE_CONTENT->value, $exception->getStatusCode());
+        }
+    }
+
+    /**
+     * Anything else the core write raises is the database failure the sibling read of the same slots
+     * answers with, and carries the original exception.
+     *
+     * @throws Exception
+     */
+    public function testAnyOtherFailureOfTheCoreWriteIsAnsweredAsADatabaseFailure(): void
+    {
+        $cause = new Exception('the slot could not be written');
+
+        try {
+            $this->writeThroughAFailingCore($cause);
+            $this->fail('Expected the write to fail.');
+        } catch (DatabaseException $exception) {
+            $this->assertSame($cause, $exception->getPrevious());
+        }
+    }
+
+    /**
+     * Writes one entry of a `multiValue` key into a container whose `setKeyValues()` raises the
+     * given failure, with every request-boundary check of that write passing first.
+     *
+     * @throws Exception
+     */
+    private function writeThroughAFailingCore(Exception $failure): void
+    {
+        $stored = [];
+        $keyConfigs = $this->qualifiedKeyConfigs();
+        $container = $this->make(Classificationstore::class, [
+            'getObject' => $this->makeEmpty(Concrete::class),
+            'getActiveGroups' => [self::QUALIFIED_GROUP => true],
+            'getGroupCollectionMappings' => [],
+            'getGroupIdsWithData' => [],
+            'setActiveGroups' => null,
+            'setGroupCollectionMappings' => null,
+            'getKeyValues' => [],
+            'setKeyValues' => static function () use ($failure): never {
+                throw $failure;
+            },
+        ]);
+
+        $this->createQualifiedAdapter($keyConfigs, $stored, self::BOTH_CAPABILITIES)->getDataForSetter(
+            $this->makeEmpty(Concrete::class, ['get' => $container]),
+            $this->createQualifiedFieldDefinition($keyConfigs),
+            'myStore',
+            ['myStore' => [
+                self::QUALIFIED_GROUP => [self::LANGUAGE => [
+                    self::QUALIFIED_KEY => [['v' => '80', 'var' => self::METRIC]],
+                ]],
+                'activeGroups' => [self::QUALIFIED_GROUP => true],
+            ]],
+            $this->makeEmpty(UserInterface::class, ['isAdmin' => true])
+        );
+    }
+
+    /**
      * The current value the key's own type adapter is handed is the one entry's, not the whole
      * list, matched by qualifier and null where the store holds no value there.
      *
@@ -1770,9 +1853,13 @@ final class ClassificationStoreAdapterTest extends Unit
      * go in on setLocalizedKeyValue and setKeyValues and come back out on getLocalizedKeyValue and
      * getKeyValues, so a read asserts what the write actually left behind.
      *
-     * `setKeyValues()` is core's: it replaces every (language, variant) slot its entries name and
-     * leaves every other slot alone, and position 0 of the default variant is the value
-     * `$stored` holds at (group, language, key).
+     * `setKeyValues()` is core's, down to what a write replaces: it "replaces the (language,
+     * variant) slots the given entries name, and leaves every other slot of the key as it is:
+     * writing one variant does not touch the values of another"
+     * ({@see Classificationstore::setKeyValues()}), the slot of a key declaring a list being
+     * replaced whole, so that a write dropping a value drops it (`Classificationstore::storeSlot()`).
+     * Position 0 of the default variant is the value `$stored` holds at (group, language, key),
+     * which is where core keeps it too.
      *
      * @param array<int, array<string, array<int, mixed>>> $stored
      * @param array<int, bool> $activeGroups
