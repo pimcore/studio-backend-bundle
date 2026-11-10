@@ -3,6 +3,9 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Classification Store] Added: the key and key-group assignment configuration reads now carry a key's resolved select
+  options and its unit vocabulary, so a configuration screen no longer needs the object editor to learn them;
+  `KeyGroupRelationHydratorInterface::hydrateKeyGroupRelationDetail()` (@internal) takes the key configuration.
 - [Classification Store] Added: a saved grid column that shows a classification store attribute now also records the
   stable identifier of its group and key, and configurations saved earlier keep working as they are.
 - [Classification Store] Added: collections, groups, sub groups and keys carry free-form custom metadata that can be

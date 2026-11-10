@@ -21,18 +21,26 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationDetail;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUnits;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyGroupRelationService;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyOptionsResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\SelectOption;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\NullKeyOptionsResolver;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
 use ReflectionClass;
 use ReflectionProperty;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_map;
+use function count;
 
 /**
  * @internal
@@ -77,7 +85,7 @@ final class KeyGroupRelationServiceTest extends Unit
      */
     public function testDetailCarriesTheRawSubGroupOfTheAssignment(): void
     {
-        $hydrator = new KeyGroupRelationHydrator();
+        $hydrator = new KeyGroupRelationHydrator(new NullKeyOptionsResolver());
 
         $this->assertSame(
             'sg-abc',
@@ -108,7 +116,7 @@ final class KeyGroupRelationServiceTest extends Unit
         $relation->setDefinitionOverride(self::DEFINITION_OVERRIDE);
         $relation->setMetadata(self::METADATA);
 
-        $detail = (new KeyGroupRelationHydrator())->hydrateKeyGroupRelationDetail($relation);
+        $detail = (new KeyGroupRelationHydrator(new NullKeyOptionsResolver()))->hydrateKeyGroupRelationDetail($relation);
 
         $this->assertSame(self::DEFINITION_OVERRIDE, $detail->getDefinitionOverride());
         $this->assertSame(self::METADATA, $detail->getMetadata());
@@ -150,6 +158,100 @@ final class KeyGroupRelationServiceTest extends Unit
     }
 
     /**
+     * Options and units are resolved from the key configuration the service already loads, never from
+     * the assignment's override, and the key's stored type is published beside them.
+     *
+     * @throws Exception
+     */
+    public function testBothReadPathsPublishTheResolvedMembersOfTheKeyNotOfTheOverride(): void
+    {
+        $options = [new SelectOption('A', 'a'), new SelectOption('B', 'b')];
+        $units = new KeyUnits('kg', ['kg', 'g']);
+        $keyOptionsResolver = $this->createMock(KeyOptionsResolverInterface::class);
+        $keyOptionsResolver->method('getOptions')->willReturn($options);
+        $keyOptionsResolver->method('getOptionsUnavailableReason')->willReturn(null);
+        $keyOptionsResolver->method('getUnits')->willReturn($units);
+
+        $relation = $this->createRelation(null);
+        $relation->setDefinitionOverride(['options' => [['key' => 'A', 'value' => 'a']], 'validUnits' => ['kg']]);
+        $listing = new class([$relation]) extends Listing {
+            /**
+             * @param KeyGroupRelation[] $rows
+             */
+            public function __construct(private readonly array $rows)
+            {
+            }
+
+            public function __call(string $method, array $args): mixed
+            {
+                return $method === 'load' ? $this->rows : count($this->rows);
+            }
+        };
+        $repository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
+        $repository->method('getListingByGroupId')->willReturn($listing);
+
+        $service = $this->createService(
+            $this->createMock(KeyRelationResolverInterface::class),
+            keyOptionsResolver: $keyOptionsResolver,
+            repository: $repository
+        );
+
+        $listed = $service->listKeyGroupRelations(new CollectionFilterParameter(), self::GROUP_ID)->getItems()[0];
+        $upserted = $service->createOrUpdateKeyGroupRelation(new KeyGroupRelationCreate(self::KEY_ID, self::GROUP_ID));
+
+        foreach ([$listed, $upserted] as $detail) {
+            $this->assertSame($options, $detail->getOptions());
+            $this->assertNull($detail->getOptionsUnavailableReason());
+            $this->assertSame($units, $detail->getUnits());
+            $this->assertSame('quantityValue', $detail->getKeyType());
+        }
+
+        $this->assertSame(
+            ['options' => [['key' => 'A', 'value' => 'a']], 'validUnits' => ['kg']],
+            $listed->getDefinitionOverride()
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testARelationWhoseKeyConfigurationIsGonePublishesNoKeyMembers(): void
+    {
+        $keyOptionsResolver = $this->createMock(KeyOptionsResolverInterface::class);
+        $keyOptionsResolver->expects($this->never())->method($this->anything());
+
+        $detail = $this
+            ->createService(
+                $this->createMock(KeyRelationResolverInterface::class),
+                null,
+                false,
+                $keyOptionsResolver
+            )
+            ->createOrUpdateKeyGroupRelation(new KeyGroupRelationCreate(self::KEY_ID, self::GROUP_ID));
+
+        $this->assertNull($detail->getKeyType());
+        $this->assertNull($detail->getOptions());
+        $this->assertNull($detail->getOptionsUnavailableReason());
+        $this->assertNull($detail->getUnits());
+        $this->assertSame(self::GROUP_ID, $detail->getGroupId());
+        $this->assertSame('My Group', $detail->getGroupName());
+    }
+
+    /**
+     * `KeyGroupRelation::$type` has no default, and the key type is read from the key configuration
+     * rather than from the relation, so a relation never given a type does not raise.
+     *
+     * @throws Exception
+     */
+    public function testARelationBuiltWithoutATypeDoesNotRaise(): void
+    {
+        $detail = (new KeyGroupRelationHydrator(new NullKeyOptionsResolver()))
+            ->hydrateKeyGroupRelationDetail($this->createRelation(null));
+
+        $this->assertNull($detail->getKeyType());
+    }
+
+    /**
      * @throws Exception
      */
     private function expectClearedOnce(): KeyRelationResolverInterface
@@ -168,13 +270,15 @@ final class KeyGroupRelationServiceTest extends Unit
     private function createService(
         KeyRelationResolverInterface $resolver,
         ?bool $keyLocalized = null,
-        bool $keyExists = true
+        bool $keyExists = true,
+        ?KeyOptionsResolverInterface $keyOptionsResolver = null,
+        ?KeyGroupRelationRepositoryInterface $repository = null,
     ): KeyGroupRelationService {
         $relation = new KeyGroupRelation();
         $relation->setKeyId(self::KEY_ID);
         $relation->setGroupId(self::GROUP_ID);
 
-        $repository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
+        $repository ??= $this->createMock(KeyGroupRelationRepositoryInterface::class);
         $repository
             ->method('createOrUpdate')
             ->willReturn($relation);
@@ -187,8 +291,12 @@ final class KeyGroupRelationServiceTest extends Unit
             ->method('getById')
             ->willReturn($group);
 
+        $filterMapper = $this->createMock(FilterMapperServiceInterface::class);
+        $filterMapper->method('getFilterParameters')->willReturn(new FilterParameter());
+
         $key = new KeyConfig();
         $key->setName('My Key');
+        $key->setType('quantityValue');
 
         $keyLocalizationResolver = new InMemoryKeyLocalizationResolver();
 
@@ -209,9 +317,9 @@ final class KeyGroupRelationServiceTest extends Unit
 
         return new KeyGroupRelationService(
             $this->createMock(EventDispatcherInterface::class),
-            $this->createMock(FilterMapperServiceInterface::class),
+            $filterMapper,
             $repository,
-            new KeyGroupRelationHydrator(),
+            new KeyGroupRelationHydrator($keyOptionsResolver ?? new NullKeyOptionsResolver()),
             $resolver,
             $groupRepository,
             $keyRepository,

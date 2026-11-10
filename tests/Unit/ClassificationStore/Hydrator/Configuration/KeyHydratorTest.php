@@ -15,7 +15,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Hydr
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyHydrator;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUnits;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyOptionsResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\OptionsUnavailableReason;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\SelectOption;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\NullKeyOptionsResolver;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 
 /**
@@ -30,7 +35,7 @@ final class KeyHydratorTest extends Unit
     public function _before(): void
     {
         $this->keyLocalizationResolver = new InMemoryKeyLocalizationResolver();
-        $this->hydrator = new KeyHydrator($this->keyLocalizationResolver);
+        $this->hydrator = new KeyHydrator($this->keyLocalizationResolver, new NullKeyOptionsResolver());
     }
 
     public function testStoredTitleIsPassedThroughVerbatim(): void
@@ -118,6 +123,43 @@ final class KeyHydratorTest extends Unit
             'a key flagged not localized reports false' => [false],
             'a key stating nothing reports null' => [null],
         ];
+    }
+
+    /**
+     * The resolved members come from the resolver and the stored definition is reported exactly as
+     * stored beside them, never replaced by the resolved options.
+     */
+    public function testTheResolvedMembersArePublishedBesideTheUntouchedDefinition(): void
+    {
+        $options = [new SelectOption('A', 'a')];
+        $units = new KeyUnits('kg', ['kg', 'g']);
+        $resolver = $this->createMock(KeyOptionsResolverInterface::class);
+        $resolver->method('getOptions')->willReturn($options);
+        $resolver->method('getOptionsUnavailableReason')->willReturn(OptionsUnavailableReason::PROVIDER_NOT_STATIC);
+        $resolver->method('getUnits')->willReturn($units);
+
+        $keyConfig = $this->createKeyConfig();
+        $keyConfig->setDefinition('{"fieldtype":"select","optionsProviderClass":"StaticProvider"}');
+
+        $detail = (new KeyHydrator($this->keyLocalizationResolver, $resolver))->hydrateKeyDetail($keyConfig);
+
+        $this->assertSame($options, $detail->getOptions());
+        $this->assertSame('providerNotStatic', $detail->getOptionsUnavailableReason());
+        $this->assertSame($units, $detail->getUnits());
+        $this->assertSame(
+            ['fieldtype' => 'select', 'optionsProviderClass' => 'StaticProvider'],
+            $detail->getDefinition()
+        );
+        $this->assertSame('input', $detail->getType());
+    }
+
+    public function testAKeyThatResolvesNothingPublishesNullMembers(): void
+    {
+        $detail = $this->hydrator->hydrateKeyDetail($this->createKeyConfig());
+
+        $this->assertNull($detail->getOptions());
+        $this->assertNull($detail->getOptionsUnavailableReason());
+        $this->assertNull($detail->getUnits());
     }
 
     private function createKeyConfig(): KeyConfig
