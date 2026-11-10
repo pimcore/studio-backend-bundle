@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configur
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\AbsentValue;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\JsonObjectShapeTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 
 /**
@@ -29,6 +30,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 )]
 final readonly class CollectionUpdate
 {
+    use JsonObjectShapeTrait;
+
     /**
      * @throws InvalidArgumentException
      */
@@ -42,11 +45,30 @@ final readonly class CollectionUpdate
             nullable: true
         )]
         private ?string $description = null,
+        #[Property(
+            description: 'Free-form pairs of the collection. Pimcore reads no member of it and no member is'
+                . ' reserved. Omitting it keeps a stored object alone, a supplied object replaces it whole'
+                . ' rather than merging into it - so one rebuilt from a form without a member drops that'
+                . ' member - and an explicit null clears it altogether. A JSON array is refused, the member'
+                . ' being an object, and so is the one object an array cannot be told apart from once decoded -'
+                . ' whose member names are the consecutive integers from zero, such as {"0": "a"} - because the'
+                . ' stored form cannot carry that distinction either.',
+            type: 'object',
+            example: ['source' => 'erp'],
+            nullable: true
+        )]
+        private mixed $customMetadata = AbsentValue::ABSENT,
         // only refused here, never a property of this schema; the default stands for an absent key
         mixed $identifier = AbsentValue::ABSENT,
     ) {
         if (empty($this->name)) {
             throw new InvalidArgumentException('Name cannot be empty.');
+        }
+
+        if ($this->customMetadata !== AbsentValue::ABSENT
+            && $this->customMetadata !== null
+            && !$this->isJsonObject($this->customMetadata)) {
+            throw new InvalidArgumentException('customMetadata has to be an object or null.');
         }
 
         if ($identifier !== AbsentValue::ABSENT) {
@@ -62,5 +84,20 @@ final readonly class CollectionUpdate
     public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    public function hasCustomMetadata(): bool
+    {
+        return $this->customMetadata !== AbsentValue::ABSENT;
+    }
+
+    /**
+     * Carries a value only when {@see self::hasCustomMetadata()} reports one.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getCustomMetadata(): ?array
+    {
+        return $this->customMetadata;
     }
 }

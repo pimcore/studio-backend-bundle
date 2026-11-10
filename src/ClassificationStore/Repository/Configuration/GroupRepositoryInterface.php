@@ -115,6 +115,8 @@ interface GroupRepositoryInterface
         string $identifier,
         string $name,
         ?string $description,
+        bool $customMetadataSupplied = false,
+        ?array $customMetadata = null,
     ): GroupConfig;
 
     /**
@@ -127,7 +129,13 @@ interface GroupRepositoryInterface
      * @throws NotFoundException
      * @throws ElementSavingFailedException
      */
-    public function update(int $id, string $name, ?string $description): GroupConfig;
+    public function update(
+        int $id,
+        string $name,
+        ?string $description,
+        bool $customMetadataSupplied = false,
+        ?array $customMetadata = null,
+    ): GroupConfig;
 
     /**
      * @throws NotFoundException

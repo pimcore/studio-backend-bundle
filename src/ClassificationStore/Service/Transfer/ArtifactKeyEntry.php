@@ -26,6 +26,7 @@ final readonly class ArtifactKeyEntry
 {
     /**
      * @param array<string, mixed>|null $definition
+     * @param array<string, mixed>|null $customMetadata
      */
     public function __construct(
         private string $identifier,
@@ -36,6 +37,8 @@ final readonly class ArtifactKeyEntry
         private ?array $definition,
         private bool $enabled,
         private ?bool $localized = null,
+        private ?array $customMetadata = null,
+        private bool $customMetadataSupplied = false,
     ) {
     }
 
@@ -84,5 +87,23 @@ final readonly class ArtifactKeyEntry
     public function getLocalized(): ?bool
     {
         return $this->localized;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function getCustomMetadata(): ?array
+    {
+        return $this->customMetadata;
+    }
+
+    /**
+     * A non-null map counts as supplied on its own, so constructing this entry directly - without the
+     * parser that sets the flag - cannot silently drop it. The flag is what tells a map supplied as
+     * null apart from an omitted one, which inference cannot recover.
+     */
+    public function isCustomMetadataSupplied(): bool
+    {
+        return $this->customMetadataSupplied || $this->customMetadata !== null;
     }
 }

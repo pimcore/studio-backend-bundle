@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configur
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\AbsentValue;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\JsonObjectShapeTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use function get_debug_type;
 use function sprintf;
@@ -42,6 +43,8 @@ use function sprintf;
 )]
 final readonly class KeyGroupRelationCreate
 {
+    use JsonObjectShapeTrait;
+
     /**
      * @throws InvalidArgumentException
      */
@@ -65,7 +68,10 @@ final readonly class KeyGroupRelationCreate
         #[Property(
             description: 'Partial field definition overriding the one of the key for this assignment. Omitting it'
                 . ' leaves a stored one alone, a supplied object replaces it whole rather than merging into it, and'
-                . ' an explicit null clears it.',
+                . ' an explicit null clears it. A JSON array is refused, the member being an object, and so is the'
+                . ' one object an array cannot be told apart from once decoded - whose member names are the'
+                . ' consecutive integers from zero, such as {"0": "a"} - because the stored form cannot carry that'
+                . ' distinction either.',
             type: 'object',
             example: ['defaultUnit' => 'kg'],
             nullable: true
@@ -83,7 +89,10 @@ final readonly class KeyGroupRelationCreate
             description: 'Free-form metadata carried by this assignment. No member is reserved. Omitting it keeps a'
                 . ' stored object alone, a supplied object replaces it whole rather than merging into it - so one'
                 . ' rebuilt from a form without a member drops that member - and an explicit null clears it'
-                . ' altogether.',
+                . ' altogether. A JSON array is refused, the member being an object, and so is the one object an'
+                . ' array cannot be told apart from once decoded - whose member names are the consecutive'
+                . ' integers from zero, such as {"0": "a"} - because the stored form cannot carry that'
+                . ' distinction either.',
             type: 'object',
             example: ['source' => 'erp'],
             nullable: true
@@ -92,9 +101,9 @@ final readonly class KeyGroupRelationCreate
     ) {
         $this->validate('sorter', $this->sorter, 'int', false);
         $this->validate('mandatory', $this->mandatory, 'bool', false);
-        $this->validate('definitionOverride', $this->definitionOverride, 'array', true);
+        $this->validateJsonObject('definitionOverride', $this->definitionOverride);
         $this->validate('subGroup', $this->subGroup, 'string', true);
-        $this->validate('metadata', $this->metadata, 'array', true);
+        $this->validateJsonObject('metadata', $this->metadata);
     }
 
     public function getKeyId(): int
@@ -167,6 +176,25 @@ final readonly class KeyGroupRelationCreate
     public function getMetadata(): ?array
     {
         return $this->metadata;
+    }
+
+    /**
+     * The two `type: 'object'` members, which `get_debug_type() === 'array'` does not decide: PHP
+     * carries a JSON list as an array too, so a payload such as `{"metadata": ["erp"]}` would pass
+     * that read and be stored under a member the contract says is an object
+     * ({@see JsonObjectShapeTrait}).
+     *
+     * @throws InvalidArgumentException
+     */
+    private function validateJsonObject(string $property, mixed $value): void
+    {
+        if ($value === AbsentValue::ABSENT || $value === null) {
+            return;
+        }
+
+        if (!$this->isJsonObject($value)) {
+            throw new InvalidArgumentException(sprintf('%s has to be an object.', $property));
+        }
     }
 
     /**

@@ -316,6 +316,48 @@ final class ArtifactTargetMatcherTest extends Unit
         );
     }
 
+    /**
+     * An entry whose only difference from the row is its pairs is a change, so it is written; an
+     * entry that omits them is not compared, because it does not write them either, and an explicit
+     * null against stored pairs is a change that clears them.
+     */
+    public function testTheEntityPairsAreComparedOnlyWhereTheEntrySuppliesThem(): void
+    {
+        $matcher = $this->createTargetMatcher();
+        $stored = ['source' => 'erp'];
+
+        $this->assertFalse(
+            $matcher->describesSameEntity(self::NAME, null, self::NAME, null, $stored, true, ['source' => 'plm'])
+        );
+        $this->assertFalse($matcher->describesSameEntity(self::NAME, null, self::NAME, null, $stored, true, null));
+        $this->assertFalse($matcher->describesSameEntity(self::NAME, null, self::NAME, null, null, true, $stored));
+        $this->assertTrue($matcher->describesSameEntity(self::NAME, null, self::NAME, null, $stored, true, $stored));
+        $this->assertTrue($matcher->describesSameEntity(self::NAME, null, self::NAME, null, $stored));
+        $this->assertTrue($matcher->describesSameEntity(self::NAME, null, self::NAME, null, null, true, []));
+    }
+
+    public function testTheKeyPairsAreComparedOnlyWhereTheEntrySuppliesThem(): void
+    {
+        $matcher = $this->createTargetMatcher();
+        $target = $this->createKey('{"fieldtype":"input"}');
+        $target->setCustomMetadata(['source' => 'erp']);
+        $definition = ['fieldtype' => 'input'];
+
+        $this->assertFalse($matcher->describesSameKey(
+            $target,
+            $this->createKeyEntry($definition, customMetadata: ['source' => 'plm'], customMetadataSupplied: true)
+        ));
+        $this->assertFalse($matcher->describesSameKey(
+            $target,
+            $this->createKeyEntry($definition, customMetadata: null, customMetadataSupplied: true)
+        ));
+        $this->assertTrue($matcher->describesSameKey(
+            $target,
+            $this->createKeyEntry($definition, customMetadata: ['source' => 'erp'], customMetadataSupplied: true)
+        ));
+        $this->assertTrue($matcher->describesSameKey($target, $this->createKeyEntry($definition)));
+    }
+
     public function testAValueThatIsNotAStringReadsAsNone(): void
     {
         $matcher = $this->createTargetMatcher();
@@ -388,10 +430,26 @@ final class ArtifactTargetMatcherTest extends Unit
 
     /**
      * @param array<string, mixed> $definition
+     * @param array<string, mixed>|null $customMetadata
      */
-    private function createKeyEntry(array $definition, ?bool $localized = null): ArtifactKeyEntry
-    {
-        return new ArtifactKeyEntry('01KEY', 'weight', 'Weight', null, 'input', $definition, true, $localized);
+    private function createKeyEntry(
+        array $definition,
+        ?bool $localized = null,
+        ?array $customMetadata = null,
+        bool $customMetadataSupplied = false,
+    ): ArtifactKeyEntry {
+        return new ArtifactKeyEntry(
+            '01KEY',
+            'weight',
+            'Weight',
+            null,
+            'input',
+            $definition,
+            true,
+            $localized,
+            $customMetadata,
+            $customMetadataSupplied
+        );
     }
 
     private function createAssignmentEntry(?string $subGroup = null, bool $supplied = false): ArtifactAssignmentEntry

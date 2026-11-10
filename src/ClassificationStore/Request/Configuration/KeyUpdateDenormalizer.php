@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Request\Configu
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\AbsentValue;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\JsonObjectShapeTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -32,6 +33,8 @@ use function sprintf;
  */
 final readonly class KeyUpdateDenormalizer implements DenormalizerInterface, NormalizerInterface
 {
+    use JsonObjectShapeTrait;
+
     public function supportsDenormalization(
         mixed $data,
         string $type,
@@ -72,9 +75,11 @@ final readonly class KeyUpdateDenormalizer implements DenormalizerInterface, Nor
             type: $this->stringOrNull($data, 'type'),
             definition: $this->arrayOrNull($data, 'definition'),
             localized: $this->boolOrNull($data, 'localized'),
+            customMetadata: $this->objectOrNull($data, 'customMetadata'),
             titleSupplied: array_key_exists('title', $data),
             descriptionSupplied: array_key_exists('description', $data),
             localizedSupplied: array_key_exists('localized', $data),
+            customMetadataSupplied: array_key_exists('customMetadata', $data),
             // Forwarded so the schema's refusal still fires: this denormalizer replaces the
             // mapping that used to hand a supplied `identifier` to the constructor.
             identifier: array_key_exists('identifier', $data) ? $data['identifier'] : AbsentValue::ABSENT,
@@ -125,6 +130,29 @@ final readonly class KeyUpdateDenormalizer implements DenormalizerInterface, Nor
         $value = $data[$field] ?? null;
 
         if ($value !== null && !is_array($value)) {
+            throw new InvalidArgumentException(sprintf('`%s` must be an object or null.', $field));
+        }
+
+        return $value;
+    }
+
+    /**
+     * The same read as {@see self::arrayOrNull()}, but for a member whose contract is an `object`
+     * rather than any array: a non-empty JSON list is refused here instead of being written under
+     * it ({@see JsonObjectShapeTrait}). `definition` deliberately keeps the laxer read - its
+     * `object` contract is already released, so tightening it is a change of its own.
+     *
+     * @param array<array-key, mixed> $data
+     *
+     * @return array<string, mixed>|null
+     *
+     * @throws InvalidArgumentException
+     */
+    private function objectOrNull(array $data, string $field): ?array
+    {
+        $value = $data[$field] ?? null;
+
+        if ($value !== null && !$this->isJsonObject($value)) {
             throw new InvalidArgumentException(sprintf('`%s` must be an object or null.', $field));
         }
 

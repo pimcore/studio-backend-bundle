@@ -94,14 +94,23 @@ interface ArtifactTargetMatcherInterface
     public function walkTargetByRowCursor(ApplyContext $context, Closure $walk): Generator;
 
     /**
-     * Whether the row's name and description are the ones the entry carries, which is everything a
-     * sub group, a collection and a group hold of their own.
+     * Whether the row's name, description and pairs are the ones the entry carries, which is everything
+     * a sub group, a collection and a group hold of their own. The pairs are compared only where the
+     * entry supplies them, because an entry that leaves them out does not write them either; an empty
+     * map and none are the same, which is how the model stores them. The store has no pairs and passes
+     * none.
+     *
+     * @param array<string, mixed>|null $storedCustomMetadata
+     * @param array<string, mixed>|null $customMetadata
      */
     public function describesSameEntity(
         ?string $storedName,
         ?string $storedDescription,
         string $name,
         ?string $description,
+        ?array $storedCustomMetadata = null,
+        bool $customMetadataSupplied = false,
+        ?array $customMetadata = null,
     ): bool;
 
     /**

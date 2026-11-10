@@ -38,6 +38,9 @@ interface ArtifactEntryMapperInterface
     public function mapStore(StoreConfig $store): array;
 
     /**
+     * The sub group's, collection's and group's `customMetadata` is always written, null where the row
+     * holds none, and so is the key's.
+     *
      * @return array<string, mixed>
      */
     public function mapSubGroup(SubGroupConfig $config): array;

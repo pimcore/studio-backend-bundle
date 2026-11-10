@@ -224,11 +224,17 @@ final readonly class GroupRepository implements GroupRepositoryInterface
         string $identifier,
         string $name,
         ?string $description,
+        bool $customMetadataSupplied = false,
+        ?array $customMetadata = null,
     ): GroupConfig {
         $config ??= new GroupConfig();
         $config->setStoreId($storeId);
         $config->setName($name);
         $config->setDescription($description);
+
+        if ($customMetadataSupplied) {
+            $config->setCustomMetadata($customMetadata);
+        }
 
         try {
             // before the save, so that a new row carries the file's identifier instead of a fresh one
@@ -274,11 +280,20 @@ final readonly class GroupRepository implements GroupRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function update(int $id, string $name, ?string $description): GroupConfig
-    {
+    public function update(
+        int $id,
+        string $name,
+        ?string $description,
+        bool $customMetadataSupplied = false,
+        ?array $customMetadata = null,
+    ): GroupConfig {
         $config = $this->getById($id);
         $config->setName($name);
         $config->setDescription($description);
+
+        if ($customMetadataSupplied) {
+            $config->setCustomMetadata($customMetadata);
+        }
 
         try {
             $config->save();

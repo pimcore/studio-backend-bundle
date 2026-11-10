@@ -240,6 +240,10 @@ final readonly class KeyRepository implements KeyRepositoryInterface
         // restores every key to inheriting, which is the state such a file describes
         $this->keyLocalizationResolver->setLocalized($config, $entry->getLocalized());
 
+        if ($entry->isCustomMetadataSupplied()) {
+            $config->setCustomMetadata($entry->getCustomMetadata());
+        }
+
         try {
             $config->setDefinition(json_encode($entry->getDefinition() ?? [], JSON_THROW_ON_ERROR));
             // before the save, so that a new row carries the file's identifier instead of a fresh one
@@ -309,6 +313,10 @@ final readonly class KeyRepository implements KeyRepositoryInterface
 
         if ($parameters->isLocalizedSupplied()) {
             $this->keyLocalizationResolver->setLocalized($config, $parameters->getLocalized());
+        }
+
+        if ($parameters->isCustomMetadataSupplied()) {
+            $config->setCustomMetadata($parameters->getCustomMetadata());
         }
 
         $type = $parameters->getType();

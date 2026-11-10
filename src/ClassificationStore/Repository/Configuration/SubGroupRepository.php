@@ -186,11 +186,17 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
         string $identifier,
         string $name,
         ?string $description,
+        bool $customMetadataSupplied = false,
+        ?array $customMetadata = null,
     ): SubGroupConfig {
         $config ??= new SubGroupConfig();
         $config->setStoreId($storeId);
         $config->setName($name);
         $config->setDescription($description);
+
+        if ($customMetadataSupplied) {
+            $config->setCustomMetadata($customMetadata);
+        }
 
         try {
             // before the save, so that a new row carries the file's identifier instead of a fresh one
@@ -221,13 +227,22 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function update(int $id, string $name, ?string $description): SubGroupConfig
-    {
+    public function update(
+        int $id,
+        string $name,
+        ?string $description,
+        bool $customMetadataSupplied = false,
+        ?array $customMetadata = null,
+    ): SubGroupConfig {
         $config = $this->getById($id);
         $storeId = $config->getStoreId();
 
         $config->setName($name);
         $config->setDescription($description);
+
+        if ($customMetadataSupplied) {
+            $config->setCustomMetadata($customMetadata);
+        }
 
         $this->saveUnderAFreeName($config, $name, $storeId, $id);
 

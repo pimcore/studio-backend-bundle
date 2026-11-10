@@ -55,7 +55,10 @@ final class SubGroupSchemaTest extends Unit
         $this->assertNull((new SubGroupDetail(42, self::SUB_GROUP_NAME, 1))->getIdentifier());
 
         $this->assertSame(
-            ['id', 'name', 'storeId', 'description', 'creationDate', 'modificationDate', 'identifier'],
+            [
+                'id', 'name', 'storeId', 'description', 'creationDate', 'modificationDate', 'identifier',
+                'customMetadata',
+            ],
             $this->getConstructorParameterNames(SubGroupDetail::class)
         );
 
@@ -76,9 +79,12 @@ final class SubGroupSchemaTest extends Unit
         $this->assertSame(['name', 'storeId'], $attributes[0]->getArguments()['required']);
     }
 
-    public function testUpdateTakesNameAndDescriptionOnly(): void
+    public function testUpdateTakesNameDescriptionAndTheOptionalPairsOnly(): void
     {
-        $this->assertSame(['name', 'description'], $this->getConstructorParameterNames(SubGroupUpdate::class));
+        $this->assertSame(
+            ['name', 'description', 'customMetadata'],
+            $this->getConstructorParameterNames(SubGroupUpdate::class)
+        );
 
         $attributes = (new ReflectionClass(SubGroupUpdate::class))->getAttributes(Schema::class);
 

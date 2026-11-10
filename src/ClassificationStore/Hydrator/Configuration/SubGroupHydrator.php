@@ -31,6 +31,7 @@ final readonly class SubGroupHydrator implements SubGroupHydratorInterface
             $subGroupConfig->getCreationDate(),
             $subGroupConfig->getModificationDate(),
             $subGroupConfig->getIdentifier(),
+            $subGroupConfig->getCustomMetadata(),
         );
     }
 }

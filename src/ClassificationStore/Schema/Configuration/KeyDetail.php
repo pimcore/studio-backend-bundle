@@ -97,6 +97,14 @@ final class KeyDetail implements AdditionalAttributesInterface
             nullable: true
         )]
         private readonly ?bool $localized = null,
+        #[Property(
+            description: 'Free-form pairs the key carries, reported as stored. Pimcore reads no member of'
+                . ' it, and null where the key holds none.',
+            type: 'object',
+            example: ['source' => 'erp'],
+            nullable: true
+        )]
+        private readonly ?array $customMetadata = null,
     ) {
     }
 
@@ -158,5 +166,13 @@ final class KeyDetail implements AdditionalAttributesInterface
     public function getLocalized(): ?bool
     {
         return $this->localized;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function getCustomMetadata(): ?array
+    {
+        return $this->customMetadata;
     }
 }

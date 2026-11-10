@@ -97,6 +97,8 @@ interface CollectionRepositoryInterface
         string $identifier,
         string $name,
         ?string $description,
+        bool $customMetadataSupplied = false,
+        ?array $customMetadata = null,
     ): CollectionConfig;
 
     /**
@@ -109,7 +111,13 @@ interface CollectionRepositoryInterface
      * @throws NotFoundException
      * @throws ElementSavingFailedException
      */
-    public function update(int $id, string $name, ?string $description): CollectionConfig;
+    public function update(
+        int $id,
+        string $name,
+        ?string $description,
+        bool $customMetadataSupplied = false,
+        ?array $customMetadata = null,
+    ): CollectionConfig;
 
     /**
      * @throws NotFoundException

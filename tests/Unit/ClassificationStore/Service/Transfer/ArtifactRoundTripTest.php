@@ -85,7 +85,23 @@ final class ArtifactRoundTripTest extends Unit
 
     private const array FIXTURE_METADATA = ['source' => 'etim'];
 
+    private const array FIXTURE_PAIRS = ['indexed' => 'yes', 'title.de' => 'Gewicht', 'nested' => ['a' => 1]];
+
     private InMemoryKeyLocalizationResolver $keyLocalizationResolver;
+
+    /**
+     * The pairs every entity of the fixture carries.
+     *
+     * @var array<string, mixed>|null
+     */
+    private ?array $fixturePairs = null;
+
+    /**
+     * What each entity save was asked for: whether the pairs were supplied, and the pairs.
+     *
+     * @var array<string, array{0: bool, 1: array<string, mixed>|null}>
+     */
+    private array $appliedPairs = [];
 
     /**
      * @var array<string, ArtifactKeyEntry>
@@ -271,6 +287,51 @@ final class ArtifactRoundTripTest extends Unit
     }
 
     /**
+     * The pairs of all four entity levels travel through the file and arrive on each of them, and a
+     * second apply of the same file over a target that already holds them decides nothing.
+     */
+    public function testThePairsOfEveryEntityLevelSurviveTheRoundTrip(): void
+    {
+        $this->fixturePairs = self::FIXTURE_PAIRS;
+        $keys = $this->createFixtureKeys();
+
+        $this->applyExportOf($keys);
+
+        foreach (['subGroup', 'collection', 'group'] as $level) {
+            $this->assertSame([true, self::FIXTURE_PAIRS], $this->appliedPairs[$level], $level);
+        }
+
+        $key = $this->appliedKeys[self::ENABLED_KEY_IDENTIFIER];
+        $this->assertTrue($key->isCustomMetadataSupplied());
+        $this->assertSame(self::FIXTURE_PAIRS, $key->getCustomMetadata());
+
+        $this->appliedPairs = [];
+        $this->appliedKeys = [];
+        $report = $this->applyExportOf($keys, targetKeys: $keys, targetIsTheSource: true);
+
+        $this->assertSame(0, $report->getCount(ApplyOutcome::UPDATED));
+        $this->assertSame(0, $report->getCount(ApplyOutcome::CREATED));
+        $this->assertSame([], $this->appliedPairs);
+        $this->assertSame([], $this->appliedKeys);
+    }
+
+    /**
+     * An entity that holds no pairs is exported with an explicit null, which the apply reads as
+     * supplied: it is a file that says the entity carries none.
+     */
+    public function testAnEntityWithoutPairsExportsAnExplicitNullThatApplyReadsAsSupplied(): void
+    {
+        $this->applyExportOf($this->createFixtureKeys());
+
+        foreach (['subGroup', 'collection', 'group'] as $level) {
+            $this->assertSame([true, null], $this->appliedPairs[$level], $level);
+        }
+
+        $this->assertTrue($this->appliedKeys[self::ENABLED_KEY_IDENTIFIER]->isCustomMetadataSupplied());
+        $this->assertNull($this->appliedKeys[self::ENABLED_KEY_IDENTIFIER]->getCustomMetadata());
+    }
+
+    /**
      * @param KeyConfig[] $sourceKeys
      * @param KeyConfig[] $targetKeys
      * @param array<string, mixed>|null $assignmentMetadata
@@ -378,8 +439,17 @@ final class ArtifactRoundTripTest extends Unit
                     => $targetIsTheSource && $withIdentifier !== false ? [$this->createSubGroup()] : []
             );
         $subGroupRepository->method('saveFromArtifact')->willReturnCallback(
-            function (?SubGroupConfig $config, int $storeId, string $identifier, string $name): SubGroupConfig {
+            function (
+                ?SubGroupConfig $config,
+                int $storeId,
+                string $identifier,
+                string $name,
+                ?string $description,
+                bool $customMetadataSupplied,
+                ?array $customMetadata,
+            ): SubGroupConfig {
                 $this->appliedEntities[] = 'subGroup:' . $identifier . ':' . $name;
+                $this->appliedPairs['subGroup'] = [$customMetadataSupplied, $customMetadata];
 
                 return $config ?? $this->createSubGroup();
             }
@@ -393,8 +463,17 @@ final class ArtifactRoundTripTest extends Unit
                     => $targetIsTheSource && $withIdentifier !== false ? [$this->createCollection()] : []
             );
         $collectionRepository->method('saveFromArtifact')->willReturnCallback(
-            function (?CollectionConfig $config, int $storeId, string $identifier, string $name): CollectionConfig {
+            function (
+                ?CollectionConfig $config,
+                int $storeId,
+                string $identifier,
+                string $name,
+                ?string $description,
+                bool $customMetadataSupplied,
+                ?array $customMetadata,
+            ): CollectionConfig {
                 $this->appliedEntities[] = 'collection:' . $identifier . ':' . $name;
+                $this->appliedPairs['collection'] = [$customMetadataSupplied, $customMetadata];
 
                 return $config ?? $this->createCollection();
             }
@@ -408,8 +487,17 @@ final class ArtifactRoundTripTest extends Unit
                     => $targetIsTheSource && $withIdentifier !== false ? [$this->createGroup()] : []
             );
         $groupRepository->method('saveFromArtifact')->willReturnCallback(
-            function (?GroupConfig $config, int $storeId, string $identifier, string $name): GroupConfig {
+            function (
+                ?GroupConfig $config,
+                int $storeId,
+                string $identifier,
+                string $name,
+                ?string $description,
+                bool $customMetadataSupplied,
+                ?array $customMetadata,
+            ): GroupConfig {
                 $this->appliedEntities[] = 'group:' . $identifier . ':' . $name;
+                $this->appliedPairs['group'] = [$customMetadataSupplied, $customMetadata];
 
                 return $config ?? $this->createGroup();
             }
@@ -565,6 +653,7 @@ final class ArtifactRoundTripTest extends Unit
         $config->setStoreId(self::STORE_ID);
         $config->setIdentifier(self::SUB_GROUP_IDENTIFIER);
         $config->setName('Dimensions');
+        $config->setCustomMetadata($this->fixturePairs);
 
         return $config;
     }
@@ -576,6 +665,7 @@ final class ArtifactRoundTripTest extends Unit
         $config->setStoreId(self::STORE_ID);
         $config->setIdentifier(self::COLLECTION_IDENTIFIER);
         $config->setName('Lighting');
+        $config->setCustomMetadata($this->fixturePairs);
 
         return $config;
     }
@@ -587,6 +677,7 @@ final class ArtifactRoundTripTest extends Unit
         $config->setStoreId(self::STORE_ID);
         $config->setIdentifier(self::GROUP_IDENTIFIER);
         $config->setName('Measurements');
+        $config->setCustomMetadata($this->fixturePairs);
 
         return $config;
     }
@@ -619,6 +710,7 @@ final class ArtifactRoundTripTest extends Unit
         $config->setDefinition((string) json_encode($definition));
         $config->setEnabled($enabled);
         $this->keyLocalizationResolver->setLocalized($config, $localized);
+        $config->setCustomMetadata($this->fixturePairs);
 
         return $config;
     }

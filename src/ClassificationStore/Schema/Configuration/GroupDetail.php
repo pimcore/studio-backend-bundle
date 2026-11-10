@@ -63,6 +63,14 @@ final class GroupDetail implements AdditionalAttributesInterface
             nullable: true
         )]
         private readonly ?string $identifier = null,
+        #[Property(
+            description: 'Free-form pairs the group carries, reported as stored. Pimcore reads no member of'
+                . ' it, and null where the group holds none.',
+            type: 'object',
+            example: ['source' => 'erp'],
+            nullable: true
+        )]
+        private readonly ?array $customMetadata = null,
     ) {
     }
 
@@ -99,5 +107,13 @@ final class GroupDetail implements AdditionalAttributesInterface
     public function getIdentifier(): ?string
     {
         return $this->identifier;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function getCustomMetadata(): ?array
+    {
+        return $this->customMetadata;
     }
 }
