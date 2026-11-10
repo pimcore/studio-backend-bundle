@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\ServiceUserClientExceptio
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ServiceUserClientStoreInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Service\ServiceUserClientServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Security\Repository\McpAccessTokenRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Event\ServiceUserEvent;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Hydrator\ServiceUserHydratorInterface;
@@ -31,15 +32,18 @@ use Pimcore\Bundle\StudioBackendBundle\ServiceUser\MappedParameter\UpdateParamet
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository\ServiceUserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUser as ServiceUserSchema;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUserCredentials;
+use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUserMcpTokens;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneServiceInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\User\ServiceUser;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_map;
 use function count;
 use function implode;
 use function sprintf;
+use function time;
 
 /**
  * @internal
@@ -57,14 +61,21 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
         private ScopeRegistryInterface $scopeRegistry,
+        private McpAccessTokenRepositoryInterface $mcpTokenRepository,
     ) {
     }
 
     public function listServiceUsers(): Collection
     {
+        $serviceUsers = $this->repository->listServiceUsers();
+        $summaries = $this->mcpTokenRepository->summarizeByUserIds(
+            array_map(static fn (ServiceUser $serviceUser): int => (int) $serviceUser->getId(), $serviceUsers),
+            time()
+        );
+
         $items = [];
-        foreach ($this->repository->listServiceUsers() as $serviceUser) {
-            $items[] = $this->buildSchema($serviceUser);
+        foreach ($serviceUsers as $serviceUser) {
+            $items[] = $this->buildSchema($serviceUser, $summaries);
         }
 
         return new Collection(count($items), $items);
@@ -276,10 +287,22 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
         );
     }
 
-    private function buildSchema(ServiceUser $serviceUser): ServiceUserSchema
+    /**
+     * @param array<int, array{active: int, latestExpiresAt: int}>|null $summaries token summaries by user id,
+     *     fetched for all users at once by the collection; null makes this user's own query
+     */
+    private function buildSchema(ServiceUser $serviceUser, ?array $summaries = null): ServiceUserSchema
     {
-        $client = $this->clientStore->findByServiceUserId((int) $serviceUser->getId());
-        $schema = $this->hydrator->hydrate($serviceUser, $client?->identifier);
+        $id = (int) $serviceUser->getId();
+        $summaries ??= $this->mcpTokenRepository->summarizeByUserIds([$id], time());
+        $summary = $summaries[$id] ?? null;
+
+        $client = $this->clientStore->findByServiceUserId($id);
+        $schema = $this->hydrator->hydrate(
+            $serviceUser,
+            $client?->identifier,
+            new ServiceUserMcpTokens($summary['active'] ?? 0, $summary['latestExpiresAt'] ?? null)
+        );
 
         $this->eventDispatcher->dispatch(new ServiceUserEvent($schema), ServiceUserEvent::EVENT_NAME);
 

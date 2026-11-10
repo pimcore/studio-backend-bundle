@@ -64,6 +64,15 @@ bin/console studio-backend-bundle:service-user:mcp-token 42 --revoke
 Store the token in a secret store and send it as `Authorization: Bearer <token>`. To let the service user use an
 MCP server, grant its name Access in the server's sharing settings.
 
+## Which credential to use
+
+Use the OAuth client (client id and secret, `client_credentials` grant) for pipelines and integrations that can
+perform the grant, and only once `pimcore_studio_backend.oauth.client_credentials.enabled` is on. Use an MCP access
+token for everything else, such as MCP clients that take a bearer token. The service-user schema reports which one
+works: `clientCredentialsEnabled` is `false` while the grant is off (the client secret then authenticates nothing),
+and `mcpTokens` summarises the tokens as `active` (tokens that have not expired) and `latestExpiresAt` (the latest
+expiry among them, `null` without one). Neither the tokens nor their hashes are ever returned.
+
 ## Deactivation and deletion
 
 - Deactivating a service user stops new client-credentials tokens from being issued, and refuses its OAuth and MCP

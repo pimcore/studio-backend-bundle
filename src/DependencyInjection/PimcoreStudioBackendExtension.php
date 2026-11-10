@@ -318,6 +318,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             ->setArgument('$clientCredentialsEnabled', $clientCredentialsEnabled)
             ->setArgument('$clientCredentialsAccessTokenTtl', $clientCredentials['access_token_ttl']);
 
+        // What the service-user schema reports: the grant only works when the server runs as well.
+        $container->setParameter('pimcore_studio_backend.oauth.client_credentials_enabled', $clientCredentialsEnabled);
+
         $cimd = $config['oauth']['client_id_metadata_documents'];
         $container->setParameter('pimcore_studio_backend.oauth.cimd_enabled', $cimd['enabled']);
 

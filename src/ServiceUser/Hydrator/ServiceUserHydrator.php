@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ServiceUser\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUser as ServiceUserSchema;
+use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUserMcpTokens;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\WorkspaceHydratorInterface;
 use Pimcore\Model\User\ServiceUser;
 
@@ -24,11 +25,15 @@ final readonly class ServiceUserHydrator implements ServiceUserHydratorInterface
 {
     public function __construct(
         private WorkspaceHydratorInterface $workspaceHydrator,
+        private bool $clientCredentialsEnabled,
     ) {
     }
 
-    public function hydrate(ServiceUser $serviceUser, ?string $clientId): ServiceUserSchema
-    {
+    public function hydrate(
+        ServiceUser $serviceUser,
+        ?string $clientId,
+        ServiceUserMcpTokens $mcpTokens
+    ): ServiceUserSchema {
         return new ServiceUserSchema(
             id: (int) $serviceUser->getId(),
             name: (string) $serviceUser->getName(),
@@ -43,6 +48,8 @@ final readonly class ServiceUserHydrator implements ServiceUserHydratorInterface
             documentWorkspaces: $this->workspaceHydrator->hydrateDocumentWorkspace($serviceUser),
             clientId: $clientId,
             lastLogin: $serviceUser->getLastLogin(),
+            clientCredentialsEnabled: $this->clientCredentialsEnabled,
+            mcpTokens: $mcpTokens,
         );
     }
 }

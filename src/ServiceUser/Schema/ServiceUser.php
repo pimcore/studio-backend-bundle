@@ -36,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     required: [
         'id', 'name', 'email', 'active', 'permissions', 'roles', 'classes', 'docTypes',
         'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'clientId', 'lastLogin',
+        'clientCredentialsEnabled', 'mcpTokens',
     ],
     type: 'object'
 )]
@@ -97,6 +98,19 @@ final class ServiceUser implements AdditionalAttributesInterface
         private readonly ?string $clientId,
         #[Property(description: 'Timestamp of the last login', type: 'integer', example: 1718757677, nullable: true)]
         private readonly ?int $lastLogin,
+        #[Property(
+            description: 'Whether the OAuth client_credentials grant is enabled on this instance. '
+                . 'While false, the client secret authenticates nothing; use an MCP access token.',
+            type: 'boolean',
+            example: false
+        )]
+        private readonly bool $clientCredentialsEnabled,
+        #[Property(
+            description: 'Summary of the MCP access tokens of the service user (never the tokens themselves)',
+            ref: ServiceUserMcpTokens::class,
+            type: 'object'
+        )]
+        private readonly ServiceUserMcpTokens $mcpTokens,
     ) {
     }
 
@@ -184,5 +198,15 @@ final class ServiceUser implements AdditionalAttributesInterface
     public function getLastLogin(): ?int
     {
         return $this->lastLogin;
+    }
+
+    public function isClientCredentialsEnabled(): bool
+    {
+        return $this->clientCredentialsEnabled;
+    }
+
+    public function getMcpTokens(): ServiceUserMcpTokens
+    {
+        return $this->mcpTokens;
     }
 }

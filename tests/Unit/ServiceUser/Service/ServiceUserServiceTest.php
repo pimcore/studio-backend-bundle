@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\DynamicClient;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\ServiceUserClientException;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ServiceUserClientStoreInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Service\ServiceUserClientServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Repository\McpAccessTokenRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Event\ServiceUserEvent;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Hydrator\ServiceUserHydratorInterface;
@@ -33,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\ServiceUser\MappedParameter\CreateParamet
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\MappedParameter\UpdateParameter;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository\ServiceUserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUser as ServiceUserSchema;
+use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUserMcpTokens;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\ServiceUserService;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
@@ -314,12 +316,80 @@ final class ServiceUserServiceTest extends Unit
         $this->assertSame([ServiceUserEvent::EVENT_NAME], $dispatched);
     }
 
+    public function testGetServiceUserCarriesTheTokenSummaryOfTheUser(): void
+    {
+        $queries = [];
+        $service = $this->service(
+            repository: $this->repository($this->serviceUser()),
+            tokenRepository: $this->makeEmpty(McpAccessTokenRepositoryInterface::class, [
+                'summarizeByUserIds' => static function (array $userIds) use (&$queries): array {
+                    $queries[] = $userIds;
+
+                    return [42 => ['active' => 2, 'latestExpiresAt' => 2000000000]];
+                },
+            ]),
+        );
+
+        $tokens = $service->getServiceUser(42)->getMcpTokens();
+
+        $this->assertSame(2, $tokens->getActive());
+        $this->assertSame(2000000000, $tokens->getLatestExpiresAt());
+        $this->assertSame([[42]], $queries);
+    }
+
+    public function testUserWithoutValidTokensGetsAnEmptySummary(): void
+    {
+        $service = $this->service(
+            repository: $this->repository($this->serviceUser()),
+            tokenRepository: $this->makeEmpty(McpAccessTokenRepositoryInterface::class, [
+                'summarizeByUserIds' => [],
+            ]),
+        );
+
+        $tokens = $service->getServiceUser(42)->getMcpTokens();
+
+        $this->assertSame(0, $tokens->getActive());
+        $this->assertNull($tokens->getLatestExpiresAt());
+    }
+
+    public function testCollectionIssuesOneGroupedTokenQueryForAllUsers(): void
+    {
+        $first = $this->serviceUser();
+        $second = $this->serviceUser();
+        $second->setId(43);
+        $third = $this->serviceUser();
+        $third->setId(44);
+
+        $queries = [];
+        $service = $this->service(
+            repository: $this->makeEmpty(ServiceUserRepositoryInterface::class, [
+                'listServiceUsers' => [$first, $second, $third],
+            ]),
+            tokenRepository: $this->makeEmpty(McpAccessTokenRepositoryInterface::class, [
+                'summarizeByUserIds' => static function (array $userIds) use (&$queries): array {
+                    $queries[] = $userIds;
+
+                    return [43 => ['active' => 1, 'latestExpiresAt' => 1900000000]];
+                },
+            ]),
+        );
+
+        $items = $service->listServiceUsers()->getItems();
+
+        $this->assertSame([[42, 43, 44]], $queries);
+        $this->assertSame(0, $items[0]->getMcpTokens()->getActive());
+        $this->assertSame(1, $items[1]->getMcpTokens()->getActive());
+        $this->assertSame(1900000000, $items[1]->getMcpTokens()->getLatestExpiresAt());
+        $this->assertSame(0, $items[2]->getMcpTokens()->getActive());
+    }
+
     private function service(
         ?ServiceUserRepositoryInterface $repository = null,
         ?UserRepositoryInterface $userRepository = null,
         ?ServiceUserClientServiceInterface $clientService = null,
         ?SecurityServiceInterface $currentUser = null,
         ?EventDispatcherInterface $eventDispatcher = null,
+        ?McpAccessTokenRepositoryInterface $tokenRepository = null,
     ): ServiceUserService {
         return new ServiceUserService(
             $repository ?? $this->repository(),
@@ -349,7 +419,8 @@ final class ServiceUserServiceTest extends Unit
             $this->makeEmpty(ServiceUserHydratorInterface::class, [
                 'hydrate' => static fn (
                     ServiceUser $serviceUser,
-                    ?string $clientId
+                    ?string $clientId,
+                    ServiceUserMcpTokens $mcpTokens
                 ): ServiceUserSchema => new ServiceUserSchema(
                     id: (int) $serviceUser->getId(),
                     name: (string) $serviceUser->getName(),
@@ -364,11 +435,14 @@ final class ServiceUserServiceTest extends Unit
                     documentWorkspaces: [],
                     clientId: $clientId,
                     lastLogin: null,
+                    clientCredentialsEnabled: false,
+                    mcpTokens: $mcpTokens,
                 ),
             ]),
             $eventDispatcher ?? $this->makeEmpty(EventDispatcherInterface::class),
             $currentUser ?? $this->currentUser(isAdmin: false),
             $this->makeEmpty(ScopeRegistryInterface::class, ['all' => ['mcp:read', 'mcp:write']]),
+            $tokenRepository ?? $this->makeEmpty(McpAccessTokenRepositoryInterface::class),
         );
     }
 

@@ -28,6 +28,8 @@ services:
   #
   Pimcore\Bundle\StudioBackendBundle\ServiceUser\Hydrator\ServiceUserHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ServiceUser\Hydrator\ServiceUserHydrator
+    arguments:
+      $clientCredentialsEnabled: '%pimcore_studio_backend.oauth.client_credentials_enabled%'
 
   #
   # Repositories
