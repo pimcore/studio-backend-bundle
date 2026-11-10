@@ -622,6 +622,14 @@ final readonly class ClassificationStoreAdapter implements
      * ({@see QualifiedValueParserInterface::parseEntries()}), so core raising one means Studio and
      * core read the key's declaration differently - which is not something the request can correct.
      *
+     * The declared `maximum` is NOT one of those refusals, and is deliberately not held at the
+     * request boundary either: core's setter stores the list, and core's own validation reports a
+     * slot holding more values than the key declares when the object is saved
+     * ({@see Data\Classificationstore::checkValidity()}, one field-level failure per slot), which the
+     * save path answers as the 422 of a field validation failure. The rule there counts the values a
+     * slot HOLDS rather than the position they sit at, so holding a position to the maximum here
+     * would refuse writes core accepts.
+     *
      * @param MultiValue[] $entries
      *
      * @throws DatabaseException

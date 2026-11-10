@@ -100,6 +100,22 @@ final class KeyQualifierResolverTest extends Unit
     }
 
     /**
+     * A declaration entry carrying no usable `name` is no variant the key declares: core's own
+     * setter drops it ({@see MultiValue::setVariants()}), so every entry that reaches a reader
+     * carries a name - which is what the group layout reads off each of them.
+     */
+    public function testADeclarationEntryWithoutAUsableNameIsNotDeclared(): void
+    {
+        $keyConfig = $this->createKeyConfig(
+            self::MULTI_VALUE_TYPE,
+            ['variants' => [['label' => 'Metric'], ['name' => '', 'label' => 'None'], ['name' => 'imperial']]]
+        );
+
+        $this->assertSame(['imperial'], $this->resolver->getVariants($keyConfig));
+        $this->assertSame([['name' => 'imperial']], $this->resolver->getVariantDeclarations($keyConfig));
+    }
+
+    /**
      * A key config that was never hydrated has no type, and declares nothing rather than failing.
      */
     public function testAKeyConfigWithoutATypeDeclaresNothing(): void
