@@ -413,10 +413,10 @@ final readonly class KeyRepository implements KeyRepositoryInterface
             : 'ASC';
 
         $tableName = 'classificationstore_' . ($table === 'groups' ? 'groups' : 'keys');
-        // the same two predicates the listing selects between: the page is one in the view the key is in
+        // only the disabled view is scoped; without `disabledOnly` the lookup resolves any key id as it always did
         $viewCondition = '';
-        if ($tableName === 'classificationstore_keys') {
-            $viewCondition = $disabledOnly ? ' AND (enabled IS NULL OR enabled = 0)' : ' AND enabled = 1';
+        if ($tableName === 'classificationstore_keys' && $disabledOnly) {
+            $viewCondition = ' AND (enabled IS NULL OR enabled = 0)';
         }
 
         $referenceRow = $this->connection->fetchAssociative(

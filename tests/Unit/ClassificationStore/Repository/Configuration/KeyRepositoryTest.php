@@ -617,7 +617,7 @@ final class KeyRepositoryTest extends Unit
     /**
      * @throws Exception
      */
-    public function testThePageOfAKeyIsCountedInTheViewTheKeyIsIn(): void
+    public function testThePageIsScopedToTheDisabledViewOnlyWhenAskedFor(): void
     {
         foreach ([false, true] as $disabledOnly) {
             $queries = [];
@@ -639,7 +639,7 @@ final class KeyRepositoryTest extends Unit
                     str_contains($query, '(enabled IS NULL OR enabled = 0)'),
                     $query
                 );
-                $this->assertSame(!$disabledOnly, str_contains($query, 'enabled = 1'), $query);
+                $this->assertStringNotContainsString('enabled = 1', $query);
             }
         }
     }
