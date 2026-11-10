@@ -29,6 +29,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Multiselect;
 use Pimcore\Model\DataObject\ClassDefinition\Data\QuantityValue;
 use Pimcore\Model\DataObject\ClassDefinition\Data\QuantityValueRange;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
+use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\MultiSelectOptionsProviderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\SelectOptionsProviderInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use stdClass;
@@ -114,6 +115,32 @@ final class KeyOptionsResolverTest extends Unit
         $key = $this->key('multiselect', self::STATIC_PROVIDER_DEFINITION);
 
         $this->assertSame(self::OWN_OPTIONS, $this->asArrays($this->resolver->getOptions($key)));
+    }
+
+    public function testAMultiselectKeyAcceptsAProviderImplementingOnlyTheLegacyMultiselectContract(): void
+    {
+        $provider = $this->createMock(MultiSelectOptionsProviderInterface::class);
+        $provider->method('hasStaticOptions')->willReturn(true);
+        $provider->method('getOptions')->willReturn(self::OWN_OPTIONS);
+        $this->providers[self::PROVIDER] = $provider;
+
+        $key = $this->key('multiselect', self::STATIC_PROVIDER_DEFINITION);
+
+        $this->assertSame(self::OWN_OPTIONS, $this->asArrays($this->resolver->getOptions($key)));
+        $this->assertNull($this->resolver->getOptionsUnavailableReason($key));
+    }
+
+    public function testASelectKeyStillRejectsAProviderImplementingOnlyTheMultiselectContract(): void
+    {
+        $this->providers[self::PROVIDER] = $this->createMock(MultiSelectOptionsProviderInterface::class);
+
+        $key = $this->key('select', self::STATIC_PROVIDER_DEFINITION);
+
+        $this->assertNull($this->resolver->getOptions($key));
+        $this->assertSame(
+            OptionsUnavailableReason::RESOLUTION_FAILED,
+            $this->resolver->getOptionsUnavailableReason($key)
+        );
     }
 
     public function testANonStaticProviderPublishesNothingAndIsNeverAskedForOptions(): void
@@ -285,6 +312,30 @@ final class KeyOptionsResolverTest extends Unit
             'a definition core rebuilds nothing from' => ['[]'],
             'an empty object, which core also rebuilds nothing from' => ['{}'],
         ];
+    }
+
+    /**
+     * Core throws UnsupportedException for a type it has no data class for, and key updates persist
+     * any type string, so the rebuild itself can fail.
+     */
+    public function testATypeCoreCannotRebuildPublishesTheSameAsAnyUnresolvableDefinition(): void
+    {
+        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
+        $serviceResolver->method('getFieldDefinitionFromJson')->willThrowException(new Exception('Unsupported'));
+        $resolver = new KeyOptionsResolver(
+            $serviceResolver,
+            $this->createMock(OptionsProviderResolverInterface::class),
+            new SelectOptionHydrator()
+        );
+
+        $legacy = $this->key('legacyType', '{"a":1}');
+        $this->assertNull($resolver->getOptions($legacy));
+        $this->assertNull($resolver->getOptionsUnavailableReason($legacy));
+        $this->assertNull($resolver->getUnits($legacy));
+
+        $select = $this->key('select', '{"a":1}');
+        $this->assertNull($resolver->getOptions($select));
+        $this->assertSame(OptionsUnavailableReason::RESOLUTION_FAILED, $resolver->getOptionsUnavailableReason($select));
     }
 
     public function testAQuantityValueKeyPublishesItsUnitsInTheirOrder(): void

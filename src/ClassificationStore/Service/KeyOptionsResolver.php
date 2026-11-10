@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\SelectOption;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Multiselect;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
+use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\MultiSelectOptionsProviderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\SelectOptionsProviderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Helper\OptionsProviderResolver;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
@@ -132,7 +133,13 @@ final class KeyOptionsResolver implements KeyOptionsResolverInterface, ResetInte
         // Rebuilt from the blob on every resolution, never the instance core memoises by key id.
         // Core answers null for a blob that decodes to an empty array, which is what the model's
         // own `definition` default ('[]') holds, so this is an ordinary row and not a corrupt one.
-        $definition = $this->serviceResolver->getFieldDefinitionFromJson($decoded, $keyConfig->getType());
+        // Core throws for a type it has no data class for, and a key's type is stored as sent, so a
+        // legacy or unsupported type is an unresolvable definition and not a failed read.
+        try {
+            $definition = $this->serviceResolver->getFieldDefinitionFromJson($decoded, $keyConfig->getType());
+        } catch (Throwable) {
+            return $this->publishUnresolved($keyConfig);
+        }
 
         if ($definition === null) {
             return $this->publishUnresolved($keyConfig);
@@ -158,14 +165,19 @@ final class KeyOptionsResolver implements KeyOptionsResolverInterface, ResetInte
                 return [$this->mapOptions($definition->getOptions() ?? []), null];
             }
 
+            $isMultiselect = $definition instanceof Multiselect;
             $provider = $this->optionsProviderResolver->resolveProvider(
                 $definition->getOptionsProviderClass(),
-                $definition instanceof Multiselect
-                    ? OptionsProviderResolver::MODE_MULTISELECT
-                    : OptionsProviderResolver::MODE_SELECT
+                $isMultiselect ? OptionsProviderResolver::MODE_MULTISELECT : OptionsProviderResolver::MODE_SELECT
             );
 
-            if (!$provider instanceof SelectOptionsProviderInterface) {
+            // Core accepts the still-supported multiselect contract for MODE_MULTISELECT, which
+            // SelectOptionsProviderInterface extends but is not the other way round.
+            $expected = $isMultiselect
+                ? MultiSelectOptionsProviderInterface::class
+                : SelectOptionsProviderInterface::class;
+
+            if (!$provider instanceof $expected) {
                 return [null, OptionsUnavailableReason::RESOLUTION_FAILED];
             }
 
