@@ -13,31 +13,30 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Model\DataObject\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 
 /**
- * Reads and writes the qualified values of one (group, key, language) slot.
+ * Reads and writes the qualified values of one (group, key, language) of a `multiValue` key.
  *
- * An ordered list of entries carries them, each holding the value under `v` plus only the
- * qualifiers it has: `var` for a variant other than the default and `p` for a position other than
- * 0. An absent `var` means the default variant and an absent `p` means position 0, so an entry that
- * carries neither addresses the slot core's single-value path addresses.
+ * An ordered list of entries carries them in the object data payload, each holding the value under
+ * `v` plus only the qualifiers it has: `var` for a variant other than the default and `p` for a
+ * position other than 0. An absent `var` means the default variant and an absent `p` means position
+ * 0, so an entry that carries neither addresses the slot core's single-value path addresses.
  *
- * **The key's declaration decides the shape, and nothing else decides it.** That is this ticket's
- * rule and it governs reading a stored slot exactly as it governs writing one: a key declaring
- * neither `variants` nor `multiValue` holds one value of its own type, and that value is never read
- * as a list of entries, whatever shape it happens to have. Asking the *value* instead cannot work,
- * because the entry members are not the bundle's to reserve: `[['v' => '80'], ['v' => '81']]` is
- * the list of two entries *and* the stored value of a table key whose one column is named `v`
- * ({@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\TableAdapter}), so a read that
- * sniffs it reduces that table to `80` for a key that declares nothing at all.
+ * **The declaration is the key's type.** Only a key of type `multiValue` declares qualifiers
+ * ({@see KeyQualifierResolverInterface}); `variants` or `multiValue` in the blob of a key of any
+ * other type declare nothing, and such a key holds one value of its own type that is never read as
+ * a list of entries, whatever shape it has.
  *
- * The declaration decides what a write stores, too, which is what leaves the stored shape readable:
- * a declaring key's slot holds the entry list and only ever the entry list - the empty one included
- * - and a key declaring nothing holds the single value it has always held.
+ * The slots are core's: a `multiValue` key's values are stored through
+ * {@see Classificationstore::setKeyValues()} and read through
+ * {@see Classificationstore::getKeyValues()}, one value of the key's own type per slot. The list is
+ * how the payload carries them, not how the row holds them.
  *
- * The two questions a slot does not answer itself are owned beside it and reached through it: the
+ * The two questions a write does not answer itself are owned beside it and reached through it: the
  * read of a supplied payload ({@see QualifiedValueParserInterface}) and the engine's verdict on what
  * a write addresses ({@see EngineCapabilityGuardInterface}).
  *
@@ -57,7 +56,7 @@ interface QualifiedValueSerializerInterface
      * The entries a write supplies, validated - {@see QualifiedValueParserInterface::parseEntries()},
      * which owns the rules a supplied payload is held to and states them.
      *
-     * Reached through here so that a caller reading and writing one slot has one place to ask.
+     * Reached through here so that a caller reading and writing one key has one place to ask.
      *
      * @return QualifiedValue[]
      *
@@ -66,22 +65,11 @@ interface QualifiedValueSerializerInterface
     public function parseEntries(mixed $payload, KeyConfig $keyConfig): array;
 
     /**
-     * Whether a stored slot is read as the entry list of a qualified slot. **The key's declaration
-     * is asked first and refuses on its own:** a key declaring no qualifier holds one value, so its
-     * slot is never read as entries however much the value looks like them.
-     *
-     * The shape is then asked of a *declaring* key's slot alone, and only to tell the entry list
-     * from the single value that slot held before the key declared anything, which is the one
-     * reading the declaration cannot settle.
-     */
-    public function holdsEntries(mixed $value, KeyConfig $keyConfig): bool;
-
-    /**
      * Refuses a write that needs a capability the store's engine does not report, fail-closed on a
      * capability set of null - {@see EngineCapabilityGuardInterface::assertSupported()}, which owns
      * that verdict and states it.
      *
-     * Reached through here so that a caller reading and writing one slot has one place to ask.
+     * Reached through here so that a caller reading and writing one key has one place to ask.
      *
      * @param QualifiedValue[] $values
      * @param string[]|null $capabilities
@@ -91,42 +79,31 @@ interface QualifiedValueSerializerInterface
     public function assertSupported(array $values, ?array $capabilities): void;
 
     /**
-     * The entries behind a stored slot, read leniently: a slot that is not read as an entry list
-     * ({@see self::holdsEntries()}) is the single entry of the default variant at position 0 - which
-     * is every slot of a key declaring nothing, and the slot of a declaring key that still holds
-     * the value it held before it declared.
+     * The values the store holds for the key in one language - the default variant first, then each
+     * declared variant in the order the key declares it, each slot's values in position order - read
+     * through core's `getKeyValues()`. A variant the store's engine cannot address holds nothing.
      *
      * @return QualifiedValue[]
+     *
+     * @throws DatabaseException
      */
-    public function readEntries(mixed $stored, KeyConfig $keyConfig): array;
+    public function readStoredEntries(
+        Classificationstore $store,
+        int $groupId,
+        int $keyId,
+        string $language,
+        KeyConfig $keyConfig
+    ): array;
 
     /**
-     * The entries of the slot the key's declaration permits, in stored order: for a key declaring
-     * nothing that is the entry of the default variant at the first position alone.
+     * The one value a consumer holding a single cell shows for a payload list of entries: the entry
+     * of the default variant at the first position, or the first entry where there is none, and null
+     * where the list is empty or is no list.
      *
-     * @return QualifiedValue[]
+     * Reading the stored values through {@see self::readStoredEntries()} and {@see self::toPayload()}
+     * and reducing that list here is how the export reaches the value the grid cell shows.
      */
-    public function getVisibleEntries(mixed $stored, KeyConfig $keyConfig): array;
-
-    /**
-     * The entries the row holds at the slot that the declaration does not permit. Narrowing a
-     * declaration hides them and deletes nothing, so a write carries them over as they are.
-     *
-     * @return QualifiedValue[]
-     */
-    public function getHiddenEntries(mixed $stored, KeyConfig $keyConfig): array;
-
-    /**
-     * The one value a consumer holding a single cell shows for the slot: the visible entry of the
-     * default variant at the first position, or the first visible entry where there is none, and
-     * null where nothing is visible. A key declaring nothing shows its default entry alone.
-     *
-     * Every slot can be reduced through this, whatever the key declares, so the object payload, the
-     * grid column, the export and the search preview cannot drift apart on which value they show.
-     * The empty entry list of a declaring key reduces to null - the empty cell - and not to the
-     * empty array it is stored as, which is a value of the key's own type and not a cell.
-     */
-    public function getDefaultSlotValue(mixed $stored, KeyConfig $keyConfig): mixed;
+    public function getDefaultSlotValue(mixed $payload): mixed;
 
     /**
      * The stored entries with the supplied ones written over them, matched by (variant, position)
@@ -141,19 +118,7 @@ interface QualifiedValueSerializerInterface
     public function mergeEntries(array $stored, array $supplied): array;
 
     /**
-     * The entries as the object data payload carries them, and as the row holds them at the slot of
-     * a declaring key: the published list and the stored list are one shape, so a client that saves
-     * back what a read published writes the slot it read.
-     *
-     * The empty list is one of its values rather than nothing. A key whose every entry a write
-     * cleared has no value, and that is a different state from a slot nothing was ever written to:
-     * the key's configured default fills the second one on read
-     * ({@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ClassificationStoreAdapter})
-     * and must not fill the first, or a clearing request would be answered by the next read with a
-     * value it never supplied. Telling the two apart needs no marker in the value, because the
-     * declaration already says which of the two shapes the slot is in: `[]` at a declaring key's
-     * slot is the empty entry list, and `[]` at the slot of a key declaring nothing is the empty
-     * value of the key's own type, the multi-select selecting nothing included.
+     * The entries as the object data payload carries them.
      *
      * @param QualifiedValue[] $values
      *

@@ -20,10 +20,12 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\Se
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\VariantLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
+use Pimcore\Model\DataObject\ClassDefinition\Data\MultiValue;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use ReflectionClass;
@@ -223,12 +225,35 @@ final class KeyGroupLayoutServiceTest extends Unit
     public function testTheKeyLayoutCarriesWhatTheKeyDeclaresAboutItsValues(): void
     {
         $keyConfig = $this->createKeyConfig(self::KEY_ID, self::KEY_NAME);
-        $keyConfig->setDefinition('{"variants":["metric","imperial"],"multiValue":true}');
+        $keyConfig->setType('multiValue');
+        $keyConfig->setDefinition(
+            '{"variants":[{"name":"metric","label":"Metric"},"imperial"],"multiValue":true,"maximum":3}'
+        );
 
         $keyLayout = $this->getKeyLayout($keyConfig);
 
-        $this->assertSame(['metric', 'imperial'], $keyLayout->getVariants());
+        $this->assertEquals(
+            [new VariantLayout('metric', 'Metric'), new VariantLayout('imperial')],
+            $keyLayout->getVariants()
+        );
         $this->assertTrue($keyLayout->getMultiValue());
+        $this->assertSame(3, $keyLayout->getMaximum());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAKeyOfAnotherTypeReportsNullEvenWhereItsBlobCarriesTheMembers(): void
+    {
+        $keyConfig = $this->createKeyConfig(self::KEY_ID, self::KEY_NAME);
+        $keyConfig->setType('quantityValue');
+        $keyConfig->setDefinition('{"variants":["metric"],"multiValue":true,"maximum":3}');
+
+        $keyLayout = $this->getKeyLayout($keyConfig);
+
+        $this->assertNull($keyLayout->getVariants());
+        $this->assertNull($keyLayout->getMultiValue());
+        $this->assertNull($keyLayout->getMaximum());
     }
 
     /**
@@ -243,9 +268,11 @@ final class KeyGroupLayoutServiceTest extends Unit
 
         $this->assertNull($declaringNothing->getVariants());
         $this->assertNull($declaringNothing->getMultiValue());
+        $this->assertNull($declaringNothing->getMaximum());
 
         $this->assertNull($this->getKeyLayout(null)->getVariants());
         $this->assertNull($this->getKeyLayout(null)->getMultiValue());
+        $this->assertNull($this->getKeyLayout(null)->getMaximum());
     }
 
     /**
@@ -307,7 +334,18 @@ final class KeyGroupLayoutServiceTest extends Unit
         $serviceResolver = $this->createMock(ServiceResolverInterface::class);
         $serviceResolver
             ->method('getFieldDefinitionFromJson')
-            ->willReturn(new Input());
+            ->willReturnCallback(static function (array $definition, string $type): Input|MultiValue {
+                if ($type !== 'multiValue') {
+                    return new Input();
+                }
+
+                $multiValue = new MultiValue();
+                $multiValue->setVariants($definition['variants'] ?? []);
+                $multiValue->setMultiValue($definition['multiValue'] ?? false);
+                $multiValue->setMaximum($definition['maximum'] ?? null);
+
+                return $multiValue;
+            });
 
         $keyConfigResolver = $this->createMock(KeyConfigResolverInterface::class);
         $keyConfigResolver
@@ -329,7 +367,7 @@ final class KeyGroupLayoutServiceTest extends Unit
             $this->createLabelResolver($labels),
             $this->createLabelLanguageResolver($userLanguage, self::DEFAULT_LANGUAGE),
             $keyLocalizationResolver,
-            new KeyQualifierResolver()
+            new KeyQualifierResolver($serviceResolver)
         );
     }
 }

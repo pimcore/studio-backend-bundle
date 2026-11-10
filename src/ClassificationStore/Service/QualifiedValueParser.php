@@ -42,7 +42,7 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
     public function parseEntries(mixed $payload, KeyConfig $keyConfig): array
     {
         if ($payload === []) {
-            // the empty entry list, which is what a narrowed key publishes - no entry, not one
+            // the empty entry list, which is what a key holding no value publishes - no entry, not one
             // entry holding the empty array
             return [];
         }
@@ -87,9 +87,7 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
      * Read leniently on purpose, because this is the request boundary: a list mixing entries with
      * something else is taken as a list and then refused by {@see self::parseEntry()}, rather than
      * being quietly coerced into one value holding the whole malformed array.
-     * {@see QualifiedValueSerializerInterface::holdsEntries()}, which reads what is stored rather
-     * than what was sent, asks the key's declaration first and is then strict for the opposite
-     * reason.
+     * Only a key of type `multiValue` reaches here.
      */
     private function looksLikeEntryList(mixed $payload): bool
     {
@@ -153,9 +151,8 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
     /**
      * The variant name an entry carries, as a name: the default variant where the member is absent
      * or null. A name of another type, and the empty one, are no name a key can declare and no slot
-     * a row can hold - {@see QualifiedValueSerializerInterface::readEntries()} reads a stored
-     * variant of either into the default one - so they are refused here rather than carried into the
-     * lookup of what the row holds.
+     * the store can hold - core refuses an empty variant - so they are refused here rather than
+     * carried into the write.
      *
      * @throws InvalidArgumentException
      */

@@ -96,15 +96,15 @@ final class RequiredMembersUnchangedTest extends Unit
     }
 
     /**
-     * Nothing beside the two members of this feature joined the group layout, so no response member
-     * a client does not expect appears on it either.
+     * Nothing beside the three declaration members joined the key layout, so no response member a
+     * client does not expect appears on it either.
      */
-    public function testTheKeyLayoutGainedOnlyTheTwoDeclarationMembers(): void
+    public function testTheKeyLayoutGainedOnlyTheThreeDeclarationMembers(): void
     {
         $this->assertSame(
             [
                 'id', 'name', 'description', 'definition', 'title', 'subGroup', 'localized',
-                'variants', 'multiValue',
+                'variants', 'multiValue', 'maximum',
             ],
             $this->getConstructorParameterNames(KeyLayout::class)
         );

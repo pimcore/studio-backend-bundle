@@ -14,93 +14,128 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use JsonException;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
+use Pimcore\Model\DataObject\ClassDefinition\Data\MultiValue;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
-use function array_is_list;
+use ReflectionProperty;
+use Symfony\Contracts\Service\ResetInterface;
+use function array_key_exists;
+use function hash;
 use function is_array;
-use function is_bool;
-use function is_string;
 use function json_decode;
-use function method_exists;
 
 /**
  * @internal
  */
-final readonly class KeyQualifierResolver implements KeyQualifierResolverInterface
+final class KeyQualifierResolver implements KeyQualifierResolverInterface, ResetInterface
 {
-    private const string VARIANTS_GETTER = 'getVariants';
+    private const string TYPE_PROPERTY = 'type';
 
-    private const string MULTI_VALUE_GETTER = 'getMultiValue';
+    /**
+     * The digest the memo key spells a `definition` blob as. Deliberately a NON-cryptographic hash:
+     * the memo key only has to tell two blobs apart, it is never stored, compared against a secret
+     * or shown to anyone, and a cryptographic digest here reads to a security review as a weak hash
+     * standing in for one that matters.
+     */
+    private const string MEMO_HASH = 'xxh128';
+
+    /**
+     * The declaration of every key already resolved, keyed by the key's type and the hash of its
+     * `definition` blob - the two the resolution reads and nothing else.
+     *
+     * Rebuilding a whole core field definition from the blob is what every read here costs, and the
+     * same key is asked repeatedly: one group layout asks three times per key (its variants, its
+     * `multiValue` flag, its maximum) and the object data path asks again per key and language, on
+     * the read and on the write.
+     *
+     * Keyed by what it is resolved FROM rather than by the key's id, so nothing has to invalidate
+     * it: a configuration write that changes a key's type or its blob resolves another entry, and
+     * one that changes neither cannot change the declaration.
+     *
+     * @var array<string, MultiValue|null>
+     */
+    private array $declarations = [];
+
+    public function __construct(
+        private readonly ServiceResolverInterface $serviceResolver,
+    ) {
+    }
+
+    /**
+     * Drops the memo, so that a long-running worker does not carry the declarations of every key it
+     * has ever seen - implementing the interface is what tags this service `kernel.reset`.
+     */
+    public function reset(): void
+    {
+        $this->declarations = [];
+    }
 
     public function declaresQualifiers(KeyConfig $keyConfig): bool
     {
-        $variants = $this->getVariants($keyConfig);
-
-        return ($variants !== null && $variants !== []) || $this->isMultiValue($keyConfig) === true;
+        return $this->getDeclaration($keyConfig) !== null;
     }
 
     public function getVariants(KeyConfig $keyConfig): ?array
     {
-        $declared = $this->accessor($keyConfig, self::VARIANTS_GETTER)
-            ?? $this->member($keyConfig, self::VARIANTS_MEMBER);
+        return $this->getDeclaration($keyConfig)?->getVariantNames();
+    }
 
-        // An ordered list of names, so a JSON object is not one: `{"variants":{"label":"metric"}}`
-        // decodes to an array whose keys are its members, and reading its values as names would
-        // turn a key that declares no list at all into one permitting a variant called `metric`.
-        if (!is_array($declared) || !array_is_list($declared)) {
-            return null;
-        }
-
-        $names = [];
-        foreach ($declared as $name) {
-            if (is_string($name) && $name !== '') {
-                $names[] = $name;
-            }
-        }
-
-        return $names;
+    public function getVariantDeclarations(KeyConfig $keyConfig): ?array
+    {
+        return $this->getDeclaration($keyConfig)?->getVariants();
     }
 
     public function isMultiValue(KeyConfig $keyConfig): ?bool
     {
-        $declared = $this->accessor($keyConfig, self::MULTI_VALUE_GETTER)
-            ?? $this->member($keyConfig, self::MULTI_VALUE_MEMBER);
+        return $this->getDeclaration($keyConfig)?->isMultiValue();
+    }
 
-        return is_bool($declared) ? $declared : null;
+    public function getMaximum(KeyConfig $keyConfig): ?int
+    {
+        return $this->getDeclaration($keyConfig)?->getMaximum();
     }
 
     /**
-     * The member as the key's `definition` blob carries it, which is where the declaration lives.
-     * A blob that is absent or not readable as JSON declares nothing rather than failing the read.
+     * The key's field definition, resolved from its type and its `definition` blob, when that is a
+     * core `multiValue` definition. A blob that is not readable as JSON declares nothing.
+     *
+     * Resolved once per (type, blob) and served from {@see self::$declarations} afterwards.
      */
-    private function member(KeyConfig $keyConfig, string $member): mixed
+    private function getDeclaration(KeyConfig $keyConfig): ?MultiValue
     {
-        $definition = $keyConfig->getDefinition();
-
-        if ($definition === '') {
+        // `$type` has no default: a key config that was never hydrated has no type to resolve by
+        if (!(new ReflectionProperty($keyConfig, self::TYPE_PROPERTY))->isInitialized($keyConfig)) {
             return null;
         }
 
+        $memoKey = $keyConfig->getType() . "\0" . hash(self::MEMO_HASH, $keyConfig->getDefinition());
+        if (array_key_exists($memoKey, $this->declarations)) {
+            return $this->declarations[$memoKey];
+        }
+
+        $declaration = $this->resolveDeclaration($keyConfig);
+        $this->declarations[$memoKey] = $declaration;
+
+        return $declaration;
+    }
+
+    /**
+     * @see self::getDeclaration()
+     */
+    private function resolveDeclaration(KeyConfig $keyConfig): ?MultiValue
+    {
         try {
-            $decoded = json_decode($definition, true, 512, JSON_THROW_ON_ERROR);
+            $decoded = json_decode($keyConfig->getDefinition(), true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
             return null;
         }
 
-        return is_array($decoded) ? ($decoded[$member] ?? null) : null;
-    }
-
-    /**
-     * The accessor by name: a later core may carry the declaration as a column of its own, and
-     * against one that does not the member of the `definition` blob is what answers. Asked by name
-     * for the reason {@see KeyLocalizationResolver::accessor()} asks by name - the method is not
-     * this package's and the core whose it is need not have it.
-     */
-    private function accessor(KeyConfig $keyConfig, string $accessor): mixed
-    {
-        if (!method_exists($keyConfig, $accessor)) {
+        if (!is_array($decoded)) {
             return null;
         }
 
-        return $keyConfig->$accessor();
+        $definition = $this->serviceResolver->getFieldDefinitionFromJson($decoded, $keyConfig->getType());
+
+        return $definition instanceof MultiValue ? $definition : null;
     }
 }

@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfi
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\GroupLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\SubGroupLayout;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\VariantLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface;
@@ -36,6 +37,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierR
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
+use Pimcore\Model\DataObject\ClassDefinition\Data\MultiValue;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
@@ -160,9 +162,10 @@ final class GroupServiceTest extends Unit
 
     /**
      * Every key of the group carries what it declares about its qualified values, read off its own
-     * key configuration: the declared variant names in the order it declares them, and its
-     * `multiValue` setting. A key declaring neither reports null for both, rather than an empty list
-     * and false - which a client would read as a key that permits no variant and holds one value.
+     * key configuration: a key of type `multiValue` publishes its variants as objects in the order it
+     * declares them, its `multiValue` setting and its `maximum`. A key of any other type reports null
+     * for all three - whatever its blob carries - rather than an empty list and false, which a client
+     * would read as a key that permits no variant and holds one value.
      *
      * The layout-by-key path has the same assertion in
      * {@see KeyGroupLayoutServiceTest::testTheKeyLayoutCarriesWhatTheKeyDeclaresAboutItsValues()};
@@ -175,21 +178,30 @@ final class GroupServiceTest extends Unit
     {
         $keys = $this
             ->createServiceWithRealKeyConfigs([
-                11 => ['variants' => ['metric', 'imperial'], 'multiValue' => true],
-                12 => ['multiValue' => false],
+                11 => [
+                    'fieldtype' => 'multiValue',
+                    'variants' => [['name' => 'metric', 'label' => 'Metric'], 'imperial'],
+                    'multiValue' => true,
+                    'maximum' => 3,
+                ],
+                12 => ['fieldtype' => 'quantityValue', 'variants' => ['metric'], 'multiValue' => true],
                 13 => ['fieldtype' => 'input'],
             ])
             ->getLayoutDefinition(self::GROUP_ID, new LayoutParameter(self::FIELD_NAME, self::OBJECT_ID))
             ->getKeys();
 
-        $this->assertSame(['metric', 'imperial'], $keys[0]->getVariants());
+        // the same objects and the same maximum the layout-by-key path publishes for that key
+        $this->assertEquals([new VariantLayout('metric', 'Metric'), new VariantLayout('imperial')], $keys[0]->getVariants());
         $this->assertTrue($keys[0]->getMultiValue());
+        $this->assertSame(3, $keys[0]->getMaximum());
 
         $this->assertNull($keys[1]->getVariants());
-        $this->assertFalse($keys[1]->getMultiValue());
+        $this->assertNull($keys[1]->getMultiValue());
+        $this->assertNull($keys[1]->getMaximum());
 
         $this->assertNull($keys[2]->getVariants());
         $this->assertNull($keys[2]->getMultiValue());
+        $this->assertNull($keys[2]->getMaximum());
     }
 
     /**
@@ -206,6 +218,7 @@ final class GroupServiceTest extends Unit
 
         $this->assertNull($keys[0]->getVariants());
         $this->assertNull($keys[0]->getMultiValue());
+        $this->assertNull($keys[0]->getMaximum());
     }
 
     /**
@@ -221,6 +234,7 @@ final class GroupServiceTest extends Unit
             $keyName = sprintf('key%d', $keyId);
             $relations[$keyId] = $this->createRelation($keyId, $keyName);
             $keyConfig = $this->createKeyConfig($keyId, $keyName);
+            $keyConfig->setType($definition['fieldtype'] ?? 'input');
             $keyConfig->setDefinition((string) json_encode($definition));
             $keyConfigs[$keyId] = $keyConfig;
         }
@@ -234,7 +248,18 @@ final class GroupServiceTest extends Unit
         $serviceResolver = $this->createMock(ServiceResolverInterface::class);
         $serviceResolver
             ->method('getFieldDefinitionFromJson')
-            ->willReturn(new Input());
+            ->willReturnCallback(static function (array $definition, string $type): Input|MultiValue {
+                if ($type !== 'multiValue') {
+                    return new Input();
+                }
+
+                $multiValue = new MultiValue();
+                $multiValue->setVariants($definition['variants'] ?? []);
+                $multiValue->setMultiValue($definition['multiValue'] ?? false);
+                $multiValue->setMaximum($definition['maximum'] ?? null);
+
+                return $multiValue;
+            });
 
         $keyConfigResolver = $this->createMock(KeyConfigResolverInterface::class);
         $keyConfigResolver
@@ -249,7 +274,7 @@ final class GroupServiceTest extends Unit
             $this->createLabelResolver([]),
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
             new InMemoryKeyLocalizationResolver(),
-            new KeyQualifierResolver()
+            new KeyQualifierResolver($serviceResolver)
         );
 
         return $this->createService($keyRelationResolver, $keyGroupLayoutService);
@@ -372,7 +397,18 @@ final class GroupServiceTest extends Unit
         $serviceResolver = $this->createMock(ServiceResolverInterface::class);
         $serviceResolver
             ->method('getFieldDefinitionFromJson')
-            ->willReturn(new Input());
+            ->willReturnCallback(static function (array $definition, string $type): Input|MultiValue {
+                if ($type !== 'multiValue') {
+                    return new Input();
+                }
+
+                $multiValue = new MultiValue();
+                $multiValue->setVariants($definition['variants'] ?? []);
+                $multiValue->setMultiValue($definition['multiValue'] ?? false);
+                $multiValue->setMaximum($definition['maximum'] ?? null);
+
+                return $multiValue;
+            });
 
         $keyConfigResolver = $this->createMock(KeyConfigResolverInterface::class);
         $keyConfigResolver
@@ -387,7 +423,7 @@ final class GroupServiceTest extends Unit
             $this->createLabelResolver($labels),
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
             new InMemoryKeyLocalizationResolver(),
-            new KeyQualifierResolver()
+            new KeyQualifierResolver($serviceResolver)
         );
 
         return $this->createService($keyRelationResolver, $keyGroupLayoutService);

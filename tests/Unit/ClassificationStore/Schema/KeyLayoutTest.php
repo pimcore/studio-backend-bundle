@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Sche
 use Codeception\Test\Unit;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\VariantLayout;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use ReflectionClass;
 
@@ -84,7 +85,9 @@ final class KeyLayoutTest extends Unit
 
         $this->assertNull($declaringNothing->getVariants());
         $this->assertNull($declaringNothing->getMultiValue());
+        $this->assertNull($declaringNothing->getMaximum());
 
+        $variants = [new VariantLayout('metric', 'Metric'), new VariantLayout('imperial')];
         $declaring = new KeyLayout(
             42,
             'weight',
@@ -93,19 +96,23 @@ final class KeyLayoutTest extends Unit
             null,
             null,
             null,
-            ['metric', 'imperial'],
-            true
+            $variants,
+            true,
+            3
         );
 
-        $this->assertSame(['metric', 'imperial'], $declaring->getVariants());
+        $this->assertSame($variants, $declaring->getVariants());
         $this->assertTrue($declaring->getMultiValue());
+        $this->assertSame(3, $declaring->getMaximum());
+        $this->assertSame('Metric', $declaring->getVariants()[0]->getLabel());
+        $this->assertNull($declaring->getVariants()[1]->getLabel());
     }
 
     /**
-     * Neither member joined the required list, so a client built against the previous document keeps
+     * None of the three members joined the required list, so a client built against the previous document keeps
      * deserializing a layout that carries neither.
      */
-    public function testNeitherNewMemberIsRequired(): void
+    public function testNoneOfTheQualifiedMembersIsRequired(): void
     {
         $attributes = (new ReflectionClass(KeyLayout::class))->getAttributes(Schema::class);
 

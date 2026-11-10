@@ -304,7 +304,7 @@ final class CollectionServiceTest extends Unit
                 $this->createLabelResolver(),
                 $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
                 new InMemoryKeyLocalizationResolver(),
-                new KeyQualifierResolver()
+                new KeyQualifierResolver($serviceResolver)
             ),
             new GroupLayoutHydrator(),
             $this->createMock(ClassDefinitionResolverInterface::class),

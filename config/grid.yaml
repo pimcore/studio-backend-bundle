@@ -285,6 +285,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\EncryptedFieldDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\MultiValueDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\UrlSlugDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 

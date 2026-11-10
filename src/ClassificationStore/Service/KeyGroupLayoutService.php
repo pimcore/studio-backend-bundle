@@ -19,6 +19,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\Se
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\VariantLayout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
@@ -28,6 +29,7 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\LabelEntityType;
 use Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface;
 use Pimcore\Model\DataObject\Concrete;
+use function array_map;
 
 /**
  * @internal
@@ -112,6 +114,7 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             localized: $this->getKeyLocalized($key->getKeyId()),
             variants: $this->getKeyVariants($key->getKeyId()),
             multiValue: $this->getKeyMultiValue($key->getKeyId()),
+            maximum: $this->getKeyMaximum($key->getKeyId()),
         );
     }
 
@@ -162,7 +165,16 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             return null;
         }
 
-        return $this->keyQualifierResolver->getVariants($keyConfig);
+        $variants = $this->keyQualifierResolver->getVariantDeclarations($keyConfig);
+
+        if ($variants === null) {
+            return null;
+        }
+
+        return array_map(
+            static fn (array $variant): VariantLayout => new VariantLayout($variant['name'], $variant['label'] ?? null),
+            $variants
+        );
     }
 
     /**
@@ -177,5 +189,19 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
         }
 
         return $this->keyQualifierResolver->isMultiValue($keyConfig);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getKeyMaximum(int $keyId): ?int
+    {
+        $keyConfig = $this->keyConfigResolver->getById($keyId);
+
+        if (!$keyConfig instanceof KeyConfig) {
+            return null;
+        }
+
+        return $this->keyQualifierResolver->getMaximum($keyConfig);
     }
 }
