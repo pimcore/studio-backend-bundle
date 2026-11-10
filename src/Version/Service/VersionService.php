@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Event\VersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Response\Collection;
+use Pimcore\Model\Element\AbstractElement;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version;
@@ -129,11 +130,21 @@ final readonly class VersionService implements VersionServiceInterface
             throw new InvalidElementTypeException($class);
         }
 
+        $existingVersion = $this->supportsPublishingInPlace() && $this->isPreparedVersion($version, $currentElement)
+            ? $version
+            : null;
         $this->versionPublisherLocator->get($class)->publish(
             $element,
-            $user
+            $user,
+            $existingVersion
         );
 
+        // a prepared version is published in place: no new version is created, the published one is the version itself
+        if ($existingVersion !== null) {
+            return $existingVersion->getId();
+        }
+
+        // any other version is published as a new version
         $lastVersion = $this->repository->getLastVersion(
             $elementId,
             $this->getElementType($element, true),
@@ -148,6 +159,31 @@ final readonly class VersionService implements VersionServiceInterface
         }
 
         return $lastVersion->getId();
+    }
+
+    /**
+     * Publishing in place needs the core's `existingVersion` save parameter (pimcore/pimcore 12.3.28, LTS). With an
+     * older core it would be ignored and a new version created, so every version is published as a new version then
+     */
+    private function supportsPublishingInPlace(): bool
+    {
+        return method_exists(AbstractElement::class, 'resolveExistingVersionParameter');
+    }
+
+    /**
+     * A version prepared for the element is newer than its persisted state (the draft rule of the core's
+     * getLatestVersion()), it is published in place. An older version (a rollback) is published as a new version, so
+     * the history keeps it as it was, and so is an auto-save version: it is rewritten by the editor of its user at
+     * any time
+     */
+    private function isPreparedVersion(Version $version, ElementInterface $currentElement): bool
+    {
+        if ($version->isAutoSave()) {
+            return false;
+        }
+
+        return $version->getVersionCount() > $currentElement->getVersionCount()
+            || $version->getDate() > (int) $currentElement->getModificationDate();
     }
 
     /**
