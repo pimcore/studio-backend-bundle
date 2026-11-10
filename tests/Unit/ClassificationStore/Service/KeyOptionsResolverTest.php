@@ -31,10 +31,10 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\QuantityValueRange;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
 use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\SelectOptionsProviderInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
-use ReflectionProperty;
 use stdClass;
 use Throwable;
 use TypeError;
+use function array_keys;
 use function array_map;
 use function json_encode;
 
@@ -189,7 +189,7 @@ final class KeyOptionsResolverTest extends Unit
 
     public function testAKeyThatIsNotSelectLikePublishesNothingAndConsultsNoProvider(): void
     {
-        $key = $this->key('input', '{}');
+        $key = $this->key('input', '{"fieldtype":"input"}');
 
         $this->assertNull($this->resolver->getOptions($key));
         $this->assertNull($this->resolver->getOptionsUnavailableReason($key));
@@ -217,10 +217,74 @@ final class KeyOptionsResolverTest extends Unit
 
     public function testASelectKeyWithNoStoredOptionsPublishesAnEmptyListAndNoReason(): void
     {
-        $key = $this->key('select', '{}');
+        $key = $this->key('select', '{"fieldtype":"select"}');
 
         $this->assertSame([], $this->resolver->getOptions($key));
         $this->assertNull($this->resolver->getOptionsUnavailableReason($key));
+    }
+
+    /**
+     * A provider is free to hand back a filtered list, whose keys are no longer sequential. The
+     * member is declared an array on both schemas, so what is published has to be a list: a
+     * preserved hole would serialise the member as a JSON object and break a generated client.
+     */
+    public function testAFilteredProviderListIsPublishedAsAList(): void
+    {
+        $filtered = [0 => ['key' => 'A', 'value' => 'a'], 2 => ['key' => 'C', 'value' => 'c']];
+        $this->providers[self::PROVIDER] = $this->provider(true, $filtered);
+
+        $options = $this->resolver->getOptions($this->key('select', self::STATIC_PROVIDER_DEFINITION));
+
+        $this->assertNotNull($options);
+        $this->assertSame([0, 1], array_keys($options));
+    }
+
+    /**
+     * A select-like key whose definition cannot be decoded or rebuilt has an option vocabulary this
+     * read failed to reach. Publishing the null pair instead would say "this key is not a select",
+     * which is what a client reads when the reason is null.
+     *
+     * @dataProvider unresolvableDefinitionProvider
+     */
+    public function testASelectKeyWhoseDefinitionCannotBeRebuiltPublishesResolutionFailed(
+        string $definition
+    ): void {
+        $key = $this->key('select', $definition);
+
+        $this->assertNull($this->resolver->getOptions($key));
+        $this->assertSame(
+            OptionsUnavailableReason::RESOLUTION_FAILED,
+            $this->resolver->getOptionsUnavailableReason($key)
+        );
+        $this->assertNull($this->resolver->getUnits($key));
+    }
+
+    /**
+     * The same definition on a key whose type has no option vocabulary at all is the neutral state
+     * and stays the null pair: there is nothing that failed to resolve.
+     *
+     * @dataProvider unresolvableDefinitionProvider
+     */
+    public function testTheSameDefinitionOnAKeyThatIsNotSelectLikeStaysTheNullPair(
+        string $definition
+    ): void {
+        $key = $this->key('input', $definition);
+
+        $this->assertNull($this->resolver->getOptions($key));
+        $this->assertNull($this->resolver->getOptionsUnavailableReason($key));
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function unresolvableDefinitionProvider(): array
+    {
+        return [
+            'a definition that is not JSON at all' => [''],
+            'a definition that decodes to a scalar' => ['5'],
+            'a definition core rebuilds nothing from' => ['[]'],
+            'an empty object, which core also rebuilds nothing from' => ['{}'],
+        ];
     }
 
     public function testAQuantityValueKeyPublishesItsUnitsInTheirOrder(): void
@@ -279,15 +343,6 @@ final class KeyOptionsResolverTest extends Unit
         $this->assertSame(2, $this->serviceCalls);
     }
 
-    public function testAKeyConfigThatWasNeverHydratedPublishesNothing(): void
-    {
-        $keyConfig = new KeyConfig();
-
-        $this->assertFalse((new ReflectionProperty($keyConfig, 'type'))->isInitialized($keyConfig));
-        $this->assertNull($this->resolver->getOptions($keyConfig));
-        $this->assertNull($this->resolver->getUnits($keyConfig));
-    }
-
     /**
      * @param array<int, array<string, string>> $options
      */
@@ -328,6 +383,12 @@ final class KeyOptionsResolverTest extends Unit
      */
     private function buildDefinition(array $blob, string $type): ?Data
     {
+        // Mirrors core: Classificationstore\Service::getFieldDefinitionFromJson() answers null for
+        // an empty blob, which is what the model's own `definition` default ('[]') decodes to.
+        if ($blob === []) {
+            return null;
+        }
+
         $definition = match ($type) {
             'select' => new Select(),
             'multiselect' => new Multiselect(),

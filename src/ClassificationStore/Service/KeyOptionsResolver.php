@@ -26,12 +26,13 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
 use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\SelectOptionsProviderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Helper\OptionsProviderResolver;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
-use ReflectionProperty;
 use Symfony\Contracts\Service\ResetInterface;
 use Throwable;
 use function array_key_exists;
 use function array_map;
+use function array_values;
 use function hash;
+use function in_array;
 use function is_array;
 use function json_decode;
 use function method_exists;
@@ -41,9 +42,15 @@ use function method_exists;
  */
 final class KeyOptionsResolver implements KeyOptionsResolverInterface, ResetInterface
 {
-    private const string TYPE_PROPERTY = 'type';
-
     private const string PURPOSE = 'fielddefinition';
+
+    /**
+     * The stored types that have an option vocabulary at all, which is the boundary the bundle
+     * already draws: {@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Service\SelectOptionsService}
+     * is typed Select|Multiselect throughout. Read only where the definition could not be rebuilt
+     * and there is no instance to ask instead.
+     */
+    private const array SELECT_LIKE_TYPES = ['select', 'multiselect'];
 
     /**
      * Deliberately a NON-cryptographic hash: the memo key only has to tell two blobs apart.
@@ -97,11 +104,6 @@ final class KeyOptionsResolver implements KeyOptionsResolverInterface, ResetInte
      */
     private function resolve(KeyConfig $keyConfig): array
     {
-        // `$type` has no default: a key config that was never hydrated has no type to resolve by
-        if (!(new ReflectionProperty($keyConfig, self::TYPE_PROPERTY))->isInitialized($keyConfig)) {
-            return $this->publishNothing();
-        }
-
         $memoKey = $keyConfig->getType() . "\0" . hash(self::MEMO_HASH, $keyConfig->getDefinition());
         if (array_key_exists($memoKey, $this->resolved)) {
             return $this->resolved[$memoKey];
@@ -120,18 +122,20 @@ final class KeyOptionsResolver implements KeyOptionsResolverInterface, ResetInte
         try {
             $decoded = json_decode($keyConfig->getDefinition(), true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
-            return $this->publishNothing();
+            return $this->publishUnresolved($keyConfig);
         }
 
         if (!is_array($decoded)) {
-            return $this->publishNothing();
+            return $this->publishUnresolved($keyConfig);
         }
 
-        // Rebuilt from the blob on every resolution, never the instance core memoises by key id
+        // Rebuilt from the blob on every resolution, never the instance core memoises by key id.
+        // Core answers null for a blob that decodes to an empty array, which is what the model's
+        // own `definition` default ('[]') holds, so this is an ordinary row and not a corrupt one.
         $definition = $this->serviceResolver->getFieldDefinitionFromJson($decoded, $keyConfig->getType());
 
         if ($definition === null) {
-            return $this->publishNothing();
+            return $this->publishUnresolved($keyConfig);
         }
 
         $resolved = $this->publishNothing();
@@ -184,9 +188,14 @@ final class KeyOptionsResolver implements KeyOptionsResolverInterface, ResetInte
      */
     private function mapOptions(array $options): array
     {
-        return array_map(
-            fn (array $option): SelectOption => $this->selectOptionHydrator->hydrate($option),
-            $options
+        // A provider is free to hand back a filtered array, whose keys are no longer sequential.
+        // The published member is declared an array on both schemas, so it is re-indexed here or a
+        // hole in the provider's list would serialise the member as a JSON object.
+        return array_values(
+            array_map(
+                fn (array $option): SelectOption => $this->selectOptionHydrator->hydrate($option),
+                $options
+            )
         );
     }
 
@@ -200,9 +209,34 @@ final class KeyOptionsResolver implements KeyOptionsResolverInterface, ResetInte
             return null;
         }
 
+        // `getValidUnits()` is typed array and defaults to [], so a definition cannot state an
+        // empty permitted set: core's own AbstractQuantityValue::configureOptions() expands an empty
+        // list to every unit in the units table. Empty therefore IS "restricts nothing", which is
+        // what null means on the published member, and the two cannot be told apart as stored.
         $validUnits = $definition->getValidUnits();
 
         return new KeyUnits($definition->getDefaultUnit(), $validUnits === [] ? null : $validUnits);
+    }
+
+    /**
+     * A definition that could not be decoded or rebuilt is not an answer about the key's options.
+     * The null pair both schemas document means "this key is not a select or multiselect", so a
+     * select-like key would otherwise report its whole vocabulary missing as the neutral state and
+     * leave a client that branches on the reason nothing to show.
+     *
+     * @return array{options: null, reason: OptionsUnavailableReason|null, units: null}
+     */
+    private function publishUnresolved(KeyConfig $keyConfig): array
+    {
+        if (!in_array($keyConfig->getType(), self::SELECT_LIKE_TYPES, true)) {
+            return $this->publishNothing();
+        }
+
+        return [
+            'options' => null,
+            'reason' => OptionsUnavailableReason::RESOLUTION_FAILED,
+            'units' => null,
+        ];
     }
 
     /**

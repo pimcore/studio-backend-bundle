@@ -25,6 +25,11 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
  * Only a key whose own definition is a select or multiselect has options; a wrapper type's delegate
  * is not looked inside. No data object is involved, so a provider is asked for static options only.
  *
+ * Every method takes a key configuration that has been loaded, as the repository returns it: the
+ * key's `type` has no default on the model, and the two hydrators that call this read that same
+ * property for the published `type` before they get here, so an unhydrated configuration never
+ * reaches a resolution.
+ *
  * @internal
  */
 interface KeyOptionsResolverInterface
