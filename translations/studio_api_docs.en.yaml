@@ -2099,8 +2099,8 @@ classification_store_configuration_key_restore_description: |
   Re-enable a disabled classification store key configuration by ID.
   Re-enabling restores the key configuration. This endpoint neither deletes nor re-creates any group assignment —
   whether a key's assignments survive being disabled is decided by the disable itself (pimcore/pimcore, issue 1665).
-  A key that is already enabled is returned unchanged.
-  Note: a key disabled before that change shipped has already lost its assignment rows, and nothing in the product
+  The endpoint writes the key's enabled flag and nothing else. A key that is already enabled is returned unchanged.
+  Note: a key disabled before that change shipped already lost its assignment rows, and nothing in the product
   restores them.
 classification_store_configuration_key_restore_summary: Re-enable a disabled key
 classification_store_configuration_key_restore_success_response: The re-enabled key configuration
