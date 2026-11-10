@@ -380,15 +380,21 @@ final readonly class KeyRepository implements KeyRepositoryInterface
             [$id]
         );
 
-        $config->setEnabled(true);
-
         if ((bool) $storedEnabled) {
+            $config->setEnabled(true);
+
             return $config;
         }
+
+        $previouslyEnabled = $config->getEnabled();
+        $config->setEnabled(true);
 
         try {
             $config->save();
         } catch (Exception $e) {
+            // the model is core's per-request cached instance: it must not report a write that did not happen
+            $config->setEnabled($previouslyEnabled);
+
             throw new ElementSavingFailedException($id, $e->getMessage(), $e);
         }
 
@@ -413,10 +419,10 @@ final readonly class KeyRepository implements KeyRepositoryInterface
             : 'ASC';
 
         $tableName = 'classificationstore_' . ($table === 'groups' ? 'groups' : 'keys');
-        // only the disabled view is scoped; without `disabledOnly` the lookup resolves any key id as it always did
+        // each view counts positions with the condition its listing uses
         $viewCondition = '';
-        if ($tableName === 'classificationstore_keys' && $disabledOnly) {
-            $viewCondition = ' AND (enabled IS NULL OR enabled = 0)';
+        if ($tableName === 'classificationstore_keys') {
+            $viewCondition = $disabledOnly ? ' AND (enabled IS NULL OR enabled = 0)' : ' AND enabled = 1';
         }
 
         $referenceRow = $this->connection->fetchAssociative(

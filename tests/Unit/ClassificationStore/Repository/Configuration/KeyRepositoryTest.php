@@ -617,7 +617,7 @@ final class KeyRepositoryTest extends Unit
     /**
      * @throws Exception
      */
-    public function testThePageIsScopedToTheDisabledViewOnlyWhenAskedFor(): void
+    public function testThePageIsScopedToTheViewItIsAskedFor(): void
     {
         foreach ([false, true] as $disabledOnly) {
             $queries = [];
@@ -639,7 +639,7 @@ final class KeyRepositoryTest extends Unit
                     str_contains($query, '(enabled IS NULL OR enabled = 0)'),
                     $query
                 );
-                $this->assertStringNotContainsString('enabled = 1', $query);
+                $this->assertSame(!$disabledOnly, str_contains($query, 'AND enabled = 1'), $query);
             }
         }
     }
@@ -679,7 +679,11 @@ final class KeyRepositoryTest extends Unit
         $this->expectException(ElementSavingFailedException::class);
 
         $calls = [];
-        $this->createRepository($config, $this->createRestoreConnection($calls, 0))->restore(self::KEY_ID);
+        try {
+            $this->createRepository($config, $this->createRestoreConnection($calls, 0))->restore(self::KEY_ID);
+        } finally {
+            $this->assertFalse($config->getEnabled(), 'A failed write left the cached model reporting enabled.');
+        }
     }
 
     /**
