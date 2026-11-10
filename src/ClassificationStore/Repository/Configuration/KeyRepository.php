@@ -391,7 +391,7 @@ final readonly class KeyRepository implements KeyRepositoryInterface
         try {
             $config->save();
         } catch (Exception $e) {
-            // the held row is disabled (checked above), so the cached model must report disabled, whatever it said before
+            // the held row is disabled (checked above), so the cached model must report disabled too
             $config->setEnabled(false);
 
             throw new ElementSavingFailedException($id, $e->getMessage(), $e);
