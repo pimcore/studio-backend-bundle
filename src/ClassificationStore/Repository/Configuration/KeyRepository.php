@@ -361,13 +361,30 @@ final readonly class KeyRepository implements KeyRepositoryInterface
      */
     public function restore(int $id): KeyConfig
     {
-        $config = $this->getById($id);
+        return $this->writeHoldingTheRow($id, fn (): KeyConfig => $this->writeRestore($id))->getConfig();
+    }
 
-        if ($config->getEnabled()) {
-            return $config;
-        }
+    /**
+     * Runs with the row held. Whether the key is enabled is read from the held row, not from the
+     * model, which may be a cached one: a stale flag must neither skip the write of a key that is
+     * still disabled nor cause one for a key that is already enabled.
+     *
+     * @throws NotFoundException
+     * @throws ElementSavingFailedException
+     */
+    private function writeRestore(int $id): KeyConfig
+    {
+        $config = $this->getById($id);
+        $storedEnabled = $this->connection->fetchOne(
+            sprintf('SELECT `enabled` FROM `%s` WHERE `id` = ? FOR UPDATE', KeyConfigDao::TABLE_NAME_KEYS),
+            [$id]
+        );
 
         $config->setEnabled(true);
+
+        if ((bool) $storedEnabled) {
+            return $config;
+        }
 
         try {
             $config->save();
@@ -388,6 +405,7 @@ final readonly class KeyRepository implements KeyRepositoryInterface
         int $pageSize,
         string $sortKey,
         string $sortDir,
+        bool $disabledOnly = false,
     ): int {
         $sortKey = in_array($sortKey, self::ALLOWED_SORT_KEYS, true) ? $sortKey : 'name';
         $sortDir = in_array(strtoupper($sortDir), self::ALLOWED_SORT_DIRECTIONS, true)
@@ -395,10 +413,14 @@ final readonly class KeyRepository implements KeyRepositoryInterface
             : 'ASC';
 
         $tableName = 'classificationstore_' . ($table === 'groups' ? 'groups' : 'keys');
-        $enabledCondition = $tableName === 'classificationstore_keys' ? ' AND enabled = 1' : '';
+        // the same two predicates the listing selects between: the page is one in the view the key is in
+        $viewCondition = '';
+        if ($tableName === 'classificationstore_keys') {
+            $viewCondition = $disabledOnly ? ' AND (enabled IS NULL OR enabled = 0)' : ' AND enabled = 1';
+        }
 
         $referenceRow = $this->connection->fetchAssociative(
-            sprintf('SELECT `%s` FROM `%s` WHERE id = ?', $sortKey, $tableName),
+            sprintf('SELECT `%s` FROM `%s` WHERE id = ?%s', $sortKey, $tableName, $viewCondition),
             [$id]
         );
 
@@ -418,7 +440,7 @@ final readonly class KeyRepository implements KeyRepositoryInterface
             $comparison,
             $sortKey,
             $comparison,
-            $enabledCondition,
+            $viewCondition,
         );
 
         try {

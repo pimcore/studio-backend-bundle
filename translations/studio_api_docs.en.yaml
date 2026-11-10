@@ -2098,7 +2098,7 @@ classification_store_configuration_key_delete_success_response: Successfully dis
 classification_store_configuration_key_restore_description: |
   Re-enable a disabled classification store key configuration by ID.
   Re-enabling restores the key configuration. This endpoint neither deletes nor re-creates any group assignment —
-  whether a key's assignments survive being disabled is decided by the disable itself.
+  whether a key's assignments survive being disabled is decided by the disable itself (pimcore/pimcore, issue 1665).
   A key that is already enabled is returned unchanged.
   Note: a key disabled before that change shipped has already lost its assignment rows, and nothing in the product
   restores them.
@@ -2147,6 +2147,7 @@ classification_store_configuration_key_group_relation_delete_success_response: S
 classification_store_configuration_get_page_description: |
   Calculate the page number where a specific item (key or group) is located within a paginated listing.
   Useful for navigating directly to the page containing a specific item.
+classification_store_configuration_get_page_disabled_only: Locate a key in the list of disabled keys instead of the enabled ones (keys only)
 classification_store_configuration_get_page_summary: Get page number for a specific item
 classification_store_configuration_get_page_success_response: Page number where the item is located
 data_object_get_grid_preview_description: Gives you a preview of an Advanced Column Grid for a given Data Object.

@@ -113,6 +113,12 @@ final class KeyDisabledListingTest extends Unit
         $this->assertTrue(str_contains($query, ' AND '), $query);
         $this->assertTrue(str_contains($query, 'ORDER BY `name` DESC'), $query);
         $this->assertTrue(str_contains($query, 'LIMIT 20,10'), $query);
+
+        $count = $this->getExecutedCountQuery();
+
+        $this->assertTrue(str_contains($count, self::DISABLED_CONDITION), $count);
+        $this->assertFalse(str_contains($count, self::ENABLED_CONDITION), $count);
+        $this->assertTrue(str_contains($count, '`storeId` = '), $count);
     }
 
     private function load(?bool $disabledOnly = null): string

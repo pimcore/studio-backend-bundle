@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\BoolParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\IntParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -76,6 +77,12 @@ final class GetPageController extends AbstractApiController
         description: 'Sort direction (ASC or DESC)',
         required: false,
         example: 'ASC'
+    )]
+    #[BoolParameter(
+        name: 'disabledOnly',
+        description: 'classification_store_configuration_get_page_disabled_only',
+        required: false,
+        example: false
     )]
     #[SuccessResponse(
         description: 'classification_store_configuration_get_page_success_response',

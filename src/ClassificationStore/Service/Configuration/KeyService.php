@@ -166,6 +166,7 @@ final readonly class KeyService implements KeyServiceInterface
             $parameters->getPageSize(),
             $parameters->getSortKey(),
             $parameters->getSortDir(),
+            $parameters->isDisabledOnly(),
         );
         $response = $this->keyHydrator->hydrateGetPageResponse($page);
         $this->eventDispatcher->dispatch(

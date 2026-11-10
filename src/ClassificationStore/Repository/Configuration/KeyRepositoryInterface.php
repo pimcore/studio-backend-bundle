@@ -140,6 +140,7 @@ interface KeyRepositoryInterface
         int $pageSize,
         string $sortKey,
         string $sortDir,
+        bool $disabledOnly = false,
     ): int;
 
     /**
