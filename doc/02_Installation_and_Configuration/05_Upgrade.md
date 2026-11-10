@@ -5,7 +5,7 @@ The following steps are necessary during updating to newer versions.
 ## Upgrade to 2026.4.0
 - [Classification Store] Added: disabled keys can be listed and re-enabled. Re-enabling restores the key
   configuration; this endpoint neither deletes nor re-creates any group assignment — whether a key's assignments
-  survive being disabled is decided by the disable itself (`pimcore/pimcore`, issue 1665).
+  survive being disabled is decided by the disable itself.
 - [Classification Store] Added: the key and key-group assignment configuration reads now carry a key's resolved select
   options and its unit vocabulary, so a configuration screen no longer needs the object editor to learn them.
 - [Classification Store] Added: a saved grid column that shows a classification store attribute now also records the
