@@ -47,7 +47,6 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         private UpdateServiceInterface $updateService,
         private UserPerspectiveServiceInterface $userPerspectiveService,
         private ValidatorInterface $validator,
-        private UserPermissionServiceInterface $userPermissionService,
     ) {
     }
 
@@ -64,6 +63,11 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
 
         if ($this->securityService->getCurrentUser()->isAdmin()) {
             $user->setAdmin($updateUserParameter->isAdmin());
+        }
+
+        // a changed email allows taking over the account through the password reset: admin only for other users
+        if ($updateUserParameter->getEmail() !== $user->getEmail()) {
+            $this->denyForNonAdminUnlessOwnAccount($user, 'Only admin can change the email of another user');
         }
 
         $user->setEmail($updateUserParameter->getEmail());
@@ -142,10 +146,8 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
             throw new ForbiddenException('Only admin can update admin user');
         }
 
-        // resetting a password allows logging in as that user: never for a user more privileged than the caller
-        $this->updateService->denyEscalationBeyondCallersOwnPermissions(
-            $this->userPermissionService->getAllowedUserPermissions($user)
-        );
+        // setting a password allows logging in as that user: admin only for other users
+        $this->denyForNonAdminUnlessOwnAccount($user, 'Only admin can change the password of another user');
 
         if ($updateParameter->getPassword() !== $updateParameter->getPasswordConfirmation()) {
             throw new InvalidArgumentException('Passwords do not match');
@@ -175,6 +177,18 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
     {
         $user = $this->securityService->getCurrentUser();
         $this->userPerspectiveService->updateActivePerspective($perspectiveId, $user);
+    }
+
+    /**
+     * @throws ForbiddenException
+     */
+    private function denyForNonAdminUnlessOwnAccount(UserInterface $target, string $message): void
+    {
+        $currentUser = $this->securityService->getCurrentUser();
+
+        if (!$currentUser->isAdmin() && $currentUser->getId() !== $target->getId()) {
+            throw new ForbiddenException($message);
+        }
     }
 
     /**

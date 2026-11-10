@@ -97,6 +97,35 @@ final class UpdateServiceTest extends Unit
         $this->assertSame([0], array_keys($user->getPermissions()));
     }
 
+    public function testOrphanedPermissionIsDroppedBeforeTheGuardForNonAdminCallers(): void
+    {
+        // the caller cannot hold a permission without a definition: it must be filtered out before the
+        // grant check instead of failing the save of every user that still carries it
+        $user = $this->createUser(['assets', 'uninstalled_bundle_permission']);
+        $currentUser = $this->makeEmpty(UserInterface::class, [
+            'isAdmin' => false,
+            'isAllowed' => static fn (string $permission): bool => $permission === 'assets',
+        ]);
+        $service = $this->createServiceWithCurrentUser($currentUser, 'assets', 'documents');
+
+        $service->updatePermissions(['assets', 'uninstalled_bundle_permission'], $user);
+
+        $this->assertSame(['assets'], $user->getPermissions());
+    }
+
+    public function testNonAdminCannotKeepPermissionTheyDoNotHoldNextToAnOrphanedOne(): void
+    {
+        $user = $this->createUser(['assets', 'documents', 'uninstalled_bundle_permission']);
+        $currentUser = $this->makeEmpty(UserInterface::class, [
+            'isAdmin' => false,
+            'isAllowed' => static fn (string $permission): bool => $permission === 'assets',
+        ]);
+        $service = $this->createServiceWithCurrentUser($currentUser, 'assets', 'documents');
+
+        $this->expectException(ForbiddenException::class);
+        $service->updatePermissions(['assets', 'documents', 'uninstalled_bundle_permission'], $user);
+    }
+
     public function testNonAdminCannotGrantPermissionTheyDoNotHoldThemselves(): void
     {
         $user = $this->createUser([]);
@@ -187,6 +216,41 @@ final class UpdateServiceTest extends Unit
 
         $this->expectException(NotFoundException::class);
         $service->updateRoles([99], $user);
+    }
+
+    /**
+     * @dataProvider nonIntegerRoleIdProvider
+     */
+    public function testNonIntegerRoleIdIsReportedAsNotFound(mixed $roleId): void
+    {
+        $user = $this->createUser([]);
+        $service = $this->createRoleService([$this->createRole(1)], $this->createAdminUser());
+
+        $this->expectException(NotFoundException::class);
+        $service->updateRoles([$roleId], $user);
+    }
+
+    public function testNonIntegerRoleIdIsReportedAsNotFoundForNonAdminCallers(): void
+    {
+        $user = $this->createUser([]);
+        $service = $this->createRoleService([$this->createRole(1)], $this->createNonAdminWithRoles([1]));
+
+        $this->expectException(NotFoundException::class);
+        $service->updateRoles(['1'], $user);
+    }
+
+    /**
+     * @return array<string, array{mixed}>
+     */
+    public static function nonIntegerRoleIdProvider(): array
+    {
+        return [
+            'numeric string' => ['1'],
+            'non-numeric string' => ['abc'],
+            'float' => [1.5],
+            'null' => [null],
+            'array' => [[1]],
+        ];
     }
 
     public function testNonAdminCannotLeaveTargetWithPermissionTheyDoNotHold(): void

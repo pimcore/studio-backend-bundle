@@ -27,13 +27,11 @@ use Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInter
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateService;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPermissionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateService;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use function in_array;
 
 /**
  * @internal
@@ -108,33 +106,36 @@ final class UserUpdateServiceTest extends Unit
         $service->updateUserById($this->createUpdateParams(), 42);
     }
 
-    public function testNonAdminCannotUpdatePasswordOfUserWithPermissionsTheyDoNotHold(): void
-    {
-        $service = $this->createPasswordService(
-            $this->createTargetUser(isAdmin: false),
-            $this->createNonAdmin(['users']),
-            ['assets']
-        );
-
-        $this->expectException(ForbiddenException::class);
-        $service->updatePasswordById($this->createPasswordParams(), 42);
-    }
-
-    public function testNonAdminCanUpdatePasswordOfUserWithEqualOrFewerPermissions(): void
+    public function testNonAdminCannotUpdatePasswordOfAnotherUser(): void
     {
         $target = $this->createTargetUser(isAdmin: false);
-        $service = $this->createPasswordService($target, $this->createNonAdmin(['users', 'assets']), ['assets']);
+        $service = $this->createPasswordService($target, $this->createNonAdmin(id: 7));
+
+        try {
+            $service->updatePasswordById($this->createPasswordParams(), 42);
+            $this->fail('Expected a ForbiddenException');
+        } catch (ForbiddenException $exception) {
+            $this->assertSame('Only admin can change the password of another user', $exception->getMessage());
+        }
+
+        $this->assertNull($target->getPassword());
+    }
+
+    public function testNonAdminCanUpdateOwnPassword(): void
+    {
+        $target = $this->createTargetUser(isAdmin: false);
+        $service = $this->createPasswordService($target, $this->createNonAdmin(id: 42));
 
         $service->updatePasswordById($this->createPasswordParams(), 42);
 
         $this->assertSame('hashed-password', $target->getPassword());
     }
 
-    public function testAdminCanUpdatePasswordOfUserWithAnyPermissions(): void
+    public function testAdminCanUpdatePasswordOfAnotherUser(): void
     {
         $target = $this->createTargetUser(isAdmin: false);
-        $admin = $this->makeEmpty(UserInterface::class, ['isAdmin' => true]);
-        $service = $this->createPasswordService($target, $admin, ['assets', 'documents', 'seo']);
+        $admin = $this->makeEmpty(UserInterface::class, ['isAdmin' => true, 'getId' => 1]);
+        $service = $this->createPasswordService($target, $admin);
 
         $service->updatePasswordById($this->createPasswordParams(), 42);
 
@@ -145,8 +146,7 @@ final class UserUpdateServiceTest extends Unit
     {
         $service = $this->createPasswordService(
             $this->createTargetUser(isAdmin: true),
-            $this->createNonAdmin(['users', 'assets']),
-            []
+            $this->createNonAdmin(id: 7)
         );
 
         $this->expectException(ForbiddenException::class);
@@ -154,14 +154,57 @@ final class UserUpdateServiceTest extends Unit
         $service->updatePasswordById($this->createPasswordParams(), 42);
     }
 
-    /**
-     * @param string[] $heldPermissions
-     */
-    private function createNonAdmin(array $heldPermissions): UserInterface
+    public function testNonAdminCannotChangeEmailOfAnotherUser(): void
+    {
+        $target = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService($target, $this->createNonAdmin(id: 7));
+
+        try {
+            $service->updateUserById($this->createUpdateParams(email: 'attacker@example.com'), 42);
+            $this->fail('Expected a ForbiddenException');
+        } catch (ForbiddenException $exception) {
+            $this->assertSame('Only admin can change the email of another user', $exception->getMessage());
+        }
+
+        $this->assertSame('test@example.com', $target->getEmail());
+    }
+
+    public function testNonAdminCanSaveAnotherUserWithUnchangedEmail(): void
+    {
+        $target = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService($target, $this->createNonAdmin(id: 7));
+
+        $service->updateUserById($this->createUpdateParams(), 42);
+
+        $this->assertSame('test@example.com', $target->getEmail());
+    }
+
+    public function testNonAdminCanChangeOwnEmail(): void
+    {
+        $target = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService($target, $this->createNonAdmin(id: 42));
+
+        $service->updateUserById($this->createUpdateParams(email: 'new@example.com'), 42);
+
+        $this->assertSame('new@example.com', $target->getEmail());
+    }
+
+    public function testAdminCanChangeEmailOfAnotherUser(): void
+    {
+        $target = $this->createTargetUser(isAdmin: false);
+        $admin = $this->makeEmpty(UserInterface::class, ['isAdmin' => true, 'getId' => 1]);
+        $service = $this->createService($target, $admin);
+
+        $service->updateUserById($this->createUpdateParams(email: 'new@example.com'), 42);
+
+        $this->assertSame('new@example.com', $target->getEmail());
+    }
+
+    private function createNonAdmin(int $id): UserInterface
     {
         return $this->makeEmpty(UserInterface::class, [
             'isAdmin' => false,
-            'isAllowed' => static fn (string $permission): bool => in_array($permission, $heldPermissions, true),
+            'getId' => $id,
         ]);
     }
 
@@ -170,14 +213,8 @@ final class UserUpdateServiceTest extends Unit
         return new UpdatePasswordParameter('very-long-password-1', 'very-long-password-1', null);
     }
 
-    /**
-     * @param string[] $targetPermissions
-     */
-    private function createPasswordService(
-        User $targetUser,
-        UserInterface $currentUser,
-        array $targetPermissions
-    ): UserUpdateService {
+    private function createPasswordService(User $targetUser, UserInterface $currentUser): UserUpdateService
+    {
         $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
             'getCurrentUser' => $currentUser,
         ]);
@@ -201,9 +238,6 @@ final class UserUpdateServiceTest extends Unit
             ),
             $this->makeEmpty(UserPerspectiveServiceInterface::class),
             $this->makeEmpty(ValidatorInterface::class),
-            $this->makeEmpty(UserPermissionServiceInterface::class, [
-                'getAllowedUserPermissions' => $targetPermissions,
-            ]),
         );
     }
 
@@ -213,14 +247,16 @@ final class UserUpdateServiceTest extends Unit
         $user->setAdmin($isAdmin);
         $user->setActive(true);
         $user->setName('targetuser');
+        $user->setId(42);
+        $user->setEmail('test@example.com');
 
         return $user;
     }
 
-    private function createUpdateParams(bool $admin = false): UpdateUserParameter
+    private function createUpdateParams(bool $admin = false, string $email = 'test@example.com'): UpdateUserParameter
     {
         return new UpdateUserParameter(
-            email: 'test@example.com',
+            email: $email,
             firstname: 'Test',
             lastname: 'User',
             active: true,
@@ -271,7 +307,6 @@ final class UserUpdateServiceTest extends Unit
             $updateService,
             $this->makeEmpty(UserPerspectiveServiceInterface::class),
             $this->makeEmpty(ValidatorInterface::class),
-            $this->makeEmpty(UserPermissionServiceInterface::class),
         );
     }
 }

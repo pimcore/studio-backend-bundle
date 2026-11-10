@@ -33,7 +33,10 @@ use Pimcore\Model\User\Workspace\Document as DocumentWorkspace;
 use Pimcore\Model\UserInterface;
 use function array_diff;
 use function array_map;
+use function get_debug_type;
 use function in_array;
+use function is_int;
+use function is_string;
 use function sprintf;
 
 /**
@@ -105,8 +108,12 @@ final readonly class UpdateService implements UpdateServiceInterface
         $callersRoleIds = array_map('intval', $currentUser->getRoles());
 
         foreach ($rolesToSet as $roleId) {
-            if (!$this->findRoleById($availableRoles, $roleId) instanceof Role) {
-                throw new NotFoundException('Role', $roleId);
+            // ids arrive untyped from the request body; anything but an integer cannot match a role
+            if (!is_int($roleId) || !$this->findRoleById($availableRoles, $roleId) instanceof Role) {
+                throw new NotFoundException(
+                    'Role',
+                    is_int($roleId) || is_string($roleId) ? $roleId : get_debug_type($roleId)
+                );
             }
 
             if (!$currentUser->isAdmin() && !in_array($roleId, $callersRoleIds, true)) {
@@ -154,7 +161,7 @@ final readonly class UpdateService implements UpdateServiceInterface
      *
      * @throws ForbiddenException
      */
-    public function denyEscalationBeyondCallersOwnPermissions(array $permissions): void
+    private function denyEscalationBeyondCallersOwnPermissions(array $permissions): void
     {
         $currentUser = $this->securityService->getCurrentUser();
         if ($currentUser->isAdmin()) {

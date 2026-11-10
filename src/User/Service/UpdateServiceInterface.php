@@ -42,15 +42,6 @@ interface UpdateServiceInterface
     ): UserInterface|UserRoleInterface;
 
     /**
-     * Rejects the given permissions unless the current user is a superuser or holds every one of them.
-     *
-     * @param string[] $permissions
-     *
-     * @throws ForbiddenException
-     */
-    public function denyEscalationBeyondCallersOwnPermissions(array $permissions): void;
-
-    /**
      * @throws ForbiddenException|NotFoundException
      */
     public function updateRoles(array $rolesToSet, UserInterface $user): UserInterface;
