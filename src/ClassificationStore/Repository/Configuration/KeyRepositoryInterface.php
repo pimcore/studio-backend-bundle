@@ -31,7 +31,7 @@ interface KeyRepositoryInterface
     /**
      * @throws InvalidArgumentException
      */
-    public function getListing(FilterParameter $parameters, int $storeId): Listing;
+    public function getListing(FilterParameter $parameters, int $storeId, bool $disabledOnly = false): Listing;
 
     /**
      * @throws NotFoundException
@@ -120,6 +120,15 @@ interface KeyRepositoryInterface
      * @throws ElementSavingFailedException
      */
     public function softDelete(int $id): void;
+
+    /**
+     * Writes the key's `enabled` flag true and nothing else; a key that is already enabled is answered
+     * as it is, without a write.
+     *
+     * @throws NotFoundException
+     * @throws ElementSavingFailedException
+     */
+    public function restore(int $id): KeyConfig;
 
     /**
      * @throws NotFoundException

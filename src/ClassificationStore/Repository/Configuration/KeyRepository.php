@@ -90,9 +90,11 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getListing(FilterParameter $parameters, int $storeId): Listing
+    public function getListing(FilterParameter $parameters, int $storeId, bool $disabledOnly = false): Listing
     {
         $listing = new Listing();
+        // core's `includeDisabled` swaps the enabled condition for the disabled one, it never unions them
+        $listing->setIncludeDisabled($disabledOnly);
         $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
 
         $this->applySearchCondition($listing, $parameters);
@@ -352,6 +354,28 @@ final readonly class KeyRepository implements KeyRepositoryInterface
         } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage(), $e);
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function restore(int $id): KeyConfig
+    {
+        $config = $this->getById($id);
+
+        if ($config->getEnabled()) {
+            return $config;
+        }
+
+        $config->setEnabled(true);
+
+        try {
+            $config->save();
+        } catch (Exception $e) {
+            throw new ElementSavingFailedException($id, $e->getMessage(), $e);
+        }
+
+        return $config;
     }
 
     /**

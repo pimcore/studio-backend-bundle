@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Cache\Core\CoreCacheHandler;
@@ -520,6 +521,111 @@ final class KeyRepositoryTest extends Unit
         $this->assertSame([self::BEGIN, self::HOLD_KEY_QUERY, self::COMMIT], $calls);
         $this->assertSame(self::HELD_DEFINITION, $result->getDefinitionBefore());
         $this->assertSame('{"fieldtype":"input"}', $result->getConfig()->getDefinition());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRestoreWritesTheEnabledFlagAndNothingElse(): void
+    {
+        $statements = [];
+        $saves = 0;
+        $config = $this->createSavableKeyConfig();
+        $config->setEnabled(false);
+        $config->setDao($this->makeEmpty(KeyConfigDao::class, [
+            'save' => static function () use (&$saves): void {
+                ++$saves;
+            },
+        ]));
+        $repository = $this->createRepository($config, $this->createStatementRecordingConnection($statements));
+
+        $restored = $repository->restore(self::KEY_ID);
+
+        $this->assertSame($config, $restored);
+        $this->assertTrue($restored->getEnabled());
+        $this->assertSame(1, $saves);
+        $this->assertSame(self::KEY_NAME, $restored->getName());
+        $this->assertSame(self::STORED_TITLE, $restored->getTitle());
+        $this->assertSame(self::STORED_DESCRIPTION, $restored->getDescription());
+        $this->assertSame([], $statements, 'The restore issues no statement of its own: no relation, no DELETE.');
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRestoringAnEnabledKeyWritesNothing(): void
+    {
+        $saves = 0;
+        $config = $this->createSavableKeyConfig();
+        $config->setEnabled(true);
+        $config->setDao($this->makeEmpty(KeyConfigDao::class, [
+            'save' => static function () use (&$saves): void {
+                ++$saves;
+            },
+        ]));
+
+        $restored = $this->createRepository($config)->restore(self::KEY_ID);
+
+        $this->assertTrue($restored->getEnabled());
+        $this->assertSame(0, $saves);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRestoringAnUnknownKeyIsNotFound(): void
+    {
+        $repository = new KeyRepository(
+            $this->makeEmpty(KeyConfigResolverInterface::class, ['getById' => null]),
+            $this->keyLocalizationResolver,
+            $this->makeEmpty(ListingFilterInterface::class),
+            $this->makeEmpty(SearchHelperServiceInterface::class),
+            $this->makeEmpty(Connection::class),
+        );
+
+        $this->expectException(NotFoundException::class);
+
+        $repository->restore(self::KEY_ID);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAFailingSaveWhileRestoringIsAnElementSavingFailure(): void
+    {
+        $config = $this->createSavableKeyConfig();
+        $config->setEnabled(false);
+        $config->setDao($this->makeEmpty(KeyConfigDao::class, [
+            'save' => static function (): void {
+                throw new Exception('database is gone');
+            },
+        ]));
+
+        $this->expectException(ElementSavingFailedException::class);
+
+        $this->createRepository($config)->restore(self::KEY_ID);
+    }
+
+    /**
+     * @param list<string> $statements
+     *
+     * @throws Exception
+     */
+    private function createStatementRecordingConnection(array &$statements): Connection
+    {
+        $record = static function (string $query) use (&$statements): int {
+            $statements[] = $query;
+
+            return 0;
+        };
+
+        return $this->makeEmpty(Connection::class, [
+            'executeStatement' => $record,
+            'executeQuery' => $record,
+            'fetchOne' => $record,
+            'fetchAllAssociative' => $record,
+            'fetchAssociative' => $record,
+        ]);
     }
 
     /**

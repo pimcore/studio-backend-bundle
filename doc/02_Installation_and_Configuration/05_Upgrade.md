@@ -3,6 +3,7 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Classification Store] Added: disabled keys can be listed and re-enabled.
 - [Classification Store] Added: a saved grid column that shows a classification store attribute now also records the
   stable identifier of its group and key, and configurations saved earlier keep working as they are.
 - [Classification Store] Added: collections, groups, sub groups and keys carry free-form custom metadata that can be
