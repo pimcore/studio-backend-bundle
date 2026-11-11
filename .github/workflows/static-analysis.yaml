@@ -67,19 +67,10 @@ jobs:
 
       - name: Set up matrix JSON
         id: set-matrix
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-          SERVICE_USER_CORE: "dev-service-user as 2026.4.99"
         run: |
           php_versions="${{ steps.parse-php-versions.outputs.php_versions }}"
           MATRIX_JSON=$(cat reusable-workflows/phpstan-configuration/matrix-config.json)
           FILTERED_MATRIX_JSON=$(echo "$MATRIX_JSON" | jq --arg php_versions "$php_versions" '{ include: [ .configs[] | select(.php_version == $php_versions) | .matrix[] ] }')
-          # Temporary: the service user code needs the core service user model, which is not on
-          # pimcore/pimcore 2026.x yet. Remove this override once the core change is merged.
-          if [ "$HEAD_REF" = "service-user" ]; then
-            FILTERED_MATRIX_JSON=$(echo "$FILTERED_MATRIX_JSON" | jq --arg core "$SERVICE_USER_CORE" '
-              .include |= map(.pimcore_version = $core)')
-          fi
           ENCODED_MATRIX_JSON=$(echo "$FILTERED_MATRIX_JSON" | jq -c .)
           echo "phpstan_matrix=$ENCODED_MATRIX_JSON" >> "$GITHUB_OUTPUT"
 
