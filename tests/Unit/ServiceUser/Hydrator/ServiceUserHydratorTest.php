@@ -18,7 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Hydrator\ServiceUserHydrator;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUserMcpTokens;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\WorkspaceHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
-use Pimcore\Model\User\ServiceUser;
+use Pimcore\Model\User;
 
 /**
  * @internal
@@ -40,7 +40,7 @@ final class ServiceUserHydratorTest extends Unit
             false,
             false
         );
-        $serviceUser = new ServiceUser();
+        $serviceUser = User::newServiceUser();
         $serviceUser->setId(42);
         $serviceUser->setName('svc-erp-sync');
         $serviceUser->setEmail('erp-team@example.com');
@@ -79,7 +79,7 @@ final class ServiceUserHydratorTest extends Unit
 
     public function testClientCredentialsFlagFollowsTheConfiguration(): void
     {
-        $serviceUser = new ServiceUser();
+        $serviceUser = User::newServiceUser();
         $serviceUser->setId(42);
         $serviceUser->setName('svc');
         $hydrator = new ServiceUserHydrator($this->makeEmpty(WorkspaceHydratorInterface::class, [

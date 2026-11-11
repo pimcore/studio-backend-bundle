@@ -20,8 +20,8 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccessEntry;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolver;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerCapability;
+use Pimcore\Model\User;
 use Pimcore\Model\User\Role;
-use Pimcore\Model\User\ServiceUser;
 use Pimcore\Model\UserInterface;
 
 final class McpServerAccessResolverTest extends Unit
@@ -152,7 +152,7 @@ final class McpServerAccessResolverTest extends Unit
 
     public function testAServiceUserIsGrantedAccessByNameAndThroughItsRoles(): void
     {
-        $serviceUser = new ServiceUser();
+        $serviceUser = User::newServiceUser();
         $serviceUser->setId(7);
         $serviceUser->setName('svc-erp-sync');
         $serviceUser->setRoles([5]);

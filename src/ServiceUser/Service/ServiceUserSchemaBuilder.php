@@ -19,7 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Event\ServiceUserEvent;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Hydrator\ServiceUserHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUser as ServiceUserSchema;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUserMcpTokens;
-use Pimcore\Model\User\ServiceUser;
+use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_map;
 use function time;
@@ -40,7 +40,7 @@ final readonly class ServiceUserSchemaBuilder implements ServiceUserSchemaBuilde
     public function buildAll(array $serviceUsers): array
     {
         $summaries = $this->mcpTokenRepository->summarizeByUserIds(
-            array_map(static fn (ServiceUser $serviceUser): int => (int) $serviceUser->getId(), $serviceUsers),
+            array_map(static fn (User $serviceUser): int => (int) $serviceUser->getId(), $serviceUsers),
             time()
         );
 
@@ -52,7 +52,7 @@ final readonly class ServiceUserSchemaBuilder implements ServiceUserSchemaBuilde
         return $items;
     }
 
-    public function build(ServiceUser $serviceUser, ?array $summaries = null): ServiceUserSchema
+    public function build(User $serviceUser, ?array $summaries = null): ServiceUserSchema
     {
         $id = (int) $serviceUser->getId();
         $summaries ??= $this->mcpTokenRepository->summarizeByUserIds([$id], time());

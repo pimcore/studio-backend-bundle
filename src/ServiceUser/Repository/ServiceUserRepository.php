@@ -20,8 +20,8 @@ use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Model\User;
 use Pimcore\Model\User\Exception\DuplicateUserNameException;
-use Pimcore\Model\User\ServiceUser;
 use Pimcore\Model\User\ServiceUser\Listing as ServiceUserListing;
 use function sprintf;
 
@@ -49,17 +49,17 @@ final readonly class ServiceUserRepository implements ServiceUserRepositoryInter
         return $listing->getServiceUsers();
     }
 
-    public function getServiceUser(int $id): ServiceUser
+    public function getServiceUser(int $id): User
     {
         $serviceUser = $this->userResolver->getById($id);
-        if (!$serviceUser instanceof ServiceUser) {
+        if (!$serviceUser instanceof User || !$serviceUser->isServiceUser()) {
             throw new NotFoundException(self::TYPE, $id);
         }
 
         return $serviceUser;
     }
 
-    public function saveServiceUser(ServiceUser $serviceUser): void
+    public function saveServiceUser(User $serviceUser): void
     {
         try {
             $serviceUser->save();
@@ -72,7 +72,7 @@ final readonly class ServiceUserRepository implements ServiceUserRepositoryInter
         }
     }
 
-    public function deleteServiceUser(ServiceUser $serviceUser): void
+    public function deleteServiceUser(User $serviceUser): void
     {
         try {
             $serviceUser->delete();

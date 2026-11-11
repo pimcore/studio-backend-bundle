@@ -29,7 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneServiceInterface;
 use Pimcore\Model\User;
-use Pimcore\Model\User\ServiceUser;
 use function count;
 use function implode;
 use function sprintf;
@@ -92,7 +91,7 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
     public function createServiceUserFromUser(int $userId, CreateFromUserParameter $parameter): ServiceUserCredentials
     {
         $source = $this->userRepository->getUserById($userId);
-        if (!$source instanceof User || $source instanceof ServiceUser) {
+        if (!$source instanceof User || $source->isServiceUser()) {
             throw new NotFoundException('User', $userId);
         }
 
@@ -167,9 +166,9 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
         return $this->credentialsService->rotate($this->repository->getServiceUser($id));
     }
 
-    private function newServiceUser(string $name, ?string $email): ServiceUser
+    private function newServiceUser(string $name, ?string $email): User
     {
-        $serviceUser = new ServiceUser();
+        $serviceUser = User::newServiceUser();
         $serviceUser->setParentId(0);
         $serviceUser->setName($name);
         $serviceUser->setEmail($email);
@@ -187,7 +186,7 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
      * @throws NotFoundException
      */
     private function applyAuthorization(
-        ServiceUser $serviceUser,
+        User $serviceUser,
         array $permissions,
         array $roles,
         array $classes,
@@ -202,7 +201,7 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
     /**
      * @throws Exception
      */
-    private function cloneWorkspaces(User $source, ServiceUser $serviceUser): void
+    private function cloneWorkspaces(User $source, User $serviceUser): void
     {
         $serviceUserId = (int) $serviceUser->getId();
 

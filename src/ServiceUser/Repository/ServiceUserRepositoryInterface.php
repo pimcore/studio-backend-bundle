@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Model\User\ServiceUser;
+use Pimcore\Model\User;
 
 /**
  * @internal
@@ -24,25 +24,25 @@ use Pimcore\Model\User\ServiceUser;
 interface ServiceUserRepositoryInterface
 {
     /**
-     * @return ServiceUser[]
+     * @return User[]
      */
     public function listServiceUsers(): array;
 
     /**
      * @throws NotFoundException when the id is unknown or belongs to a human user, a role or a folder
      */
-    public function getServiceUser(int $id): ServiceUser;
+    public function getServiceUser(int $id): User;
 
     /**
      * @throws ElementExistsException when a user or service user already has the name
      * @throws DatabaseException
      */
-    public function saveServiceUser(ServiceUser $serviceUser): void;
+    public function saveServiceUser(User $serviceUser): void;
 
     /**
      * @throws DatabaseException
      */
-    public function deleteServiceUser(ServiceUser $serviceUser): void;
+    public function deleteServiceUser(User $serviceUser): void;
 
     /**
      * Whether the name belongs to a service user. False for a human user, a role, a folder or an unknown name.

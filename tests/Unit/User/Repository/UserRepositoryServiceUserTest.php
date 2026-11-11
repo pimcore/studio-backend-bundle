@@ -21,7 +21,6 @@ use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepository;
 use Pimcore\Model\User;
-use Pimcore\Model\User\ServiceUser;
 
 /**
  * Permission, role and MCP server access assignments resolve users by id or name; service
@@ -34,7 +33,7 @@ final class UserRepositoryServiceUserTest extends Unit
     public function testUsersByIdsIncludeServiceUsers(): void
     {
         $human = $this->user(new User(), 1, 'jane');
-        $serviceUser = $this->user(new ServiceUser(), 7, 'svc-erp-sync');
+        $serviceUser = $this->user(User::newServiceUser(), 7, 'svc-erp-sync');
 
         $connection = $this->makeEmpty(Connection::class, [
             'fetchFirstColumn' => Expected::once(
@@ -63,7 +62,7 @@ final class UserRepositoryServiceUserTest extends Unit
     public function testUsersByNamesIncludeServiceUsers(): void
     {
         $human = $this->user(new User(), 1, 'jane');
-        $serviceUser = $this->user(new ServiceUser(), 7, 'svc-erp-sync');
+        $serviceUser = $this->user(User::newServiceUser(), 7, 'svc-erp-sync');
 
         $connection = $this->makeEmpty(Connection::class, [
             'fetchFirstColumn' => Expected::once(

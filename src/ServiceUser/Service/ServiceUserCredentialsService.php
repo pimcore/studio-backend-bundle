@@ -19,7 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\ServiceUserClientException;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Service\ServiceUserClientServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUserCredentials;
-use Pimcore\Model\User\ServiceUser;
+use Pimcore\Model\User;
 
 /**
  * @internal
@@ -33,7 +33,7 @@ final readonly class ServiceUserCredentialsService implements ServiceUserCredent
     ) {
     }
 
-    public function register(ServiceUser $serviceUser, ?array $scopes): ServiceUserCredentials
+    public function register(User $serviceUser, ?array $scopes): ServiceUserCredentials
     {
         try {
             $credentials = $this->clientService->register(
@@ -52,7 +52,7 @@ final readonly class ServiceUserCredentialsService implements ServiceUserCredent
         );
     }
 
-    public function rotate(ServiceUser $serviceUser): ServiceUserCredentials
+    public function rotate(User $serviceUser): ServiceUserCredentials
     {
         $id = (int) $serviceUser->getId();
 

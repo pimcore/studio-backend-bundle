@@ -18,7 +18,6 @@ use LogicException;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Identity\EmbeddedIdentityResolver;
 use Pimcore\Model\User;
-use Pimcore\Model\User\ServiceUser;
 
 final class EmbeddedIdentityResolverTest extends Unit
 {
@@ -42,7 +41,7 @@ final class EmbeddedIdentityResolverTest extends Unit
      */
     public function testResolvesAServiceUserSubjectToTheServiceUser(): void
     {
-        $serviceUser = new ServiceUser();
+        $serviceUser = User::newServiceUser();
         $serviceUser->setId(77);
         $serviceUser->setActive(true);
         $authResolver = $this->createMock(AuthenticationResolverInterface::class);
@@ -55,7 +54,7 @@ final class EmbeddedIdentityResolverTest extends Unit
 
         $resolved = $resolver->resolve('77');
 
-        $this->assertInstanceOf(ServiceUser::class, $resolved);
+        $this->assertTrue($resolved->isServiceUser());
         $this->assertSame($serviceUser, $resolved);
     }
 

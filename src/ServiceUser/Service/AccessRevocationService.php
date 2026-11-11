@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service;
 
+use InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccess;
@@ -22,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryI
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ServiceUserClientStoreInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStoreInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenServiceInterface;
-use Pimcore\Model\User\ServiceUser;
+use Pimcore\Model\User;
 use Psr\Log\LoggerInterface;
 use function count;
 
@@ -43,8 +44,12 @@ final readonly class AccessRevocationService implements AccessRevocationServiceI
     /**
      * @throws NotFoundException
      */
-    public function revokeAll(ServiceUser $serviceUser): void
+    public function revokeAll(User $serviceUser): void
     {
+        if (!$serviceUser->isServiceUser()) {
+            throw new InvalidArgumentException('Expected a service user, got a person: ' . (string) $serviceUser->getName());
+        }
+
         $id = $serviceUser->getId();
         if ($id !== null) {
             $this->clientStore->deleteByServiceUserId($id);

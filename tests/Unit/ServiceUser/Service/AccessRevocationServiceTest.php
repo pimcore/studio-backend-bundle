@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\AccessRevocationServi
 use Pimcore\Bundle\StudioBackendBundle\Tests\Support\Fixture\InMemoryMcpServerConfigRepository;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Support\Fixture\InMemoryOAuthClientStore;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Support\Fixture\InMemoryOAuthTokenRecordStore;
-use Pimcore\Model\User\ServiceUser;
+use Pimcore\Model\User;
 use Psr\Log\NullLogger;
 
 /**
@@ -216,9 +216,9 @@ final class AccessRevocationServiceTest extends Unit
         );
     }
 
-    private function serviceUser(int $id, string $name): ServiceUser
+    private function serviceUser(int $id, string $name): User
     {
-        $serviceUser = new ServiceUser();
+        $serviceUser = User::newServiceUser();
         $serviceUser->setId($id);
         $serviceUser->setName($name);
 

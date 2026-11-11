@@ -6,7 +6,7 @@ description: Machine identities for integrations, agents and pipelines, managed 
 # Service Users
 
 A service user is a machine identity for an integration, an agent, an MCP client or a pipeline. It is a Pimcore
-user of type `serviceuser` (`Pimcore\Model\User\ServiceUser`) and is authorized like a user: permissions, roles,
+user of type `serviceuser` (a `Pimcore\Model\User` whose `isServiceUser()` is true) and is authorized like a user: permissions, roles,
 workspaces, class and document type restrictions and MCP server Access apply to it. It differs from a human user:
 
 - It is never an administrator, has no usable password (the core stores an unusable random value) and no two-factor

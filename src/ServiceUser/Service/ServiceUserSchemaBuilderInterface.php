@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUser as ServiceUserSchema;
-use Pimcore\Model\User\ServiceUser;
+use Pimcore\Model\User;
 
 /**
  * @internal
@@ -22,7 +22,7 @@ use Pimcore\Model\User\ServiceUser;
 interface ServiceUserSchemaBuilderInterface
 {
     /**
-     * @param list<ServiceUser> $serviceUsers
+     * @param list<User> $serviceUsers
      *
      * @return list<ServiceUserSchema>
      */
@@ -32,5 +32,5 @@ interface ServiceUserSchemaBuilderInterface
      * @param array<int, array{active: int, latestExpiresAt: int}>|null $summaries token summaries by user id,
      *     fetched for all users at once by buildAll(); null makes this user's own query
      */
-    public function build(ServiceUser $serviceUser, ?array $summaries = null): ServiceUserSchema;
+    public function build(User $serviceUser, ?array $summaries = null): ServiceUserSchema;
 }

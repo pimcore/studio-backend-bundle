@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\AccessRevocationServi
 use Pimcore\Event\Model\UserRoleEvent;
 use Pimcore\Event\UserRoleEvents;
 use Pimcore\Model\User;
-use Pimcore\Model\User\ServiceUser;
 
 /**
  * @internal
@@ -34,11 +33,11 @@ final class ServiceUserDeletionSubscriberTest extends Unit
 
     public function testRevokesEverythingWhenAServiceUserIsDeleted(): void
     {
-        $serviceUser = new ServiceUser();
+        $serviceUser = User::newServiceUser();
         $serviceUser->setId(7);
 
         $revocation = $this->makeEmpty(AccessRevocationServiceInterface::class, [
-            'revokeAll' => Expected::once(function (ServiceUser $revoked) use ($serviceUser): void {
+            'revokeAll' => Expected::once(function (User $revoked) use ($serviceUser): void {
                 $this->assertSame($serviceUser, $revoked);
             }),
         ]);

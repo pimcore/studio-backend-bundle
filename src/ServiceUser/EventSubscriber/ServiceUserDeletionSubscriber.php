@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ServiceUser\EventSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\AccessRevocationServiceInterface;
 use Pimcore\Event\Model\UserRoleEvent;
 use Pimcore\Event\UserRoleEvents;
-use Pimcore\Model\User\ServiceUser;
+use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -43,7 +43,7 @@ final readonly class ServiceUserDeletionSubscriber implements EventSubscriberInt
     public function onPreDelete(UserRoleEvent $event): void
     {
         $user = $event->getUserRole();
-        if (!$user instanceof ServiceUser) {
+        if (!$user instanceof User || !$user->isServiceUser()) {
             return;
         }
 

@@ -42,7 +42,6 @@ use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneServiceInterface;
 use Pimcore\Model\User;
-use Pimcore\Model\User\ServiceUser;
 use Pimcore\Model\User\Workspace\Asset as AssetWorkspace;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -53,10 +52,10 @@ final class ServiceUserServiceTest extends Unit
 {
     private const string SECRET = 'plain-secret';
 
-    /** @var list<ServiceUser> */
+    /** @var list<User> */
     private array $saved = [];
 
-    /** @var list<ServiceUser> */
+    /** @var list<User> */
     private array $deleted = [];
 
     /** @var list<array{int, string, list<string>}> */
@@ -236,7 +235,7 @@ final class ServiceUserServiceTest extends Unit
 
     public function testCreateFromAServiceUserIsRefused(): void
     {
-        $source = new ServiceUser();
+        $source = User::newServiceUser();
         $source->setId(9);
 
         $service = $this->service(userRepository: $this->userRepository($source));
@@ -461,7 +460,7 @@ final class ServiceUserServiceTest extends Unit
             ]),
             new ServiceUserCredentialsService(
                 $clientService ?? $this->makeEmpty(ServiceUserClientServiceInterface::class, [
-                    'register' => function (ServiceUser $serviceUser, string $name, array $scopes): ClientCredentials {
+                    'register' => function (User $serviceUser, string $name, array $scopes): ClientCredentials {
                         $this->registered[] = [$serviceUser->getId(), $name, $scopes];
 
                         return new ClientCredentials('svc_client', self::SECRET);
@@ -484,7 +483,7 @@ final class ServiceUserServiceTest extends Unit
                 ]),
                 $this->makeEmpty(ServiceUserHydratorInterface::class, [
                     'hydrate' => static fn (
-                        ServiceUser $serviceUser,
+                        User $serviceUser,
                         ?string $clientId,
                         ServiceUserMcpTokens $mcpTokens
                     ): ServiceUserSchema => new ServiceUserSchema(
@@ -512,18 +511,18 @@ final class ServiceUserServiceTest extends Unit
         );
     }
 
-    private function repository(?ServiceUser $existing = null): ServiceUserRepositoryInterface
+    private function repository(?User $existing = null): ServiceUserRepositoryInterface
     {
         return $this->makeEmpty(ServiceUserRepositoryInterface::class, [
-            'getServiceUser' => static fn (int $id): ServiceUser => $existing
+            'getServiceUser' => static fn (int $id): User => $existing
                 ?? throw new NotFoundException('Service user', $id),
-            'saveServiceUser' => function (ServiceUser $serviceUser): void {
+            'saveServiceUser' => function (User $serviceUser): void {
                 if ($serviceUser->getId() === null) {
                     $serviceUser->setId(42);
                 }
                 $this->saved[] = $serviceUser;
             },
-            'deleteServiceUser' => function (ServiceUser $serviceUser): void {
+            'deleteServiceUser' => function (User $serviceUser): void {
                 $this->deleted[] = $serviceUser;
             },
         ]);
@@ -557,9 +556,9 @@ final class ServiceUserServiceTest extends Unit
         return $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => $user]);
     }
 
-    private function serviceUser(): ServiceUser
+    private function serviceUser(): User
     {
-        $serviceUser = new ServiceUser();
+        $serviceUser = User::newServiceUser();
         $serviceUser->setId(42);
         $serviceUser->setName('svc-erp-sync');
         $serviceUser->setActive(true);

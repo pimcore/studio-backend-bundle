@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service;
 
-use Pimcore\Model\User\ServiceUser;
+use Pimcore\Model\User;
 
 /**
  * Takes away every credential and every MCP server grant a service user holds.
@@ -27,5 +27,5 @@ interface AccessRevocationServiceInterface
      * access tokens, and removes the user's entries from every writeable MCP server's access
      * list. Access is matched by name, so a later user with the same name inherits nothing.
      */
-    public function revokeAll(ServiceUser $serviceUser): void;
+    public function revokeAll(User $serviceUser): void;
 }

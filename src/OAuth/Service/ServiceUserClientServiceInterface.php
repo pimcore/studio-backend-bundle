@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ClientCredentials;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\ServiceUserClientException;
-use Pimcore\Model\User\ServiceUser;
+use Pimcore\Model\User;
 
 /**
  * Manages the one confidential client_credentials client bound to a service user.
@@ -33,7 +33,7 @@ interface ServiceUserClientServiceInterface
      * @throws ServiceUserClientException when the service user is unsaved, already has a
      *                                    client, or a scope is unknown
      */
-    public function register(ServiceUser $serviceUser, string $name, array $scopes): ClientCredentials;
+    public function register(User $serviceUser, string $name, array $scopes): ClientCredentials;
 
     /**
      * Replaces the client's secret. The previous secret stops validating at once; tokens
@@ -41,5 +41,5 @@ interface ServiceUserClientServiceInterface
      *
      * @throws ServiceUserClientException when the service user has no client
      */
-    public function rotateSecret(ServiceUser $serviceUser): ClientCredentials;
+    public function rotateSecret(User $serviceUser): ClientCredentials;
 }

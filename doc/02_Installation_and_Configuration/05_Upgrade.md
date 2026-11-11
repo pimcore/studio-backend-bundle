@@ -7,10 +7,10 @@ The following steps are necessary during updating to newer versions.
   handled by `PatAuthenticator`). They keep working on 2026.x; configuring them and each request they authenticate
   raise a deprecation. They are removed in 2027.1. Migrate integrations to MCP access tokens issued for a dedicated
   Pimcore user (`McpAccessTokenServiceInterface::issue()`), and people to OAuth `authorization_code`. See [MCP Server](../04_Development_Details/08_MCP_Server.md#patauthenticator-external-clients---deprecated).
-- [Service Users] Added: machine identities, a Pimcore user of type `serviceuser` (`Pimcore\Model\User\ServiceUser`),
+- [Service Users] Added: machine identities, a Pimcore user of type `serviceuser` (a `Pimcore\Model\User` whose `isServiceUser()` is true),
   managed through the new "Service User Management" endpoints and the console command
   `studio-backend-bundle:service-user:mcp-token`. Everything is additive: no existing endpoint, schema or user type
-  changes. The service-user endpoints need a core release that provides `Pimcore\Model\User\ServiceUser`; the 2026.x
+  changes. The service-user endpoints need a core release that provides `User::newServiceUser()`; the 2026.x
   core checked for this entry did not yet have it. See [Service Users](./08_Service_Users.md).
 - [Service Users] Semantic notes, for code that works with users:
   - A service user never logs in with a password. Setting one or setting it as an administrator is refused on the
@@ -22,8 +22,8 @@ The following steps are necessary during updating to newer versions.
     user is reached by its id, and its name is unique across humans and service users. Nothing converts one kind into
     the other: creating a service user from a human copies permissions, roles and workspaces and leaves the human
     unchanged.
-  - `User::getById()` returns a `ServiceUser` for a service-user id. Code that assumes an id always names a human must
-    check `instanceof ServiceUser` first.
+  - `User::getById()` returns the `User` for a service-user id as for any user id, with `isServiceUser()` true. Code that
+    assumes an id always names a human must call `isServiceUser()` first.
 - [Service Users] MCP server sharing: a service user's entry in `access.shared_users` is stored with `canRead` and `canEdit` false, whatever the client sent; `canAccess` is kept as sent. See [MCP Server Management](../04_Development_Details/09_MCP_Server_Management.md#access-and-sharing).
 - [Service Users] Added: the service-user schema (`GET /pimcore-studio/api/service-users` and
   `/service-user/{id}`, and the responses that return it) carries `clientCredentialsEnabled` (whether the OAuth

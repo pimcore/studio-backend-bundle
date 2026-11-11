@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ServiceUser\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUser as ServiceUserSchema;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUserMcpTokens;
-use Pimcore\Model\User\ServiceUser;
+use Pimcore\Model\User;
 
 /**
  * @internal
@@ -23,7 +23,7 @@ use Pimcore\Model\User\ServiceUser;
 interface ServiceUserHydratorInterface
 {
     public function hydrate(
-        ServiceUser $serviceUser,
+        User $serviceUser,
         ?string $clientId,
         ServiceUserMcpTokens $mcpTokens
     ): ServiceUserSchema;

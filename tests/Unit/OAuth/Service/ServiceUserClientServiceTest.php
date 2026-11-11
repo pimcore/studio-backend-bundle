@@ -19,7 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceReg
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Service\ServiceUserClientService;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Support\Fixture\InMemoryOAuthClientStore;
-use Pimcore\Model\User\ServiceUser;
+use Pimcore\Model\User;
 use function hash;
 use function strlen;
 
@@ -84,7 +84,7 @@ final class ServiceUserClientServiceTest extends Unit
     public function testAnUnsavedServiceUserCannotBeBound(): void
     {
         $this->expectException(ServiceUserClientException::class);
-        $this->service->register(new ServiceUser(), 'Pipeline', []);
+        $this->service->register(User::newServiceUser(), 'Pipeline', []);
     }
 
     public function testAnUnknownScopeIsRefused(): void
@@ -111,9 +111,9 @@ final class ServiceUserClientServiceTest extends Unit
         $this->service->rotateSecret($this->serviceUser(77));
     }
 
-    private function serviceUser(int $id): ServiceUser
+    private function serviceUser(int $id): User
     {
-        $user = new ServiceUser();
+        $user = User::newServiceUser();
         $user->setId($id);
         $user->setActive(true);
 

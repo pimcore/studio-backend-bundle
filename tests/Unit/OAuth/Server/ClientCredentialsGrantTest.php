@@ -40,7 +40,6 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Service\ServiceUserClientService;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Support\Fixture\InMemoryOAuthClientStore;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Support\Fixture\InMemoryOAuthTokenRecordStore;
 use Pimcore\Model\User;
-use Pimcore\Model\User\ServiceUser;
 use Pimcore\Model\UserInterface;
 use function hash;
 use function json_decode;
@@ -101,7 +100,7 @@ final class ClientCredentialsGrantTest extends Unit
         $this->clientStore = new InMemoryOAuthClientStore();
         $this->clientStore->save($this->boundClient(self::BOUND_CLIENT, self::SERVICE_USER_ID, self::SECRET));
 
-        $serviceUser = new ServiceUser();
+        $serviceUser = User::newServiceUser();
         $serviceUser->setId(self::SERVICE_USER_ID);
         $serviceUser->setActive(true);
         $this->users = [self::SERVICE_USER_ID => $serviceUser];
@@ -328,7 +327,7 @@ final class ClientCredentialsGrantTest extends Unit
     public function testARotatedSecretInvalidatesTheOldOneAtOnce(): void
     {
         $serviceUser = $this->users[self::SERVICE_USER_ID];
-        $this->assertInstanceOf(ServiceUser::class, $serviceUser);
+        $this->assertTrue($serviceUser->isServiceUser());
 
         $service = new ServiceUserClientService($this->clientStore, $this->scopeRegistry());
         $rotated = $service->rotateSecret($serviceUser);
@@ -348,7 +347,7 @@ final class ClientCredentialsGrantTest extends Unit
 
     public function testARegisteredClientWorksWithTheSecretShownOnce(): void
     {
-        $other = new ServiceUser();
+        $other = User::newServiceUser();
         $other->setId(78);
         $other->setActive(true);
         $this->users[78] = $other;

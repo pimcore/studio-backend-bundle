@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUserCredentials;
-use Pimcore\Model\User\ServiceUser;
+use Pimcore\Model\User;
 
 /**
  * @internal
@@ -28,10 +28,10 @@ interface ServiceUserCredentialsServiceInterface
      *
      * @throws InvalidArgumentException
      */
-    public function register(ServiceUser $serviceUser, ?array $scopes): ServiceUserCredentials;
+    public function register(User $serviceUser, ?array $scopes): ServiceUserCredentials;
 
     /**
      * @throws NotFoundException
      */
-    public function rotate(ServiceUser $serviceUser): ServiceUserCredentials;
+    public function rotate(User $serviceUser): ServiceUserCredentials;
 }

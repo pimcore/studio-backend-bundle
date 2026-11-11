@@ -13,12 +13,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Service;
 
+use InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ClientCredentials;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\DynamicClient;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\ServiceUserClientException;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ServiceUserClientStoreInterface;
-use Pimcore\Model\User\ServiceUser;
+use Pimcore\Model\User;
 use function bin2hex;
 use function hash;
 use function random_bytes;
@@ -39,8 +40,12 @@ final readonly class ServiceUserClientService implements ServiceUserClientServic
     ) {
     }
 
-    public function register(ServiceUser $serviceUser, string $name, array $scopes): ClientCredentials
+    public function register(User $serviceUser, string $name, array $scopes): ClientCredentials
     {
+        if (!$serviceUser->isServiceUser()) {
+            throw new InvalidArgumentException('Expected a service user, got a person: ' . (string) $serviceUser->getName());
+        }
+
         $serviceUserId = $this->serviceUserId($serviceUser);
 
         if ($this->store->findByServiceUserId($serviceUserId) !== null) {
@@ -70,8 +75,12 @@ final readonly class ServiceUserClientService implements ServiceUserClientServic
         return new ClientCredentials($clientId, $secret);
     }
 
-    public function rotateSecret(ServiceUser $serviceUser): ClientCredentials
+    public function rotateSecret(User $serviceUser): ClientCredentials
     {
+        if (!$serviceUser->isServiceUser()) {
+            throw new InvalidArgumentException('Expected a service user, got a person: ' . (string) $serviceUser->getName());
+        }
+
         $client = $this->store->findByServiceUserId($this->serviceUserId($serviceUser));
         if ($client === null) {
             throw new ServiceUserClientException('This service user has no client.');
@@ -83,7 +92,7 @@ final readonly class ServiceUserClientService implements ServiceUserClientServic
         return new ClientCredentials($client->identifier, $secret);
     }
 
-    private function serviceUserId(ServiceUser $serviceUser): int
+    private function serviceUserId(User $serviceUser): int
     {
         $id = $serviceUser->getId();
         if ($id === null) {

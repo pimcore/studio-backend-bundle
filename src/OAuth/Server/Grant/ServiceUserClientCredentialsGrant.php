@@ -27,7 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\AccessTokenEntity;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\ClientEntity;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\ScopeEntity;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
-use Pimcore\Model\User\ServiceUser;
+use Pimcore\Model\User;
 use Psr\Http\Message\ServerRequestInterface;
 use function array_diff;
 use function array_filter;
@@ -131,7 +131,9 @@ final class ServiceUserClientCredentialsGrant extends ClientCredentialsGrant
         // The resolver applies the same validity check as every protected resource does
         // (active, existing); the type check keeps a binding to a human user from ever
         // minting a token for that human.
-        return $this->identityResolver->resolve((string) $serviceUserId) instanceof ServiceUser;
+        $user = $this->identityResolver->resolve((string) $serviceUserId);
+
+        return $user instanceof User && $user->isServiceUser();
     }
 
     /**

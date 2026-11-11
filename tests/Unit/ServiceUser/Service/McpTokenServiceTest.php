@@ -20,7 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository\ServiceUserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\McpTokenService;
-use Pimcore\Model\User\ServiceUser;
+use Pimcore\Model\User;
 use function time;
 
 /**
@@ -118,14 +118,14 @@ final class McpTokenServiceTest extends Unit
         (new McpTokenService($this->repository($this->serviceUser(active: true)), $tokens))->revokeTokens(7);
     }
 
-    private function repository(ServiceUser $serviceUser): ServiceUserRepositoryInterface
+    private function repository(User $serviceUser): ServiceUserRepositoryInterface
     {
         return $this->makeEmpty(ServiceUserRepositoryInterface::class, ['getServiceUser' => $serviceUser]);
     }
 
-    private function serviceUser(bool $active): ServiceUser
+    private function serviceUser(bool $active): User
     {
-        $serviceUser = new ServiceUser();
+        $serviceUser = User::newServiceUser();
         $serviceUser->setId(7);
         $serviceUser->setActive($active);
 
