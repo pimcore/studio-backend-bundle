@@ -305,12 +305,7 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
             foreach ($references as $field => $target) {
                 $identifier = $entry[$field] ?? null;
 
-                // an empty sub group is no sub group: the apply side reports it as that one entry's
-                // conflict, and a retry cannot make it exist
-                $unset = $identifier === null
-                    || ($field === ArtifactField::SUB_GROUP->value && $identifier === '');
-
-                if ($unset || isset($written[$target->value][(string) $identifier])) {
+                if ($identifier === null || isset($written[$target->value][(string) $identifier])) {
                     continue;
                 }
 

@@ -82,15 +82,17 @@ final class ArtifactBuilderMemoryTest extends Unit
         $store->setIdentifier('STORE');
         $store->setName('ETIM');
 
+        $before = memory_get_peak_usage(true);
         $bytes = 0;
         foreach ($builder->stream($store) as $piece) {
             $bytes += strlen($piece);
         }
 
         fwrite(STDERR, sprintf(
-            "\nAC9 padding=%d document=%d bytes peak=%d bytes\n",
+            "\nAC9 padding=%d document=%d bytes peak before=%d after=%d bytes\n",
             strlen($padding),
             $bytes,
+            $before,
             memory_get_peak_usage(true)
         ));
         $this->assertGreaterThan(0, $bytes);

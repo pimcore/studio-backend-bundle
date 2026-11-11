@@ -191,14 +191,15 @@ final class ArtifactBuilderTest extends Unit
     }
 
     /**
-     * An empty `subGroup` is the value the create endpoint can write; the apply side reports it as that
-     * one entry's conflict, so the export carries it instead of refusing for good.
+     * An empty `subGroup` is the value the create endpoint can write; the artifact carries it as null,
+     * which is what it means, so that applying the file does not refuse that one assignment.
      */
     public function testAnAssignmentWithAnEmptySubGroupIsExportedNotRefused(): void
     {
         $document = $this->buildDocument(assignments: [$this->createKeyAssignment(subGroup: '')]);
 
         $this->assertCount(1, $document['keyGroupRelations']);
+        $this->assertNull($document['keyGroupRelations'][0]['subGroup']);
     }
 
     public function testACollectionRelationNamingAnUnwrittenCollectionOrGroupFailsTheExport(): void
