@@ -82,15 +82,32 @@ final class ExportStoreCommand extends Command
         $path = $input->getOption(self::OPTION_OUTPUT);
 
         if (!is_string($path) || $path === '') {
-            foreach ($artifact as $piece) {
-                // raw, because the artifact is JSON and carries no console markup
-                $output->write($piece, false, OutputInterface::OUTPUT_RAW);
+            try {
+                foreach ($artifact as $piece) {
+                    // raw, because the artifact is JSON and carries no console markup
+                    $output->write($piece, false, OutputInterface::OUTPUT_RAW);
+                }
+            } catch (AbstractApiException $e) {
+                return $this->reportInterruption($e, $io);
             }
 
             return Command::SUCCESS;
         }
 
         return $this->writeToFile($artifact, $path, $io);
+    }
+
+    private function reportInterruption(AbstractApiException $e, SymfonyStyle $io, ?string $path = null): int
+    {
+        $io->getErrorStyle()->error($e->getMessage());
+
+        if ($path !== null) {
+            $io->getErrorStyle()->warning(
+                sprintf('The file at "%s" is incomplete and must not be applied.', $path)
+            );
+        }
+
+        return Command::FAILURE;
     }
 
     /**
@@ -117,6 +134,8 @@ final class ExportStoreCommand extends Command
                     return Command::FAILURE;
                 }
             }
+        } catch (AbstractApiException $e) {
+            return $this->reportInterruption($e, $io, $path);
         } finally {
             fclose($handle);
         }

@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Command;
 
 use Codeception\Test\Unit;
+use Generator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Command\ExportStoreCommand;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreTransferServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -70,6 +72,32 @@ final class ExportStoreCommandTest extends Unit
         $this->assertStringContainsString('Could not write', $tester->getDisplay());
     }
 
+    /**
+     * The refusal is raised while the artifact is iterated, after the store resolved: it is reported,
+     * and the file the operator named is left behind with a note that it is incomplete.
+     */
+    public function testAFailureWhileIteratingIsReportedAndTheFileIsMarkedIncomplete(): void
+    {
+        $tester = $this->createTester($this->interrupted());
+        $status = $tester->execute(['store' => '1', '--output' => self::PATH], ['capture_stderr_separately' => true]);
+
+        $this->assertSame(Command::FAILURE, $status);
+        $this->assertStringContainsString('names a group', $tester->getErrorOutput());
+        $this->assertStringContainsString('incomplete', $tester->getErrorOutput());
+        $this->assertStringContainsString(self::PATH, $tester->getErrorOutput());
+        $this->assertSame('{"store":{}', ShortWriteStream::$written);
+    }
+
+    public function testAFailureWhileWritingToStdoutIsReportedWithoutAFileWarning(): void
+    {
+        $tester = $this->createTester($this->interrupted());
+        $status = $tester->execute(['store' => '1'], ['capture_stderr_separately' => true]);
+
+        $this->assertSame(Command::FAILURE, $status);
+        $this->assertStringContainsString('names a group', $tester->getErrorOutput());
+        $this->assertStringNotContainsString('incomplete', $tester->getErrorOutput());
+    }
+
     protected function _before(): void
     {
         ShortWriteStream::reset();
@@ -81,14 +109,22 @@ final class ExportStoreCommandTest extends Unit
         stream_wrapper_unregister(self::SCHEME);
     }
 
-    private function createTester(): CommandTester
+    private function interrupted(): Generator
+    {
+        yield '{"store":';
+        yield '{}';
+
+        throw new ConflictException('key assignment "G -> K": it names a group');
+    }
+
+    private function createTester(iterable $artifact = self::ARTIFACT): CommandTester
     {
         $store = new StoreConfig();
         $store->setId(1);
 
         $service = $this->makeEmpty(StoreTransferServiceInterface::class, [
             'resolveStore' => $store,
-            'exportStore' => self::ARTIFACT,
+            'exportStore' => $artifact,
         ]);
 
         return new CommandTester(new ExportStoreCommand($service));

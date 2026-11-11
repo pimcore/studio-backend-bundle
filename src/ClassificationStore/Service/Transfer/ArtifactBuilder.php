@@ -24,13 +24,17 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactField;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
+use function array_map;
 use function count;
+use function implode;
 use function json_encode;
 use function sprintf;
 use function strcmp;
@@ -41,6 +45,18 @@ use function strcmp;
 final readonly class ArtifactBuilder implements ArtifactBuilderInterface
 {
     private const int CHUNK_SIZE = 200;
+
+    /**
+     * What an entry of each section is called in a failure, in the words the apply side reports it in.
+     */
+    private const array SECTION_LEVELS = [
+        'subGroups' => 'sub group',
+        'collections' => 'collection',
+        'groups' => 'group',
+        'keys' => 'key',
+        'collectionGroupRelations' => 'collection group relation',
+        'keyGroupRelations' => 'key assignment',
+    ];
 
     public function __construct(
         private ArtifactEntryMapperInterface $entryMapper,
@@ -59,6 +75,7 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
     public function stream(StoreConfig $store): iterable
     {
         $storeId = (int) $store->getId();
+        $written = [];
 
         yield '{' . $this->encodeMember(
             ArtifactSection::STORE->value,
@@ -67,48 +84,80 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
 
         yield from $this->streamSection(
             ArtifactSection::SUB_GROUPS,
-            $this->walk(
-                fn (?SubGroupConfig $after, int $limit): array => $this->subGroupRepository
-                    ->getChunkAfterIdentifier($storeId, $after?->getIdentifier(), (int) $after?->getId(), $limit),
-                $this->entryMapper->mapSubGroup(...)
+            $this->remember(
+                ArtifactSection::SUB_GROUPS,
+                $this->walk(
+                    fn (?SubGroupConfig $after, int $limit): array => $this->subGroupRepository
+                        ->getChunkAfterIdentifier($storeId, $after?->getIdentifier(), (int) $after?->getId(), $limit),
+                    $this->entryMapper->mapSubGroup(...)
+                ),
+                $written
             )
         );
 
         yield from $this->streamSection(
             ArtifactSection::COLLECTIONS,
-            $this->walk(
-                fn (?CollectionConfig $after, int $limit): array => $this->collectionRepository
-                    ->getChunkAfterIdentifier($storeId, $after?->getIdentifier(), (int) $after?->getId(), $limit),
-                $this->entryMapper->mapCollection(...)
+            $this->remember(
+                ArtifactSection::COLLECTIONS,
+                $this->walk(
+                    fn (?CollectionConfig $after, int $limit): array => $this->collectionRepository
+                        ->getChunkAfterIdentifier($storeId, $after?->getIdentifier(), (int) $after?->getId(), $limit),
+                    $this->entryMapper->mapCollection(...)
+                ),
+                $written
             )
         );
 
         yield from $this->streamSection(
             ArtifactSection::GROUPS,
-            $this->walk(
-                fn (?GroupConfig $after, int $limit): array => $this->groupRepository
-                    ->getChunkAfterIdentifier($storeId, $after?->getIdentifier(), (int) $after?->getId(), $limit),
-                $this->entryMapper->mapGroup(...)
+            $this->remember(
+                ArtifactSection::GROUPS,
+                $this->walk(
+                    fn (?GroupConfig $after, int $limit): array => $this->groupRepository
+                        ->getChunkAfterIdentifier($storeId, $after?->getIdentifier(), (int) $after?->getId(), $limit),
+                    $this->entryMapper->mapGroup(...)
+                ),
+                $written
             )
         );
 
-        yield from $this->streamSection(ArtifactSection::KEYS, $this->walkEveryKey($storeId));
+        yield from $this->streamSection(
+            ArtifactSection::KEYS,
+            $this->remember(ArtifactSection::KEYS, $this->walkEveryKey($storeId), $written)
+        );
 
         yield from $this->streamSection(
             ArtifactSection::COLLECTION_GROUP_RELATIONS,
-            $this->walk(
-                fn (?ScopedCollectionRelation $after, int $limit): array => $this->collectionRelationRepository
-                    ->getChunkAfter($storeId, $after, $limit),
-                $this->entryMapper->mapCollectionRelation(...)
+            $this->resolve(
+                ArtifactSection::COLLECTION_GROUP_RELATIONS,
+                $this->walk(
+                    fn (?ScopedCollectionRelation $after, int $limit): array => $this->collectionRelationRepository
+                        ->getChunkAfter($storeId, $after, $limit),
+                    $this->entryMapper->mapCollectionRelation(...)
+                ),
+                [
+                    ArtifactField::COLLECTION->value => ArtifactSection::COLLECTIONS,
+                    ArtifactField::GROUP->value => ArtifactSection::GROUPS,
+                ],
+                $written
             )
         );
 
         yield from $this->streamSection(
             ArtifactSection::KEY_GROUP_RELATIONS,
-            $this->walk(
-                fn (?ScopedKeyAssignment $after, int $limit): array => $this->keyGroupRelationRepository
-                    ->getChunkAfter($storeId, $after, $limit),
-                $this->entryMapper->mapKeyAssignment(...)
+            $this->resolve(
+                ArtifactSection::KEY_GROUP_RELATIONS,
+                $this->walk(
+                    fn (?ScopedKeyAssignment $after, int $limit): array => $this->keyGroupRelationRepository
+                        ->getChunkAfter($storeId, $after, $limit),
+                    $this->entryMapper->mapKeyAssignment(...)
+                ),
+                [
+                    ArtifactField::GROUP->value => ArtifactSection::GROUPS,
+                    ArtifactField::KEY->value => ArtifactSection::KEYS,
+                    ArtifactField::SUB_GROUP->value => ArtifactSection::SUB_GROUPS,
+                ],
+                $written
             )
         );
 
@@ -212,6 +261,82 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
                 yield $item;
             }
         } while (count($items) === self::CHUNK_SIZE);
+    }
+
+    /**
+     * Passes every entry through and notes the identifier it carries, so that a relation section can
+     * be checked against what was actually written rather than against a second read.
+     *
+     * @param iterable<array<string, mixed>> $entries
+     * @param array<string, array<string, true>> $written
+     *
+     * @return Generator<array<string, mixed>>
+     */
+    private function remember(ArtifactSection $section, iterable $entries, array &$written): Generator
+    {
+        $written[$section->value] ??= [];
+
+        foreach ($entries as $entry) {
+            $identifier = $entry[ArtifactField::IDENTIFIER->value] ?? null;
+
+            if ($identifier !== null) {
+                $written[$section->value][(string) $identifier] = true;
+            }
+
+            yield $entry;
+        }
+    }
+
+    /**
+     * Passes every relation entry through once each reference it names was written to its section,
+     * and refuses at the first one that was not - before the entry is written.
+     *
+     * @param iterable<array<string, mixed>> $entries
+     * @param array<string, ArtifactSection> $references
+     * @param array<string, array<string, true>> $written
+     *
+     * @return Generator<array<string, mixed>>
+     *
+     * @throws ConflictException
+     */
+    private function resolve(ArtifactSection $section, iterable $entries, array $references, array &$written): Generator
+    {
+        foreach ($entries as $entry) {
+            foreach ($references as $field => $target) {
+                $identifier = $entry[$field] ?? null;
+
+                if ($identifier === null || isset($written[$target->value][(string) $identifier])) {
+                    continue;
+                }
+
+                throw new ConflictException($this->describeMissingReference($section, $entry, $field, $target));
+            }
+
+            yield $entry;
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $entry
+     */
+    private function describeMissingReference(
+        ArtifactSection $section,
+        array $entry,
+        string $field,
+        ArtifactSection $target
+    ): string {
+        $joined = $section === ArtifactSection::KEY_GROUP_RELATIONS
+            ? [ArtifactField::GROUP->value, ArtifactField::KEY->value]
+            : [ArtifactField::COLLECTION->value, ArtifactField::GROUP->value];
+
+        return sprintf(
+            '%s "%s": it names the %s "%s", which exists neither in the file nor in the store. '
+            . 'The store configuration changed while it was being exported; run the export again.',
+            self::SECTION_LEVELS[$section->value],
+            implode(' -> ', array_map(static fn (string $name): string => (string) $entry[$name], $joined)),
+            self::SECTION_LEVELS[$target->value],
+            (string) $entry[$field]
+        );
     }
 
     /**

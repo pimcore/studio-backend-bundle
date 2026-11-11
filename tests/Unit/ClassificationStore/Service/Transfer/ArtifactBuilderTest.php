@@ -23,8 +23,11 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilder;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryMapper;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedCollectionRelation;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
 use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
@@ -54,6 +57,10 @@ final class ArtifactBuilderTest extends Unit
     private const string GROUP_IDENTIFIER = '01JBQ8X9Z0GROUPGROUPGROUP';
 
     private const string COLLECTION_IDENTIFIER = '01JBQ8X9Z0COLCOLCOLCOLCOL';
+
+    private const string UNWRITTEN = '01JBQ8X9Z0NEVERWRITTEN';
+
+    private const string KEY_IDENTIFIER = '01JA';
 
     /**
      * The order of the sections is the order an apply needs them in: every one of them resolves
@@ -134,7 +141,8 @@ final class ArtifactBuilderTest extends Unit
     {
         $document = $this->buildDocument(
             enabledKeys: ['00000000000000000000003E09'],
-            disabledKeys: ['00000000000000000000002E10']
+            disabledKeys: ['00000000000000000000002E10'],
+            assignments: [$this->createKeyAssignment(key: '00000000000000000000003E09')]
         );
 
         $this->assertSame(
@@ -144,18 +152,167 @@ final class ArtifactBuilderTest extends Unit
         $this->assertSame([false, true], array_column($document['keys'], 'enabled'));
     }
 
+    public function testAnAssignmentNamingAGroupThatWasNotWrittenFailsTheExport(): void
+    {
+        $message = $this->exportFailure(assignments: [$this->createKeyAssignment(self::UNWRITTEN)])['message'];
+
+        $this->assertStringContainsString(
+            'key assignment "' . self::UNWRITTEN . ' -> ' . self::KEY_IDENTIFIER . '"',
+            $message
+        );
+        $this->assertStringContainsString('the group "' . self::UNWRITTEN . '"', $message);
+        $this->assertStringContainsString('exists neither in the file nor in the store', $message);
+        $this->assertStringContainsString('run the export again', $message);
+    }
+
+    public function testAnAssignmentNamingAKeyNeitherWalkReturnedFailsTheExport(): void
+    {
+        $message = $this->exportFailure(
+            assignments: [$this->createKeyAssignment(self::GROUP_IDENTIFIER, self::UNWRITTEN)]
+        )['message'];
+
+        $this->assertStringContainsString('the key "' . self::UNWRITTEN . '"', $message);
+    }
+
+    public function testAnAssignmentToADisabledKeyIsConsistent(): void
+    {
+        $document = $this->buildDocument(assignments: [$this->createKeyAssignment(self::GROUP_IDENTIFIER, '01JB')]);
+
+        $this->assertCount(1, $document['keyGroupRelations']);
+    }
+
+    public function testAnAssignmentNamingASubGroupThatWasNotWrittenFailsTheExport(): void
+    {
+        $message = $this->exportFailure(
+            assignments: [$this->createKeyAssignment(subGroup: self::UNWRITTEN)]
+        )['message'];
+
+        $this->assertStringContainsString('the sub group "' . self::UNWRITTEN . '"', $message);
+    }
+
+    public function testACollectionRelationNamingAnUnwrittenCollectionOrGroupFailsTheExport(): void
+    {
+        $collection = $this->exportFailure(
+            collectionRelations: [$this->createCollectionRelation(self::UNWRITTEN)]
+        )['message'];
+        $group = $this->exportFailure(
+            collectionRelations: [$this->createCollectionRelation(self::COLLECTION_IDENTIFIER, self::UNWRITTEN)]
+        )['message'];
+
+        $this->assertStringContainsString('collection group relation', $collection);
+        $this->assertStringContainsString('the collection "' . self::UNWRITTEN . '"', $collection);
+        $this->assertStringContainsString('the group "' . self::UNWRITTEN . '"', $group);
+    }
+
+    /**
+     * The export stops at the first unresolvable entry: it is not written, nothing follows it, and the
+     * relation is not read again to find out.
+     */
+    public function testTheExportStopsAtTheFirstUnresolvableEntryWithoutReadingAgain(): void
+    {
+        $calls = 0;
+        $failure = $this->exportFailure(
+            assignments: [
+                $this->createKeyAssignment(self::UNWRITTEN),
+                $this->createKeyAssignment(),
+                $this->createKeyAssignment(),
+            ],
+            onAssignmentRead: static function () use (&$calls): void {
+                ++$calls;
+            }
+        );
+        $written = implode('', $failure['pieces']);
+
+        $this->assertSame(1, $calls);
+        $this->assertStringNotContainsString(self::UNWRITTEN, $written);
+        $this->assertStringEndsWith('"keyGroupRelations":[', $written);
+    }
+
+    /**
+     * What is written before the failure is neither JSON nor an artifact the apply side accepts.
+     */
+    public function testWhatWasWrittenBeforeTheFailureCannotBeApplied(): void
+    {
+        $failure = $this->exportFailure(assignments: [$this->createKeyAssignment(self::UNWRITTEN)]);
+        $written = implode('', $failure['pieces']);
+
+        $this->assertNull(json_decode($written));
+
+        $this->expectException(InvalidArgumentException::class);
+        (new ArtifactParser())->parse($written);
+    }
+
+    /**
+     * A NULL identifier is not an identifier: the empty string a relation's join coerces it to must not
+     * be taken for the entity that carries none.
+     */
+    public function testAnEntityWithoutAnIdentifierDoesNotSatisfyARelation(): void
+    {
+        $group = new GroupConfig();
+        $group->setId(41);
+        $group->setStoreId(self::STORE_ID);
+        $group->setName('Measurements');
+
+        $message = $this->exportFailure(
+            groups: [$group],
+            assignments: [$this->createKeyAssignment('')],
+            collectionRelations: []
+        )['message'];
+
+        $this->assertStringContainsString('the group ""', $message);
+    }
+
+    /**
+     * @param list<ScopedKeyAssignment>|null $assignments
+     * @param list<ScopedCollectionRelation>|null $collectionRelations
+     * @param list<GroupConfig>|null $groups
+     *
+     * @return array{message: string, pieces: list<string>}
+     */
+    private function exportFailure(
+        ?array $assignments = null,
+        ?array $collectionRelations = null,
+        ?array $groups = null,
+        ?callable $onAssignmentRead = null,
+    ): array {
+        $pieces = [];
+        $builder = $this->createBuilder(
+            ['01JA', '01JC'],
+            ['01JB', '01JD'],
+            $assignments,
+            $collectionRelations,
+            $groups,
+            $onAssignmentRead
+        );
+
+        try {
+            foreach ($builder->stream($this->createStore()) as $piece) {
+                $pieces[] = $piece;
+            }
+        } catch (ConflictException $e) {
+            return ['message' => $e->getMessage(), 'pieces' => $pieces];
+        }
+
+        $this->fail('The export was expected to fail.');
+    }
+
     /**
      * @param list<string> $enabledKeys
      * @param list<string> $disabledKeys
+     * @param list<ScopedKeyAssignment>|null $assignments
      *
      * @return array<string, mixed>
      */
-    private function buildDocument(?array $enabledKeys = null, ?array $disabledKeys = null): array
-    {
+    private function buildDocument(
+        ?array $enabledKeys = null,
+        ?array $disabledKeys = null,
+        ?array $assignments = null
+    ): array {
         $pieces = [];
         $builder = $this->createBuilder(
             $enabledKeys ?? ['01JA', '01JC'],
-            $disabledKeys ?? ['01JB', '01JD']
+            $disabledKeys ?? ['01JB', '01JD'],
+            $assignments
         );
 
         foreach ($builder->stream($this->createStore()) as $piece) {
@@ -168,9 +325,18 @@ final class ArtifactBuilderTest extends Unit
     /**
      * @param list<string> $enabledKeys
      * @param list<string> $disabledKeys
+     * @param list<ScopedKeyAssignment>|null $assignments
+     * @param list<ScopedCollectionRelation>|null $collectionRelations
+     * @param list<GroupConfig>|null $groups
      */
-    private function createBuilder(array $enabledKeys, array $disabledKeys): ArtifactBuilder
-    {
+    private function createBuilder(
+        array $enabledKeys,
+        array $disabledKeys,
+        ?array $assignments = null,
+        ?array $collectionRelations = null,
+        ?array $groups = null,
+        ?callable $onAssignmentRead = null,
+    ): ArtifactBuilder {
         $subGroupRepository = $this->createMock(SubGroupRepositoryInterface::class);
         $subGroupRepository->method('getChunkAfterIdentifier')->willReturn([$this->createSubGroup()]);
 
@@ -178,7 +344,7 @@ final class ArtifactBuilderTest extends Unit
         $collectionRepository->method('getChunkAfterIdentifier')->willReturn([$this->createCollection()]);
 
         $groupRepository = $this->createMock(GroupRepositoryInterface::class);
-        $groupRepository->method('getChunkAfterIdentifier')->willReturn([$this->createGroup()]);
+        $groupRepository->method('getChunkAfterIdentifier')->willReturn($groups ?? [$this->createGroup()]);
 
         // the enabled walk and the disabled walk, each already sorted by identifier
         $keyRepository = $this->createMock(KeyRepositoryInterface::class);
@@ -194,10 +360,20 @@ final class ArtifactBuilderTest extends Unit
         $collectionRelationRepository = $this->createMock(CollRelationRepositoryInterface::class);
         $collectionRelationRepository
             ->method('getChunkAfter')
-            ->willReturn([$this->createCollectionRelation()]);
+            ->willReturn($collectionRelations ?? [$this->createCollectionRelation()]);
 
         $keyGroupRelationRepository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
-        $keyGroupRelationRepository->method('getChunkAfter')->willReturn([$this->createKeyAssignment()]);
+        $keyGroupRelationRepository
+            ->method('getChunkAfter')
+            ->willReturnCallback(
+                function () use ($assignments, $onAssignmentRead): array {
+                    if ($onAssignmentRead !== null) {
+                        $onAssignmentRead();
+                    }
+
+                    return $assignments ?? [$this->createKeyAssignment()];
+                }
+            );
 
         return new ArtifactBuilder(
             new ArtifactEntryMapper(new InMemoryKeyLocalizationResolver()),
@@ -270,18 +446,23 @@ final class ArtifactBuilderTest extends Unit
         return $config;
     }
 
-    private function createCollectionRelation(): ScopedCollectionRelation
-    {
+    private function createCollectionRelation(
+        string $collection = self::COLLECTION_IDENTIFIER,
+        string $group = self::GROUP_IDENTIFIER
+    ): ScopedCollectionRelation {
         $relation = new CollectionGroupRelation();
         $relation->setColId(31);
         $relation->setGroupId(41);
         $relation->setSorter(0);
 
-        return new ScopedCollectionRelation($relation, self::COLLECTION_IDENTIFIER, self::GROUP_IDENTIFIER);
+        return new ScopedCollectionRelation($relation, $collection, $group);
     }
 
-    private function createKeyAssignment(): ScopedKeyAssignment
-    {
+    private function createKeyAssignment(
+        string $group = self::GROUP_IDENTIFIER,
+        string $key = self::KEY_IDENTIFIER,
+        ?string $subGroup = null
+    ): ScopedKeyAssignment {
         $relation = new KeyGroupRelation();
         $relation->setKeyId(51);
         $relation->setGroupId(41);
@@ -289,8 +470,8 @@ final class ArtifactBuilderTest extends Unit
         $relation->setMandatory(false);
         $relation->setMetadata(null);
         $relation->setDefinitionOverride(null);
-        $relation->setSubGroup(null);
+        $relation->setSubGroup($subGroup);
 
-        return new ScopedKeyAssignment($relation, self::GROUP_IDENTIFIER, '01JA');
+        return new ScopedKeyAssignment($relation, $group, $key);
     }
 }

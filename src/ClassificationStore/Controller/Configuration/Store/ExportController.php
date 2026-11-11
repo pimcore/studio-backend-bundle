@@ -78,8 +78,8 @@ final class ExportController extends AbstractApiController
     ])]
     public function exportStore(int $id): StreamedResponse
     {
-        // resolved before the response is handed back, so a missing store is still a 404 and a
-        // store without identifiers a 409 rather than a truncated download
+        // a missing store is a 404 and one without identifiers a 409, as both are resolved here; a relation
+        // found unresolvable while streaming can only truncate the download
         $artifact = $this->storeTransferService->exportStore($id);
 
         return new StreamedResponse(
