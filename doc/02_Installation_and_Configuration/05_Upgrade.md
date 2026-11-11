@@ -106,6 +106,9 @@ The following steps are necessary during updating to newer versions.
   key from a group stays a manual step in the Studio UI, and it writes the file's store name and description onto the
   store it is applied to. The report naming what was created, updated, adopted and left in place is the command's and
   the API response's; the editor's import action only reports that the file was applied.
+- [Classification Store] Changed: a store configuration export now refuses when the configuration changed while it was
+  being written, and must be run again. Over HTTP that arrives as a truncated download, on the console as a failed
+  command.
 - [Listing] Changed: a collection request body that omits `filters` is now paged with the documented defaults instead of
   returning every row. A client that sends `{}` and treats the answer as the complete collection now gets only the first
   page, and has to send `filters.page` and `filters.pageSize` and walk the pages until it has as many items as

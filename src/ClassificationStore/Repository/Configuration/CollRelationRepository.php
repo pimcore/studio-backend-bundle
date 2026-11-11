@@ -78,7 +78,7 @@ final readonly class CollRelationRepository implements CollRelationRepositoryInt
             . ' FROM `%s` `r`'
             . ' INNER JOIN `%s` `c` ON `c`.`id` = `r`.`colId`'
             . ' INNER JOIN `%s` `g` ON `g`.`id` = `r`.`groupId`'
-            . ' WHERE `c`.`storeId` = ?%s'
+            . ' WHERE `c`.`storeId` = ? AND `g`.`storeId` = ?%s'
             . ' ORDER BY `c`.`identifier`, `g`.`identifier`, `r`.`colId`, `r`.`groupId`'
             . ' LIMIT ?',
             CollectionGroupRelationDao::TABLE_NAME_RELATIONS,
@@ -87,8 +87,9 @@ final readonly class CollRelationRepository implements CollRelationRepositoryInt
             $after === null ? '' : self::CURSOR_CONDITION
         );
 
-        $parameters = [$storeId];
-        $types = [ParameterType::INTEGER];
+        // both sides in this store, as the entity sections are, so that a cross store row is not exported
+        $parameters = [$storeId, $storeId];
+        $types = [ParameterType::INTEGER, ParameterType::INTEGER];
 
         if ($after !== null) {
             $cursor = $after->getRelation();

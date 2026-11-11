@@ -709,6 +709,7 @@ final class KeyRepositoryTest extends Unit
         $this->expectException(ElementSavingFailedException::class);
 
         $calls = [];
+
         try {
             $this->createRepository($config, $this->createRestoreConnection($calls, 0))->restore(self::KEY_ID);
         } finally {

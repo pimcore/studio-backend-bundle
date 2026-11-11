@@ -78,14 +78,20 @@ final class ExportController extends AbstractApiController
     ])]
     public function exportStore(int $id): StreamedResponse
     {
-        // resolved before the response is handed back, so a missing store is still a 404 and a
-        // store without identifiers a 409 rather than a truncated download
+        // a missing store is a 404 and one without identifiers a 409, as both are resolved here; a relation
+        // found unresolvable while streaming can only truncate the download
         $artifact = $this->storeTransferService->exportStore($id);
 
         return new StreamedResponse(
             static function () use ($artifact): void {
-                foreach ($artifact as $piece) {
-                    echo $piece;
+                try {
+                    foreach ($artifact as $piece) {
+                        echo $piece;
+                    }
+                } catch (ConflictException) {
+                    // a relation found unresolvable (snapshot conflict) is outside the kernel's exception handling:
+                    // nothing may be appended to what was written, so the download ends where the artifact ended.
+                    // Any other failure, e.g. a DatabaseException, is not caught and propagates
                 }
             },
             HttpResponseCodes::SUCCESS->value,

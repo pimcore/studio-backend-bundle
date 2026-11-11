@@ -140,7 +140,8 @@ final readonly class ArtifactEntryMapper implements ArtifactEntryMapperInterface
             ArtifactField::MANDATORY->value => $relation->isMandatory(),
             ArtifactField::METADATA->value => $relation->getMetadata(),
             ArtifactField::DEFINITION_OVERRIDE->value => $relation->getDefinitionOverride(),
-            ArtifactField::SUB_GROUP->value => $relation->getSubGroup(),
+            // an empty sub group is no sub group: written as null, which is what the apply side reads it as
+            ArtifactField::SUB_GROUP->value => $relation->getSubGroup() === '' ? null : $relation->getSubGroup(),
         ];
     }
 
