@@ -330,19 +330,19 @@ final class ActiveGroupTitleEnricherTest extends Unit
     /**
      * @param list<KeyConfig> $keyConfigs
      */
-    private function createKeyConfigResolver(array $keyConfigs): KeyConfigResolverInterface
+    private function createDefinitionCacheResolver(array $keyConfigs): DefinitionCacheResolverInterface
     {
         $byId = [];
         foreach ($keyConfigs as $keyConfig) {
             $byId[$keyConfig->getId() ?? 0] = $keyConfig;
         }
 
-        $keyConfigResolver = $this->createMock(KeyConfigResolverInterface::class);
-        $keyConfigResolver
-            ->method('getById')
+        $definitionCacheResolver = $this->createMock(DefinitionCacheResolverInterface::class);
+        $definitionCacheResolver
+            ->method('get')
             ->willReturnCallback(static fn (int $keyId): ?KeyConfig => $byId[$keyId] ?? null);
 
-        return $keyConfigResolver;
+        return $definitionCacheResolver;
     }
 
     private function nestInALayout(Classificationstore $fieldDefinition): Panel
