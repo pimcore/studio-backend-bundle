@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\DefinitionCacheResolverInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
@@ -30,7 +30,7 @@ final readonly class ActiveGroupTitleEnricher implements ActiveGroupTitleEnriche
 {
     public function __construct(
         private LabelResolverInterface $labelResolver,
-        private KeyConfigResolverInterface $keyConfigResolver,
+        private DefinitionCacheResolverInterface $definitionCacheResolver,
         private LabelLanguageResolverInterface $labelLanguageResolver,
     ) {
     }
@@ -84,7 +84,9 @@ final readonly class ActiveGroupTitleEnricher implements ActiveGroupTitleEnriche
             return $key['name'];
         }
 
-        $keyConfig = $this->keyConfigResolver->getById($key['id']);
+        // Reads the cache enrichLayoutDefinition() filled one line earlier in LayoutService;
+        // KeyConfig::getById() checks RuntimeCache instead, which that batch never populates.
+        $keyConfig = $this->definitionCacheResolver->get($key['id']);
         if (!$keyConfig instanceof KeyConfig) {
             return $key['name'];
         }
