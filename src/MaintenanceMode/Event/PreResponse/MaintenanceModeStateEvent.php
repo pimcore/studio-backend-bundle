@@ -16,9 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\MaintenanceMode\Event\PreResponse;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 use Pimcore\Bundle\StudioBackendBundle\MaintenanceMode\Schema\MaintenanceModeState;
 
-/**
- * @internal
- */
 final class MaintenanceModeStateEvent extends AbstractPreResponseEvent
 {
     public const string EVENT_NAME = 'pre_response.maintenance_mode_state';
