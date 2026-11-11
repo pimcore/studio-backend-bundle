@@ -17,33 +17,22 @@ use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\ServiceUserClientException;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ServiceUserClientStoreInterface;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Service\ServiceUserClientServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Bundle\StudioBackendBundle\Security\Repository\McpAccessTokenRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Event\ServiceUserEvent;
-use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Hydrator\ServiceUserHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\MappedParameter\CreateFromUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\MappedParameter\CreateParameter;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\MappedParameter\UpdateParameter;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository\ServiceUserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUser as ServiceUserSchema;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUserCredentials;
-use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUserMcpTokens;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneServiceInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\User\ServiceUser;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use function array_map;
 use function count;
 use function implode;
 use function sprintf;
-use function time;
 
 /**
  * @internal
@@ -55,36 +44,22 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
         private UserRepositoryInterface $userRepository,
         private UpdateServiceInterface $updateService,
         private WorkspaceCloneServiceInterface $workspaceCloneService,
-        private ServiceUserClientServiceInterface $clientService,
-        private ServiceUserClientStoreInterface $clientStore,
-        private ServiceUserHydratorInterface $hydrator,
-        private EventDispatcherInterface $eventDispatcher,
+        private ServiceUserCredentialsServiceInterface $credentialsService,
+        private ServiceUserSchemaBuilderInterface $schemaBuilder,
         private SecurityServiceInterface $securityService,
-        private ScopeRegistryInterface $scopeRegistry,
-        private McpAccessTokenRepositoryInterface $mcpTokenRepository,
-        private bool $clientCredentialsEnabled,
     ) {
     }
 
     public function listServiceUsers(): Collection
     {
-        $serviceUsers = $this->repository->listServiceUsers();
-        $summaries = $this->mcpTokenRepository->summarizeByUserIds(
-            array_map(static fn (ServiceUser $serviceUser): int => (int) $serviceUser->getId(), $serviceUsers),
-            time()
-        );
-
-        $items = [];
-        foreach ($serviceUsers as $serviceUser) {
-            $items[] = $this->buildSchema($serviceUser, $summaries);
-        }
+        $items = $this->schemaBuilder->buildAll($this->repository->listServiceUsers());
 
         return new Collection(count($items), $items);
     }
 
     public function getServiceUser(int $id): ServiceUserSchema
     {
-        return $this->buildSchema($this->repository->getServiceUser($id));
+        return $this->schemaBuilder->build($this->repository->getServiceUser($id));
     }
 
     public function createServiceUser(CreateParameter $parameter): ServiceUserCredentials
@@ -106,7 +81,7 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
             $this->updateService->updateDocumentWorkspaces($parameter->getDocumentWorkspaces(), $serviceUser);
             $this->repository->saveServiceUser($serviceUser);
 
-            return $this->registerClient($serviceUser, $parameter->getScopes());
+            return $this->credentialsService->register($serviceUser, $parameter->getScopes());
         } catch (Exception $exception) {
             $this->repository->deleteServiceUser($serviceUser);
 
@@ -138,7 +113,7 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
             $this->cloneWorkspaces($source, $serviceUser);
             $this->repository->saveServiceUser($serviceUser);
 
-            return $this->registerClient($serviceUser, $parameter->getScopes());
+            return $this->credentialsService->register($serviceUser, $parameter->getScopes());
         } catch (Exception $exception) {
             $this->repository->deleteServiceUser($serviceUser);
 
@@ -170,7 +145,7 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
         $this->updateService->updateDocumentWorkspaces($parameter->getDocumentWorkspaces(), $serviceUser);
         $this->repository->saveServiceUser($serviceUser);
 
-        return $this->buildSchema($serviceUser);
+        return $this->schemaBuilder->build($serviceUser);
     }
 
     public function deactivateServiceUser(int $id): ServiceUserSchema
@@ -179,7 +154,7 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
         $serviceUser->setActive(false);
         $this->repository->saveServiceUser($serviceUser);
 
-        return $this->buildSchema($serviceUser);
+        return $this->schemaBuilder->build($serviceUser);
     }
 
     public function deleteServiceUser(int $id): void
@@ -189,20 +164,7 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
 
     public function rotateSecret(int $id): ServiceUserCredentials
     {
-        $serviceUser = $this->repository->getServiceUser($id);
-
-        try {
-            $credentials = $this->clientService->rotateSecret($serviceUser);
-        } catch (ServiceUserClientException) {
-            throw new NotFoundException('Client of service user', $id);
-        }
-
-        // Rotation still invalidates the old secret while the grant is off; only the new one is withheld.
-        return new ServiceUserCredentials(
-            $id,
-            $credentials->clientId,
-            $this->secretForResponse($credentials->clientSecret),
-        );
+        return $this->credentialsService->rotate($this->repository->getServiceUser($id));
     }
 
     private function newServiceUser(string $name, ?string $email): ServiceUser
@@ -267,59 +229,5 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
             $objectWorkspaces[] = $clone;
         }
         $serviceUser->setWorkspacesObject($objectWorkspaces);
-    }
-
-    /**
-     * @param list<string>|null $scopes
-     *
-     * @throws InvalidArgumentException
-     */
-    private function registerClient(ServiceUser $serviceUser, ?array $scopes): ServiceUserCredentials
-    {
-        try {
-            $credentials = $this->clientService->register(
-                $serviceUser,
-                (string) $serviceUser->getName(),
-                $scopes ?? $this->scopeRegistry->all(),
-            );
-        } catch (ServiceUserClientException $exception) {
-            throw new InvalidArgumentException($exception->getMessage(), $exception);
-        }
-
-        return new ServiceUserCredentials(
-            (int) $serviceUser->getId(),
-            $credentials->clientId,
-            $this->secretForResponse($credentials->clientSecret),
-        );
-    }
-
-    /**
-     * The secret is returned only while the client_credentials grant is enabled; otherwise it could not be used.
-     */
-    private function secretForResponse(string $clientSecret): ?string
-    {
-        return $this->clientCredentialsEnabled ? $clientSecret : null;
-    }
-
-    /**
-     * @param array<int, array{active: int, latestExpiresAt: int}>|null $summaries token summaries by user id,
-     *     fetched for all users at once by the collection; null makes this user's own query
-     */
-    private function buildSchema(ServiceUser $serviceUser, ?array $summaries = null): ServiceUserSchema
-    {
-        $id = (int) $serviceUser->getId();
-        $summaries ??= $this->mcpTokenRepository->summarizeByUserIds([$id], time());
-        $summary = $summaries[$id] ?? null;
-
-        $client = $this->clientStore->findByServiceUserId($id);
-        $schema = $this->hydrator->hydrate(
-            $serviceUser,
-            $client?->identifier,
-            new ServiceUserMcpTokens($summary['active'] ?? 0, $summary['latestExpiresAt'] ?? null)
-        );
-
-        $this->eventDispatcher->dispatch(new ServiceUserEvent($schema), ServiceUserEvent::EVENT_NAME);
-
-        return $schema;
     }
 }

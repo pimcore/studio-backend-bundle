@@ -98,7 +98,6 @@ class OAuthClientRecord
         array $scopes,
         bool $confidential,
         ?string $secretHash,
-        ?int $serviceUserId = null,
     ) {
         $this->clientId = $clientId;
         $this->name = $name;
@@ -107,7 +106,7 @@ class OAuthClientRecord
         $this->scopes = $scopes;
         $this->confidential = $confidential;
         $this->secretHash = $secretHash;
-        $this->serviceUserId = $serviceUserId;
+        $this->serviceUserId = null;
         $this->metadataHash = null;
         // Public clients authenticate via PKCE; confidential ones via their secret.
         $this->tokenEndpointAuthMethod = $confidential ? 'client_secret_basic' : 'none';
@@ -165,6 +164,11 @@ class OAuthClientRecord
     public function setSecretHash(?string $secretHash): void
     {
         $this->secretHash = $secretHash;
+    }
+
+    public function bindToServiceUser(int $serviceUserId): void
+    {
+        $this->serviceUserId = $serviceUserId;
     }
 
     public function getServiceUserId(): ?int

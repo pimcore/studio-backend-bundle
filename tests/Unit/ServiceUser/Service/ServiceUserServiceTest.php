@@ -35,6 +35,8 @@ use Pimcore\Bundle\StudioBackendBundle\ServiceUser\MappedParameter\UpdateParamet
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository\ServiceUserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUser as ServiceUserSchema;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Schema\ServiceUserMcpTokens;
+use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\ServiceUserCredentialsService;
+use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\ServiceUserSchemaBuilder;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\ServiceUserService;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
@@ -457,52 +459,56 @@ final class ServiceUserServiceTest extends Unit
             $this->makeEmpty(WorkspaceCloneServiceInterface::class, [
                 'cloneAssetWorkspace' => static fn (AssetWorkspace $workspace): AssetWorkspace => clone $workspace,
             ]),
-            $clientService ?? $this->makeEmpty(ServiceUserClientServiceInterface::class, [
-                'register' => function (ServiceUser $serviceUser, string $name, array $scopes): ClientCredentials {
-                    $this->registered[] = [$serviceUser->getId(), $name, $scopes];
+            new ServiceUserCredentialsService(
+                $clientService ?? $this->makeEmpty(ServiceUserClientServiceInterface::class, [
+                    'register' => function (ServiceUser $serviceUser, string $name, array $scopes): ClientCredentials {
+                        $this->registered[] = [$serviceUser->getId(), $name, $scopes];
 
-                    return new ClientCredentials('svc_client', self::SECRET);
-                },
-            ]),
-            $this->makeEmpty(ServiceUserClientStoreInterface::class, [
-                'findByServiceUserId' => new DynamicClient(
-                    'svc_client',
-                    'svc',
-                    [],
-                    ['client_credentials'],
-                    [],
-                    true,
-                    'hash'
-                ),
-            ]),
-            $this->makeEmpty(ServiceUserHydratorInterface::class, [
-                'hydrate' => static fn (
-                    ServiceUser $serviceUser,
-                    ?string $clientId,
-                    ServiceUserMcpTokens $mcpTokens
-                ): ServiceUserSchema => new ServiceUserSchema(
-                    id: (int) $serviceUser->getId(),
-                    name: (string) $serviceUser->getName(),
-                    email: $serviceUser->getEmail(),
-                    active: $serviceUser->isActive(),
-                    permissions: [],
-                    roles: [],
-                    classes: [],
-                    docTypes: [],
-                    assetWorkspaces: [],
-                    dataObjectWorkspaces: [],
-                    documentWorkspaces: [],
-                    clientId: $clientId,
-                    lastLogin: null,
-                    clientCredentialsEnabled: false,
-                    mcpTokens: $mcpTokens,
-                ),
-            ]),
-            $eventDispatcher ?? $this->makeEmpty(EventDispatcherInterface::class),
+                        return new ClientCredentials('svc_client', self::SECRET);
+                    },
+                ]),
+                $this->makeEmpty(ScopeRegistryInterface::class, ['all' => ['mcp:read', 'mcp:write']]),
+                $clientCredentialsEnabled ?? true,
+            ),
+            new ServiceUserSchemaBuilder(
+                $this->makeEmpty(ServiceUserClientStoreInterface::class, [
+                    'findByServiceUserId' => new DynamicClient(
+                        'svc_client',
+                        'svc',
+                        [],
+                        ['client_credentials'],
+                        [],
+                        true,
+                        'hash'
+                    ),
+                ]),
+                $this->makeEmpty(ServiceUserHydratorInterface::class, [
+                    'hydrate' => static fn (
+                        ServiceUser $serviceUser,
+                        ?string $clientId,
+                        ServiceUserMcpTokens $mcpTokens
+                    ): ServiceUserSchema => new ServiceUserSchema(
+                        id: (int) $serviceUser->getId(),
+                        name: (string) $serviceUser->getName(),
+                        email: $serviceUser->getEmail(),
+                        active: $serviceUser->isActive(),
+                        permissions: [],
+                        roles: [],
+                        classes: [],
+                        docTypes: [],
+                        assetWorkspaces: [],
+                        dataObjectWorkspaces: [],
+                        documentWorkspaces: [],
+                        clientId: $clientId,
+                        lastLogin: null,
+                        clientCredentialsEnabled: false,
+                        mcpTokens: $mcpTokens,
+                    ),
+                ]),
+                $eventDispatcher ?? $this->makeEmpty(EventDispatcherInterface::class),
+                $tokenRepository ?? $this->makeEmpty(McpAccessTokenRepositoryInterface::class),
+            ),
             $currentUser ?? $this->currentUser(isAdmin: false),
-            $this->makeEmpty(ScopeRegistryInterface::class, ['all' => ['mcp:read', 'mcp:write']]),
-            $tokenRepository ?? $this->makeEmpty(McpAccessTokenRepositoryInterface::class),
-            $clientCredentialsEnabled ?? true,
         );
     }
 
