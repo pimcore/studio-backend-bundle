@@ -190,6 +190,17 @@ final class ArtifactBuilderTest extends Unit
         $this->assertStringContainsString('the sub group "' . self::UNWRITTEN . '"', $message);
     }
 
+    /**
+     * An empty `subGroup` is the value the create endpoint can write; the apply side reports it as that
+     * one entry's conflict, so the export carries it instead of refusing for good.
+     */
+    public function testAnAssignmentWithAnEmptySubGroupIsExportedNotRefused(): void
+    {
+        $document = $this->buildDocument(assignments: [$this->createKeyAssignment(subGroup: '')]);
+
+        $this->assertCount(1, $document['keyGroupRelations']);
+    }
+
     public function testACollectionRelationNamingAnUnwrittenCollectionOrGroupFailsTheExport(): void
     {
         $collection = $this->exportFailure(

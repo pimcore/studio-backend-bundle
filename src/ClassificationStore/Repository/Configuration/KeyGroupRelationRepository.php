@@ -98,7 +98,7 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
             . ' FROM `%s` `r`'
             . ' INNER JOIN `%s` `g` ON `g`.`id` = `r`.`groupId`'
             . ' INNER JOIN `%s` `k` ON `k`.`id` = `r`.`keyId`'
-            . ' WHERE `g`.`storeId` = ?%s'
+            . ' WHERE `g`.`storeId` = ? AND `k`.`storeId` = ?%s'
             . ' ORDER BY `g`.`identifier`, `k`.`identifier`, `r`.`groupId`, `r`.`keyId`'
             . ' LIMIT ?',
             KeyGroupRelationDao::TABLE_NAME_RELATIONS,
@@ -107,8 +107,9 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
             $after === null ? '' : self::CURSOR_CONDITION
         );
 
-        $parameters = [$storeId];
-        $types = [ParameterType::INTEGER];
+        // both sides in this store, as the entity sections are, so that a cross store row is not exported
+        $parameters = [$storeId, $storeId];
+        $types = [ParameterType::INTEGER, ParameterType::INTEGER];
 
         if ($after !== null) {
             $cursor = $after->getRelation();

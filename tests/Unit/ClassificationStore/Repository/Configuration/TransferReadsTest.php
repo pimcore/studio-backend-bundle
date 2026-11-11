@@ -173,7 +173,14 @@ final class TransferReadsTest extends Unit
             (string) $captured
         );
         $this->assertFalse(str_contains((string) $captured, 'OFFSET'), (string) $captured);
-        $this->assertSame([self::STORE_ID, '01GROUP', '01KEY', 41, 51, self::CHUNK_SIZE], $parameters);
+        $this->assertSame(
+            [self::STORE_ID, self::STORE_ID, '01GROUP', '01KEY', 41, 51, self::CHUNK_SIZE],
+            $parameters
+        );
+        $this->assertTrue(
+            str_contains((string) $captured, '`g`.`storeId` = ? AND `k`.`storeId` = ?'),
+            'a cross store assignment must not be walked: ' . $captured
+        );
     }
 
     public function testTheCollectionRelationWalkIsTakenAfterTheIdentifierPairAndThePrimaryKey(): void
@@ -213,7 +220,14 @@ final class TransferReadsTest extends Unit
             (string) $captured
         );
         $this->assertFalse(str_contains((string) $captured, 'OFFSET'), (string) $captured);
-        $this->assertSame([self::STORE_ID, '01COLLECTION', '01GROUP', 31, 41, self::CHUNK_SIZE], $parameters);
+        $this->assertSame(
+            [self::STORE_ID, self::STORE_ID, '01COLLECTION', '01GROUP', 31, 41, self::CHUNK_SIZE],
+            $parameters
+        );
+        $this->assertTrue(
+            str_contains((string) $captured, '`c`.`storeId` = ? AND `g`.`storeId` = ?'),
+            'a cross store relation must not be walked: ' . $captured
+        );
     }
 
     /**

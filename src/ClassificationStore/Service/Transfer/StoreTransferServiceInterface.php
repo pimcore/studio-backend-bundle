@@ -35,6 +35,11 @@ interface StoreTransferServiceInterface
      * The store is resolved before the first piece is produced, so that a store no id carries is
      * answered with a not found rather than with a half written file.
      *
+     * A ConflictException may also be thrown while the returned iterable is iterated, after the response
+     * has started: a relation naming an entity the entity sections did not carry (the configuration
+     * changed between two of the reads) stops the stream at that entry, and what was written is not
+     * valid JSON.
+     *
      * @return iterable<string>
      *
      * @throws ConflictException

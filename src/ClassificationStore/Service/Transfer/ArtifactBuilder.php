@@ -50,12 +50,12 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
      * What an entry of each section is called in a failure, in the words the apply side reports it in.
      */
     private const array SECTION_LEVELS = [
-        'subGroups' => 'sub group',
-        'collections' => 'collection',
-        'groups' => 'group',
-        'keys' => 'key',
-        'collectionGroupRelations' => 'collection group relation',
-        'keyGroupRelations' => 'key assignment',
+        ArtifactSection::SUB_GROUPS->value => 'sub group',
+        ArtifactSection::COLLECTIONS->value => 'collection',
+        ArtifactSection::GROUPS->value => 'group',
+        ArtifactSection::KEYS->value => 'key',
+        ArtifactSection::COLLECTION_GROUP_RELATIONS->value => 'collection group relation',
+        ArtifactSection::KEY_GROUP_RELATIONS->value => 'key assignment',
     ];
 
     public function __construct(
@@ -305,7 +305,12 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
             foreach ($references as $field => $target) {
                 $identifier = $entry[$field] ?? null;
 
-                if ($identifier === null || isset($written[$target->value][(string) $identifier])) {
+                // an empty sub group is no sub group: the apply side reports it as that one entry's
+                // conflict, and a retry cannot make it exist
+                $unset = $identifier === null
+                    || ($field === ArtifactField::SUB_GROUP->value && $identifier === '');
+
+                if ($unset || isset($written[$target->value][(string) $identifier])) {
                     continue;
                 }
 
