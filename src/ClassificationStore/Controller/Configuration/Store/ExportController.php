@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Controller\Conf
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreTransferServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -89,9 +88,10 @@ final class ExportController extends AbstractApiController
                     foreach ($artifact as $piece) {
                         echo $piece;
                     }
-                } catch (AbstractApiException) {
-                    // outside the kernel's exception handling: nothing may be appended to what was written,
-                    // so the download ends where the artifact ended
+                } catch (ConflictException) {
+                    // a relation found unresolvable (snapshot conflict) is outside the kernel's exception handling:
+                    // nothing may be appended to what was written, so the download ends where the artifact ended.
+                    // Any other failure, e.g. a DatabaseException, is not caught and propagates
                 }
             },
             HttpResponseCodes::SUCCESS->value,
