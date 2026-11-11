@@ -62,6 +62,21 @@ interface CustomReportRepositoryInterface
     /**
      * @throws NotWriteableException
      */
+    public function importConfig(string $name, array $data): Config;
+
+    /**
+     * Returns the report configuration without environment specific values (dates, resolved ids).
+     */
+    public function extractTransferableData(Config $config): array;
+
+    /**
+     * Applies transferable properties to the given configuration without saving it.
+     */
+    public function applyTransferableData(Config $config, array $data): Config;
+
+    /**
+     * @throws NotWriteableException
+     */
     public function delete(Config $config): void;
 
     public function exists(string $name): bool;
