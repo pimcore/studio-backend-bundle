@@ -43,7 +43,9 @@ final readonly class ServiceUserClientService implements ServiceUserClientServic
     public function register(User $serviceUser, string $name, array $scopes): ClientCredentials
     {
         if (!$serviceUser->isServiceUser()) {
-            throw new InvalidArgumentException('Expected a service user, got a person: ' . (string) $serviceUser->getName());
+            throw new InvalidArgumentException(
+                sprintf('Expected a service user, got a person: %s', (string) $serviceUser->getName())
+            );
         }
 
         $serviceUserId = $this->serviceUserId($serviceUser);
@@ -78,7 +80,9 @@ final readonly class ServiceUserClientService implements ServiceUserClientServic
     public function rotateSecret(User $serviceUser): ClientCredentials
     {
         if (!$serviceUser->isServiceUser()) {
-            throw new InvalidArgumentException('Expected a service user, got a person: ' . (string) $serviceUser->getName());
+            throw new InvalidArgumentException(
+                sprintf('Expected a service user, got a person: %s', (string) $serviceUser->getName())
+            );
         }
 
         $client = $this->store->findByServiceUserId($this->serviceUserId($serviceUser));

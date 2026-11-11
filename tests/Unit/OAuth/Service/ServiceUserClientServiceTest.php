@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Service;
 
 use Codeception\Test\Unit;
+use InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\ServiceUserClientException;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceRegistry;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry;
@@ -109,6 +110,28 @@ final class ServiceUserClientServiceTest extends Unit
     {
         $this->expectException(ServiceUserClientException::class);
         $this->service->rotateSecret($this->serviceUser(77));
+    }
+
+    public function testRegisterRefusesAPerson(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->service->register($this->person(5), 'Pipeline', []);
+    }
+
+    public function testRotateSecretRefusesAPerson(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->service->rotateSecret($this->person(5));
+    }
+
+    private function person(int $id): User
+    {
+        $user = new User();
+        $user->setId($id);
+        $user->setName('jane');
+        $user->setActive(true);
+
+        return $user;
     }
 
     private function serviceUser(int $id): User

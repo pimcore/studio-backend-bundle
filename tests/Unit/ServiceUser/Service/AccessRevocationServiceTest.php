@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ServiceUser\Service;
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccess;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccessEntry;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
@@ -162,6 +163,16 @@ final class AccessRevocationServiceTest extends Unit
         $this->assertSame([], $repository->get('managed')->access->sharedUsers);
         $this->assertCount(1, $repository->get('shipped')->access->sharedUsers);
         $this->assertNull($this->clients->findByServiceUserId(7));
+    }
+
+    public function testRevokeAllRefusesAPerson(): void
+    {
+        $person = new User();
+        $person->setId(5);
+        $person->setName('jane');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->service(new InMemoryMcpServerConfigRepository())->revokeAll($person);
     }
 
     private function service(InMemoryMcpServerConfigRepository $repository): AccessRevocationService

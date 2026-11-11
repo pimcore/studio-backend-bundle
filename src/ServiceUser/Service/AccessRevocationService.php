@@ -27,6 +27,8 @@ use Pimcore\Model\User;
 use Psr\Log\LoggerInterface;
 use function count;
 
+use function sprintf;
+
 /**
  * @internal
  */
@@ -47,7 +49,9 @@ final readonly class AccessRevocationService implements AccessRevocationServiceI
     public function revokeAll(User $serviceUser): void
     {
         if (!$serviceUser->isServiceUser()) {
-            throw new InvalidArgumentException('Expected a service user, got a person: ' . (string) $serviceUser->getName());
+            throw new InvalidArgumentException(
+                sprintf('Expected a service user, got a person: %s', (string) $serviceUser->getName())
+            );
         }
 
         $id = $serviceUser->getId();
