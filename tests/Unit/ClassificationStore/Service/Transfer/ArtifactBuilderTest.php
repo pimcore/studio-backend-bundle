@@ -161,7 +161,7 @@ final class ArtifactBuilderTest extends Unit
             $message
         );
         $this->assertStringContainsString('the group "' . self::UNWRITTEN . '"', $message);
-        $this->assertStringContainsString('exists neither in the file nor in the store', $message);
+        $this->assertStringContainsString('is not present in the exported', $message);
         $this->assertStringContainsString('run the export again', $message);
     }
 

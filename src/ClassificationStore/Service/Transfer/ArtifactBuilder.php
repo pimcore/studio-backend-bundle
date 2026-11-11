@@ -330,12 +330,13 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
             : [ArtifactField::COLLECTION->value, ArtifactField::GROUP->value];
 
         return sprintf(
-            '%s "%s": it names the %s "%s", which exists neither in the file nor in the store. '
+            '%s "%s": it names the %s "%s", which is not present in the exported %s section. '
             . 'The store configuration changed while it was being exported; run the export again.',
             self::SECTION_LEVELS[$section->value],
             implode(' -> ', array_map(static fn (string $name): string => (string) $entry[$name], $joined)),
             self::SECTION_LEVELS[$target->value],
-            (string) $entry[$field]
+            (string) $entry[$field],
+            self::SECTION_LEVELS[$target->value]
         );
     }
 
