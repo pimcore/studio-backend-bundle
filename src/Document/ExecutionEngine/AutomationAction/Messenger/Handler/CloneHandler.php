@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Document\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\CloneData;
 use Pimcore\Bundle\StudioBackendBundle\Document\ExecutionEngine\AutomationAction\Messenger\Messages\CloneMessage;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\ExecutionEngine\CloneServiceInterface;
@@ -27,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\JobRunContext;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -59,7 +59,7 @@ final class CloneHandler extends AbstractHandler
         private readonly ElementReferenceServiceInterface $elementReferenceService,
         private readonly ElementServiceInterface $elementService,
         private readonly PublishServiceInterface $publishService,
-        private readonly UserAccountResolverInterface $userAccountResolver,
+        private readonly UserResolverInterface $userResolver,
         private readonly UserTopicServiceInterface $userTopicService,
     ) {
         parent::__construct();
@@ -78,7 +78,7 @@ final class CloneHandler extends AbstractHandler
         $validatedParameters = $this->validateJobParameters(
             $message,
             $jobRun,
-            $this->userAccountResolver,
+            $this->userResolver,
             [
                 EnvironmentVariables::ORIGINAL_PARENT_ID->value,
                 EnvironmentVariables::PARENT_ID->value,

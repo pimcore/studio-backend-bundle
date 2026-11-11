@@ -20,6 +20,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Extractor\JobRunExtractorInterfa
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStepInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Handler\ExportDataCollectionHandler;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextServiceInterface;
@@ -30,7 +31,6 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Model\User;
 use ReflectionProperty;
 
@@ -77,8 +77,8 @@ final class ExportDataCollectionHandlerTest extends Unit
         ExportDataStorageServiceInterface $exportDataStorageService
     ): ExportDataCollectionHandler {
         $user = new User();
-        $userAccountResolver = $this->createMock(UserAccountResolverInterface::class);
-        $userAccountResolver->method('getAccountById')->willReturn($user);
+        $userResolver = $this->createMock(UserResolverInterface::class);
+        $userResolver->method('getById')->willReturn($user);
 
         $userTopicService = $this->createMock(UserTopicServiceInterface::class);
         $userTopicService->method('getUserTopic')->willReturn('topic');
@@ -99,7 +99,7 @@ final class ExportDataCollectionHandlerTest extends Unit
             $exportDataStorageService,
             $this->createMock(PublishServiceInterface::class),
             $userTopicService,
-            $userAccountResolver,
+            $userResolver,
             $gridService,
             $elementContextService
         );

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\ExecutionEngine\Handler;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
@@ -22,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\ExecutionEngine\Messages\DeleteConfigurationsMessage;
 use Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\ProviderLoaderInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use function count;
 
@@ -38,7 +38,7 @@ final class DeleteConfigurationsHandler extends AbstractHandler
         private readonly ProviderLoaderInterface $providerLoader,
         private readonly PublishServiceInterface $publishService,
         private readonly UserTopicServiceInterface $userTopicService,
-        private readonly UserAccountResolverInterface $userAccountResolver,
+        private readonly UserResolverInterface $userResolver,
     ) {
         parent::__construct();
     }
@@ -53,7 +53,7 @@ final class DeleteConfigurationsHandler extends AbstractHandler
             return;
         }
 
-        $user = $this->userAccountResolver->getAccountById($jobRun->getOwnerId());
+        $user = $this->userResolver->getById($jobRun->getOwnerId());
         if ($user === null || !$user->isAdmin()) {
             return;
         }

@@ -25,10 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestNotificationWriter;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestTypes;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Pimcore\Model\User;
-use Pimcore\Model\User\ServiceUser;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use function in_array;
@@ -148,32 +145,6 @@ final class NotificationDispatcherTest extends Unit
         $this->assertSame([7, 9], $writer->writtenRecipientIds());
     }
 
-    public function testASenderThatIsAServiceUserIsKept(): void
-    {
-        $serviceUser = new ServiceUser();
-        $serviceUser->setId(9);
-        $writer = new TestNotificationWriter();
-
-        $dispatcher = $this->dispatcher(writer: $writer, accounts: [9 => $serviceUser]);
-
-        $dispatcher->dispatch(new DispatchableNotification(self::TYPE_ID, [7], 'Title', 'Message', 9));
-
-        $this->assertCount(1, $writer->written);
-        $this->assertSame($serviceUser, $writer->written[0]['sender']);
-    }
-
-    public function testAnUnknownSenderIsWrittenWithoutSender(): void
-    {
-        $writer = new TestNotificationWriter();
-
-        $this->dispatcher(writer: $writer)->dispatch(
-            new DispatchableNotification(self::TYPE_ID, [7], 'Title', 'Message', 99)
-        );
-
-        $this->assertCount(1, $writer->written);
-        $this->assertNull($writer->written[0]['sender']);
-    }
-
     /**
      * The guarantee ChannelInterface::send() documents.
      */
@@ -235,7 +206,6 @@ final class NotificationDispatcherTest extends Unit
         ?array $allowedUserIds = null,
         ?LoggerInterface $logger = null,
         ?NotificationTypeRegistryInterface $typeRegistry = null,
-        array $accounts = [],
     ): NotificationDispatcher {
         $type = TestTypes::type(self::TYPE_ID, allowsExternalDelivery: true);
 
@@ -254,9 +224,6 @@ final class NotificationDispatcherTest extends Unit
             ),
             $writer,
             $this->userRepository($knownUserIds, $allowedUserIds),
-            $this->makeEmpty(UserAccountResolverInterface::class, [
-                'getAccountById' => static fn (int $id): ?User => $accounts[$id] ?? null,
-            ]),
             $logger ?? $this->createMock(LoggerInterface::class),
         );
     }

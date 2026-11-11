@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepository;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 
@@ -135,11 +134,6 @@ final class UserRepositoryTest extends Unit
         SecurityServiceInterface $securityService,
         UserResolverInterface $userResolver
     ): UserRepository {
-        return new UserRepository(
-            $securityService,
-            $userResolver,
-            $this->makeEmpty(Connection::class),
-            $this->makeEmpty(UserAccountResolverInterface::class),
-        );
+        return new UserRepository($securityService, $userResolver, $this->makeEmpty(Connection::class));
     }
 }

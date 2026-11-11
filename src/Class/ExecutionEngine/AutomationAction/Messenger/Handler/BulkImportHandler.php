@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\ExecutionEngine\AutomationAction\Messenger\Messages\BulkImportMessage;
 use Pimcore\Bundle\StudioBackendBundle\Class\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportDataResolver;
@@ -27,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -42,7 +42,7 @@ final class BulkImportHandler extends AbstractHandler
         private readonly BulkImportExecutorInterface $bulkImportExecutor,
         private readonly BulkImportFileServiceInterface $bulkImportFileService,
         private readonly BulkImportDataResolver $bulkImportDataResolver,
-        private readonly UserAccountResolverInterface $userAccountResolver,
+        private readonly UserResolverInterface $userResolver,
         private readonly PublishServiceInterface $publishService,
         private readonly UserTopicServiceInterface $userTopicService,
     ) {
@@ -62,7 +62,7 @@ final class BulkImportHandler extends AbstractHandler
         $validatedParameters = $this->validateJobParameters(
             $message,
             $jobRun,
-            $this->userAccountResolver,
+            $this->userResolver,
             [
                 EnvironmentVariables::BULK_IMPORT_FILE_ID->value,
                 EnvironmentVariables::BULK_IMPORT_ITEMS->value,

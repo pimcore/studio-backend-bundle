@@ -20,12 +20,6 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\GenericExecut
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\ExecuteActionData;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
-use Pimcore\Model\User;
-use Pimcore\Model\User\ServiceUser;
 
 /**
  * @internal
@@ -60,53 +54,5 @@ final class AbstractHandlerTest extends Unit
             $expected,
             $handler->replace($this->createMock(GenericExecutionEngineMessageInterface::class), $config)
         );
-    }
-
-    public function testAJobOwnedByAServiceUserPassesTheParameterValidation(): void
-    {
-        $serviceUser = new ServiceUser();
-        $serviceUser->setId(7);
-
-        $result = $this->validatingHandler()->validate(
-            $this->messageWithoutElement(),
-            new JobRun(7),
-            $this->makeEmpty(UserAccountResolverInterface::class, [
-                'getAccountById' => static fn (int $id): ?User => $id === 7 ? $serviceUser : null,
-            ])
-        );
-
-        $this->assertInstanceOf(ExecuteActionData::class, $result);
-        $this->assertSame($serviceUser, $result->getUser());
-    }
-
-    public function testAJobWithAnUnknownOwnerIsAborted(): void
-    {
-        $result = $this->validatingHandler()->validate(
-            $this->messageWithoutElement(),
-            new JobRun(99),
-            $this->makeEmpty(UserAccountResolverInterface::class, ['getAccountById' => null])
-        );
-
-        $this->assertInstanceOf(AbortActionData::class, $result);
-        $this->assertSame(Config::USER_NOT_FOUND_MESSAGE->value, $result->getTranslationKey());
-        $this->assertSame(['%userId%' => 99], $result->getTranslationParameters());
-    }
-
-    private function validatingHandler(): AbstractHandler
-    {
-        return new class() extends AbstractHandler {
-            public function validate(
-                GenericExecutionEngineMessageInterface $message,
-                JobRun $jobRun,
-                UserAccountResolverInterface $userAccountResolver,
-            ): mixed {
-                return $this->validateJobParameters($message, $jobRun, $userAccountResolver);
-            }
-        };
-    }
-
-    private function messageWithoutElement(): GenericExecutionEngineMessageInterface
-    {
-        return $this->makeEmpty(GenericExecutionEngineMessageInterface::class, ['getElement' => null]);
     }
 }

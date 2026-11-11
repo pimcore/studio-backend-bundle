@@ -21,6 +21,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\PatchHandler;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextServiceInterface;
@@ -28,7 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -108,7 +108,7 @@ final class PatchHandlerTest extends Unit
             $patchService,
             $this->makeEmpty(PublishServiceInterface::class),
             $this->makeEmpty(ElementServiceInterface::class, ['getAllowedElementById' => $element]),
-            $this->makeEmpty(UserAccountResolverInterface::class, ['getAccountById' => $user]),
+            $this->makeEmpty(UserResolverInterface::class, ['getById' => $user]),
             $this->makeEmpty(UserTopicServiceInterface::class, ['getUserTopic' => 'topic']),
             $elementContextService,
         );

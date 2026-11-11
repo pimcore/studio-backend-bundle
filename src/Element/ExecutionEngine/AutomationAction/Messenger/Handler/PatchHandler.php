@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
@@ -25,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgres
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -42,7 +42,7 @@ final class PatchHandler extends AbstractHandler
         private readonly PatchServiceInterface $patchService,
         private readonly PublishServiceInterface $publishService,
         private readonly ElementServiceInterface $elementService,
-        private readonly UserAccountResolverInterface $userAccountResolver,
+        private readonly UserResolverInterface $userResolver,
         private readonly UserTopicServiceInterface $userTopicService,
         private readonly ElementContextServiceInterface $elementContextService,
     ) {
@@ -62,7 +62,7 @@ final class PatchHandler extends AbstractHandler
         $validatedParameters = $this->validateFullParameters(
             $message,
             $jobRun,
-            $this->userAccountResolver,
+            $this->userResolver,
         );
 
         if ($validatedParameters instanceof AbortActionData) {

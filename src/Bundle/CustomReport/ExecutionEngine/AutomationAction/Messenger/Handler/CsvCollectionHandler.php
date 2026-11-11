@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServiceInterface;
@@ -26,7 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgres
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportDataStorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -43,7 +43,7 @@ final class CsvCollectionHandler extends AbstractHandler
         private readonly UserTopicServiceInterface $userTopicService,
         private readonly CustomReportConfigServiceInterface $customReportConfigService,
         private readonly AdapterServiceInterface $customReportAdapterService,
-        private readonly UserAccountResolverInterface $userAccountResolver
+        private readonly UserResolverInterface $userResolver
     ) {
         parent::__construct();
     }
@@ -58,7 +58,7 @@ final class CsvCollectionHandler extends AbstractHandler
             return;
         }
 
-        $user = $this->userAccountResolver->getAccountById($jobRun->getOwnerId());
+        $user = $this->userResolver->getById($jobRun->getOwnerId());
         if ($user === null) {
             $this->abort($this->getAbortData(
                 Config::USER_NOT_FOUND_MESSAGE->value,

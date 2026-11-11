@@ -22,6 +22,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStepInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\FolderCloneHandler;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCloneMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\FolderCloneMessage;
@@ -32,7 +33,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Progress;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Folder;
 use Pimcore\Model\User;
@@ -128,8 +128,8 @@ final class FolderCloneHandlerTest extends Unit
         array $folderIds,
         ?PublishServiceInterface $publishService = null
     ): FolderCloneHandler {
-        $userAccountResolver = $this->createMock(UserAccountResolverInterface::class);
-        $userAccountResolver->method('getAccountById')->willReturn($user);
+        $userResolver = $this->createMock(UserResolverInterface::class);
+        $userResolver->method('getById')->willReturn($user);
 
         $elementService = $this->createMock(ElementServiceInterface::class);
         $elementService->method('getAllowedElementById')->willReturnCallback(
@@ -142,7 +142,7 @@ final class FolderCloneHandlerTest extends Unit
         $handler = new FolderCloneHandler(
             $elementService,
             $publishService ?? $this->createMock(PublishServiceInterface::class),
-            $userAccountResolver,
+            $userResolver,
             $userTopicService,
             $cloneService
         );

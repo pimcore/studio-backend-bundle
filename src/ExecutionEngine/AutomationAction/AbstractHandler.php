@@ -18,6 +18,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Handler\AbstractAutomationActionHandler;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\GenericExecutionEngineMessageInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
@@ -27,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\ExecuteActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\FullExecuteActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
@@ -55,15 +55,10 @@ class AbstractHandler extends AbstractAutomationActionHandler
     protected function validateFullParameters(
         GenericExecutionEngineMessageInterface $message,
         JobRun $jobRun,
-        UserAccountResolverInterface $userAccountResolver,
+        UserResolverInterface $userResolver,
         ?array $requiredEnvironmentVariables = null,
     ): AbortActionData|FullExecuteActionData {
-        $parameters = $this->validateJobParameters(
-            $message,
-            $jobRun,
-            $userAccountResolver,
-            $requiredEnvironmentVariables
-        );
+        $parameters = $this->validateJobParameters($message, $jobRun, $userResolver, $requiredEnvironmentVariables);
         if ($parameters instanceof FullExecuteActionData || $parameters instanceof AbortActionData) {
             return $parameters;
         }
@@ -74,7 +69,7 @@ class AbstractHandler extends AbstractAutomationActionHandler
     protected function validateJobParameters(
         GenericExecutionEngineMessageInterface $message,
         JobRun $jobRun,
-        UserAccountResolverInterface $userAccountResolver,
+        UserResolverInterface $userResolver,
         ?array $requiredEnvironmentVariables = null,
     ): AbortActionData|FullExecuteActionData|ExecuteActionData {
         $hasElements = $jobRun->getTotalElements() > 0;
@@ -83,7 +78,7 @@ class AbstractHandler extends AbstractAutomationActionHandler
             return $this->getAbortData(Config::NO_ELEMENT_PROVIDED->value);
         }
 
-        $user = $userAccountResolver->getAccountById($jobRun->getOwnerId());
+        $user = $userResolver->getById($jobRun->getOwnerId());
         if ($user === null) {
             return $this->getAbortData(
                 Config::USER_NOT_FOUND_MESSAGE->value,

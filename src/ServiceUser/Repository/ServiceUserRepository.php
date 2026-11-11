@@ -16,10 +16,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Model\User\Exception\DuplicateUserNameException;
 use Pimcore\Model\User\ServiceUser;
 use Pimcore\Model\User\ServiceUser\Listing as ServiceUserListing;
@@ -35,7 +35,7 @@ final readonly class ServiceUserRepository implements ServiceUserRepositoryInter
     private const string SERVICE_USER_TYPE = 'serviceuser';
 
     public function __construct(
-        private UserAccountResolverInterface $userAccountResolver,
+        private UserResolverInterface $userResolver,
         private Connection $connection,
     ) {
     }
@@ -51,8 +51,8 @@ final readonly class ServiceUserRepository implements ServiceUserRepositoryInter
 
     public function getServiceUser(int $id): ServiceUser
     {
-        $serviceUser = $this->userAccountResolver->getServiceUserById($id);
-        if ($serviceUser === null) {
+        $serviceUser = $this->userResolver->getById($id);
+        if (!$serviceUser instanceof ServiceUser) {
             throw new NotFoundException(self::TYPE, $id);
         }
 

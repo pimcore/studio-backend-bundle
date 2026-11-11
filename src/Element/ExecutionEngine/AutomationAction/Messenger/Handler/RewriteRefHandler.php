@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\RewriteRefMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
@@ -26,7 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementDescriptor;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -45,7 +45,7 @@ final class RewriteRefHandler extends AbstractHandler
         private readonly ElementReferenceServiceInterface $elementReferenceService,
         private readonly ElementServiceInterface $elementService,
         private readonly PublishServiceInterface $publishService,
-        private readonly UserAccountResolverInterface $userAccountResolver,
+        private readonly UserResolverInterface $userResolver,
         private readonly UserTopicServiceInterface $userTopicService,
         private readonly ElementContextServiceInterface $elementContextService,
     ) {
@@ -65,7 +65,7 @@ final class RewriteRefHandler extends AbstractHandler
         $validatedParameters = $this->validateJobParameters(
             $message,
             $jobRun,
-            $this->userAccountResolver,
+            $this->userResolver,
             [
                 EnvironmentVariables::REWRITE_CONFIGURATION->value,
                 EnvironmentVariables::REWRITE_PARAMETERS->value,

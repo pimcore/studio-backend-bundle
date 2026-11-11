@@ -21,6 +21,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Extractor\JobRunExtractorInterfa
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStepInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Handler\CsvCollectionHandler;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServiceInterface;
@@ -29,7 +30,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportDataStorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Model\User;
 use ReflectionProperty;
 
@@ -68,8 +68,8 @@ final class CsvCollectionHandlerTest extends Unit
         JobRun $jobRun,
         ExportDataStorageServiceInterface $exportDataStorageService
     ): CsvCollectionHandler {
-        $userAccountResolver = $this->createMock(UserAccountResolverInterface::class);
-        $userAccountResolver->method('getAccountById')->willReturn(new User());
+        $userResolver = $this->createMock(UserResolverInterface::class);
+        $userResolver->method('getById')->willReturn(new User());
 
         $userTopicService = $this->createMock(UserTopicServiceInterface::class);
         $userTopicService->method('getUserTopic')->willReturn('topic');
@@ -88,7 +88,7 @@ final class CsvCollectionHandlerTest extends Unit
             $userTopicService,
             $reportConfigService,
             $adapterService,
-            $userAccountResolver
+            $userResolver
         );
         $handler->setJobRunRepository($repository);
         $handler->setJobRunExtractor($this->createJobRunExtractor($jobRun));

@@ -20,6 +20,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Extractor\JobRunExtractorInterfa
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStepInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Handler\XlsxCreationHandler;
@@ -29,7 +30,6 @@ use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportDataStorageServiceIn
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Model\User;
 use ReflectionProperty;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -164,8 +164,8 @@ final class XlsxCreationHandlerTest extends Unit
         ExportServiceInterface $exportService,
         array $context
     ): XlsxCreationHandler {
-        $userAccountResolver = $this->createMock(UserAccountResolverInterface::class);
-        $userAccountResolver->method('getAccountById')->willReturn(new User());
+        $userResolver = $this->createMock(UserResolverInterface::class);
+        $userResolver->method('getById')->willReturn(new User());
 
         $userTopicService = $this->createMock(UserTopicServiceInterface::class);
         $userTopicService->method('getUserTopic')->willReturn('topic');
@@ -178,7 +178,7 @@ final class XlsxCreationHandlerTest extends Unit
         $handler = new XlsxCreationHandler(
             $exportDataStorageService,
             $this->createMock(PublishServiceInterface::class),
-            $userAccountResolver,
+            $userResolver,
             $exportService,
             $userTopicService
         );

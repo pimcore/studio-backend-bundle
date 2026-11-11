@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationA
 use Exception;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\StaticResolverBundle\Lib\PimcoreResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\ElementUsageReplaceMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementUsageServiceInterface;
@@ -25,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerGarbage
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
@@ -50,7 +50,7 @@ final class ElementUsageReplaceHandler extends AbstractHandler
     public function __construct(
         private readonly ElementUsageServiceInterface $elementUsageService,
         private readonly PimcoreResolverInterface $pimcoreResolver,
-        private readonly UserAccountResolverInterface $userAccountResolver,
+        private readonly UserResolverInterface $userResolver,
         private readonly PublishServiceInterface $publishService,
         private readonly UserTopicServiceInterface $userTopicService,
         private readonly ElementContextServiceInterface $elementContextService,
@@ -193,7 +193,7 @@ final class ElementUsageReplaceHandler extends AbstractHandler
      */
     private function getUser(JobRun $jobRun): User
     {
-        $user = $this->userAccountResolver->getAccountById($jobRun->getOwnerId());
+        $user = $this->userResolver->getById($jobRun->getOwnerId());
         if ($user === null) {
             $this->abort($this->getAbortData(
                 Config::USER_NOT_FOUND_MESSAGE->value,

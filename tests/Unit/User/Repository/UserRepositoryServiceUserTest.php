@@ -20,7 +20,6 @@ use Doctrine\DBAL\Connection;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepository;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\User\ServiceUser;
 
@@ -54,9 +53,8 @@ final class UserRepositoryServiceUserTest extends Unit
 
         $repository = new UserRepository(
             $this->makeEmpty(SecurityServiceInterface::class),
-            $this->makeEmpty(UserResolverInterface::class),
-            $connection,
             $this->resolver([1 => $human, 7 => $serviceUser]),
+            $connection,
         );
 
         $this->assertSame([$human, $serviceUser], $repository->getUsersByIds([1, 7, 9]));
@@ -82,9 +80,8 @@ final class UserRepositoryServiceUserTest extends Unit
 
         $repository = new UserRepository(
             $this->makeEmpty(SecurityServiceInterface::class),
-            $this->makeEmpty(UserResolverInterface::class),
-            $connection,
             $this->resolver([1 => $human, 7 => $serviceUser]),
+            $connection,
         );
 
         $this->assertSame([$human, $serviceUser], $repository->getUsersByNames(['jane', 'svc-erp-sync']));
@@ -96,9 +93,8 @@ final class UserRepositoryServiceUserTest extends Unit
 
         $repository = new UserRepository(
             $this->makeEmpty(SecurityServiceInterface::class),
-            $this->makeEmpty(UserResolverInterface::class),
-            $connection,
             $this->resolver([]),
+            $connection,
         );
 
         $this->assertSame([], $repository->getUsersByIds([5]));
@@ -108,9 +104,8 @@ final class UserRepositoryServiceUserTest extends Unit
     {
         $repository = new UserRepository(
             $this->makeEmpty(SecurityServiceInterface::class),
-            $this->makeEmpty(UserResolverInterface::class),
-            $this->makeEmpty(Connection::class, ['fetchFirstColumn' => Expected::never()]),
             $this->resolver([]),
+            $this->makeEmpty(Connection::class, ['fetchFirstColumn' => Expected::never()]),
         );
 
         $this->assertSame([], $repository->getUsersByIds([]));
@@ -120,10 +115,10 @@ final class UserRepositoryServiceUserTest extends Unit
     /**
      * @param array<int, User> $users
      */
-    private function resolver(array $users): UserAccountResolverInterface
+    private function resolver(array $users): UserResolverInterface
     {
-        return $this->makeEmpty(UserAccountResolverInterface::class, [
-            'getAccountById' => static fn (int $id): ?User => $users[$id] ?? null,
+        return $this->makeEmpty(UserResolverInterface::class, [
+            'getById' => static fn (int $id): ?User => $users[$id] ?? null,
         ]);
     }
 

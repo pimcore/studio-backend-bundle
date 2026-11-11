@@ -21,6 +21,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\RewriteRefHandler;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\RewriteRefMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextServiceInterface;
@@ -30,7 +31,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\User;
@@ -106,7 +106,7 @@ final class RewriteRefHandlerTest extends Unit
             $elementReferenceService,
             $this->makeEmpty(ElementServiceInterface::class, ['getAllowedElementById' => $element]),
             $this->makeEmpty(PublishServiceInterface::class),
-            $this->makeEmpty(UserAccountResolverInterface::class, ['getAccountById' => $user]),
+            $this->makeEmpty(UserResolverInterface::class, ['getById' => $user]),
             $this->makeEmpty(UserTopicServiceInterface::class, ['getUserTopic' => 'topic']),
             $elementContextService,
         );

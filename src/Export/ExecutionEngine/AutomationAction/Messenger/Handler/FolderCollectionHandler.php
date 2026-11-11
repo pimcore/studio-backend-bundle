@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
@@ -27,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\FilterParameterMapperInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use function count;
 
@@ -43,7 +43,7 @@ final class FolderCollectionHandler extends AbstractHandler
         private readonly ExportServiceInterface $exportService,
         private readonly FilterParameterMapperInterface $filterParameterMapper,
         private readonly PublishServiceInterface $publishService,
-        private readonly UserAccountResolverInterface $userAccountResolver,
+        private readonly UserResolverInterface $userResolver,
         private readonly UserTopicServiceInterface $userTopicService,
         private readonly GridSearchInterface $gridSearch
     ) {
@@ -63,7 +63,7 @@ final class FolderCollectionHandler extends AbstractHandler
         $validatedParameters = $this->validateFullParameters(
             $message,
             $jobRun,
-            $this->userAccountResolver,
+            $this->userResolver,
         );
 
         if ($validatedParameters instanceof AbortActionData) {

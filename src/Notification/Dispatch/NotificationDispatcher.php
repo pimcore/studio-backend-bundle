@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\Notificati
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationType;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\Notification;
 use Pimcore\Model\UserInterface;
@@ -38,7 +37,6 @@ final readonly class NotificationDispatcher implements NotificationDispatcherInt
         private SubscriptionResolverInterface $subscriptionResolver,
         private NotificationWriterInterface $notificationWriter,
         private UserRepositoryInterface $userRepository,
-        private UserAccountResolverInterface $userAccountResolver,
         private LoggerInterface $logger,
     ) {
     }
@@ -97,16 +95,17 @@ final readonly class NotificationDispatcher implements NotificationDispatcherInt
         $this->deliver($stored, $recipient, $subscription->getTransportChannels());
     }
 
-    /**
-     * A sender may be a human or a service user (an agent that alerts an editor); recipients are humans.
-     */
     private function resolveSender(?int $senderId): ?UserInterface
     {
         if ($senderId === null) {
             return null;
         }
 
-        return $this->userAccountResolver->getAccountById($senderId);
+        try {
+            return $this->userRepository->getUserById($senderId);
+        } catch (NotFoundException) {
+            return null;
+        }
     }
 
     /**

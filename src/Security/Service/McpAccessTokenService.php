@@ -37,15 +37,14 @@ final readonly class McpAccessTokenService implements McpAccessTokenServiceInter
     private Closure $userLoader;
 
     /**
-     * @param Closure(int): ?User|null $userLoader injection seam for tests; defaults to User::getAccountById,
-     *     which resolves users and service users
+     * @param Closure(int): ?User|null $userLoader injection seam for tests; defaults to User::getById
      */
     public function __construct(
         private McpAccessTokenRepositoryInterface $repository,
         private AuthenticationResolverInterface $authenticationResolver,
         ?Closure $userLoader = null,
     ) {
-        $this->userLoader = $userLoader ?? static fn (int $id): ?User => User::getAccountById($id);
+        $this->userLoader = $userLoader ?? static fn (int $id): ?User => User::getById($id);
     }
 
     /**

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipUploadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
@@ -26,7 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\JobRunContext;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -47,7 +47,7 @@ final class ZipUploadHandler extends AbstractHandler
         private readonly Filesystem $fileSystem,
         private readonly PublishServiceInterface $publishService,
         private readonly StorageServiceInterface $storageService,
-        private readonly UserAccountResolverInterface $userAccountResolver,
+        private readonly UserResolverInterface $userResolver,
         private readonly UserTopicServiceInterface $userTopicService,
         private readonly UploadServiceInterface $uploadService,
         private readonly ZipServiceInterface $zipService,
@@ -67,7 +67,7 @@ final class ZipUploadHandler extends AbstractHandler
         $validatedParameters = $this->validateFullParameters(
             $message,
             $jobRun,
-            $this->userAccountResolver,
+            $this->userResolver,
             [
                 EnvironmentVariables::PARENT_ID->value,
             ],
