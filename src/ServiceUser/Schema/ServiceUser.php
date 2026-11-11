@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 /**
  * A service user: a machine identity authorized like a user, which never logs in
- * interactively, is never an administrator and has no password. The client secret is never
+ * interactively, is never an administrator and has no usable password. The client secret is never
  * part of this schema.
  *
  * @internal

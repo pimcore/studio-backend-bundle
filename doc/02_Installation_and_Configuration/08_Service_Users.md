@@ -9,7 +9,8 @@ A service user is a machine identity for an integration, an agent, an MCP client
 user of type `serviceuser` (`Pimcore\Model\User\ServiceUser`) and is authorized like a user: permissions, roles,
 workspaces, class and document type restrictions and MCP server Access apply to it. It differs from a human user:
 
-- It is never an administrator, has no password and no two-factor authentication.
+- It is never an administrator, has no usable password (the core stores an unusable random value) and no two-factor
+  authentication.
 - It cannot log in to Studio, and password recovery does not reach it.
 - It is not part of the user tree or the user collection. Names are unique across users and service users.
 

@@ -13,8 +13,9 @@ The following steps are necessary during updating to newer versions.
   changes. The service-user endpoints need a core release that provides `Pimcore\Model\User\ServiceUser`; the 2026.x
   core checked for this entry did not yet have it. See [Service Users](./08_Service_Users.md).
 - [Service Users] Semantic notes, for code that works with users:
-  - A service user has no password. Its `getPassword()` is `null`, and setting one or setting it as an administrator
-    is refused on the core class. It is never an administrator, has no two-factor authentication and cannot log in to
+  - A service user never logs in with a password. Setting one or setting it as an administrator is refused on the
+    core class; every save stores an unusable random value that no password verifies against (as users created
+    through OpenID Connect have), so `Authentication::isValidUser()` treats it like any user. It is never an administrator, has no two-factor authentication and cannot log in to
     Studio. Its `email` is an optional contact address for the team responsible. Logging in and password recovery do
     not use it.
   - Identity kinds never mix. `User::getByName()`, `User\Listing` and the user endpoints return humans only. A service
