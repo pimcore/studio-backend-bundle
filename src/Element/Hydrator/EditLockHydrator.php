@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Hydrator;
 
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\EditLock;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\EditLockUser;
+use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Model\Element\Editlock as EditLockModel;
 
 /**
@@ -24,7 +24,7 @@ use Pimcore\Model\Element\Editlock as EditLockModel;
 final readonly class EditLockHydrator implements EditLockHydratorInterface
 {
     public function __construct(
-        private UserResolverInterface $userResolver,
+        private UserAccountResolverInterface $userAccountResolver,
     ) {
     }
 
@@ -34,7 +34,7 @@ final readonly class EditLockHydrator implements EditLockHydratorInterface
             return new EditLock(false);
         }
 
-        $user = $this->userResolver->getById($editLock->getUserId());
+        $user = $this->userAccountResolver->getAccountById($editLock->getUserId());
         $editLockUser = $user !== null ? new EditLockUser($user->getName()) : null;
 
         return new EditLock(

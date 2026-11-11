@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\FolderCloneMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
@@ -25,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -47,7 +47,7 @@ final class FolderCloneHandler extends AbstractHandler
     public function __construct(
         private readonly ElementServiceInterface $elementService,
         private readonly PublishServiceInterface $publishService,
-        private readonly UserResolverInterface $userResolver,
+        private readonly UserAccountResolverInterface $userAccountResolver,
         private readonly UserTopicServiceInterface $userTopicService,
         private readonly CloneServiceInterface $cloneService
     ) {
@@ -64,7 +64,7 @@ final class FolderCloneHandler extends AbstractHandler
             return;
         }
 
-        $user = $this->userResolver->getById($jobRun->getOwnerId());
+        $user = $this->userAccountResolver->getAccountById($jobRun->getOwnerId());
         if ($user === null) {
             $this->abort($this->getAbortData(
                 Config::USER_NOT_FOUND_MESSAGE->value,

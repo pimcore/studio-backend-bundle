@@ -21,7 +21,6 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Extractor\JobRunExtractorInterfa
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStepInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\ZipDownloadHandler;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipDownloadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
@@ -29,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Model\User;
 use ReflectionProperty;
@@ -109,8 +109,8 @@ final class ZipDownloadHandlerTest extends Unit
             ])
         );
 
-        $userResolver = $this->createMock(UserResolverInterface::class);
-        $userResolver->method('getById')->willReturn(new User());
+        $userAccountResolver = $this->createMock(UserAccountResolverInterface::class);
+        $userAccountResolver->method('getAccountById')->willReturn(new User());
 
         $userTopicService = $this->createMock(UserTopicServiceInterface::class);
         $userTopicService->method('getUserTopic')->willReturn('topic');
@@ -121,7 +121,7 @@ final class ZipDownloadHandlerTest extends Unit
         $handler = new ZipDownloadHandler(
             $this->createMock(PublishServiceInterface::class),
             $elementService,
-            $userResolver,
+            $userAccountResolver,
             $userTopicService,
             $zipService
         );

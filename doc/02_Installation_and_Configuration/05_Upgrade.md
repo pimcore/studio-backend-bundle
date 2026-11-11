@@ -21,8 +21,15 @@ The following steps are necessary during updating to newer versions.
     user is reached by its id, and its name is unique across humans and service users. Nothing converts one kind into
     the other: creating a service user from a human copies permissions, roles and workspaces and leaves the human
     unchanged.
-  - `User::getById()` returns a `ServiceUser` for a service-user id. Code that assumes an id always names a human must
-    check `instanceof ServiceUser` first.
+  - `User::getById()` and the static resolver's `UserResolverInterface::getById()` return humans only: a service-user
+    id gives null, exactly as a role id does. `ServiceUser::getById()` returns service users, and the core's
+    `User::getAccountById()` returns either kind. In this bundle the `UserAccountResolverInterface`
+    (`getAccountById()`, `getServiceUserById()`) is the seam for code that accepts both: the MCP access token service,
+    the OAuth identity resolver, the service-user repository, the assignable users of permission and MCP-server-access
+    assignments, the execution-engine job owner and the edit-lock, schedule and note author names.
+  - A service user may own execution-engine jobs and scheduled tasks; both run with its permissions.
+  - Configuration ownership (`OwnershipManagementService`) and grid or saved-search shares
+    (`ConfigurationShareService`) accept humans only: a service-user id is refused as not found.
 - [Service Users] MCP server sharing: a service user's entry in `access.shared_users` is stored with `canRead` and `canEdit` false, whatever the client sent; `canAccess` is kept as sent. See [MCP Server Management](../04_Development_Details/09_MCP_Server_Management.md#access-and-sharing).
 - [Service Users] Added: the service-user schema (`GET /pimcore-studio/api/service-users` and
   `/service-user/{id}`, and the responses that return it) carries `clientCredentialsEnabled` (whether the OAuth

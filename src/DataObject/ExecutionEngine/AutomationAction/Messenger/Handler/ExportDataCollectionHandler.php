@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
@@ -27,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceIn
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use function count;
@@ -45,7 +45,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
         private readonly ExportDataStorageServiceInterface $exportDataStorageService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserTopicServiceInterface $userTopicService,
-        private readonly UserResolverInterface $userResolver,
+        private readonly UserAccountResolverInterface $userAccountResolver,
         private readonly GridServiceInterface $gridService,
         private readonly ElementContextServiceInterface $elementContextService,
     ) {
@@ -62,7 +62,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
             return;
         }
 
-        $user = $this->userResolver->getById($jobRun->getOwnerId());
+        $user = $this->userAccountResolver->getAccountById($jobRun->getOwnerId());
 
         if ($user === null) {
             $this->abort($this->getAbortData(

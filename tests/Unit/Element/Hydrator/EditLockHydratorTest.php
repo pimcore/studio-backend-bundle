@@ -14,10 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Element\Hydrator;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\EditLockHydrator;
+use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Model\Element\Editlock;
 use Pimcore\Model\User;
+use Pimcore\Model\User\ServiceUser;
 
 /**
  * @internal
@@ -42,8 +43,8 @@ final class EditLockHydratorTest extends Unit
         $user->setName('admin');
 
         $hydrator = $this->createHydrator(
-            $this->makeEmpty(UserResolverInterface::class, [
-                'getById' => $user,
+            $this->makeEmpty(UserAccountResolverInterface::class, [
+                'getAccountById' => $user,
             ])
         );
 
@@ -61,8 +62,8 @@ final class EditLockHydratorTest extends Unit
     public function testLockedModelWithUnknownUserReturnsEditLockWithoutUser(): void
     {
         $hydrator = $this->createHydrator(
-            $this->makeEmpty(UserResolverInterface::class, [
-                'getById' => null,
+            $this->makeEmpty(UserAccountResolverInterface::class, [
+                'getAccountById' => null,
             ])
         );
 
@@ -76,11 +77,27 @@ final class EditLockHydratorTest extends Unit
         $this->assertNull($result->getUser());
     }
 
+    public function testLockedModelHeldByAServiceUserCarriesItsName(): void
+    {
+        $serviceUser = new ServiceUser();
+        $serviceUser->setName('svc-erp-sync');
+
+        $hydrator = $this->createHydrator(
+            $this->makeEmpty(UserAccountResolverInterface::class, [
+                'getAccountById' => $serviceUser,
+            ])
+        );
+
+        $result = $hydrator->hydrateEditLock($this->createEditlockModel(7, 1700000000));
+
+        $this->assertSame('svc-erp-sync', $result->getUser()?->getName());
+    }
+
     private function createHydrator(
-        ?UserResolverInterface $userResolver = null,
+        ?UserAccountResolverInterface $userAccountResolver = null,
     ): EditLockHydrator {
         return new EditLockHydrator(
-            $userResolver ?? $this->makeEmpty(UserResolverInterface::class),
+            $userAccountResolver ?? $this->makeEmpty(UserAccountResolverInterface::class),
         );
     }
 

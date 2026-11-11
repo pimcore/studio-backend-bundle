@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCloneMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
@@ -24,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Model\Asset;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -38,7 +38,7 @@ final class AssetCloneHandler extends AbstractHandler
     public function __construct(
         private readonly ElementServiceInterface $elementService,
         private readonly PublishServiceInterface $publishService,
-        private readonly UserResolverInterface $userResolver,
+        private readonly UserAccountResolverInterface $userAccountResolver,
         private readonly UserTopicServiceInterface $userTopicService,
         private readonly CloneServiceInterface $cloneService
     ) {
@@ -58,7 +58,7 @@ final class AssetCloneHandler extends AbstractHandler
         $validatedParameters = $this->validateFullParameters(
             $message,
             $jobRun,
-            $this->userResolver,
+            $this->userAccountResolver,
             [
                 EnvironmentVariables::ORIGINAL_PARENT_ID->value,
                 EnvironmentVariables::PARENT_ID->value,

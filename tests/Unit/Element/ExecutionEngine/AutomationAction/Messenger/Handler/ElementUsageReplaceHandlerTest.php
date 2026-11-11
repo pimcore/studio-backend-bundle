@@ -22,13 +22,13 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\PimcoreResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\ElementUsageReplaceHandler;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\ElementUsageReplaceMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementUsageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -120,7 +120,7 @@ final class ElementUsageReplaceHandlerTest extends Unit
         $handler = new ElementUsageReplaceHandler(
             $elementUsageService,
             $this->makeEmpty(PimcoreResolverInterface::class),
-            $this->makeEmpty(UserResolverInterface::class, ['getById' => $user]),
+            $this->makeEmpty(UserAccountResolverInterface::class, ['getAccountById' => $user]),
             $this->makeEmpty(PublishServiceInterface::class),
             $this->makeEmpty(UserTopicServiceInterface::class, ['getUserTopic' => 'topic']),
             $elementContextService,

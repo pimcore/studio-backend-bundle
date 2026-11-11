@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationA
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\BatchDeleteMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
@@ -24,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
@@ -43,7 +43,7 @@ final class BatchDeleteHandler extends AbstractHandler
         private readonly ElementDeleteServiceInterface $elementDeleteService,
         private readonly PublishServiceInterface $publishService,
         private readonly ServiceResolverInterface $elementService,
-        private readonly UserResolverInterface $userResolver,
+        private readonly UserAccountResolverInterface $userAccountResolver,
         private readonly UserTopicServiceInterface $userTopicService,
     ) {
         parent::__construct();
@@ -59,7 +59,7 @@ final class BatchDeleteHandler extends AbstractHandler
         }
 
         $jobRun = $this->getJobRun($message);
-        $user = $this->userResolver->getById($jobRun->getOwnerId());
+        $user = $this->userAccountResolver->getAccountById($jobRun->getOwnerId());
         if ($user === null) {
             $this->abort($this->getAbortData(
                 Config::USER_NOT_FOUND_MESSAGE->value,

@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\ElementDeleteMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
@@ -25,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
@@ -43,7 +43,7 @@ final class ElementDeleteHandler extends AbstractHandler
         private readonly ElementDeleteServiceInterface $elementDeleteService,
         private readonly ElementServiceInterface $elementService,
         private readonly PublishServiceInterface $publishService,
-        private readonly UserResolverInterface $userResolver,
+        private readonly UserAccountResolverInterface $userAccountResolver,
         private readonly UserTopicServiceInterface $userTopicService,
     ) {
         parent::__construct();
@@ -62,7 +62,7 @@ final class ElementDeleteHandler extends AbstractHandler
         $validatedParameters = $this->validateFullParameters(
             $message,
             $jobRun,
-            $this->userResolver
+            $this->userAccountResolver
         );
 
         if ($validatedParameters instanceof AbortActionData) {

@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tag\ExecutionEngine\AutomationActio
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\PimcoreResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -29,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\ExecutionEngine\AutomationAction\Mess
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchCollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Util\Constant\BatchOperations;
+use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use function count;
 use function sprintf;
@@ -45,7 +45,7 @@ final class BatchTagOperationHandler extends AbstractHandler
     public function __construct(
         private readonly PimcoreResolverInterface $pimcoreResolver,
         private readonly PublishServiceInterface $publishService,
-        private readonly UserResolverInterface $userResolver,
+        private readonly UserAccountResolverInterface $userAccountResolver,
         private readonly TagServiceInterface $tagService,
         private readonly UserTopicServiceInterface $userTopicService,
     ) {
@@ -65,7 +65,7 @@ final class BatchTagOperationHandler extends AbstractHandler
         $validatedParameters = $this->validateJobParameters(
             $message,
             $jobRun,
-            $this->userResolver,
+            $this->userAccountResolver,
             [
                 EnvironmentVariables::BATCH_TAG_OPERATION->value,
                 EnvironmentVariables::TAG_IDS->value,

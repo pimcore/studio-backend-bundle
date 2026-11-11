@@ -20,6 +20,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Model\Exception\NotFoundException as ModelNotFoundException;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing as UserListing;
@@ -37,6 +38,7 @@ final readonly class UserRepository implements UserRepositoryInterface
         private SecurityServiceInterface $securityService,
         private UserResolverInterface $userResolver,
         private Connection $connection,
+        private UserAccountResolverInterface $userAccountResolver,
     ) {
     }
 
@@ -255,8 +257,8 @@ final readonly class UserRepository implements UserRepositoryInterface
 
         $users = [];
         foreach ($ids as $id) {
-            $user = $this->userResolver->getById((int) $id);
-            if ($user instanceof User) {
+            $user = $this->userAccountResolver->getAccountById((int) $id);
+            if ($user !== null) {
                 $users[] = $user;
             }
         }

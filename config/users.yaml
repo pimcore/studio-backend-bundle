@@ -102,6 +102,12 @@ services:
 
 
   #
+  # Resolvers
+  #
+  Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolver
+
+  #
   # Repositories
   #
   Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface:

@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -27,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Trait\ExportCreationHandlerSetupTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -41,7 +41,7 @@ final class XlsxCreationHandler extends AbstractHandler
     public function __construct(
         private readonly ExportDataStorageServiceInterface $exportDataStorageService,
         private readonly PublishServiceInterface $publishService,
-        private readonly UserResolverInterface $userResolver,
+        private readonly UserAccountResolverInterface $userAccountResolver,
         private readonly ExportServiceInterface $xlsxExportService,
         private readonly UserTopicServiceInterface $userTopicService,
 
@@ -59,7 +59,7 @@ final class XlsxCreationHandler extends AbstractHandler
             return;
         }
 
-        $user = $this->userResolver->getById($jobRun->getOwnerId());
+        $user = $this->userAccountResolver->getAccountById($jobRun->getOwnerId());
         if ($user === null) {
             $this->abort($this->getAbortData(
                 Config::XLSX_CREATION_FAILED_MESSAGE->value,

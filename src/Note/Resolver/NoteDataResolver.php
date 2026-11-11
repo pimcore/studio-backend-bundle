@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Note\Resolver;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\NoteUser;
+use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\Note as CoreNote;
 use function is_object;
@@ -27,7 +27,7 @@ final readonly class NoteDataResolver implements NoteDataResolverInterface
 {
     public function __construct(
         private ServiceResolverInterface $serviceResolver,
-        private UserResolverInterface $userResolver
+        private UserAccountResolverInterface $userAccountResolver
     ) {
     }
 
@@ -52,7 +52,7 @@ final readonly class NoteDataResolver implements NoteDataResolverInterface
             return new NoteUser();
         }
 
-        $user = $this->userResolver->getById($note->getUser());
+        $user = $this->userAccountResolver->getAccountById($note->getUser());
 
         if (!$user) {
             return new NoteUser();

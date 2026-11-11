@@ -20,7 +20,6 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Extractor\JobRunExtractorInterfa
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStepInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\ExportDataCollectionHandler;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
@@ -30,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Model\User;
 use ReflectionProperty;
 
@@ -76,8 +76,8 @@ final class ExportDataCollectionHandlerTest extends Unit
         ExportDataStorageServiceInterface $exportDataStorageService
     ): ExportDataCollectionHandler {
         $user = new User();
-        $userResolver = $this->createMock(UserResolverInterface::class);
-        $userResolver->method('getById')->willReturn($user);
+        $userAccountResolver = $this->createMock(UserAccountResolverInterface::class);
+        $userAccountResolver->method('getAccountById')->willReturn($user);
 
         $userTopicService = $this->createMock(UserTopicServiceInterface::class);
         $userTopicService->method('getUserTopic')->willReturn('topic');
@@ -93,7 +93,7 @@ final class ExportDataCollectionHandlerTest extends Unit
             $columnConfigurationService,
             $exportDataStorageService,
             $this->createMock(PublishServiceInterface::class),
-            $userResolver,
+            $userAccountResolver,
             $userTopicService,
             $gridService
         );

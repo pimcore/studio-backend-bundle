@@ -22,7 +22,6 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Handler\CsvCollectionHandler;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
@@ -34,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportDataStorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Resolver\UserAccountResolverInterface;
 use Pimcore\Model\User;
 use Psr\Log\NullLogger;
 use ReflectionProperty;
@@ -123,7 +123,7 @@ final class CsvCollectionHandlerTest extends Unit
             $this->makeEmpty(UserTopicServiceInterface::class, ['getUserTopic' => 'user-topic']),
             $configService,
             $adapterService,
-            $this->makeEmpty(UserResolverInterface::class, ['getById' => (new User())->setId(self::USER_ID)])
+            $this->makeEmpty(UserAccountResolverInterface::class, ['getAccountById' => (new User())->setId(self::USER_ID)])
         );
         $handler->setJobRunRepository($this->makeEmpty(JobRunRepositoryInterface::class, ['update' => $jobRun]));
         $handler->setJobRunExtractor($this->makeEmpty(JobRunExtractorInterface::class, [
