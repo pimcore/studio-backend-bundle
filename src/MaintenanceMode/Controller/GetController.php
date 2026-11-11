@@ -43,7 +43,7 @@ final class GetController extends AbstractApiController
     }
 
     #[Route(path: self::ROUTE, name: 'pimcore_studio_api_maintenance_mode_get', methods: ['GET'])]
-    #[IsGranted(UserPermissions::MAINTENANCE_MODE->value)]
+    #[IsGranted(UserPermissions::PIMCORE_ADMIN->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'maintenance_mode_get',

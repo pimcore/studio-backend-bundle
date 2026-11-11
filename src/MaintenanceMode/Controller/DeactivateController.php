@@ -43,7 +43,7 @@ final class DeactivateController extends AbstractApiController
     }
 
     #[Route(path: self::ROUTE, name: 'pimcore_studio_api_maintenance_mode_deactivate', methods: ['DELETE'])]
-    #[IsGranted(UserPermissions::MAINTENANCE_MODE->value)]
+    #[IsGranted(UserPermissions::PIMCORE_ADMIN->value)]
     #[Delete(
         path: self::PREFIX . self::ROUTE,
         operationId: 'maintenance_mode_deactivate',

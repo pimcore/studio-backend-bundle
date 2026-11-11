@@ -48,7 +48,7 @@ final class ActivateController extends AbstractApiController
      * @throws EnvironmentException|NoRequestException
      */
     #[Route(path: self::ROUTE, name: 'pimcore_studio_api_maintenance_mode_activate', methods: ['POST'])]
-    #[IsGranted(UserPermissions::MAINTENANCE_MODE->value)]
+    #[IsGranted(UserPermissions::PIMCORE_ADMIN->value)]
     #[Post(
         path: self::PREFIX . self::ROUTE,
         operationId: 'maintenance_mode_activate',
