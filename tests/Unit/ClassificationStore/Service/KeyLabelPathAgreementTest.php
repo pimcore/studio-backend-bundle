@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Serv
 
 use Codeception\Test\Unit;
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\DefinitionCacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
@@ -106,7 +107,7 @@ final class KeyLabelPathAgreementTest extends Unit
         $labels = [self::KEY_ID => [self::LANGUAGE => self::LABEL]];
         $enricher = new ActiveGroupTitleEnricher(
             $this->createLabelResolver($labels),
-            $this->createKeyConfigResolver(self::COLUMN_TITLE),
+            $this->createDefinitionCacheResolver(self::COLUMN_TITLE),
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE)
         );
 
@@ -128,10 +129,11 @@ final class KeyLabelPathAgreementTest extends Unit
     {
         $labelResolver = $this->createLabelResolver($labels);
         $keyConfigResolver = $this->createKeyConfigResolver($titleColumn);
+        $definitionCacheResolver = $this->createDefinitionCacheResolver($titleColumn);
         $labelLanguageResolver = $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE);
 
         $fieldDefinition = $this->createFieldDefinition();
-        (new ActiveGroupTitleEnricher($labelResolver, $keyConfigResolver, $labelLanguageResolver))
+        (new ActiveGroupTitleEnricher($labelResolver, $definitionCacheResolver, $labelLanguageResolver))
             ->enrich($fieldDefinition);
 
         $keyLayout = $this
@@ -152,6 +154,24 @@ final class KeyLabelPathAgreementTest extends Unit
             ->willReturn($keyConfig);
 
         return $keyConfigResolver;
+    }
+
+    /**
+     * The enricher reads the key config from the definition cache the layout has already
+     * filled; the layout service beside it still resolves through KeyConfigResolver. Both
+     * must answer with the same KeyConfig, which is the agreement this test is about.
+     */
+    private function createDefinitionCacheResolver(string $titleColumn): DefinitionCacheResolverInterface
+    {
+        $keyConfig = $this->createKeyConfig(self::KEY_ID, self::KEY_NAME, $titleColumn);
+
+        $definitionCacheResolver = $this->createMock(DefinitionCacheResolverInterface::class);
+        $definitionCacheResolver
+            ->method('get')
+            ->with(self::KEY_ID)
+            ->willReturn($keyConfig);
+
+        return $definitionCacheResolver;
     }
 
     /**

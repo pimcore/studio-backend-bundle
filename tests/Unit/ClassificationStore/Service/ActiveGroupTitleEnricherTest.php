@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\DefinitionCacheResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricher;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
@@ -213,7 +213,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
 
         $enricher = new ActiveGroupTitleEnricher(
             $this->createLabelResolver([self::KEY_ID => [self::LANGUAGE => self::COLUMN_TITLE]]),
-            $this->createKeyConfigResolver([]),
+            $this->createDefinitionCacheResolver([]),
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE)
         );
 
@@ -237,7 +237,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
 
         $enricher = new ActiveGroupTitleEnricher(
             $this->createLabelResolver([self::KEY_ID => [self::LANGUAGE => 'Gewicht']]),
-            $this->createKeyConfigResolver([
+            $this->createDefinitionCacheResolver([
                 $this->createKeyConfig(self::KEY_ID, self::KEY_NAME, self::COLUMN_TITLE),
             ]),
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE)
@@ -263,7 +263,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
 
         $enricher = new ActiveGroupTitleEnricher(
             $this->createLabelResolver(),
-            $this->createKeyConfigResolver([
+            $this->createDefinitionCacheResolver([
                 $this->createKeyConfig(self::KEY_ID, self::KEY_NAME, self::COLUMN_TITLE),
                 $this->createKeyConfig(12, self::KEY_NAMES[12], ''),
             ]),
@@ -291,7 +291,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
 
         $enricher = new ActiveGroupTitleEnricher(
             $this->createLabelResolver([self::KEY_ID => [self::DEFAULT_LANGUAGE => self::COLUMN_TITLE]]),
-            $this->createKeyConfigResolver([$this->createKeyConfig(self::KEY_ID, self::KEY_NAME)]),
+            $this->createDefinitionCacheResolver([$this->createKeyConfig(self::KEY_ID, self::KEY_NAME)]),
             $this->createLabelLanguageResolver(null, self::DEFAULT_LANGUAGE)
         );
 
@@ -322,7 +322,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
 
         return new ActiveGroupTitleEnricher(
             $this->createLabelResolver($labelsByKeyId),
-            $this->createKeyConfigResolver($keyConfigs),
+            $this->createDefinitionCacheResolver($keyConfigs),
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE)
         );
     }
@@ -330,19 +330,19 @@ final class ActiveGroupTitleEnricherTest extends Unit
     /**
      * @param list<KeyConfig> $keyConfigs
      */
-    private function createKeyConfigResolver(array $keyConfigs): KeyConfigResolverInterface
+    private function createDefinitionCacheResolver(array $keyConfigs): DefinitionCacheResolverInterface
     {
         $byId = [];
         foreach ($keyConfigs as $keyConfig) {
             $byId[$keyConfig->getId() ?? 0] = $keyConfig;
         }
 
-        $keyConfigResolver = $this->createMock(KeyConfigResolverInterface::class);
-        $keyConfigResolver
-            ->method('getById')
+        $definitionCacheResolver = $this->createMock(DefinitionCacheResolverInterface::class);
+        $definitionCacheResolver
+            ->method('get')
             ->willReturnCallback(static fn (int $keyId): ?KeyConfig => $byId[$keyId] ?? null);
 
-        return $keyConfigResolver;
+        return $definitionCacheResolver;
     }
 
     private function nestInALayout(Classificationstore $fieldDefinition): Panel
