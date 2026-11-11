@@ -58,7 +58,12 @@ class AbstractHandler extends AbstractAutomationActionHandler
         UserAccountResolverInterface $userAccountResolver,
         ?array $requiredEnvironmentVariables = null,
     ): AbortActionData|FullExecuteActionData {
-        $parameters = $this->validateJobParameters($message, $jobRun, $userAccountResolver, $requiredEnvironmentVariables);
+        $parameters = $this->validateJobParameters(
+            $message,
+            $jobRun,
+            $userAccountResolver,
+            $requiredEnvironmentVariables
+        );
         if ($parameters instanceof FullExecuteActionData || $parameters instanceof AbortActionData) {
             return $parameters;
         }

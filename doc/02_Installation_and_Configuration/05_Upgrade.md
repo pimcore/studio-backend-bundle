@@ -23,10 +23,12 @@ The following steps are necessary during updating to newer versions.
     unchanged.
   - `User::getById()` and the static resolver's `UserResolverInterface::getById()` return humans only: a service-user
     id gives null, exactly as a role id does. `ServiceUser::getById()` returns service users, and the core's
-    `User::getAccountById()` returns either kind. In this bundle the `UserAccountResolverInterface`
-    (`getAccountById()`, `getServiceUserById()`) is the seam for code that accepts both: the MCP access token service,
+    `User::getAccountById()` returns either kind. Inside this bundle the `@internal`
+    `UserAccountResolverInterface` (`getAccountById()`, `getServiceUserById()`) is the seam for code that accepts
+    both (other bundles use the core methods): the MCP access token service,
     the OAuth identity resolver, the service-user repository, the assignable users of permission and MCP-server-access
-    assignments, the execution-engine job owner and the edit-lock, schedule and note author names.
+    assignments, the execution-engine job owner, the sender of a dispatched notification and the edit-lock,
+    schedule and note author names.
   - A service user may own execution-engine jobs and scheduled tasks; both run with its permissions.
   - Configuration ownership (`OwnershipManagementService`) and grid or saved-search shares
     (`ConfigurationShareService`) accept humans only: a service-user id is refused as not found.
