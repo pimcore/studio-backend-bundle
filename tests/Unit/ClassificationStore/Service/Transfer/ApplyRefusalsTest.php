@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Appl
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusals;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyReport;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactAssignmentEntry;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\MatchedRow;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
@@ -51,7 +52,7 @@ final class ApplyRefusalsTest extends Unit
             ArtifactSection::SUB_GROUPS,
             ApplyOutcome::UPDATED,
             'Dimensions',
-            7,
+            new MatchedRow(7),
             'sub group "Dimensions"',
             '01SUB'
         );
@@ -75,7 +76,15 @@ final class ApplyRefusalsTest extends Unit
             $refusals = $this->createRefusals(collectionNameTaken: true, groupNameTaken: true);
 
             $this->assertFalse(
-                $refusals->refuseTakenName($context, $section, ApplyOutcome::UPDATED, 'Alpha', 7, 'label', 'id'),
+                $refusals->refuseTakenName(
+                    $context,
+                    $section,
+                    ApplyOutcome::UPDATED,
+                    'Alpha',
+                    new MatchedRow(7),
+                    'label',
+                    'id'
+                ),
                 $section->value
             );
             $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
@@ -123,7 +132,7 @@ final class ApplyRefusalsTest extends Unit
                 ArtifactSection::SUB_GROUPS,
                 ApplyOutcome::MATCHED_UNCHANGED,
                 'Dimensions',
-                7,
+                new MatchedRow(7),
                 'label',
                 'id'
             )
@@ -140,10 +149,26 @@ final class ApplyRefusalsTest extends Unit
         $refusals = $this->createRefusals();
 
         $this->assertFalse(
-            $refusals->refuseTakenName($context, ArtifactSection::GROUPS, ApplyOutcome::CREATED, 'Alpha', null, 'one', 'id1')
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::GROUPS,
+                ApplyOutcome::CREATED,
+                'Alpha',
+                null,
+                'one',
+                'id1'
+            )
         );
         $this->assertTrue(
-            $refusals->refuseTakenName($context, ArtifactSection::GROUPS, ApplyOutcome::CREATED, 'alpha', null, 'two', 'id2')
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::GROUPS,
+                ApplyOutcome::CREATED,
+                'alpha',
+                null,
+                'two',
+                'id2'
+            )
         );
         $this->assertSame(
             ['two: the name is already another entry\'s in this store'],
@@ -166,7 +191,7 @@ final class ApplyRefusalsTest extends Unit
                 ArtifactSection::GROUPS,
                 ApplyOutcome::MATCHED_UNCHANGED,
                 'Measurements',
-                7,
+                new MatchedRow(7),
                 'one',
                 '01GROUP'
             )
@@ -202,10 +227,9 @@ final class ApplyRefusalsTest extends Unit
                     ArtifactSection::GROUPS,
                     ApplyOutcome::MATCHED_UNCHANGED,
                     'Dimensions',
-                    $id,
+                    new MatchedRow($id, 'Dimensions'),
                     $identifier,
-                    $identifier,
-                    'Dimensions'
+                    $identifier
                 )
             );
         }
@@ -228,10 +252,9 @@ final class ApplyRefusalsTest extends Unit
                 ArtifactSection::GROUPS,
                 ApplyOutcome::UPDATED,
                 'Lengths',
-                7,
+                new MatchedRow(7, 'Dimensions'),
                 'A',
-                'A',
-                'Dimensions'
+                'A'
             )
         );
         $this->assertFalse(
@@ -262,7 +285,7 @@ final class ApplyRefusalsTest extends Unit
             ArtifactSection::GROUPS,
             ApplyOutcome::UPDATED,
             'Sizes',
-            7,
+            new MatchedRow(7),
             'sub group "Sizes"',
             '01SUB'
         );

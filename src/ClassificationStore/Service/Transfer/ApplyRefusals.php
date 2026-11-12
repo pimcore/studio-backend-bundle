@@ -75,11 +75,13 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
         ArtifactSection $section,
         ApplyOutcome $outcome,
         string $name,
-        ?int $exceptId,
+        ?MatchedRow $matched,
         string $label,
         string $identifier,
-        ?string $storedName = null,
     ): bool {
+        $exceptId = $matched?->getId();
+        $storedName = $matched?->getName();
+
         // the run answers for the names it is writing: a file naming one twice is a broken file, and
         // every entry carrying the name once the apply is done claims it - one the store already
         // matched as much as one it creates - so the second of two is a conflict whichever of them

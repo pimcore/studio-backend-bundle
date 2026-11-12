@@ -917,7 +917,13 @@ final readonly class ClassificationStoreAdapter implements
     ): Closure {
         $sets = [];
 
-        return function (?KeyConfig $keyConfig) use (&$sets, $object, $isStoreLocalized, $permissionType, $user): array {
+        return function (?KeyConfig $keyConfig) use (
+            &$sets,
+            $object,
+            $isStoreLocalized,
+            $permissionType,
+            $user
+        ): array {
             $isKeyLocalized = $this->isKeyLocalized($keyConfig, $isStoreLocalized);
             $setKey = $isKeyLocalized ? 'localized' : 'independent';
             if (!array_key_exists($setKey, $sets)) {

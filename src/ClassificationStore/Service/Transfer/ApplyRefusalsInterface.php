@@ -40,7 +40,8 @@ interface ApplyRefusalsInterface
      *
      * `$outcome` is what the entry would otherwise be, because the guard follows the entity rather
      * than the artifact - a rename is refused only where the level's own ::update() refuses one -
-     * and `$exceptId` is the row the entry was matched to, which its own name never collides with.
+     * and `$matched` is the row the entry was matched to, which its own name never collides with, with
+     * the name it is stored under.
      *
      * @throws DatabaseException
      */
@@ -49,10 +50,9 @@ interface ApplyRefusalsInterface
         ArtifactSection $section,
         ApplyOutcome $outcome,
         string $name,
-        ?int $exceptId,
+        ?MatchedRow $matched,
         string $label,
         string $identifier,
-        ?string $storedName = null,
     ): bool;
 
     /**

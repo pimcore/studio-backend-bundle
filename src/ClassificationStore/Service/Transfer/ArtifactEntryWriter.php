@@ -284,10 +284,9 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
             $section,
             $outcome,
             $name,
-            $target?->getId(),
+            $target === null ? null : new MatchedRow((int) $target->getId(), $target->getName()),
             $label,
-            $identifier,
-            $target?->getName()
+            $identifier
         )) {
             return;
         }
