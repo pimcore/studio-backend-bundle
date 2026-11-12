@@ -168,6 +168,32 @@ final class McpServerAccessResolverTest extends Unit
         $this->assertFalse($resolver->isAllowed($byName, McpServerCapability::Edit, $serviceUser));
     }
 
+    public function testAServiceUserOwnerGetsNoImplicitViewOrEdit(): void
+    {
+        // The write side stores a service user's entry without Read and Edit. Ownership must
+        // not hand them back at resolve time, whatever the stored flags say: a service user
+        // can hold the owner name through shipped configuration or by taking a deleted
+        // person's name.
+        $serviceUser = User::newServiceUser();
+        $serviceUser->setId(7);
+        $serviceUser->setName('svc-erp-sync');
+
+        $owned = $this->server(new McpServerAccess(owner: 'svc-erp-sync'));
+        $this->assertSame(
+            ['view' => false, 'access' => false, 'edit' => false],
+            $this->resolver()->resolve($owned, $serviceUser)
+        );
+
+        $ownedWithAccess = $this->server(new McpServerAccess(
+            owner: 'svc-erp-sync',
+            sharedUsers: [$this->entry('svc-erp-sync', canAccess: true, canRead: false)],
+        ));
+        $this->assertSame(
+            ['view' => false, 'access' => true, 'edit' => false],
+            $this->resolver()->resolve($ownedWithAccess, $serviceUser)
+        );
+    }
+
     private function entry(
         string $name,
         bool $canAccess = false,
