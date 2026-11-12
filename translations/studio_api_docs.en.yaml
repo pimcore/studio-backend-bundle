@@ -1381,6 +1381,12 @@ user_list_with_permission_description: |
 user_list_with_permission_success_response: List of users with the given permission
 user_list_with_permission_summary: Get all users with a specific permission
 user_reset_password_summary: Sending username to reset password.
+user_send_invitation_description: |
+  Send an invitation mail to the user identified by <strong>{id}</strong>. <br>
+  The mail carries a one time login link, valid for 24 hours, that lets the user set their own password. <br>
+  The user must be active and must have a valid email address. A user without a password is given a
+  throwaway one, so the login token is accepted.
+user_send_invitation_summary: Send an invitation link to a user by ID
 user_token_link_get_description: |
   Generate a login link with a token for a user based on the provided user <strong>{id}</strong>. <br>
   The <strong>{id}</strong> must be an ID of existing user.

@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\Invitation;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\TokenLink;
 
@@ -36,4 +37,12 @@ interface UserLoginServiceInterface
      * @throws ForbiddenException|NotFoundException
      */
     public function getLoginTokenUrl(int $id, TokenLink $parameter): string;
+
+    /**
+     * Sends a one time login link to the user, so they can set their own password.
+     *
+     * @throws ForbiddenException|InvalidArgumentException|NotFoundException|DomainConfigurationException
+     * @throws SendMailException
+     */
+    public function sendInvitation(int $id, Invitation $parameter): void;
 }
