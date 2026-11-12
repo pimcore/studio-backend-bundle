@@ -349,7 +349,7 @@ public function prepend(ContainerBuilder $container): void
 :::note
 
 A single adapter class can handle multiple field types. For example, the built-in
-`StringAdapter` handles `input`, `textarea`, `email`, `firstname`, `lastname`, `password`,
+`StringAdapter` handles `input`, `textarea`, `email`, `firstname`, `lastname`,
 `time`, and `wysiwyg`.
 
 :::
@@ -505,7 +505,8 @@ class required.
 
 | Adapter | Field Types | Interfaces |
 |---|---|---|
-| `StringAdapter` | `email`, `firstname`, `input`, `lastname`, `password`, `textarea`, `time`, `wysiwyg` | Setter |
+| `StringAdapter` | `email`, `firstname`, `input`, `lastname`, `textarea`, `time`, `wysiwyg` | Setter |
+| `PasswordAdapter` | `password` | Setter, Normalizer, Export |
 | `BooleanAdapter` | `booleanSelect`, `checkbox` | Setter |
 | `NumericAdapter` | `numeric` | Setter |
 | `NumericRangeAdapter` | `numericRange` | Setter |
