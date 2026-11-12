@@ -10,16 +10,19 @@ The following steps are necessary during updating to newer versions.
 - [Service Users] Added: machine identities, a Pimcore user of type `serviceuser` (a `Pimcore\Model\User` whose `isServiceUser()` is true),
   managed through the new "Service User Management" endpoints and the console command
   `studio-backend-bundle:service-user:mcp-token`. Everything is additive: no existing endpoint, schema or user type
-  changes. The service-user endpoints need a core release that provides `User::newServiceUser()`; the 2026.x
-  core checked for this entry did not yet have it. See [Service Users](./08_Service_Users.md).
+  changes. The service-user endpoints need a core release that provides `User::newServiceUser()`
+  (pimcore/pimcore#19692). See [Service Users](./08_Service_Users.md).
 - [Service Users] Semantic notes, for code that works with users:
   - A service user never logs in with a password. Setting one or setting it as an administrator is refused on the
     core class; every save stores an unusable random value that no password verifies against (as users created
     through OpenID Connect have), so `Authentication::isValidUser()` treats it like any user. It is never an administrator, has no two-factor authentication and cannot log in to
     Studio. Its `email` is an optional contact address for the team responsible. Logging in and password recovery do
     not use it.
-  - Identity kinds never mix. `User::getByName()`, `User\Listing` and the user endpoints return humans only. A service
-    user is reached by its id, and its name is unique across humans and service users. Nothing converts one kind into
+  - Identity kinds never mix. `User::getByName()`, `User\Listing` and the user endpoints return humans only: the
+    user tree and lists leave service users out, and the endpoints that read or change one user by id (detail,
+    update, password, delete, login link, two-factor reset, object dependencies) answer `404` for a service-user id.
+    Only the user image is served for any id, as authors are shown by id. A service user is reached through the
+    service-user endpoints, and its name is unique across humans and service users. Nothing converts one kind into
     the other: creating a service user from a human copies permissions, roles and workspaces and leaves the human
     unchanged.
   - `User::getById()` returns the `User` for a service-user id as for any user id, with `isServiceUser()` true. Code that
@@ -28,7 +31,8 @@ The following steps are necessary during updating to newer versions.
 - [Service Users] Added: the service-user schema (`GET /pimcore-studio/api/service-users` and
   `/service-user/{id}`, and the responses that return it) carries `clientCredentialsEnabled` (whether the OAuth
   `client_credentials` grant is on) and `mcpTokens` (`active`, `latestExpiresAt`; a summary of the MCP access tokens,
-  read with one grouped query for the whole collection). Additive; no endpoint, permission or token lifetime changes.
+  read with one grouped query for the whole collection, as are the client ids). Additive; no endpoint, permission
+  or token lifetime changes.
 - [Service Users] Changed: `clientSecret` is nullable in the service-user credentials response (create, create from a
   user, rotate secret). It is `null` while `pimcore_studio_backend.oauth.client_credentials.enabled` is off; the key is
   still present. See [Service Users](./08_Service_Users.md#which-credential-to-use).

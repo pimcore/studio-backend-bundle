@@ -20,14 +20,12 @@ use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDataObjectWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDocumentWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
 use Symfony\Component\Validator\Constraints\Email;
-use Symfony\Component\Validator\Constraints\IsNull;
-use function array_filter;
-use function array_keys;
 
 /**
- * The fields of a service user that may change. Name, password, admin rights and two-factor
- * settings are not among them: a payload that sends one of them is refused with a validation
- * error rather than silently ignored. The name stays fixed because MCP server access is
+ * The fields of a service user that may change. Name, password, admin rights, two-factor
+ * settings and the active flag are not among them. The update endpoint maps this payload
+ * with allow_extra_attributes false, so a request that sends any key not declared here is
+ * refused rather than silently ignored. The name stays fixed because MCP server access is
  * matched by name.
  *
  * @internal
@@ -40,8 +38,6 @@ use function array_keys;
 )]
 final readonly class UpdateParameter
 {
-    private const string REFUSED = 'A service user has no such field; it cannot be set.';
-
     /**
      * @param string[] $permissions
      * @param int[] $roles
@@ -82,35 +78,7 @@ final readonly class UpdateParameter
             items: new Items(ref: UserDocumentWorkspace::class)
         )]
         private array $documentWorkspaces = [],
-        #[IsNull(message: self::REFUSED)]
-        private mixed $name = null,
-        #[IsNull(message: self::REFUSED)]
-        private mixed $password = null,
-        #[IsNull(message: self::REFUSED)]
-        private mixed $admin = null,
-        #[IsNull(message: self::REFUSED)]
-        private mixed $twoFactorAuthenticationRequired = null,
-        #[IsNull(message: self::REFUSED)]
-        private mixed $twoFactorAuthentication = null,
     ) {
-    }
-
-    /**
-     * Names of the sent fields a service user does not have.
-     *
-     * @return list<string>
-     */
-    public function getRefusedFields(): array
-    {
-        $refused = [
-            'name' => $this->name,
-            'password' => $this->password,
-            'admin' => $this->admin,
-            'twoFactorAuthenticationRequired' => $this->twoFactorAuthenticationRequired,
-            'twoFactorAuthentication' => $this->twoFactorAuthentication,
-        ];
-
-        return array_keys(array_filter($refused, static fn (mixed $value): bool => $value !== null));
     }
 
     public function getEmail(): ?string

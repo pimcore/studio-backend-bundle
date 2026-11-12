@@ -33,6 +33,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -77,7 +78,8 @@ final class UpdateController extends AbstractApiController
     ])]
     public function updateServiceUser(
         int $id,
-        #[MapRequestPayload] UpdateParameter $parameter
+        #[MapRequestPayload(serializationContext: [AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => false])]
+        UpdateParameter $parameter
     ): JsonResponse {
         return $this->jsonResponse($this->serviceUserService->updateServiceUser($id, $parameter));
     }

@@ -44,6 +44,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneServiceInterfa
 use Pimcore\Model\User;
 use Pimcore\Model\User\Workspace\Asset as AssetWorkspace;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_fill_keys;
 
 /**
  * @internal
@@ -264,22 +265,6 @@ final class ServiceUserServiceTest extends Unit
         $this->assertSame(42, $schema->getId());
     }
 
-    public function testUpdateRefusesPasswordAdminTwoFactorAndRenameEvenPastValidation(): void
-    {
-        $serviceUser = $this->serviceUser();
-        $service = $this->service(repository: $this->repository($serviceUser));
-
-        try {
-            $service->updateServiceUser(42, new UpdateParameter(permissions: ['assets'], admin: true));
-            $this->fail('Admin rights must be refused.');
-        } catch (InvalidArgumentException $exception) {
-            $this->assertStringContainsString('admin', $exception->getMessage());
-        }
-
-        $this->assertSame([], $this->saved);
-        $this->assertFalse($serviceUser->isAdmin());
-    }
-
     public function testDeactivateBlocksTheServiceUser(): void
     {
         $serviceUser = $this->serviceUser();
@@ -442,6 +427,48 @@ final class ServiceUserServiceTest extends Unit
         $this->assertSame(0, $items[2]->getMcpTokens()->getActive());
     }
 
+    public function testCollectionIssuesOneGroupedClientQueryForAllUsers(): void
+    {
+        $first = $this->serviceUser();
+        $second = $this->serviceUser();
+        $second->setId(43);
+
+        $queries = [];
+        $service = $this->service(
+            repository: $this->makeEmpty(ServiceUserRepositoryInterface::class, [
+                'listServiceUsers' => [$first, $second],
+            ]),
+            clientStore: $this->makeEmpty(ServiceUserClientStoreInterface::class, [
+                'findByServiceUserId' => Expected::never(),
+                'findClientIdsByServiceUserIds' => static function (array $serviceUserIds) use (&$queries): array {
+                    $queries[] = $serviceUserIds;
+
+                    return [43 => 'svc_client_43'];
+                },
+            ]),
+        );
+
+        $items = $service->listServiceUsers()->getItems();
+
+        $this->assertSame([[42, 43]], $queries);
+        $this->assertNull($items[0]->getClientId());
+        $this->assertSame('svc_client_43', $items[1]->getClientId());
+    }
+
+    public function testASingleServiceUserLooksUpItsOwnClient(): void
+    {
+        $serviceUser = $this->serviceUser();
+        $service = $this->service(
+            repository: $this->repository($serviceUser),
+            clientStore: $this->makeEmpty(ServiceUserClientStoreInterface::class, [
+                'findByServiceUserId' => Expected::once($this->client()),
+                'findClientIdsByServiceUserIds' => Expected::never(),
+            ]),
+        );
+
+        $this->assertSame('svc_client', $service->getServiceUser(42)->getClientId());
+    }
+
     private function service(
         ?ServiceUserRepositoryInterface $repository = null,
         ?UserRepositoryInterface $userRepository = null,
@@ -450,6 +477,7 @@ final class ServiceUserServiceTest extends Unit
         ?EventDispatcherInterface $eventDispatcher = null,
         ?McpAccessTokenRepositoryInterface $tokenRepository = null,
         ?bool $clientCredentialsEnabled = null,
+        ?ServiceUserClientStoreInterface $clientStore = null,
     ): ServiceUserService {
         return new ServiceUserService(
             $repository ?? $this->repository(),
@@ -470,15 +498,11 @@ final class ServiceUserServiceTest extends Unit
                 $clientCredentialsEnabled ?? true,
             ),
             new ServiceUserSchemaBuilder(
-                $this->makeEmpty(ServiceUserClientStoreInterface::class, [
-                    'findByServiceUserId' => new DynamicClient(
-                        'svc_client',
-                        'svc',
-                        [],
-                        ['client_credentials'],
-                        [],
-                        true,
-                        'hash'
+                $clientStore ?? $this->makeEmpty(ServiceUserClientStoreInterface::class, [
+                    'findByServiceUserId' => $this->client(),
+                    'findClientIdsByServiceUserIds' => static fn (array $ids): array => array_fill_keys(
+                        $ids,
+                        'svc_client'
                     ),
                 ]),
                 $this->makeEmpty(ServiceUserHydratorInterface::class, [
@@ -509,6 +533,11 @@ final class ServiceUserServiceTest extends Unit
             ),
             $currentUser ?? $this->currentUser(isAdmin: false),
         );
+    }
+
+    private function client(): DynamicClient
+    {
+        return new DynamicClient('svc_client', 'svc', [], ['client_credentials'], [], true, 'hash');
     }
 
     private function repository(?User $existing = null): ServiceUserRepositoryInterface

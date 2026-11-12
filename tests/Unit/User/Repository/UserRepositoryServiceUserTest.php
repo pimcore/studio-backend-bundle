@@ -18,13 +18,15 @@ use Codeception\Test\Unit;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepository;
 use Pimcore\Model\User;
 
 /**
  * Permission, role and MCP server access assignments resolve users by id or name; service
- * users must be found there too, so an administrator can grant them access.
+ * users must be found there too, so an administrator can grant them access. The user
+ * endpoints that act on one user by id manage persons only and look it up as a person.
  *
  * @internal
  */
@@ -109,6 +111,46 @@ final class UserRepositoryServiceUserTest extends Unit
 
         $this->assertSame([], $repository->getUsersByIds([]));
         $this->assertSame([], $repository->getUsersByNames([]));
+    }
+
+    public function testPersonByIdReturnsAPerson(): void
+    {
+        $human = $this->user(new User(), 1, 'jane');
+
+        $this->assertSame($human, $this->repositoryWith([1 => $human])->getPersonById(1));
+    }
+
+    public function testPersonByIdDoesNotFindAServiceUser(): void
+    {
+        $serviceUser = $this->user(User::newServiceUser(), 7, 'svc-erp-sync');
+
+        $this->expectException(NotFoundException::class);
+        $this->repositoryWith([7 => $serviceUser])->getPersonById(7);
+    }
+
+    public function testPersonByIdDoesNotFindAMissingUser(): void
+    {
+        $this->expectException(NotFoundException::class);
+        $this->repositoryWith([])->getPersonById(3);
+    }
+
+    public function testUserByIdStillFindsAServiceUser(): void
+    {
+        $serviceUser = $this->user(User::newServiceUser(), 7, 'svc-erp-sync');
+
+        $this->assertSame($serviceUser, $this->repositoryWith([7 => $serviceUser])->getUserById(7));
+    }
+
+    /**
+     * @param array<int, User> $users
+     */
+    private function repositoryWith(array $users): UserRepository
+    {
+        return new UserRepository(
+            $this->makeEmpty(SecurityServiceInterface::class),
+            $this->resolver($users),
+            $this->makeEmpty(Connection::class),
+        );
     }
 
     /**

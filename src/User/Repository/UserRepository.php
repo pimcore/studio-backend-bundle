@@ -65,6 +65,20 @@ final readonly class UserRepository implements UserRepositoryInterface
         return $user;
     }
 
+    /**
+     * @throws NotFoundException
+     */
+    public function getPersonById(int $userId): UserInterface
+    {
+        $user = $this->getUserById($userId);
+
+        if ($user instanceof User && $user->isServiceUser()) {
+            throw new NotFoundException('User', $userId);
+        }
+
+        return $user;
+    }
+
     public function getStoredTwoFactorAuthentication(int $userId): array
     {
         // Not getUserById(): that answers from the request's runtime cache.

@@ -46,7 +46,7 @@ final class UserServiceTest extends Unit
             'getCurrentUser' => $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
         ]);
         $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $userToDelete,
+            'getPersonById' => $userToDelete,
         ]);
 
         $userService = $this->getUserService($securityServiceMock, $userRepositoryMock);
@@ -66,7 +66,7 @@ final class UserServiceTest extends Unit
         ]);
 
         $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $userToDelete,
+            'getPersonById' => $userToDelete,
             'deleteUser' => function (User $user) {
                 throw new Exception('Database error');
             },
@@ -89,7 +89,7 @@ final class UserServiceTest extends Unit
         ]);
 
         $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $userToDelete,
+            'getPersonById' => $userToDelete,
             'deleteUser' => Expected::once(),
         ]);
 
@@ -108,7 +108,7 @@ final class UserServiceTest extends Unit
         ]);
 
         $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $userToDelete,
+            'getPersonById' => $userToDelete,
             'deleteUser' => Expected::once(),
         ]);
 
@@ -126,7 +126,7 @@ final class UserServiceTest extends Unit
         ]);
 
         $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $adminUser,
+            'getPersonById' => $adminUser,
         ]);
 
         $userService = $this->getUserService($securityServiceMock, $userRepositoryMock);
@@ -148,7 +148,7 @@ final class UserServiceTest extends Unit
         ]);
 
         $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $user,
+            'getPersonById' => $user,
         ]);
 
         $userHydratorMock = $this->makeEmpty(UserHydratorInterface::class, [

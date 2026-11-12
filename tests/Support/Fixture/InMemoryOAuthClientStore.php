@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Support\Fixture;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\DynamicClient;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStoreInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ServiceUserClientStoreInterface;
+use function in_array;
 
 /**
  * One client table seen through both stores, as in the database: the client repository
@@ -60,6 +61,18 @@ final class InMemoryOAuthClientStore implements DynamicClientStoreInterface, Ser
         }
 
         return null;
+    }
+
+    public function findClientIdsByServiceUserIds(array $serviceUserIds): array
+    {
+        $clientIds = [];
+        foreach ($this->clients as $client) {
+            if ($client->serviceUserId !== null && in_array($client->serviceUserId, $serviceUserIds, true)) {
+                $clientIds[$client->serviceUserId] = $client->identifier;
+            }
+        }
+
+        return $clientIds;
     }
 
     public function deleteByServiceUserId(int $serviceUserId): void

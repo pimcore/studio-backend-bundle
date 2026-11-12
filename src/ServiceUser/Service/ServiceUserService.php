@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -30,8 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneServiceInterface;
 use Pimcore\Model\User;
 use function count;
-use function implode;
-use function sprintf;
 
 /**
  * @internal
@@ -122,13 +119,6 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
 
     public function updateServiceUser(int $id, UpdateParameter $parameter): ServiceUserSchema
     {
-        $refused = $parameter->getRefusedFields();
-        if ($refused !== []) {
-            throw new InvalidArgumentException(
-                sprintf('A service user has no such field: %s.', implode(', ', $refused))
-            );
-        }
-
         $serviceUser = $this->repository->getServiceUser($id);
 
         $serviceUser->setEmail($parameter->getEmail());

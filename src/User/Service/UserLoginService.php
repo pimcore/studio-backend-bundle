@@ -83,7 +83,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
 
     public function getLoginTokenUrl(int $id, TokenLink $parameter): string
     {
-        $user = $this->userRepository->getUserById($id);
+        $user = $this->userRepository->getPersonById($id);
         if ($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
             throw new ForbiddenException(
                 'Cannot generate login token URL for this user',

@@ -32,6 +32,16 @@ interface ServiceUserClientStoreInterface
     public function findByServiceUserId(int $serviceUserId): ?DynamicClient;
 
     /**
+     * The client ids of the clients bound to the given service users, read with one query.
+     * A service user without a client is missing from the result.
+     *
+     * @param list<int> $serviceUserIds
+     *
+     * @return array<int, string> client ids by service user id
+     */
+    public function findClientIdsByServiceUserIds(array $serviceUserIds): array;
+
+    /**
      * Deletes the client bound to the service user, so its secret stops validating at once.
      * Does nothing when the service user has no client.
      */

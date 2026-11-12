@@ -39,14 +39,15 @@ final readonly class ServiceUserSchemaBuilder implements ServiceUserSchemaBuilde
 
     public function buildAll(array $serviceUsers): array
     {
-        $summaries = $this->mcpTokenRepository->summarizeByUserIds(
-            array_map(static fn (User $serviceUser): int => (int) $serviceUser->getId(), $serviceUsers),
-            time()
-        );
+        // One query each for the token summaries and the client ids of the whole collection.
+        $ids = array_map(static fn (User $serviceUser): int => (int) $serviceUser->getId(), $serviceUsers);
+        $summaries = $this->mcpTokenRepository->summarizeByUserIds($ids, time());
+        $clientIds = $this->clientStore->findClientIdsByServiceUserIds($ids);
 
         $items = [];
         foreach ($serviceUsers as $serviceUser) {
-            $items[] = $this->build($serviceUser, $summaries);
+            $id = (int) $serviceUser->getId();
+            $items[] = $this->buildSchema($serviceUser, $summaries[$id] ?? null, $clientIds[$id] ?? null);
         }
 
         return $items;
@@ -56,12 +57,22 @@ final readonly class ServiceUserSchemaBuilder implements ServiceUserSchemaBuilde
     {
         $id = (int) $serviceUser->getId();
         $summaries ??= $this->mcpTokenRepository->summarizeByUserIds([$id], time());
-        $summary = $summaries[$id] ?? null;
 
-        $client = $this->clientStore->findByServiceUserId($id);
+        return $this->buildSchema(
+            $serviceUser,
+            $summaries[$id] ?? null,
+            $this->clientStore->findByServiceUserId($id)?->identifier
+        );
+    }
+
+    /**
+     * @param array{active: int, latestExpiresAt: int}|null $summary
+     */
+    private function buildSchema(User $serviceUser, ?array $summary, ?string $clientId): ServiceUserSchema
+    {
         $schema = $this->hydrator->hydrate(
             $serviceUser,
-            $client?->identifier,
+            $clientId,
             new ServiceUserMcpTokens($summary['active'] ?? 0, $summary['latestExpiresAt'] ?? null)
         );
 

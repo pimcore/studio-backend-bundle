@@ -42,8 +42,10 @@ Creating a service user from a user copies the user's permissions, roles, class 
 translation language restrictions and workspaces. The user is not changed and admin rights are never copied. Only
 an administrator may create a service user from an administrator.
 
-The update endpoint refuses `name`, `password`, `admin` and two-factor fields with a validation error. The name
-stays fixed because MCP server access is granted by name.
+The update endpoint accepts only `email`, `permissions`, `roles`, `classes`, `docTypes` and the three workspace
+lists. Any other key, such as `name`, `password`, `admin`, `active` or a misspelled field, is refused with `422`,
+whatever its value, so nothing is silently ignored. The name stays fixed because MCP server access is granted by
+name; a service user is deactivated through its deactivate endpoint.
 
 ## MCP access tokens
 

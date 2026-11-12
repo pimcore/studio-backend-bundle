@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository;
 
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Entity\OAuth\OAuthClientRecord;
@@ -45,6 +46,27 @@ final readonly class ServiceUserClientStore implements ServiceUserClientStoreInt
         );
 
         return $record === null ? null : $this->dynamicClientStore->find($record->getClientId());
+    }
+
+    public function findClientIdsByServiceUserIds(array $serviceUserIds): array
+    {
+        if ($serviceUserIds === []) {
+            return [];
+        }
+
+        $rows = $this->entityManager->createQuery(
+            'SELECT c.serviceUserId AS serviceUserId, c.clientId AS clientId '
+            . 'FROM ' . OAuthClientRecord::class . ' c WHERE c.serviceUserId IN (:serviceUserIds)'
+        )
+            ->setParameter('serviceUserIds', $serviceUserIds, ArrayParameterType::INTEGER)
+            ->getArrayResult();
+
+        $clientIds = [];
+        foreach ($rows as $row) {
+            $clientIds[(int) $row['serviceUserId']] = (string) $row['clientId'];
+        }
+
+        return $clientIds;
     }
 
     public function deleteByServiceUserId(int $serviceUserId): void

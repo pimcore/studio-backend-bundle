@@ -264,7 +264,7 @@ final class UserUpdateServiceTest extends Unit
                 'getCurrentUser' => $currentUser,
             ]),
             $this->makeEmpty(UserRepositoryInterface::class, [
-                'getUserById' => $targetUser,
+                'getPersonById' => $targetUser,
             ]),
             $updateService,
             $this->makeEmpty(UserPerspectiveServiceInterface::class),
