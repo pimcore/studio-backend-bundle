@@ -800,6 +800,18 @@ login_token_summary: Session-based login with user token.
 logout_description: Logout and invalidate current session for active user.
 logout_success_response: Logout successful.
 logout_summary: Logout and invalidate current session for active user.
+maintenance_mode_activate_description: |
+    Activate the maintenance mode. Every request from another session is answered with HTTP 503 until the mode
+    is deactivated; only the session that activated it keeps access. If that session ends (logout, expiry),
+    deactivate the mode with <strong>bin/console pimcore:maintenance-mode --disable</strong>.
+maintenance_mode_activate_success_response: Maintenance mode activated, the current session is exempt
+maintenance_mode_activate_summary: Activate maintenance mode
+maintenance_mode_deactivate_description: Deactivate the maintenance mode so that all sessions regain access.
+maintenance_mode_deactivate_success_response: Maintenance mode deactivated
+maintenance_mode_deactivate_summary: Deactivate maintenance mode
+maintenance_mode_get_description: Get whether the maintenance mode is currently active.
+maintenance_mode_get_success_response: Current maintenance mode state
+maintenance_mode_get_summary: Get maintenance mode state
 mcp_create_server_description: |
     Create a new MCP server configuration. The <strong>urlSlug</strong> is used as the identifier and
     determines the server's serving URL; it must be unique and contain only lowercase letters, digits and hyphens.
@@ -1246,6 +1258,7 @@ tag_get_collection_for_element_by_type_and_id_success_response: Paginated tags f
 tag_get_collection_for_element_by_type_and_id_summary: Get tags for an element
 tag_get_collection_success_response: All tags for a parent filtered based on type and query parameters
 tag_get_collection_summary: Get all tags for a parent
+tag_maintenance_mode_description: Maintenance mode operations to get the state, activate and deactivate it
 tag_mcp_description: MCP server management operations to get/create/update/delete servers and list available tools
 tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
 tag_metadata_description: Metadata operations to get/update/create/delete metadata
