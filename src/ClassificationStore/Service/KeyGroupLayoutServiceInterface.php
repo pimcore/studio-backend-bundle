@@ -83,4 +83,16 @@ interface KeyGroupLayoutServiceInterface
      * and null where it declares no limit, for a key of any other type, or one that cannot be loaded.
      */
     public function getKeyMaximum(int $keyId): ?int;
+
+    /**
+     * Whether a `multiValue` key permits a value carrying no variant, taken off the same key
+     * configuration, and null for a key that is not of type `multiValue` or cannot be loaded at all.
+     */
+    public function getKeyDefaultVariant(int $keyId): ?bool;
+
+    /**
+     * The label of the default variant of a `multiValue` key, and null where it declares none, for a
+     * key of any other type, or one that cannot be loaded.
+     */
+    public function getKeyDefaultVariantLabel(int $keyId): ?string;
 }

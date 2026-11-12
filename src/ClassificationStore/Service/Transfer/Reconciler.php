@@ -98,6 +98,13 @@ final readonly class Reconciler implements ReconcilerInterface
 
         try {
             $this->applyStore($context, $document, $store);
+
+            // a store step that conflicted left no store to write the sections into: they would read
+            // as all new against store 0 and insert rows there
+            if ($context->getStoreId() === null && $context->getReport()->hasConflicts()) {
+                return $this->finish($context, $ownTransaction, $mark);
+            }
+
             $this->holdTheGroupsOfTheStore($context);
             $this->applySubGroups($context, $document);
             $this->applyCollections($context, $document);
@@ -117,6 +124,11 @@ final readonly class Reconciler implements ReconcilerInterface
             throw $e;
         }
 
+        return $this->finish($context, $ownTransaction, $mark);
+    }
+
+    private function finish(ApplyContext $context, bool $ownTransaction, int $mark): ApplyReport
+    {
         $report = $context->getReport();
 
         if ($ownTransaction) {
@@ -166,12 +178,13 @@ final readonly class Reconciler implements ReconcilerInterface
         $label = $this->diagnostics->label(ArtifactSection::STORE, $name);
 
         if ($store === null) {
-            // only the console command gets here; the endpoint always has the store of its route
+            // the console command and the store independent endpoint get here
             if ($this->refuseTakenStoreName($context, $name, null, $label)) {
                 return;
             }
 
             $context->record(ApplyOutcome::CREATED, $label);
+            $context->setStoreCreated(true);
 
             if (!$context->isDryRun()) {
                 $created = $this->storeRepository->saveFromArtifact(null, $identifier, $name, $description);

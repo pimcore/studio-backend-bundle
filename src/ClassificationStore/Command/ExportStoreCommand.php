@@ -42,6 +42,11 @@ final class ExportStoreCommand extends Command
 
     private const string OPTION_OUTPUT = 'output';
 
+    private const string HELP = <<<'HELP'
+        Export does not grow the way apply does: it walks the target store rather than reading a file, so
+        its memory does not rise with the size of the configuration it writes.
+        HELP;
+
     public function __construct(
         private readonly StoreTransferServiceInterface $storeTransferService,
     ) {
@@ -51,6 +56,7 @@ final class ExportStoreCommand extends Command
     protected function configure(): void
     {
         $this
+            ->setHelp(self::HELP)
             ->addArgument(
                 self::ARGUMENT_STORE,
                 InputArgument::REQUIRED,

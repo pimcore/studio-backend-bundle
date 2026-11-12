@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Closure;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\SearchIndexAdapter\MappingProperty;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
@@ -20,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\De
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\GroupConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeySlot;
@@ -64,12 +66,14 @@ use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_diff;
 use function array_filter;
+use function array_intersect;
 use function array_is_list;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_unique;
+use function array_values;
 use function ctype_digit;
 use function in_array;
 use function is_array;
@@ -98,6 +102,7 @@ final readonly class ClassificationStoreAdapter implements
         private DataServiceInterface $dataService,
         private GroupConfigResolverInterface $groupConfigResolver,
         private InheritanceServiceInterface $inheritanceService,
+        private KeyLocalizationResolverInterface $keyLocalizationResolver,
         private KeyQualifierResolverInterface $keyQualifierResolver,
         private KeyRelationResolverInterface $keyRelationResolver,
         private LanguageServiceInterface $languageService,
@@ -188,7 +193,7 @@ final readonly class ClassificationStoreAdapter implements
         if (!$fieldDefinition instanceof ClassificationstoreDefinition) {
             return [];
         }
-        $languages = $this->getValidLanguages($object, $fieldDefinition->isLocalized());
+        $keyLanguages = $this->createKeyLanguageResolver($object, $fieldDefinition->isLocalized());
         $collection = $this->getStoreDefinitions($object, $fieldDefinition);
         if (empty($collection)) {
             return [
@@ -206,7 +211,7 @@ final readonly class ClassificationStoreAdapter implements
                 $resolveKeyValue = $resolveInheritedValue
                     && !$this->keyQualifierResolver->declaresQualifiers($keyConfig);
 
-                foreach ($languages as $language) {
+                foreach ($keyLanguages($keyConfig) as $language) {
                     $fieldContextData = new FieldContextData(
                         $container,
                         $language,
@@ -235,17 +240,19 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         $fieldName =$this->dataService->getPreviewFieldName($fieldDefinition);
-        $validLanguages = $this->getValidLanguages($value->getObject(), $fieldDefinition->isLocalized());
+        $keyLanguages = $this->createKeyLanguageResolver($value->getObject(), $fieldDefinition->isLocalized());
         $activeGroups = $this->getActiveGroupsConfig($value->getActiveGroups());
         $keysByGroup = $this->keyRelationResolver->getByGroups(array_keys($activeGroups));
         foreach ($activeGroups as $groupId => $groupConfig) {
             $keys = $keysByGroup[$groupId];
             $groupName = $groupConfig->getName();
             foreach ($keys as $key) {
-                foreach ($validLanguages as $validLanguage) {
+                $keyConfig = $this->definitionCacheResolver->get($key->getKeyId());
+                $isKeyLocalized = $this->isKeyLocalized($keyConfig, $fieldDefinition->isLocalized());
+                foreach ($keyLanguages($keyConfig) as $validLanguage) {
                     $previewValue = $this->getPreviewValue($value, $groupId, $key, $validLanguage, $data);
                     $previewKey = $groupName . ' - ' . $key->getName() .
-                        ($fieldDefinition->isLocalized() ? ' / ' . $validLanguage : null);
+                        ($isKeyLocalized ? ' / ' . $validLanguage : null);
                     $data[$fieldName][$previewKey] = $previewValue;
                 }
             }
@@ -459,7 +466,7 @@ final readonly class ClassificationStoreAdapter implements
             return null;
         }
 
-        $validLanguages = $this->getValidLanguages(
+        $keyLanguages = $this->createKeyLanguageResolver(
             $value->getObject(),
             $fieldDefinition->isLocalized(),
             ElementPermissions::LANGUAGE_VIEW_PERMISSIONS,
@@ -475,8 +482,8 @@ final readonly class ClassificationStoreAdapter implements
         foreach ($activeGroups as $groupId => $groupConfig) {
             $resultItems[$groupId] = [];
             $keys = $keysByGroup[$groupId];
-            foreach ($validLanguages as $validLanguage) {
-                foreach ($keys as $key) {
+            foreach ($keys as $key) {
+                foreach ($keyLanguages($this->definitionCacheResolver->get($key->getKeyId())) as $validLanguage) {
                     $normalizedValue = $this->getResolvedValue(
                         $value,
                         $groupId,
@@ -537,20 +544,30 @@ final readonly class ClassificationStoreAdapter implements
         bool $isPatch
     ): void {
 
-        $editableLanguages = $this->getValidLanguages(
+        $keyLanguages = $this->createKeyLanguageResolver(
             $element,
             $definition->isLocalized(),
             ElementPermissions::LANGUAGE_EDIT_PERMISSIONS,
             $user
         );
+        $editableLanguages = $keyLanguages(null);
 
         foreach ($store as $groupId => $groupData) {
             foreach ($groupData as $language => $keys) {
-                if (!in_array($language, $editableLanguages, true)) {
-                    continue;
+                $isWritten = $this->processGroupKeys(
+                    $element,
+                    $user,
+                    $definition,
+                    $container,
+                    $language,
+                    $groupId,
+                    $keys,
+                    $isPatch,
+                    $keyLanguages
+                );
+                if ($isWritten || in_array($language, $editableLanguages, true)) {
+                    $activeGroups[$groupId] = true;
                 }
-                $this->processGroupKeys($element, $user, $definition, $container, $language, $groupId, $keys, $isPatch);
-                $activeGroups[$groupId] = true;
             }
         }
 
@@ -558,6 +575,10 @@ final readonly class ClassificationStoreAdapter implements
     }
 
     /**
+     * @param Closure(?KeyConfig): string[] $keyLanguages
+     *
+     * @return bool whether any key of the bucket was written
+     *
      * @throws Exception
      */
     private function processGroupKeys(
@@ -568,11 +589,18 @@ final readonly class ClassificationStoreAdapter implements
         string $language,
         int $groupId,
         array $keys,
-        bool $isPatch
-    ): void {
+        bool $isPatch,
+        Closure $keyLanguages
+    ): bool {
         $relations = $this->getClassificationStoreKeysFromGroup($groupId);
+        $isWritten = false;
         foreach ($keys as $keyId => $value) {
             $keyConfig = $definition->getKeyConfiguration($keyId);
+            if (!in_array($language, $keyLanguages($keyConfig), true)) {
+                continue;
+            }
+
+            $isWritten = true;
             $relation = $this->findRelation($relations, $keyId);
             // an assignment is converted and validated against its own effective definition
             $fieldDefinition = $relation !== null
@@ -631,6 +659,8 @@ final readonly class ClassificationStoreAdapter implements
 
             $container->setLocalizedKeyValue($groupId, $keyId, $converted, $language);
         }
+
+        return $isWritten;
     }
 
     /**
@@ -870,6 +900,48 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         return $mapping;
+    }
+
+    /**
+     * The languages of one key, memoized per language set: the key's own `localized` flag decides the
+     * set, and a key stating none follows the class definition field. A key without a configuration
+     * (null) is the field's.
+     *
+     * @return Closure(?KeyConfig): string[]
+     */
+    private function createKeyLanguageResolver(
+        Concrete $object,
+        bool $isStoreLocalized,
+        string $permissionType = ElementPermissions::LANGUAGE_VIEW_PERMISSIONS,
+        ?UserInterface $user = null
+    ): Closure {
+        $sets = [];
+
+        return function (?KeyConfig $keyConfig) use (&$sets, $object, $isStoreLocalized, $permissionType, $user): array {
+            $isKeyLocalized = $this->isKeyLocalized($keyConfig, $isStoreLocalized);
+            $setKey = $isKeyLocalized ? 'localized' : 'independent';
+            if (!array_key_exists($setKey, $sets)) {
+                // a key flagged `false` in a localized field is still held to the user's permission
+                $permitted = $this->getValidLanguages(
+                    $object,
+                    $isKeyLocalized || $isStoreLocalized,
+                    $permissionType,
+                    $user
+                );
+                $sets[$setKey] = $isKeyLocalized
+                    ? $permitted
+                    : array_values(array_intersect([MappingProperty::NOT_LOCALIZED_KEY], $permitted));
+            }
+
+            return $sets[$setKey];
+        };
+    }
+
+    private function isKeyLocalized(?KeyConfig $keyConfig, bool $isStoreLocalized): bool
+    {
+        $isKeyLocalized = $keyConfig === null ? null : $this->keyLocalizationResolver->getLocalized($keyConfig);
+
+        return $isKeyLocalized ?? $isStoreLocalized;
     }
 
     private function getValidLanguages(

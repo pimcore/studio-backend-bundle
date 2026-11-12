@@ -47,6 +47,7 @@ use ReflectionClass;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_flip;
 use function array_intersect_key;
+use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function json_encode;
@@ -183,6 +184,8 @@ final class GroupServiceTest extends Unit
                     'variants' => [['name' => 'metric', 'label' => 'Metric'], 'imperial'],
                     'multiValue' => true,
                     'maximum' => 3,
+                    'defaultVariant' => false,
+                    'defaultVariantLabel' => 'Standard',
                 ],
                 12 => ['fieldtype' => 'quantityValue', 'variants' => ['metric'], 'multiValue' => true],
                 13 => ['fieldtype' => 'input'],
@@ -194,7 +197,11 @@ final class GroupServiceTest extends Unit
         $this->assertEquals([new VariantLayout('metric', 'Metric'), new VariantLayout('imperial')], $keys[0]->getVariants());
         $this->assertTrue($keys[0]->getMultiValue());
         $this->assertSame(3, $keys[0]->getMaximum());
+        $this->assertFalse($keys[0]->getDefaultVariant());
+        $this->assertSame('Standard', $keys[0]->getDefaultVariantLabel());
 
+        $this->assertNull($keys[1]->getDefaultVariant());
+        $this->assertNull($keys[1]->getDefaultVariantLabel());
         $this->assertNull($keys[1]->getVariants());
         $this->assertNull($keys[1]->getMultiValue());
         $this->assertNull($keys[1]->getMaximum());
@@ -253,7 +260,9 @@ final class GroupServiceTest extends Unit
                     return new Input();
                 }
 
-                $multiValue = new MultiValue();
+                $multiValue = array_key_exists('defaultVariant', $definition)
+                    ? new DefaultVariantMultiValue($definition['defaultVariant'], $definition['defaultVariantLabel'] ?? null)
+                    : new MultiValue();
                 $multiValue->setVariants($definition['variants'] ?? []);
                 $multiValue->setMultiValue($definition['multiValue'] ?? false);
                 $multiValue->setMaximum($definition['maximum'] ?? null);
@@ -402,7 +411,9 @@ final class GroupServiceTest extends Unit
                     return new Input();
                 }
 
-                $multiValue = new MultiValue();
+                $multiValue = array_key_exists('defaultVariant', $definition)
+                    ? new DefaultVariantMultiValue($definition['defaultVariant'], $definition['defaultVariantLabel'] ?? null)
+                    : new MultiValue();
                 $multiValue->setVariants($definition['variants'] ?? []);
                 $multiValue->setMultiValue($definition['multiValue'] ?? false);
                 $multiValue->setMaximum($definition['maximum'] ?? null);

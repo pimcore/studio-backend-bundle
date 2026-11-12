@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Schema;
 
 use Codeception\Test\Unit;
+use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\VariantLayout;
@@ -120,5 +121,43 @@ final class KeyLayoutTest extends Unit
             ['id', 'name', 'description', 'definition'],
             $attributes[0]->getArguments()['required']
         );
+    }
+
+    /**
+     * The default variant members are optional and nullable, and the `localized` description no longer
+     * says the flag is not honoured by the object data endpoints.
+     */
+    public function testTheDefaultVariantMembersAreOptionalAndTheLocalizedDescriptionIsCurrent(): void
+    {
+        $layout = new KeyLayout(42, 'weight', 'The weight', new Input());
+        $this->assertNull($layout->getDefaultVariant());
+        $this->assertNull($layout->getDefaultVariantLabel());
+
+        $declaring = new KeyLayout(
+            42,
+            'weight',
+            'The weight',
+            new Input(),
+            defaultVariant: false,
+            defaultVariantLabel: 'Standard'
+        );
+        $this->assertFalse($declaring->getDefaultVariant());
+        $this->assertSame('Standard', $declaring->getDefaultVariantLabel());
+
+        $description = $this->getPropertyDescription('localized');
+        $this->assertStringNotContainsString('not yet honoured', $description);
+        $this->assertStringContainsString('It is not resolved against that field here.', $description);
+    }
+
+    private function getPropertyDescription(string $member): string
+    {
+        $parameter = (new ReflectionClass(KeyLayout::class))->getConstructor()->getParameters();
+        foreach ($parameter as $candidate) {
+            if ($candidate->getName() === $member) {
+                return $candidate->getAttributes(Property::class)[0]->getArguments()['description'];
+            }
+        }
+
+        return '';
     }
 }

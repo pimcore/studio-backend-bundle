@@ -76,7 +76,21 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
         string $name,
         ?int $exceptId,
         string $label,
+        string $identifier,
     ): bool {
+        // the run answers for the names it is writing: a file naming one twice is a broken file, and
+        // every entry carrying the name once the apply is done claims it - one the store already
+        // matched as much as one it creates - so the second of two is a conflict whichever of them
+        // is the new one
+        if (!$context->claimName($section, $name)) {
+            $context->record(
+                ApplyOutcome::CONFLICT,
+                sprintf('%s: the name is already another entry\'s in this store', $label)
+            );
+
+            return true;
+        }
+
         if ($outcome === ApplyOutcome::MATCHED_UNCHANGED) {
             return false;
         }
@@ -85,17 +99,24 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
             return false;
         }
 
-        // the store answers for the rows that are there; the run itself for the ones it is writing
-        $claimed = $context->claimName($section, $name);
-
-        if ($claimed && !$this->nameIsTaken($section, (int) $context->getStoreId(), $name, $exceptId)) {
+        // the store answers for the rows that are there, and a store this run created has none
+        if ($context->isStoreCreated() || !$this->nameIsTaken($section, (int) $context->getStoreId(), $name, $exceptId)) {
             return false;
         }
 
+        // skipped: adopting the stored row or writing a sibling beside it would be a guess
         $context->record(
-            ApplyOutcome::CONFLICT,
-            sprintf('%s: the name is already another entry\'s in this store', $label)
+            ApplyOutcome::SKIPPED,
+            sprintf('%s: the target holds the name under another identifier than the file gives it', $label)
         );
+
+        if ($outcome === ApplyOutcome::CREATED || $exceptId === null) {
+            // no row carries the identifier, so what names it is skipped with the entry
+            $context->skip($section, $identifier);
+        } else {
+            // only the rename was ambiguous: the row is there under the identifier the file gives it
+            $context->register($section, $identifier, $exceptId);
+        }
 
         return true;
     }

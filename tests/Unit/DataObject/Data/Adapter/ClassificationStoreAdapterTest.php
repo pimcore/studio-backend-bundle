@@ -22,6 +22,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\Se
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface as ElementServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\EngineCapabilityGuard;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParser;
@@ -64,6 +65,7 @@ use function array_filter;
 use function array_keys;
 use function array_map;
 use function array_merge;
+use function array_search;
 use function json_encode;
 use function ksort;
 use function sprintf;
@@ -100,6 +102,8 @@ final class ClassificationStoreAdapterTest extends Unit
     ];
 
     private const string LANGUAGE = 'default';
+
+    private const array EVERY_LANGUAGE = ['default', 'en', 'de'];
 
     private const string GERMAN = 'de';
 
@@ -719,6 +723,43 @@ final class ClassificationStoreAdapterTest extends Unit
             $detail[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]
         );
         $this->assertArrayNotHasKey(self::PLAIN_KEY, $detail[self::QUALIFIED_GROUP][self::LANGUAGE]);
+    }
+
+    /**
+     * The default variant declaration is published, not enforced: an unqualified value sent to a key
+     * declaring no default variant is stored exactly as it is for a key that declares nothing.
+     *
+     * @throws Exception
+     */
+    public function testAnUnqualifiedValueIsStoredForAKeyDeclaringNoDefaultVariant(): void
+    {
+        $writes = [];
+        foreach ([[], ['defaultVariant' => false, 'defaultVariantLabel' => 'Standard']] as $declared) {
+            $stored = [];
+            $written = [];
+            $writtenEntries = [];
+            $keyConfigs = $this->qualifiedKeyConfigs(
+                ['variants' => [self::METRIC], 'multiValue' => true] + $declared
+            );
+            $container = $this->createRecordingContainer(
+                $stored,
+                [self::QUALIFIED_GROUP => true],
+                $written,
+                $writtenEntries
+            );
+
+            $this->writeLanguages(
+                $container,
+                $keyConfigs,
+                $stored,
+                [self::LANGUAGE => [self::QUALIFIED_KEY => [['v' => '78']]]]
+            );
+
+            $writes[] = $this->describeCoreEntries($writtenEntries[0]);
+        }
+
+        $this->assertSame([['78', self::LANGUAGE, null, 0]], $writes[1]);
+        $this->assertSame($writes[0], $writes[1]);
     }
 
     /**
@@ -1917,6 +1958,297 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
+     * The language set is the key's own: `true` the pseudo-language and every viewable language,
+     * `false` the pseudo-language alone, and no flag whatever the class definition field decides.
+     *
+     * @dataProvider perKeyLanguageProvider
+     *
+     * @param array<int, bool> $flags
+     * @param array<int, string[]> $expected
+     *
+     * @throws Exception
+     */
+    public function testTheReadResolvesTheLanguageSetPerKey(bool $isFieldLocalized, array $flags, array $expected): void
+    {
+        $keyConfigs = $this->unqualifiedKeyConfigs();
+        $stored = $this->storedUnderEveryLanguage();
+
+        $result = $this->createPerKeyAdapter($keyConfigs, $stored, $flags)->getDetailData(
+            $this->makeEmpty(Concrete::class),
+            $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]),
+            $this->createQualifiedFieldDefinition($keyConfigs, $isFieldLocalized)
+        );
+
+        $this->assertSame($expected, $this->languagesOfKeys($result[self::QUALIFIED_GROUP]));
+    }
+
+    /**
+     * @dataProvider perKeyLanguageProvider
+     *
+     * @param array<int, bool> $flags
+     *
+     * @throws Exception
+     */
+    public function testTheWriteResolvesTheLanguageSetPerKey(
+        bool $isFieldLocalized,
+        array $flags,
+        array $expected
+    ): void {
+        $keyConfigs = $this->unqualifiedKeyConfigs();
+        $stored = [];
+        $written = [];
+        $payload = [];
+        foreach (self::EVERY_LANGUAGE as $language) {
+            $payload[$language] = [self::PLAIN_KEY => 'a', self::OTHER_PLAIN_KEY => 'b'];
+        }
+
+        $this->createPerKeyAdapter($keyConfigs, $stored, $flags)->getDataForSetter(
+            $this->makeEmpty(Concrete::class, [
+                'get' => $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true], $written),
+            ]),
+            $this->createQualifiedFieldDefinition($keyConfigs, $isFieldLocalized),
+            'myStore',
+            ['myStore' => [
+                self::QUALIFIED_GROUP => $payload,
+                'activeGroups' => [self::QUALIFIED_GROUP => true],
+            ]],
+            $this->makeEmpty(UserInterface::class, ['isAdmin' => true])
+        );
+
+        $languages = [self::PLAIN_KEY => [], self::OTHER_PLAIN_KEY => []];
+        foreach ($written as [, $keyId, , $language]) {
+            $languages[$keyId][] = $language;
+        }
+
+        $this->assertSame($expected, $languages);
+    }
+
+    /**
+     * @dataProvider perKeyLanguageProvider
+     *
+     * @param array<int, bool> $flags
+     *
+     * @throws Exception
+     */
+    public function testTheInheritancePayloadIsKeyedByTheLanguageSetOfEachKey(
+        bool $isFieldLocalized,
+        array $flags,
+        array $expected
+    ): void {
+        $keyConfigs = $this->unqualifiedKeyConfigs();
+        $stored = [];
+
+        $result = $this->createPerKeyAdapter(
+            $keyConfigs,
+            $stored,
+            $flags,
+            inheritanceService: $this->makeEmpty(InheritanceServiceInterface::class, [
+                'getFieldInheritanceData' => new InheritanceData(1),
+            ])
+        )->getFieldInheritance(
+            $this->makeEmpty(Concrete::class, [
+                'get' => $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]),
+            ]),
+            $this->createQualifiedFieldDefinition($keyConfigs, $isFieldLocalized),
+            'myStore',
+            new FieldContextData()
+        );
+
+        $this->assertSame($expected, $this->languagesOfKeys($result[self::QUALIFIED_GROUP]));
+    }
+
+    /**
+     * The label carries the language suffix of the key's own flag, so that the languages of a localized
+     * key are not written onto one label and the plain key of a localized field carries none.
+     *
+     * @dataProvider perKeyLabelProvider
+     *
+     * @param array<int, bool> $flags
+     *
+     * @throws Exception
+     */
+    public function testThePreviewLabelsFollowTheKeysResolvedFlag(
+        bool $isFieldLocalized,
+        array $flags,
+        array $expected
+    ): void {
+        $keyConfigs = $this->unqualifiedKeyConfigs();
+        $stored = $this->storedUnderEveryLanguage();
+
+        $data = $this->createPerKeyAdapter($keyConfigs, $stored, $flags)->getPreviewFieldData(
+            $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]),
+            $this->createQualifiedFieldDefinition($keyConfigs, $isFieldLocalized),
+            []
+        );
+
+        $this->assertSame($expected, array_keys($data[self::PREVIEW_FIELD]));
+    }
+
+    /**
+     * @return array<string, array{0: bool, 1: array<int, bool>, 2: array<int, string[]>}>
+     */
+    public static function perKeyLanguageProvider(): array
+    {
+        $every = ['default', 'en', 'de'];
+        $flagged = [self::PLAIN_KEY => true, self::OTHER_PLAIN_KEY => false];
+
+        return [
+            'a localized key in a plain field' => [
+                false, $flagged, [self::PLAIN_KEY => $every, self::OTHER_PLAIN_KEY => ['default']],
+            ],
+            'a plain key in a localized field' => [
+                true, $flagged, [self::PLAIN_KEY => $every, self::OTHER_PLAIN_KEY => ['default']],
+            ],
+            'no flag in a plain field' => [
+                false, [], [self::PLAIN_KEY => ['default'], self::OTHER_PLAIN_KEY => ['default']],
+            ],
+            'no flag in a localized field' => [
+                true, [], [self::PLAIN_KEY => $every, self::OTHER_PLAIN_KEY => $every],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, array{0: bool, 1: array<int, bool>, 2: string[]}>
+     */
+    public static function perKeyLabelProvider(): array
+    {
+        $flagged = [self::PLAIN_KEY => true, self::OTHER_PLAIN_KEY => false];
+        $localized = [
+            'Measurements - key-401 / default',
+            'Measurements - key-401 / en',
+            'Measurements - key-401 / de',
+        ];
+
+        return [
+            'a localized key in a plain field' => [
+                false, $flagged, [...$localized, 'Measurements - key-402'],
+            ],
+            'a plain key in a localized field' => [
+                true, $flagged, [...$localized, 'Measurements - key-402'],
+            ],
+            'no flag in a plain field' => [
+                false, [], ['Measurements - key-401', 'Measurements - key-402'],
+            ],
+        ];
+    }
+
+    /**
+     * A user who may view and edit one language gets that language for a localized key in a plain
+     * field and nothing for a key flagged `false` in a localized field, which is still held to the
+     * language independent permission; a key stating no flag in a plain field keeps the default.
+     *
+     * @throws Exception
+     */
+    public function testTheUserPermissionFollowsTheKeyOnReadAndWrite(): void
+    {
+        $keyConfigs = $this->unqualifiedKeyConfigs();
+        $flags = [self::PLAIN_KEY => true, self::OTHER_PLAIN_KEY => false];
+        $user = $this->makeEmpty(UserInterface::class, ['isAdmin' => false]);
+        $languageService = $this->createLanguageService(['en'], ['en']);
+
+        foreach ([[false, ['en'], ['default']], [true, ['en'], []]] as [$isFieldLocalized, $first, $second]) {
+            $stored = $this->storedUnderEveryLanguage();
+            $written = [];
+            $adapter = $this->createPerKeyAdapter(
+                $keyConfigs,
+                $stored,
+                $flags,
+                $languageService,
+                $user
+            );
+            $definition = $this->createQualifiedFieldDefinition($keyConfigs, $isFieldLocalized);
+            $container = $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true], $written);
+
+            $read = $adapter->getDetailData($this->makeEmpty(Concrete::class), $container, $definition);
+            $expected = [self::PLAIN_KEY => $first, self::OTHER_PLAIN_KEY => $second];
+            $this->assertSame($expected, $this->languagesOfKeys($read[self::QUALIFIED_GROUP]));
+
+            $adapter->getDataForSetter(
+                $this->makeEmpty(Concrete::class, ['get' => $container]),
+                $definition,
+                'myStore',
+                ['myStore' => [
+                    self::QUALIFIED_GROUP => array_fill_keys(
+                        self::EVERY_LANGUAGE,
+                        [self::PLAIN_KEY => 'a', self::OTHER_PLAIN_KEY => 'b']
+                    ),
+                    'activeGroups' => [self::QUALIFIED_GROUP => true],
+                ]],
+                $user
+            );
+
+            $languages = [self::PLAIN_KEY => [], self::OTHER_PLAIN_KEY => []];
+            foreach ($written as [, $keyId, , $language]) {
+                $languages[$keyId][] = $language;
+            }
+            $this->assertSame($expected, $languages);
+        }
+    }
+
+    /**
+     * @param array<int, bool> $flags
+     * @param array<int, KeyConfig> $keyConfigs
+     * @param array<int, array<string, array<int, mixed>>> $stored
+     *
+     * @throws Exception
+     */
+    private function createPerKeyAdapter(
+        array $keyConfigs,
+        array &$stored,
+        array $flags,
+        ?LanguageServiceInterface $languageService = null,
+        ?UserInterface $user = null,
+        ?InheritanceServiceInterface $inheritanceService = null
+    ): ClassificationStoreAdapter {
+        return $this->createQualifiedAdapter(
+            $keyConfigs,
+            $stored,
+            languageService: $languageService,
+            inheritanceService: $inheritanceService,
+            toolResolver: $this->makeEmpty(ToolResolverInterface::class, ['getValidLanguages' => ['en', 'de']]),
+            keyLocalizationResolver: $this->makeEmpty(KeyLocalizationResolverInterface::class, [
+                'getLocalized' => static fn (KeyConfig $keyConfig): ?bool => $flags[
+                    array_search($keyConfig, $keyConfigs, true)
+                ] ?? null,
+            ]),
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $user ?? $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
+            ])
+        );
+    }
+
+    /**
+     * @return array<int, array<string, array<int, string>>>
+     */
+    private function storedUnderEveryLanguage(): array
+    {
+        $stored = [];
+        foreach (self::EVERY_LANGUAGE as $language) {
+            $stored[self::QUALIFIED_GROUP][$language] = [self::PLAIN_KEY => 'a', self::OTHER_PLAIN_KEY => 'b'];
+        }
+
+        return $stored;
+    }
+
+    /**
+     * @param array<array-key, mixed> $group one group's `[language][keyId]` payload
+     *
+     * @return array<int, string[]>
+     */
+    private function languagesOfKeys(array $group): array
+    {
+        $languages = [self::PLAIN_KEY => [], self::OTHER_PLAIN_KEY => []];
+        foreach ($group as $language => $keys) {
+            foreach (array_keys($keys) as $keyId) {
+                $languages[$keyId][] = $language;
+            }
+        }
+
+        return $languages;
+    }
+
+    /**
      * @param array<string, mixed> $definition
      */
     private function createKeyConfig(array $definition, string $type = 'input'): KeyConfig
@@ -2149,7 +2481,9 @@ final class ClassificationStoreAdapterTest extends Unit
         ?ServiceResolverInterface $serviceResolver = null,
         ?InheritanceServiceInterface $inheritanceService = null,
         ?DataServiceInterface $dataService = null,
-        ?ToolResolverInterface $toolResolver = null
+        ?ToolResolverInterface $toolResolver = null,
+        ?KeyLocalizationResolverInterface $keyLocalizationResolver = null,
+        ?SecurityServiceInterface $securityService = null
     ): ClassificationStoreAdapter {
         $relations = [];
         foreach (array_keys($keyConfigs) as $keyId) {
@@ -2195,12 +2529,14 @@ final class ClassificationStoreAdapterTest extends Unit
                 [self::QUALIFIED_GROUP => $relations],
                 $requestedGroupIds
             ),
+            keyLocalizationResolver: $keyLocalizationResolver,
             languageService: $languageService,
             serviceResolver: $serviceResolver ?? $this->makeEmpty(ServiceResolverInterface::class, [
                 'getFieldDefinitionFromJson' => $this->makeEmpty(Data::class, [
                     'getName' => 'inputField',
                 ]),
             ]),
+            securityService: $securityService,
             storeEngineResolver: $this->createStoreEngineResolver($capabilities),
             toolResolver: $toolResolver,
         );
@@ -2477,6 +2813,7 @@ final class ClassificationStoreAdapterTest extends Unit
         ?SecurityServiceInterface $securityService = null,
         ?ToolResolverInterface $toolResolver = null,
         ?StoreEngineResolverInterface $storeEngineResolver = null,
+        ?KeyLocalizationResolverInterface $keyLocalizationResolver = null,
     ): ClassificationStoreAdapter {
         // the real two: both are pure readers of the key's own declaration, and standing them in
         // would leave what `variants` and `multiValue` mean untested on this path
@@ -2489,6 +2826,7 @@ final class ClassificationStoreAdapterTest extends Unit
             $dataService ?? $this->makeEmpty(DataServiceInterface::class),
             $groupConfigResolver ?? $this->makeEmpty(GroupConfigResolverInterface::class),
             $inheritanceService ?? $this->makeEmpty(InheritanceServiceInterface::class),
+            $keyLocalizationResolver ?? $this->makeEmpty(KeyLocalizationResolverInterface::class),
             $keyQualifierResolver,
             $keyRelationResolver ?? $this->makeEmpty(KeyRelationResolverInterface::class),
             $languageService ?? $this->makeEmpty(LanguageServiceInterface::class),

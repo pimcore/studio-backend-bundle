@@ -24,10 +24,12 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyWriteResult;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyDiagnostics;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusals;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactAssignmentEntry;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilderInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDocument;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryMapper;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryWriter;
@@ -38,6 +40,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Arti
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Reconciler;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedCollectionRelation;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreTransferService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactField;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
@@ -49,10 +52,14 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
+use ReflectionMethod;
+use ReflectionParameter;
 use function array_filter;
+use function array_map;
 use function array_values;
 use function implode;
 use function json_encode;
+use function mb_strtolower;
 use function sprintf;
 
 /**
@@ -224,22 +231,218 @@ final class ReconcilerTest extends Unit
     }
 
     /**
-     * The name of a row that already carries another identifier is not adoptable: applying the file
-     * would have to write two rows under one name.
+     * The name of a row that already carries another identifier is not adoptable, and writing a
+     * sibling beside it would be a guess: the entry is skipped and named, the stored row is left
+     * exactly as it was, an assignment naming the skipped group is skipped with it, and everything
+     * else commits. None of it is a conflict.
      */
-    public function testANameTakenByARowWithAnotherIdentifierIsRefused(): void
+    public function testANameTakenByARowWithAnotherIdentifierIsSkippedAndTheRestCommits(): void
     {
+        $stored = $this->createGroup('01DIFFERENT', self::GROUP_NAME);
         $reconciler = $this->createReconciler(
-            groups: [$this->createGroup('01DIFFERENT', self::GROUP_NAME)]
+            groups: [$stored],
+            connection: $this->createConnection(false)
         );
 
         $report = $reconciler->apply($this->createDocument(), $this->createStore(), false);
 
-        $this->assertTrue($report->hasConflicts());
-        $this->assertStringContainsString(
-            'already carries another identifier',
-            implode(' ', $report->getNamed(ApplyOutcome::CONFLICT))
+        $this->assertFalse($report->hasConflicts(), implode(' ', $report->getNamed(ApplyOutcome::CONFLICT)));
+        $this->assertSame(
+            [
+                'group "Measurements": the target holds the name under another identifier than the file gives it',
+                'key assignment "01GROUP -> 01KEY": it names "01GROUP", which this apply skipped',
+            ],
+            $report->getNamed(ApplyOutcome::SKIPPED)
         );
+        $this->assertSame(['key:01KEY:weight'], $this->writes);
+        $this->assertSame('01DIFFERENT', $stored->getIdentifier());
+        $this->assertSame(['beginTransaction', 'holdGroups:1', 'key:01KEY:weight', 'commit'], $this->steps);
+    }
+
+    /**
+     * An entry whose identifier the target does not carry is new and is created at every level, by
+     * identifier and by name: nothing is reported as skipped for being absent.
+     */
+    public function testAnEntryWhoseIdentifierIsAbsentFromTheTargetIsCreated(): void
+    {
+        $report = $this->createReconciler(
+            groups: [$this->createGroup('01UNRELATED', 'Logistics')],
+            subGroups: [$this->createSubGroup('01UNRELATEDSUB', 'Other')],
+            collections: [$this->createCollection('01UNRELATEDCOLLECTION', 'Elsewhere')]
+        )->apply(
+            $this->createDocument([
+                'subGroups' => [
+                    ['identifier' => self::SUB_GROUP_IDENTIFIER, 'name' => 'Dimensions', 'description' => null],
+                ],
+                'collections' => [
+                    ['identifier' => self::COLLECTION_IDENTIFIER, 'name' => 'Tools', 'description' => null],
+                ],
+            ]),
+            $this->createStore(),
+            false
+        );
+
+        $this->assertSame(0, $report->getCount(ApplyOutcome::SKIPPED));
+        $this->assertFalse($report->hasConflicts());
+        $this->assertContains(sprintf(self::GROUP_WRITE, self::GROUP_IDENTIFIER, self::GROUP_NAME), $this->writes);
+        $this->assertContains('subGroup:' . self::SUB_GROUP_IDENTIFIER . ':Dimensions', $this->writes);
+        $this->assertContains('collection:' . self::COLLECTION_IDENTIFIER . ':Tools', $this->writes);
+    }
+
+    /**
+     * Keys are outside the skip rule: key names are not unique per store, so a file key whose
+     * identifier is absent is created beside a stored key of the same name, which is target only.
+     */
+    public function testAKeyOfTheSameNameUnderAnotherIdentifierIsCreatedBesideTheStoredOne(): void
+    {
+        $report = $this->createReconciler(
+            enabledKeys: [$this->createKey('01OTHERKEY', self::KEY_NAME, true, id: 99)],
+            groups: [$this->createGroup(self::GROUP_IDENTIFIER, self::GROUP_NAME)]
+        )->apply($this->createDocument(), $this->createStore(), false);
+
+        $this->assertSame(0, $report->getCount(ApplyOutcome::SKIPPED));
+        $this->assertContains('key:' . self::KEY_IDENTIFIER . ':' . self::KEY_NAME, $this->writes);
+        $this->assertContains('assignment:' . self::GROUP_IDENTIFIER . ':' . self::KEY_IDENTIFIER, $this->writes);
+        $this->assertSame(['key "weight"'], $report->getNamed(ApplyOutcome::TARGET_ONLY));
+    }
+
+    /**
+     * A file naming one name under two identifiers is a broken file, not target drift: still a
+     * conflict, and the apply rolls back.
+     */
+    public function testAFileNamingTwoGroupsTheSameWayIsStillAConflictAndRollsBack(): void
+    {
+        $document = $this->createDocument([
+            'groups' => [
+                ['identifier' => self::GROUP_IDENTIFIER, 'name' => self::GROUP_NAME, 'description' => null],
+                ['identifier' => '01OTHERGROUP', 'name' => 'measurements', 'description' => null],
+            ],
+        ]);
+
+        $report = $this->createReconciler(connection: $this->createConnection(false))
+            ->apply($document, $this->createStore(), false);
+
+        $this->assertSame(1, $report->getCount(ApplyOutcome::CONFLICT));
+        $this->assertSame(0, $report->getCount(ApplyOutcome::SKIPPED));
+        $this->assertContains('rollBack', $this->steps);
+        $this->assertNotContains('commit', $this->steps);
+    }
+
+    /**
+     * An endpoint that exists in neither the file nor the store stays a conflict, skipped endpoints
+     * being the only ones a relation is let go of.
+     */
+    public function testAnAssignmentNamingAnEndpointOfNeitherFileNorStoreIsStillAConflict(): void
+    {
+        $document = $this->createDocument([
+            'keyGroupRelations' => [$this->createAssignmentEntry(['group' => '01MISSING'])],
+        ]);
+
+        $report = $this->createReconciler()->apply($document, $this->createStore(), false);
+
+        $this->assertSame(1, $report->getCount(ApplyOutcome::CONFLICT));
+        $this->assertSame(0, $report->getCount(ApplyOutcome::SKIPPED));
+    }
+
+    /**
+     * A store this apply creates holds no row that predates it, so nothing is skipped in it and
+     * every row is written with the identifier the file gives it.
+     */
+    public function testIntoAStoreThisApplyCreatesNothingIsSkippedAndEveryIdentifierIsTheFiles(): void
+    {
+        $report = $this->createReconciler(groups: [$this->createGroup('01DIFFERENT', self::GROUP_NAME)])->apply(
+            $this->createDocument([
+                'subGroups' => [
+                    ['identifier' => self::SUB_GROUP_IDENTIFIER, 'name' => 'Dimensions', 'description' => null],
+                ],
+                'collections' => [
+                    ['identifier' => self::COLLECTION_IDENTIFIER, 'name' => 'Tools', 'description' => null],
+                ],
+            ]),
+            null,
+            false
+        );
+
+        $this->assertSame(0, $report->getCount(ApplyOutcome::SKIPPED));
+        $this->assertFalse($report->hasConflicts());
+        $this->assertSame(
+            [
+                'store:01STORE:ETIM:The ETIM classification',
+                'subGroup:' . self::SUB_GROUP_IDENTIFIER . ':Dimensions',
+                'collection:' . self::COLLECTION_IDENTIFIER . ':Tools',
+                'group:' . self::GROUP_IDENTIFIER . ':' . self::GROUP_NAME,
+                'key:' . self::KEY_IDENTIFIER . ':' . self::KEY_NAME,
+                'assignment:' . self::GROUP_IDENTIFIER . ':' . self::KEY_IDENTIFIER,
+            ],
+            $this->writes
+        );
+    }
+
+    /**
+     * One rule, both doors: the store-scoped import and the store independent apply reach the one
+     * reconciler, whose signature carries no mode, so one document over one target state is decided
+     * identically through both.
+     */
+    public function testBothDoorsTakeTheSameDecisionsAndTheReconcilerTakesNoMode(): void
+    {
+        $this->assertSame(
+            ['document', 'store', 'dryRun', 'onDecision'],
+            array_map(
+                static fn (ReflectionParameter $parameter): string => $parameter->getName(),
+                (new ReflectionMethod(Reconciler::class, 'apply'))->getParameters()
+            )
+        );
+
+        $json = json_encode($this->createArtifact(), JSON_THROW_ON_ERROR);
+        $counts = [];
+        foreach ([true, false] as $storeScoped) {
+            $this->writes = [];
+            $reconciler = $this->createReconciler(groups: [$this->createGroup('01DIFFERENT', self::GROUP_NAME)]);
+            $storeRepository = $this->createMock(StoreRepositoryInterface::class);
+            $storeRepository->method('getById')->willReturn($this->createStore());
+            $storeRepository->method('getByIdentifier')->willReturn($this->createStore());
+            $service = new StoreTransferService(
+                $this->makeEmpty(ArtifactBuilderInterface::class),
+                new ArtifactParser(),
+                $this->makeEmpty(KeyRelationResolverInterface::class),
+                $reconciler,
+                $this->makeEmpty(SearchIndexRemapTriggerInterface::class),
+                $storeRepository
+            );
+            $report = $storeScoped
+                ? $service->importStore(self::STORE_ID, $json)
+                : $service->applyConfiguration($json, false);
+            $counts[] = [$report->getCreated(), $report->getSkipped(), $report->getSkippedEntries()];
+        }
+
+        $this->assertSame($counts[0], $counts[1]);
+        $this->assertSame(2, $counts[0][1]);
+    }
+
+    /**
+     * A dry run decides what a real run decides, names it in the same lines and writes nothing.
+     */
+    public function testADryRunAndARealRunDecideTheSameAndTheDryRunWritesNothing(): void
+    {
+        $runs = [];
+        foreach ([true, false] as $dryRun) {
+            $this->writes = [];
+            $lines = [];
+            $report = $this->createReconciler(groups: [$this->createGroup('01DIFFERENT', self::GROUP_NAME)])->apply(
+                $this->createDocument(),
+                $this->createStore(),
+                $dryRun,
+                static function (string $line) use (&$lines): void {
+                    $lines[] = $line;
+                }
+            );
+            $runs[] = [$report->getCounts(), $lines, $this->writes];
+        }
+
+        $this->assertSame($runs[0][0], $runs[1][0]);
+        $this->assertSame($runs[0][1], $runs[1][1]);
+        $this->assertSame([], $runs[0][2]);
+        $this->assertNotSame([], $runs[1][2]);
     }
 
     /**
@@ -555,9 +758,9 @@ final class ReconcilerTest extends Unit
 
     /**
      * And the same for a sub group, whose name is unique per store: the file does not get to write
-     * a second row under a name the store already carries just because it arrived as an artifact.
+     * a second row under a name the store already carries under another identifier, and is skipped.
      */
-    public function testASubGroupNameTheStoreAlreadyCarriesIsRefused(): void
+    public function testASubGroupNameTheStoreAlreadyCarriesIsSkipped(): void
     {
         $document = $this->createDocument([
             'subGroups' => [
@@ -569,10 +772,10 @@ final class ReconcilerTest extends Unit
 
         $report = $reconciler->apply($document, $this->createStore(), false);
 
-        $this->assertTrue($report->hasConflicts());
+        $this->assertFalse($report->hasConflicts());
         $this->assertStringContainsString(
-            'sub group "Dimensions": the name is already another entry\'s in this store',
-            implode(' ', $report->getNamed(ApplyOutcome::CONFLICT))
+            'sub group "Dimensions": the target holds the name under another identifier',
+            implode(' ', $report->getNamed(ApplyOutcome::SKIPPED))
         );
         $this->assertNotContains(
             sprintf('subGroup:%s:Dimensions', self::SUB_GROUP_IDENTIFIER),
@@ -1087,6 +1290,18 @@ final class ReconcilerTest extends Unit
      */
     private function createDocument(array $overrides = []): ArtifactDocument
     {
+        return (new ArtifactParser())->parse(
+            json_encode($this->createArtifact($overrides), JSON_THROW_ON_ERROR)
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $overrides
+     *
+     * @return array<string, mixed>
+     */
+    private function createArtifact(array $overrides = []): array
+    {
         $artifact = [
             'store' => [
                 'identifier' => self::STORE_IDENTIFIER,
@@ -1103,9 +1318,7 @@ final class ReconcilerTest extends Unit
             'keyGroupRelations' => [$this->createAssignmentEntry()],
         ];
 
-        return (new ArtifactParser())->parse(
-            json_encode([...$artifact, ...$overrides], JSON_THROW_ON_ERROR)
-        );
+        return [...$artifact, ...$overrides];
     }
 
     /**
@@ -1198,7 +1411,10 @@ final class ReconcilerTest extends Unit
             static fn (int $storeId, int $afterId, int $limit, ?bool $withIdentifier): array
                 => self::inIdentifierPhase($subGroups, $withIdentifier)
         );
-        $subGroupRepository->method('isNameTaken')->willReturn($subGroupNameIsTaken);
+        $subGroupRepository->method('isNameTaken')->willReturnCallback(
+            static fn (int $storeId, string $name, ?int $exceptId = null): bool => $subGroupNameIsTaken
+                || self::rowsCarryName($subGroups, $name, $exceptId)
+        );
         $subGroupRepository->method('saveFromArtifact')->willReturnCallback(
             function (
                 ?SubGroupConfig $config,
@@ -1221,6 +1437,9 @@ final class ReconcilerTest extends Unit
             static fn (int $storeId, int $afterId, int $limit, ?bool $withIdentifier): array
                 => self::inIdentifierPhase($collections, $withIdentifier)
         );
+        $collectionRepository->method('isNameTaken')->willReturnCallback(
+            static fn (int $storeId, string $name): bool => self::rowsCarryName($collections, $name)
+        );
         $collectionRepository->method('saveFromArtifact')->willReturnCallback(
             function (?CollectionConfig $config, int $storeId, string $identifier, string $name): CollectionConfig {
                 $this->recordWrite(sprintf('collection:%s:%s', $identifier, $name));
@@ -1241,6 +1460,9 @@ final class ReconcilerTest extends Unit
         $groupRepository->method('getChunkAfterId')->willReturnCallback(
             static fn (int $storeId, int $afterId, int $limit, ?bool $withIdentifier): array
                 => self::inIdentifierPhase($groups, $withIdentifier)
+        );
+        $groupRepository->method('isNameTaken')->willReturnCallback(
+            static fn (int $storeId, string $name): bool => self::rowsCarryName($groups, $name)
         );
         $groupRepository->method('saveFromArtifact')->willReturnCallback(
             function (?GroupConfig $config, int $storeId, string $identifier, string $name): GroupConfig {
@@ -1431,6 +1653,23 @@ final class ReconcilerTest extends Unit
                 static fn (object $row): bool => ($row->getIdentifier() !== null) === $withIdentifier
             )
         );
+    }
+
+    /**
+     * Whether a stored row carries the name, which is the question the repositories answer from the
+     * table: the case-insensitive compare of the name column, the row being renamed excepted.
+     *
+     * @param list<SubGroupConfig|CollectionConfig|GroupConfig|KeyConfig> $rows
+     */
+    private static function rowsCarryName(array $rows, string $name, ?int $exceptId = null): bool
+    {
+        foreach ($rows as $row) {
+            if ($row->getId() !== $exceptId && mb_strtolower($row->getName()) === mb_strtolower($name)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function createStore(): StoreConfig

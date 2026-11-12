@@ -34,8 +34,9 @@ interface ApplyRefusalsInterface
 {
     /**
      * A name the level's own write path would refuse, which an artifact may not be written past
-     * either: a file naming two identifiers the same way, or one creating a name a row the file
-     * says nothing about already carries, would otherwise persist the duplicate the API refuses.
+     * either. A file naming two identifiers the same way is a broken file and a conflict. A name a
+     * stored row already carries under another identifier is the ambiguous case and is skipped: the
+     * entry is recorded as skipped, with its identifier, and the stored row is left as it is.
      *
      * `$outcome` is what the entry would otherwise be, because the guard follows the entity rather
      * than the artifact - a rename is refused only where the level's own ::update() refuses one -
@@ -50,6 +51,7 @@ interface ApplyRefusalsInterface
         string $name,
         ?int $exceptId,
         string $label,
+        string $identifier,
     ): bool;
 
     /**

@@ -41,6 +41,23 @@ final class ApplyStoreCommand extends Command
 
     private const string OPTION_DRY_RUN = 'dry-run';
 
+    private const string HELP = <<<'HELP'
+        Apply reads the whole file, so its peak memory grows with the number of entities the file holds.
+
+        A store of ETIM shape needs roughly 222 MB: it completes under a memory limit of 512M and does not
+        complete under PHP's stock 128M.
+
+        Raise memory_limit for the run first (for example with php -d memory_limit=512M), because that keeps
+        the apply atomic: it is one transaction that commits whole or not at all.
+
+        Only then, if the limit cannot be raised, the configuration can be applied in parts, because apply is
+        idempotent and never deletes. Each part commits separately, so a failure partway through leaves a
+        partly applied configuration, which the apply of the single file never does.
+
+        An entry whose identifier the target does not carry is created. An entry whose name the target holds
+        under another identifier is skipped and reported, and the stored row is left as it is.
+        HELP;
+
     public function __construct(
         private readonly StoreTransferServiceInterface $storeTransferService,
     ) {
@@ -50,6 +67,7 @@ final class ApplyStoreCommand extends Command
     protected function configure(): void
     {
         $this
+            ->setHelp(self::HELP)
             ->addArgument(
                 self::ARGUMENT_FILE,
                 InputArgument::REQUIRED,

@@ -2041,11 +2041,23 @@ classification_store_configuration_store_export_success_response: The store conf
 classification_store_configuration_store_import_description: |
   Apply a store configuration file to the store given in the URL, as a multipart <strong>file</strong> field.
   Entries are matched by identifier, falling back to the name for a row that carries no identifier yet.
+  An entry whose identifier the store does not carry is created. An entry whose name the store holds under
+  another identifier is skipped and named in the report.
   Entries are created and updated but never deleted: what the store carries and the file does not is left in
   place and named in the report. Refused with 409 when the file describes a different store or when the
   configuration cannot be applied, and with 422 when the file is not a parseable artifact.
 classification_store_configuration_store_import_summary: Import a store configuration
-classification_store_configuration_store_import_success_response: Report of what the import created, updated, adopted and left in place
+classification_store_configuration_store_import_success_response: Report of what the import created, updated, adopted, skipped and left in place
+classification_store_configuration_store_apply_description: |
+  Apply a store configuration file without naming a store, as a multipart <strong>file</strong> field.
+  The store the file describes is created when no store carries its identifier and updated when one does.
+  Entries are matched by identifier, falling back to the name for a row that carries no identifier yet.
+  An entry whose identifier the target does not carry is created. An entry whose name the target holds under
+  another identifier is skipped and named in the report. Nothing is ever deleted.
+  Send <strong>dryRun</strong> to get the same report without writing anything. Refused with 409 when the
+  configuration cannot be applied, and with 422 when the file is not a parseable artifact.
+classification_store_configuration_store_apply_summary: Apply a store configuration
+classification_store_configuration_store_apply_success_response: Report of what the apply created, updated, adopted, skipped and left in place
 classification_store_configuration_store_tree_description: Get all classification store configurations as a flat tree list
 classification_store_configuration_store_tree_summary: Get store tree
 classification_store_configuration_store_tree_success_response: List of store tree nodes

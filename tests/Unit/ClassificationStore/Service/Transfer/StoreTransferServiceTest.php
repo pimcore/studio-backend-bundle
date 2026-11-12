@@ -118,8 +118,50 @@ final class StoreTransferServiceTest extends Unit
         $storeRepository->method('getByIdentifier')->willReturn(null);
 
         $this->expectException(ConflictException::class);
+        $this->expectExceptionMessage(
+            'The file describes the store "01STORE", which is not the store it was sent to.'
+        );
 
         $this->createService($storeRepository)->importStore(self::STORE_ID, $this->createArtifactJson());
+    }
+
+    /**
+     * The store independent apply creates or updates the store the file names, so nothing in it
+     * asserts a store identity: the same file the store-scoped import refuses is applied.
+     */
+    public function testApplyingAnsweringWithTheReportNamingWhatWasSkipped(): void
+    {
+        $storeRepository = $this->createMock(StoreRepositoryInterface::class);
+        $storeRepository->method('getByIdentifier')->willReturn(null);
+
+        $applyReport = new ApplyReport();
+        $applyReport->record(ApplyOutcome::CREATED, self::GROUP_ENTRY);
+        $applyReport->record(ApplyOutcome::SKIPPED, 'group "Dimensions": the target holds the name');
+
+        $report = $this
+            ->createService($storeRepository, $applyReport)
+            ->applyConfiguration($this->createArtifactJson(), false);
+
+        $this->assertSame(1, $report->getCreated());
+        $this->assertSame(1, $report->getSkipped());
+        $this->assertSame(['group "Dimensions": the target holds the name'], $report->getSkippedEntries());
+        $this->assertSame([], $report->getConflicts());
+    }
+
+    /**
+     * A conflict answers 409 naming every one, as the store-scoped import does.
+     */
+    public function testApplyingARefusedConfigurationAnswersWithEveryConflict(): void
+    {
+        $storeRepository = $this->createMock(StoreRepositoryInterface::class);
+        $applyReport = new ApplyReport();
+        $applyReport->record(ApplyOutcome::CONFLICT, 'first refusal');
+        $applyReport->record(ApplyOutcome::CONFLICT, 'second refusal');
+
+        $this->expectException(ConflictException::class);
+        $this->expectExceptionMessage('The configuration was not applied: first refusal; second refusal');
+
+        $this->createService($storeRepository, $applyReport)->applyConfiguration($this->createArtifactJson(), true);
     }
 
     public function testImportingAnsweringWithTheReportOfWhatWasDecided(): void

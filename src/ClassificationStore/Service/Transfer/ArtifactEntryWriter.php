@@ -91,18 +91,11 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
     ): void {
         $entriesByName = $this->matcher->indexByName($entries, ArtifactField::NAME->value);
         $matched = [];
-        $awaitingTheLevel = [];
 
         $reportUnmatched = function (
             SubGroupConfig|CollectionConfig|GroupConfig|KeyConfig $target,
-        ) use ($context, $section, $entriesByName, &$matched, &$awaitingTheLevel): void {
-            if ($this->diagnostics->unmatchedTargetAwaitsTheLevel($section, $entriesByName, $target)) {
-                $awaitingTheLevel[] = $target;
-
-                return;
-            }
-
-            $this->diagnostics->recordUnmatchedTarget($context, $section, $entriesByName, $target, $matched);
+        ) use ($context, $section): void {
+            $this->diagnostics->recordUnmatchedTarget($context, $section, $target);
         };
 
         foreach ($walks as $walk) {
@@ -113,13 +106,6 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
                     $write($target, $entries[$entryKey]);
                 }
             }
-        }
-
-        // now that every walk of the level has claimed what it claims: whether the entry one of
-        // these rows merely shares a name with is answered for is a fact about the level, so it is
-        // read once the ledger is whole rather than at the row the walk happened to reach first
-        foreach ($awaitingTheLevel as $target) {
-            $this->diagnostics->recordUnmatchedTarget($context, $section, $entriesByName, $target, $matched);
         }
 
         foreach ($entries as $entryKey => $entry) {
@@ -293,7 +279,15 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
             default => ApplyOutcome::UPDATED,
         };
 
-        if ($this->refusals->refuseTakenName($context, $section, $outcome, $name, $target?->getId(), $label)) {
+        if ($this->refusals->refuseTakenName(
+            $context,
+            $section,
+            $outcome,
+            $name,
+            $target?->getId(),
+            $label,
+            $identifier
+        )) {
             return;
         }
 

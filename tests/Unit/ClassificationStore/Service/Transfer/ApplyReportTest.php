@@ -37,7 +37,7 @@ final class ApplyReportTest extends Unit
         $report->record(ApplyOutcome::TARGET_ONLY, 'group "c"');
 
         $this->assertSame(
-            ['created', 'updated', 'adopted', 'matchedUnchanged', 'targetOnly', 'conflicts'],
+            ['created', 'updated', 'adopted', 'matchedUnchanged', 'targetOnly', 'skipped', 'conflicts'],
             array_keys($report->getCounts())
         );
         $this->assertSame(2, $report->getCount(ApplyOutcome::CREATED));

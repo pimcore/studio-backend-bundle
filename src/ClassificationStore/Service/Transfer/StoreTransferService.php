@@ -116,6 +116,22 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
     /**
      * {@inheritdoc}
      */
+    public function applyConfiguration(string $json, bool $dryRun): ImportReport
+    {
+        $report = $this->applyArtifact($json, $dryRun);
+
+        if ($report->hasConflicts()) {
+            throw new ConflictException(
+                'The configuration was not applied: ' . implode('; ', $report->getNamed(ApplyOutcome::CONFLICT))
+            );
+        }
+
+        return $this->buildImportReport($report);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function applyArtifact(string $json, bool $dryRun, ?Closure $onDecision = null): ApplyReport
     {
         $document = $this->artifactParser->parse($json);
@@ -195,6 +211,8 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
             adoptedEntries: $report->getNamed(ApplyOutcome::ADOPTED),
             targetOnlyEntries: $report->getNamed(ApplyOutcome::TARGET_ONLY),
             conflicts: $report->getNamed(ApplyOutcome::CONFLICT),
+            skipped: $report->getCount(ApplyOutcome::SKIPPED),
+            skippedEntries: $report->getNamed(ApplyOutcome::SKIPPED),
         );
     }
 }

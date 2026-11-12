@@ -42,6 +42,17 @@ final class ExportStoreCommandTest extends Unit
     private const array ARTIFACT = ['{"store":', '{"identifier":"01STORE"}', '}'];
 
     /**
+     * Export walks the target rather than reading a file, which is what the help says about its memory.
+     */
+    public function testTheHelpSaysExportDoesNotGrowTheWayApplyDoes(): void
+    {
+        $help = (new ExportStoreCommand($this->makeEmpty(StoreTransferServiceInterface::class)))->getHelp();
+
+        $this->assertStringContainsString('does not grow the way apply does', $help);
+        $this->assertStringContainsString('walks the target store rather than reading a file', $help);
+    }
+
+    /**
      * A destination that takes a few bytes at a time still receives the whole artifact: the piece
      * is written until it is gone rather than left at whatever the first call took.
      */

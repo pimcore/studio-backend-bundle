@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GroupCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GroupDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GroupUpdate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\ImportReport;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationDetail;
@@ -68,6 +69,10 @@ final class RequiredMembersUnchangedTest extends Unit
             StoreTreeNode::class => [StoreTreeNode::class, ['id', 'name', 'description']],
             StoreDetail::class => [StoreDetail::class, ['id', 'name', 'description']],
             KeyLayout::class => [KeyLayout::class, ['id', 'name', 'description', 'definition']],
+            ImportReport::class => [ImportReport::class, [
+                'created', 'updated', 'adopted', 'matchedUnchanged', 'targetOnly',
+                'createdEntries', 'updatedEntries', 'adoptedEntries', 'targetOnlyEntries', 'conflicts',
+            ]],
             KeyGroupRelation::class => [KeyGroupRelation::class, [
                 'keyId', 'groupId', 'keyName', 'groupName', 'keyDescription', 'groupDescription',
             ]],
@@ -96,15 +101,15 @@ final class RequiredMembersUnchangedTest extends Unit
     }
 
     /**
-     * Nothing beside the three declaration members joined the key layout, so no response member a
+     * Nothing beside the declaration members joined the key layout, so no response member a
      * client does not expect appears on it either.
      */
-    public function testTheKeyLayoutGainedOnlyTheThreeDeclarationMembers(): void
+    public function testTheKeyLayoutGainedOnlyTheDeclarationMembers(): void
     {
         $this->assertSame(
             [
                 'id', 'name', 'description', 'definition', 'title', 'subGroup', 'localized',
-                'variants', 'multiValue', 'maximum',
+                'variants', 'multiValue', 'maximum', 'defaultVariant', 'defaultVariantLabel',
             ],
             $this->getConstructorParameterNames(KeyLayout::class)
         );

@@ -18,6 +18,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 /**
  * What apply decided about one entry. `ADOPTED` is the third category beside created and updated:
  * a target row that carried no identifier and was matched by name now carries the file's one.
+ * `SKIPPED` is an entry the apply left alone because applying it would have meant guessing: its name is
+ * another row's in the target, under another identifier.
  *
  * @internal
  */
@@ -30,5 +32,6 @@ enum ApplyOutcome: string
     case ADOPTED = 'adopted';
     case MATCHED_UNCHANGED = 'matchedUnchanged';
     case TARGET_ONLY = 'targetOnly';
+    case SKIPPED = 'skipped';
     case CONFLICT = 'conflicts';
 }

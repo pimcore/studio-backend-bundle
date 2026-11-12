@@ -30,6 +30,7 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use ReflectionClass;
 use function array_column;
+use function array_key_exists;
 use function array_map;
 use function json_encode;
 use function str_contains;
@@ -230,10 +231,13 @@ final class KeyGroupLayoutServiceTest extends Unit
         $keyConfig = $this->createKeyConfig(self::KEY_ID, self::KEY_NAME);
         $keyConfig->setType('multiValue');
         $keyConfig->setDefinition(
-            '{"variants":[{"name":"metric","label":"Metric"},"imperial"],"multiValue":true,"maximum":3}'
+            '{"variants":[{"name":"metric","label":"Metric"},"imperial"],"multiValue":true,"maximum":3,'
+            . '"defaultVariant":false,"defaultVariantLabel":"Standard"}'
         );
 
         $keyLayout = $this->getKeyLayout($keyConfig);
+        $this->assertFalse($keyLayout->getDefaultVariant());
+        $this->assertSame('Standard', $keyLayout->getDefaultVariantLabel());
 
         $this->assertEquals(
             [new VariantLayout('metric', 'Metric'), new VariantLayout('imperial')],
@@ -296,6 +300,8 @@ final class KeyGroupLayoutServiceTest extends Unit
         $this->assertNull($keyLayout->getVariants());
         $this->assertNull($keyLayout->getMultiValue());
         $this->assertNull($keyLayout->getMaximum());
+        $this->assertNull($keyLayout->getDefaultVariant());
+        $this->assertNull($keyLayout->getDefaultVariantLabel());
     }
 
     /**
@@ -381,7 +387,9 @@ final class KeyGroupLayoutServiceTest extends Unit
                     return new Input();
                 }
 
-                $multiValue = new MultiValue();
+                $multiValue = array_key_exists('defaultVariant', $definition)
+                    ? new DefaultVariantMultiValue($definition['defaultVariant'], $definition['defaultVariantLabel'] ?? null)
+                    : new MultiValue();
                 $multiValue->setVariants($definition['variants'] ?? []);
                 $multiValue->setMultiValue($definition['multiValue'] ?? false);
                 $multiValue->setMaximum($definition['maximum'] ?? null);

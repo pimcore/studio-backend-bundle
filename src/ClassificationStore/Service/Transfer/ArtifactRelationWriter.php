@@ -44,6 +44,17 @@ final readonly class ArtifactRelationWriter implements ArtifactRelationWriterInt
         $label = $this->diagnostics->relationLabel($section, $entryKey);
         $collectionIdentifier = (string) $entry[ArtifactField::COLLECTION->value];
         $groupIdentifier = (string) $entry[ArtifactField::GROUP->value];
+        $skipped = $this->skippedEndpoints(
+            $context,
+            [[ArtifactSection::COLLECTIONS, $collectionIdentifier], [ArtifactSection::GROUPS, $groupIdentifier]]
+        );
+
+        if ($skipped !== []) {
+            $this->diagnostics->recordSkippedEndpoints($context, $label, $skipped);
+
+            return;
+        }
+
         $collectionId = $context->resolve(ArtifactSection::COLLECTIONS, $collectionIdentifier);
         $groupId = $context->resolve(ArtifactSection::GROUPS, $groupIdentifier);
 
@@ -87,6 +98,18 @@ final readonly class ArtifactRelationWriter implements ArtifactRelationWriterInt
         $assignment = $this->artifactParser->readAssignmentEntry($entry);
         $label = $this->diagnostics->relationLabel($section, $entryKey);
 
+        $skipped = $this->skippedEndpoints($context, [
+            [ArtifactSection::GROUPS, $assignment->getGroupIdentifier()],
+            [ArtifactSection::KEYS, $assignment->getKeyIdentifier()],
+            [ArtifactSection::SUB_GROUPS, $assignment->getSubGroup()],
+        ]);
+
+        if ($skipped !== []) {
+            $this->diagnostics->recordSkippedEndpoints($context, $label, $skipped);
+
+            return;
+        }
+
         if ($this->refusals->refuseAssignment($context, $assignment, $label)) {
             return;
         }
@@ -123,6 +146,26 @@ final readonly class ArtifactRelationWriter implements ArtifactRelationWriterInt
         if (!$context->isDryRun()) {
             $this->keyGroupRelationRepository->createOrUpdateFromArtifact($assignment, $keyId, $groupId);
         }
+    }
+
+    /**
+     * The endpoints of a relation this run skipped, named the way the file names them.
+     *
+     * @param list<array{0: ArtifactSection, 1: ?string}> $endpoints
+     *
+     * @return list<string>
+     */
+    private function skippedEndpoints(ApplyContext $context, array $endpoints): array
+    {
+        $skipped = [];
+
+        foreach ($endpoints as [$section, $identifier]) {
+            if ($identifier !== null && $context->isSkipped($section, $identifier)) {
+                $skipped[] = $identifier;
+            }
+        }
+
+        return $skipped;
     }
 
     /**

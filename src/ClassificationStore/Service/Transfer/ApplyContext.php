@@ -74,6 +74,16 @@ final class ApplyContext
      */
     private array $disabledKeys = [];
 
+    /**
+     * The identifiers of the entries this run skipped, per level: an entry naming one of them is
+     * skipped with it rather than refused for an endpoint that does not exist.
+     *
+     * @var array<string, array<string, bool>>
+     */
+    private array $skipped = [];
+
+    private bool $storeCreated = false;
+
     private ?int $storeId = null;
 
     public function __construct(
@@ -101,6 +111,20 @@ final class ApplyContext
     public function setStoreId(?int $storeId): void
     {
         $this->storeId = $storeId;
+    }
+
+    /**
+     * Whether this apply created the store, in which case no row of it predates the run and nothing
+     * is skipped for sharing a name with one.
+     */
+    public function isStoreCreated(): bool
+    {
+        return $this->storeCreated;
+    }
+
+    public function setStoreCreated(bool $storeCreated): void
+    {
+        $this->storeCreated = $storeCreated;
     }
 
     /**
@@ -153,6 +177,16 @@ final class ApplyContext
     public function isKnown(ArtifactSection $section, string $identifier): bool
     {
         return $this->planned[$section->value][$identifier] ?? false;
+    }
+
+    public function skip(ArtifactSection $section, string $identifier): void
+    {
+        $this->skipped[$section->value][$identifier] = true;
+    }
+
+    public function isSkipped(ArtifactSection $section, string $identifier): bool
+    {
+        return $this->skipped[$section->value][$identifier] ?? false;
     }
 
     /**
