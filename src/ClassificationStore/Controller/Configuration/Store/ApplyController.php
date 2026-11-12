@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Controller\Conf
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ApplyConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\ImportReport;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreTransferServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -32,7 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -93,11 +92,15 @@ final class ApplyController extends AbstractApiController
         HttpResponseCodes::CONFLICT,
     ])]
     public function applyConfiguration(
+        Request $request,
         #[MapUploadedFile] UploadedFile $file,
-        #[MapRequestPayload] ?ApplyConfigurationParameter $parameter = null,
     ): JsonResponse {
+        // read off the form bag by hand: a multipart body is not a payload the mapper can bind
         return $this->jsonResponse(
-            $this->storeTransferService->applyConfiguration($file->getContent(), $parameter?->isDryRun() ?? false)
+            $this->storeTransferService->applyConfiguration(
+                $file->getContent(),
+                $request->request->getBoolean('dryRun')
+            )
         );
     }
 }

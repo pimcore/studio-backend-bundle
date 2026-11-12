@@ -28,6 +28,10 @@ use function sprintf;
  */
 final class ApplyContext
 {
+    private const string CLAIM_WRITTEN = 'written';
+
+    private const string CLAIM_CARRIED = 'carried';
+
     /**
      * @var array<string, array<string, int>>
      */
@@ -65,9 +69,17 @@ final class ApplyContext
      * dry run has in hand instead: it writes nothing, and a file naming two identifiers the same
      * way has to be refused in both modes rather than only once it is applied.
      *
-     * @var array<string, array<string, bool>>
+     * @var array<string, array<string, string>>
      */
     private array $claimedNames = [];
+
+    /**
+     * The names this run is renaming rows away from, per level: the store still holds them until the
+     * rename is written, and a dry run never writes it, so what asks the store has to ask this too.
+     *
+     * @var array<string, array<string, bool>>
+     */
+    private array $vacatedNames = [];
 
     /**
      * @var array<string, bool>
@@ -191,18 +203,33 @@ final class ApplyContext
 
     /**
      * Takes the name for the entry, or reports that this run has already given it to another one.
+     *
+     * An entry whose matched row already carries the name ($carried) writes nothing new: any number of
+     * those may share it, which is how a store already holding two rows of one name applies its own
+     * export. It still conflicts with an entry that writes the name, in either order.
      */
-    public function claimName(ArtifactSection $section, string $name): bool
+    public function claimName(ArtifactSection $section, string $name, bool $carried = false): bool
     {
         $claim = mb_strtolower($name);
+        $held = $this->claimedNames[$section->value][$claim] ?? null;
 
-        if (isset($this->claimedNames[$section->value][$claim])) {
-            return false;
+        if ($held !== null) {
+            return $carried && $held === self::CLAIM_CARRIED;
         }
 
-        $this->claimedNames[$section->value][$claim] = true;
+        $this->claimedNames[$section->value][$claim] = $carried ? self::CLAIM_CARRIED : self::CLAIM_WRITTEN;
 
         return true;
+    }
+
+    public function vacateName(ArtifactSection $section, string $name): void
+    {
+        $this->vacatedNames[$section->value][mb_strtolower($name)] = true;
+    }
+
+    public function isNameVacated(ArtifactSection $section, string $name): bool
+    {
+        return $this->vacatedNames[$section->value][mb_strtolower($name)] ?? false;
     }
 
     public function markKeyDisabled(string $identifier): void

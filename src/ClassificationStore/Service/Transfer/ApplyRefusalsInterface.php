@@ -52,6 +52,7 @@ interface ApplyRefusalsInterface
         ?int $exceptId,
         string $label,
         string $identifier,
+        ?string $storedName = null,
     ): bool;
 
     /**

@@ -187,17 +187,79 @@ final class ApplyRefusalsTest extends Unit
     }
 
     /**
+     * A store already holding two rows of one name applies its own export: entries matched unchanged
+     * only carry the name, they do not write it.
+     */
+    public function testTwoMatchedEntriesCarryingOneNameAreNotAConflict(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals(groupNameTaken: true);
+
+        foreach ([[7, 'A'], [8, 'B']] as [$id, $identifier]) {
+            $this->assertFalse(
+                $refusals->refuseTakenName(
+                    $context,
+                    ArtifactSection::GROUPS,
+                    ApplyOutcome::MATCHED_UNCHANGED,
+                    'Dimensions',
+                    $id,
+                    $identifier,
+                    $identifier,
+                    'Dimensions'
+                )
+            );
+        }
+
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+    }
+
+    /**
+     * A name another entry of the file renames its row away from is free for a new entry, in a dry run
+     * (which has written no rename) as in a real one.
+     */
+    public function testANameTheFileRenamesAwayFromIsFreeForANewEntry(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals(groupNameTaken: true);
+
+        $this->assertFalse(
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::GROUPS,
+                ApplyOutcome::UPDATED,
+                'Lengths',
+                7,
+                'A',
+                'A',
+                'Dimensions'
+            )
+        );
+        $this->assertFalse(
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::GROUPS,
+                ApplyOutcome::CREATED,
+                'Dimensions',
+                null,
+                'B',
+                'B'
+            )
+        );
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::SKIPPED));
+    }
+
+    /**
      * A sub group whose rename is skipped is still in the store under the identifier the file gives
      * it, so what names it is not skipped along with it.
      */
     public function testARefusedRenameLeavesTheSubGroupResolvable(): void
     {
         $context = $this->createContext();
-        $refusals = $this->createRefusals(subGroupNameTaken: true);
+        $refusals = $this->createRefusals(groupNameTaken: true);
 
         $refusals->refuseTakenName(
             $context,
-            ArtifactSection::SUB_GROUPS,
+            ArtifactSection::GROUPS,
             ApplyOutcome::UPDATED,
             'Sizes',
             7,

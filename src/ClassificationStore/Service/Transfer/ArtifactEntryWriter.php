@@ -286,7 +286,8 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
             $name,
             $target?->getId(),
             $label,
-            $identifier
+            $identifier,
+            $target?->getName()
         )) {
             return;
         }

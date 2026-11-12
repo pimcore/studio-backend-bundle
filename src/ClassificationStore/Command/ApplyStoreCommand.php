@@ -127,10 +127,15 @@ final class ApplyStoreCommand extends Command
         $io->listing($counts);
 
         if (!$report->hasConflicts()) {
+            $skipped = $report->getCounts()[ApplyOutcome::SKIPPED->value] ?? 0;
+            $tail = $skipped > 0
+                ? sprintf(', except %d skipped entries that were NOT applied: see the report above.', $skipped)
+                : '.';
             $io->success(
-                $dryRun
-                    ? 'Dry run: nothing was written; the configuration can be applied.'
-                    : 'The store configuration was applied.'
+                ($dryRun
+                    ? 'Dry run: nothing was written; the configuration can be applied'
+                    : 'The store configuration was applied')
+                . $tail
             );
 
             return Command::SUCCESS;

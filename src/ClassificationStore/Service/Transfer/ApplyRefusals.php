@@ -26,6 +26,7 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use function array_keys;
 use function implode;
 use function in_array;
+use function mb_strtolower;
 use function sprintf;
 
 /**
@@ -77,12 +78,13 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
         ?int $exceptId,
         string $label,
         string $identifier,
+        ?string $storedName = null,
     ): bool {
         // the run answers for the names it is writing: a file naming one twice is a broken file, and
         // every entry carrying the name once the apply is done claims it - one the store already
         // matched as much as one it creates - so the second of two is a conflict whichever of them
         // is the new one
-        if (!$context->claimName($section, $name)) {
+        if (!$context->claimName($section, $name, $outcome === ApplyOutcome::MATCHED_UNCHANGED)) {
             $context->record(
                 ApplyOutcome::CONFLICT,
                 sprintf('%s: the name is already another entry\'s in this store', $label)
@@ -96,11 +98,18 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
         }
 
         if ($outcome !== ApplyOutcome::CREATED && (self::NAME_GUARDED_ON_RENAME[$section->value] ?? false) !== true) {
+            $this->vacate($context, $section, $name, $storedName);
+
             return false;
         }
 
-        // the store answers for the rows that are there, and a store this run created has none
-        if ($context->isStoreCreated() || !$this->nameIsTaken($section, (int) $context->getStoreId(), $name, $exceptId)) {
+        // the store answers for the rows that are there, and a store this run created has none; a name
+        // the run is renaming a row away from is free once that is written, which a dry run never does
+        if ($context->isStoreCreated()
+            || $context->isNameVacated($section, $name)
+            || !$this->nameIsTaken($section, (int) $context->getStoreId(), $name, $exceptId)) {
+            $this->vacate($context, $section, $name, $storedName);
+
             return false;
         }
 
@@ -119,6 +128,13 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
         }
 
         return true;
+    }
+
+    private function vacate(ApplyContext $context, ArtifactSection $section, string $name, ?string $storedName): void
+    {
+        if ($storedName !== null && mb_strtolower($storedName) !== mb_strtolower($name)) {
+            $context->vacateName($section, $storedName);
+        }
     }
 
     /**
