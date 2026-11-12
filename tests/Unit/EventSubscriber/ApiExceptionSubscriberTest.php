@@ -34,6 +34,7 @@ use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\Serializer\Exception\ExtraAttributesException;
 use Throwable;
 
 /**
@@ -128,6 +129,36 @@ final class ApiExceptionSubscriberTest extends Unit
      * path. Only this bundle's own RateLimitException is claimed everywhere, because only
      * this bundle raises it.
      */
+    /**
+     * A request DTO mapped with allow_extra_attributes false refuses keys it does not
+     * declare. The serializer reports that with a non-HTTP exception, which would end as a
+     * 500; it is the client's mistake, so it becomes a 422 that names the keys.
+     */
+    public function testUnknownRequestFieldsAreRefusedAsUnprocessable(): void
+    {
+        $event = $this->createEvent(
+            '/pimcore-studio/api/service-user/42',
+            new ExtraAttributesException(['active', 'permission'])
+        );
+
+        $this->createSubscriber()->onKernelException($event);
+
+        $response = $event->getResponse();
+        $this->assertNotNull($response);
+        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        $this->assertSame('The request contains unsupported fields: active, permission.', $body['message']);
+    }
+
+    public function testUnknownRequestFieldsOutsideTheStudioApiAreIgnored(): void
+    {
+        $event = $this->createEvent('/somewhere-else', new ExtraAttributesException(['active']));
+
+        $this->createSubscriber()->onKernelException($event);
+
+        $this->assertNull($event->getResponse());
+    }
+
     public function testForeignExceptionOnANonStudioPathIsIgnored(): void
     {
         $event = $this->createEvent('/some/other/path', new NotFoundHttpException('not ours'));

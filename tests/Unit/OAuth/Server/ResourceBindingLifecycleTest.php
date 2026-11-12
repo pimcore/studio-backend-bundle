@@ -362,6 +362,12 @@ final class InMemoryTokenRecordStore implements TokenRecordStoreInterface
         return $this->records[$identifier]['revoked'] ?? false;
     }
 
+    public function revokeByUserId(int $userId): int
+    {
+        // These records carry no subject; revocation by user is covered by AccessRevocationServiceTest.
+        return 0;
+    }
+
     public function deleteExpired(int $now): int
     {
         return 0;

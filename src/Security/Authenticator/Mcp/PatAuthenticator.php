@@ -36,6 +36,7 @@ use function max;
 use function preg_match;
 use function str_starts_with;
 use function substr;
+use function trigger_deprecation;
 
 /**
  * Authenticates MCP requests via Personal Access Tokens (config-based).
@@ -43,6 +44,9 @@ use function substr;
  * Validates `Authorization: Bearer <token>` headers against
  * the `pimcore_studio_backend.mcp.authentication.tokens` configuration,
  * which maps Pimcore usernames to token lists.
+ *
+ * @deprecated since 2026.4, to be removed in 2027.1. Use OAuth (authorization_code for people,
+ *             client_credentials for service users) or MCP access tokens instead.
  *
  * @internal
  */
@@ -63,6 +67,13 @@ class PatAuthenticator extends AbstractAuthenticator
      * constant from SECONDS_PER_MINUTE despite the equal value - they mean different things.
      */
     private const int FALLBACK_RETRY_AFTER_SECONDS = 60;
+
+    /**
+     * Mirrors the deprecation set on the `mcp.authentication.tokens` configuration node.
+     */
+    private const string DEPRECATION_MESSAGE = 'Static MCP personal access tokens are deprecated and will be removed '
+        . 'in 2027.1. Use OAuth (authorization_code for people, client_credentials for service users) '
+        . 'or MCP access tokens.';
 
     /**
      * @param array<string, list<string>> $tokenMap username => [token, ...]
@@ -153,11 +164,18 @@ class PatAuthenticator extends AbstractAuthenticator
         return new SecurityUser($pimcoreUser);
     }
 
+    /**
+     * Raises the deprecation here rather than in authenticate(): this runs only for a token
+     * the map knows and the login throttle has let through, so a request without valid
+     * credentials cannot write deprecation log lines.
+     */
     public function onAuthenticationSuccess(
         Request $request,
         TokenInterface $token,
         string $firewallName
     ): ?Response {
+        trigger_deprecation('pimcore/studio-backend-bundle', '2026.4', self::DEPRECATION_MESSAGE);
+
         return null;
     }
 

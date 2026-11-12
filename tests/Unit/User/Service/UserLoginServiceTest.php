@@ -18,10 +18,12 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationR
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\TokenLink;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserLoginService;
 use Pimcore\Model\Site;
@@ -256,10 +258,30 @@ final class UserLoginServiceTest extends Unit
         $service->resetPassword($resetPassword);
     }
 
+    public function testNoLoginLinkForAServiceUser(): void
+    {
+        $serviceUser = User::newServiceUser();
+        $serviceUser->setId(7);
+        $serviceUser->setName('svc-erp-sync');
+
+        $service = $this->createService(
+            mainDomain: 'mysite.com',
+            sites: [],
+            userRepository: $this->makeEmpty(UserRepositoryInterface::class, [
+                'getUserById' => $serviceUser,
+                'getPersonById' => static fn (int $id) => throw new NotFoundException('User', $id),
+            ]),
+        );
+
+        $this->expectException(NotFoundException::class);
+        $service->getLoginTokenUrl(7, new TokenLink('https://mysite.com/pimcore-studio/login'));
+    }
+
     private function createService(
         string $mainDomain,
         array $sites,
         bool $userExists = false,
+        ?UserRepositoryInterface $userRepository = null,
     ): UserLoginService {
         $user = null;
         if ($userExists) {
@@ -277,7 +299,7 @@ final class UserLoginServiceTest extends Unit
             $this->makeEmpty(MailServiceInterface::class),
             $this->makeEmpty(LoggerInterface::class),
             $this->makeEmpty(UrlGeneratorInterface::class),
-            $this->makeEmpty(UserRepositoryInterface::class),
+            $userRepository ?? $this->makeEmpty(UserRepositoryInterface::class),
             $this->makeEmpty(UserResolverInterface::class, [
                 'getByName' => $user,
             ]),

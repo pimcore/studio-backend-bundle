@@ -321,4 +321,106 @@ final class ClientRepositoryTest extends Unit
         $this->assertFalse($repo->validateClient('dcr_conf', 'wrong', 'authorization_code'));
         $this->assertFalse($repo->validateClient('dcr_conf', null, 'authorization_code'));
     }
+
+    public function testABoundClientValidatesItsSecretForClientCredentials(): void
+    {
+        $repo = $this->repository([], [], ['svc_bound' => $this->boundClient('svc_bound', 'sekret')]);
+
+        $this->assertTrue($repo->validateClient('svc_bound', 'sekret', 'client_credentials'));
+        $this->assertFalse($repo->validateClient('svc_bound', 'wrong', 'client_credentials'));
+        $this->assertFalse($repo->validateClient('svc_bound', null, 'client_credentials'));
+    }
+
+    /**
+     * A bound client is a credential for one grant only. Its secret opens nothing else,
+     * not even when league asks without naming a grant.
+     */
+    public function testABoundClientDoesNotValidateForAnyOtherGrant(): void
+    {
+        $repo = $this->repository([], [], ['svc_bound' => $this->boundClient('svc_bound', 'sekret')]);
+
+        $this->assertFalse($repo->validateClient('svc_bound', 'sekret', 'authorization_code'));
+        $this->assertFalse($repo->validateClient('svc_bound', 'sekret', 'refresh_token'));
+        $this->assertFalse($repo->validateClient('svc_bound', 'sekret', null));
+    }
+
+    /**
+     * The record does not assume a shared secret exists, so a bound client may have none
+     * (a later key-based method). Without one, the secret check must fail closed.
+     */
+    public function testABoundClientWithoutASecretHashNeverValidates(): void
+    {
+        $repo = $this->repository([], [], ['svc_bound' => $this->boundClient('svc_bound', null)]);
+
+        $this->assertFalse($repo->validateClient('svc_bound', '', 'client_credentials'));
+        $this->assertFalse($repo->validateClient('svc_bound', 'anything', 'client_credentials'));
+    }
+
+    public function testEveryUnboundClientIsRefusedClientCredentials(): void
+    {
+        $repo = $this->repository(
+            ['studio-mcp' => ['name' => 'Studio MCP', 'redirect_uris' => ['http://127.0.0.1/cb']]],
+            ['https://client.example/meta.json' => new ClientMetadata(
+                'https://client.example/meta.json',
+                'CIMD',
+                ['http://127.0.0.1/cb'],
+            )],
+            [
+                'dcr_public' => $this->dynamicClient('dcr_public', ['authorization_code']),
+                'dcr_conf' => new DynamicClient(
+                    'dcr_conf',
+                    'Dyn Conf',
+                    [],
+                    ['client_credentials'],
+                    [],
+                    true,
+                    hash('sha256', 'sekret'),
+                ),
+            ],
+        );
+
+        foreach (['studio-mcp', 'https://client.example/meta.json', 'dcr_public', 'dcr_conf'] as $clientId) {
+            $this->assertFalse(
+                $repo->validateClient($clientId, 'sekret', 'client_credentials'),
+                $clientId . ' must not validate for client_credentials',
+            );
+            $entity = $repo->getClientEntity($clientId);
+            $this->assertInstanceOf(ClientEntity::class, $entity);
+            $this->assertFalse(
+                $entity->supportsGrantType('client_credentials'),
+                $clientId . ' must not support client_credentials',
+            );
+            $this->assertNull($entity->getServiceUserId());
+        }
+    }
+
+    public function testABoundClientEntityCarriesItsServiceUserAndOnlyClientCredentials(): void
+    {
+        $repo = $this->repository([], [], ['svc_bound' => $this->boundClient('svc_bound', 'sekret')]);
+
+        $entity = $repo->getClientEntity('svc_bound');
+
+        $this->assertInstanceOf(ClientEntity::class, $entity);
+        $this->assertSame(77, $entity->getServiceUserId());
+        $this->assertTrue($entity->isConfidential());
+        $this->assertTrue($entity->supportsGrantType('client_credentials'));
+        $this->assertFalse($entity->supportsGrantType('authorization_code'));
+        $this->assertFalse($entity->supportsGrantType('refresh_token'));
+        $this->assertSame(['mcp:read'], $entity->getRegisteredScopes());
+    }
+
+    private function boundClient(string $id, ?string $secret): DynamicClient
+    {
+        return new DynamicClient(
+            $id,
+            'Bound',
+            [],
+            // Even a record that claims more grants is held to client_credentials.
+            ['client_credentials', 'authorization_code'],
+            ['mcp:read'],
+            true,
+            $secret === null ? null : hash('sha256', $secret),
+            serviceUserId: 77,
+        );
+    }
 }

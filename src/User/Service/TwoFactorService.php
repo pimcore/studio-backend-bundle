@@ -134,7 +134,7 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
     public function resetForUser(int $userId): void
     {
         $currentUser = $this->securityService->getCurrentUser();
-        $user = $this->userRepository->getUserById($userId);
+        $user = $this->userRepository->getPersonById($userId);
 
         // Admins reset anyone; everyone else with user management only themselves.
         if (!$currentUser->isAdmin() && $currentUser->getId() !== $user->getId()) {

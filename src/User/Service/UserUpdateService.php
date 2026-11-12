@@ -55,7 +55,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
      */
     public function updateUserById(UpdateUserParameter $updateUserParameter, int $userId): void
     {
-        $user = $this->userRepository->getUserById($userId);
+        $user = $this->userRepository->getPersonById($userId);
 
         if ($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
             throw new ForbiddenException('Only admin can update admin user');
@@ -131,7 +131,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
      */
     public function updatePasswordById(UpdatePasswordParameter $updateParameter, int $userId): void
     {
-        $user = $this->userRepository->getUserById($userId);
+        $user = $this->userRepository->getPersonById($userId);
 
         if ($user->getName() === 'system') {
             throw new ForbiddenException('System user password cannot be changed');
