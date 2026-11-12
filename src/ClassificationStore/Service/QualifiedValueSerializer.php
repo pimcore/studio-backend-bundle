@@ -126,7 +126,10 @@ final readonly class QualifiedValueSerializer implements QualifiedValueSerialize
             $this->readPayload($payload),
             static fn (QualifiedValue $value): bool => $value->getVariant() === $variant
         );
-        usort($values, static fn (QualifiedValue $a, QualifiedValue $b): int => $a->getPosition() <=> $b->getPosition());
+        usort(
+            $values,
+            static fn (QualifiedValue $a, QualifiedValue $b): int => $a->getPosition() <=> $b->getPosition()
+        );
 
         return array_map(static fn (QualifiedValue $value): mixed => $value->getValue(), $values);
     }

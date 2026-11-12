@@ -544,29 +544,33 @@ final class GridService implements GridServiceInterface
     public function getColumnKeys(ColumnCollection $columnCollection, bool $withGroup = false): array
     {
         return array_map(
-            function (Column $column) use ($withGroup) {
+            function (Column $column) use ($withGroup): string {
                 if ($withGroup === true && !$column->getGroup()) {
                     throw new InvalidArgumentException('Group must be set when withGroup is true');
                 }
-                $firstGroup = $column->getGroup()[0] ?? '';
-                $fd = $column->getConfig()['fieldDefinition'] ?? null;
 
-                if ($withGroup) {
-                    $key = $fd ? ($fd['name'] ?? $column->getKey()) : $column->getKey();
-                } else {
-                    $key = $fd ? ($fd['title'] ?? $column->getKey()) : $column->getKey();
-                }
+                $key = $this->appendLocale($this->getColumnKeyName($column, $withGroup), $column);
 
-                if ($column->getType() === 'dataobject.classificationstore' && isset($column->getConfig()['variant'])) {
-                    $key .= '#' . $column->getConfig()['variant'];
-                }
-
-                $key = $this->appendLocale($key, $column);
-
-                return ($withGroup ? $firstGroup . '~' : '') . $key;
+                return ($withGroup ? ($column->getGroup()[0] ?? '') . '~' : '') . $key;
             },
             $columnCollection->getColumns()
         );
+    }
+
+    /**
+     * The column's name as an export header carries it, a variant column addressing its variant as `#variant`.
+     */
+    private function getColumnKeyName(Column $column, bool $withGroup): string
+    {
+        $fd = $column->getConfig()['fieldDefinition'] ?? null;
+        $field = $withGroup ? 'name' : 'title';
+        $key = $fd ? ($fd[$field] ?? $column->getKey()) : $column->getKey();
+
+        if ($column->getType() === 'dataobject.classificationstore' && isset($column->getConfig()['variant'])) {
+            $key .= '#' . $column->getConfig()['variant'];
+        }
+
+        return $key;
     }
 
     private function appendLocale(string $key, Column $column): string

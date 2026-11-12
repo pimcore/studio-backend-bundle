@@ -34,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject\Classific
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\QualifiedColumnValueResolver;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ClassificationStoreConfig;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\MultiValueServiceResolver;
 use Pimcore\Cache\RuntimeCache;
@@ -604,6 +605,7 @@ final class ClassificationStoreResolverTest extends Unit
         ]);
 
         $keyQualifierResolver = new KeyQualifierResolver(new MultiValueServiceResolver());
+        $dataService = $this->makeEmpty(DataServiceInterface::class);
 
         return new ClassificationStoreResolver(
             $this->makeEmpty(GridServiceInterface::class, [
@@ -611,17 +613,27 @@ final class ClassificationStoreResolverTest extends Unit
             ]),
             $this->makeEmpty(KeyRelationResolverInterface::class, ['getByGroup' => [6 => $relation]]),
             $this->makeEmpty(ServiceResolverInterface::class),
-            $this->makeEmpty(DataServiceInterface::class),
+            $dataService,
+            $this->makeEmpty(ToolResolverInterface::class),
+            $this->makeEmpty(LocalizedFieldResolverInterface::class),
+            $this->makeEmpty(ColumnReferenceServiceInterface::class, ['resolve' => $resolved]),
+            $this->createQualifiedColumnValueResolver($keyQualifierResolver, $dataService),
+        );
+    }
+
+    private function createQualifiedColumnValueResolver(
+        KeyQualifierResolver $keyQualifierResolver,
+        DataServiceInterface $dataService
+    ): QualifiedColumnValueResolver {
+        return new QualifiedColumnValueResolver(
+            $this->keyConfigResolver(),
             $keyQualifierResolver,
             new QualifiedValueSerializer(
                 $keyQualifierResolver,
                 new QualifiedValueParser($keyQualifierResolver),
                 new EngineCapabilityGuard()
             ),
-            $this->makeEmpty(ToolResolverInterface::class),
-            $this->makeEmpty(LocalizedFieldResolverInterface::class),
-            $this->makeEmpty(ColumnReferenceServiceInterface::class, ['resolve' => $resolved]),
-            $this->keyConfigResolver(),
+            $dataService
         );
     }
 
@@ -684,6 +696,7 @@ final class ClassificationStoreResolverTest extends Unit
         // the real two: standing them in would leave what a cell and an export show for a list
         // untested here, which is the whole of what this resolver decides about one
         $keyQualifierResolver = new KeyQualifierResolver(new MultiValueServiceResolver());
+        $dataService ??= $this->makeEmpty(DataServiceInterface::class);
 
         return new ClassificationStoreResolver(
             $this->createGridService($normalized),
@@ -691,17 +704,11 @@ final class ClassificationStoreResolverTest extends Unit
                 'getByGroup' => [$relation ?? $this->createRelation()],
             ]),
             $classificationStoreServiceResolver ?? $this->makeEmpty(ServiceResolverInterface::class),
-            $dataService ?? $this->makeEmpty(DataServiceInterface::class),
-            $keyQualifierResolver,
-            new QualifiedValueSerializer(
-                $keyQualifierResolver,
-                new QualifiedValueParser($keyQualifierResolver),
-                new EngineCapabilityGuard()
-            ),
+            $dataService,
             $this->makeEmpty(ToolResolverInterface::class),
             $this->makeEmpty(LocalizedFieldResolverInterface::class),
             $reference ?? $this->makeEmpty(ColumnReferenceServiceInterface::class),
-            $this->keyConfigResolver(),
+            $this->createQualifiedColumnValueResolver($keyQualifierResolver, $dataService),
         );
     }
 

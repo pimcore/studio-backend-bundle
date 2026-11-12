@@ -269,44 +269,63 @@ final readonly class ClassificationStoreAdapter implements
             }
 
             foreach ($groupData as $language => $keys) {
-                if (!is_array($keys)) {
-                    continue;
+                if (is_array($keys)) {
+                    $store[$groupId][$language] = $this->foldBucketAddresses($definition, $keys);
                 }
-
-                foreach ($keys as $address => $value) {
-                    $separator = is_string($address) ? strpos($address, '#') : false;
-                    if ($separator === false) {
-                        continue;
-                    }
-
-                    $keyId = substr($address, 0, $separator);
-                    if (!ctype_digit($keyId)
-                        || !$this->keyQualifierResolver->declaresQualifiers($definition->getKeyConfiguration((int) $keyId))
-                    ) {
-                        throw new InvalidArgumentException(
-                            'The value names a variant the key does not declare.',
-                            errorKey: HttpResponseErrorKeys::UNDECLARED_VARIANT->value
-                        );
-                    }
-
-                    $entry = is_array($value) && array_key_exists('v', $value) ? $value : ['v' => $value];
-                    $entry['var'] = substr($address, $separator + 1);
-
-                    $held = $keys[(int) $keyId] ?? [];
-                    $held = is_array($held) && array_is_list($held) && ($held === [] || is_array($held[0]))
-                        ? $held
-                        : [['v' => $held]];
-                    $held[] = $entry;
-
-                    unset($keys[$address]);
-                    $keys[(int) $keyId] = $held;
-                }
-
-                $store[$groupId][$language] = $keys;
             }
         }
 
         return $store;
+    }
+
+    /**
+     * @param array<array-key, mixed> $keys one (group, language) bucket
+     *
+     * @return array<array-key, mixed>
+     *
+     * @throws InvalidArgumentException
+     */
+    private function foldBucketAddresses(ClassificationstoreDefinition $definition, array $keys): array
+    {
+        foreach ($keys as $address => $value) {
+            $separator = is_string($address) ? strpos($address, '#') : false;
+            if ($separator === false) {
+                continue;
+            }
+
+            $keyId = $this->getDeclaringKeyId($definition, substr($address, 0, $separator));
+
+            $entry = is_array($value) && array_key_exists('v', $value) ? $value : ['v' => $value];
+            $entry['var'] = substr($address, $separator + 1);
+
+            $held = $keys[$keyId] ?? [];
+            $held = is_array($held) && array_is_list($held) && ($held === [] || is_array($held[0]))
+                ? $held
+                : [['v' => $held]];
+            $held[] = $entry;
+
+            unset($keys[$address]);
+            $keys[$keyId] = $held;
+        }
+
+        return $keys;
+    }
+
+    /**
+     * @throws InvalidArgumentException when the address names no key, or one that declares no variants
+     */
+    private function getDeclaringKeyId(ClassificationstoreDefinition $definition, string $keyId): int
+    {
+        if (!ctype_digit($keyId)
+            || !$this->keyQualifierResolver->declaresQualifiers($definition->getKeyConfiguration((int) $keyId))
+        ) {
+            throw new InvalidArgumentException(
+                'The value names a variant the key does not declare.',
+                errorKey: HttpResponseErrorKeys::UNDECLARED_VARIANT->value
+            );
+        }
+
+        return (int) $keyId;
     }
 
     /**

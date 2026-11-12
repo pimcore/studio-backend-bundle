@@ -54,7 +54,9 @@ final readonly class KeyGroupRelationHydrator implements KeyGroupRelationHydrato
             $keyLocalized,
             $keyConfig?->getType(),
             $keyConfig !== null ? $this->keyOptionsResolver->getRelationOptions($relation) : null,
-            $keyConfig !== null ? $this->keyOptionsResolver->getRelationOptionsUnavailableReason($relation)?->value : null,
+            $keyConfig !== null
+                ? $this->keyOptionsResolver->getRelationOptionsUnavailableReason($relation)?->value
+                : null,
             $keyConfig !== null ? $this->keyOptionsResolver->getRelationUnits($relation) : null,
         );
     }

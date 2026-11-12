@@ -83,14 +83,22 @@ final class QuantityValueFilter implements FilterInterface
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
-                $this->createValueFilter($mode, $filterValue->getIndexFieldName($key->getName()) . self::VALUE_FIELD_SUFFIX, $value),
+                $this->createValueFilter(
+                    $mode,
+                    $filterValue->getIndexFieldName($key->getName()) . self::VALUE_FIELD_SUFFIX,
+                    $value
+                ),
                 null
             );
 
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
-                new WildcardSearch($filterValue->getIndexFieldName($key->getName()) . self::UNIT_FIELD_SUFFIX, $value['unitId'], true),
+                new WildcardSearch(
+                    $filterValue->getIndexFieldName($key->getName()) . self::UNIT_FIELD_SUFFIX,
+                    $value['unitId'],
+                    true
+                ),
                 null
             );
         }

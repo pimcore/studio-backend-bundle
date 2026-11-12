@@ -163,7 +163,8 @@ final class UnfilterableKeyGuard implements FilterInterface
         if ($variants === null || !in_array($variant, $variants, true)) {
             throw new InvalidArgumentException(
                 sprintf(
-                    'The Classification Store key "%s" does not declare the variant "%s", so it cannot be filtered by it.',
+                    'The Classification Store key "%s" does not declare the variant "%s", '
+                    . 'so it cannot be filtered by it.',
                     $keyName,
                     $variant
                 ),

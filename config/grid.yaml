@@ -18,6 +18,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMergerInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMerger
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\QualifiedColumnValueResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\QualifiedColumnValueResolver
+
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridService
 

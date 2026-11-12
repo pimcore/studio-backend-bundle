@@ -95,7 +95,11 @@ final class RGBAFilter implements FilterInterface
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
-                new IntegerFilter($filterValue->getIndexFieldName($key->getName()). '.a', (int)($value['a'] * 255), true),
+                new IntegerFilter(
+                    $filterValue->getIndexFieldName($key->getName()) . '.a',
+                    (int)($value['a'] * 255),
+                    true
+                ),
                 null
             );
         }
