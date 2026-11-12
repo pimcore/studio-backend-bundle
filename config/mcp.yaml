@@ -100,6 +100,10 @@ services:
     Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolverInterface:
         alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolver
 
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpToolCallScopeGuard: ~
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpToolCallScopeGuardInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpToolCallScopeGuard
+
     # All MCP controllers (the runtime serving endpoint + the Studio-API management
     # controllers) are public service-controllers.
     Pimcore\Bundle\StudioBackendBundle\Mcp\Controller\:

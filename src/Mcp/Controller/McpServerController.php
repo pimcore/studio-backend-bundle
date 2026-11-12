@@ -17,9 +17,12 @@ use Mcp\Server\Transport\Http\Middleware\CorsMiddleware;
 use Mcp\Server\Transport\Http\Middleware\ProtocolVersionMiddleware;
 use Mcp\Server\Transport\StreamableHttpTransport;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Exception\InsufficientMcpScopeException;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpScopes;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerCapability;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpToolCallScopeGuardInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Server\McpServerFactoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -32,6 +35,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use function array_filter;
+use function array_values;
+use function is_array;
+use function is_string;
 use function sprintf;
 
 /**
@@ -52,6 +59,7 @@ final readonly class McpServerController
         private McpServerConfigRepositoryInterface $serverRepository,
         private McpServerFactoryInterface $serverFactory,
         private McpServerAccessResolverInterface $accessResolver,
+        private McpToolCallScopeGuardInterface $scopeGuard,
         private SecurityServiceInterface $securityService,
         private HttpMessageFactoryInterface $httpMessageFactory,
         private HttpFoundationFactoryInterface $httpFoundationFactory,
@@ -76,6 +84,12 @@ final readonly class McpServerController
             );
         }
 
+        try {
+            $this->scopeGuard->assertAllowed($request->getContent(), $this->tokenScopes($request));
+        } catch (InsufficientMcpScopeException $exception) {
+            throw new AccessDeniedHttpException($exception->getMessage(), $exception);
+        }
+
         // An explicit middleware stack is passed because the SDK's default also installs
         // DnsRebindingProtectionMiddleware, which literally matches Host/Origin against
         // {localhost, 127.0.0.1, [::1]} and 403s anything else — incompatible with a
@@ -95,6 +109,16 @@ final readonly class McpServerController
         $response = $this->serverFactory->createServer($definition)->run($transport);
 
         return $this->httpFoundationFactory->createResponse($response);
+    }
+
+    /**
+     * @return list<string>|null null when the credential is not an OAuth token or carries no scopes
+     */
+    private function tokenScopes(Request $request): ?array
+    {
+        $scopes = $request->attributes->get(McpScopes::REQUEST_ATTRIBUTE);
+
+        return is_array($scopes) ? array_values(array_filter($scopes, is_string(...))) : null;
     }
 
     private function resolveServer(string $slug): McpServerDefinition

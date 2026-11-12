@@ -92,7 +92,16 @@ The tool then appears in the catalogue (`GET /pimcore-studio/api/mcp/tools`) and
 
 The fail-safe default (no `readOnlyHint`, or `false`) is treated as a write. A server's advertised scopes are the
 union of its tools' required scopes, unless the server declares its own. They are what the server's OAuth protected
-resource advertises as `scopes_supported`; a granted scope is not yet checked against the tool being called.
+resource advertises as `scopes_supported`.
+
+A Studio-managed MCP server checks the scope of an OAuth access token when a tool is **called**: a `tools/call` of a
+tool that is not annotated `readOnlyHint: true` is refused (HTTP 403) when the token carries scopes and `mcp:write` is
+not among them. Listing tools and calling read-only tools are not limited. This is all the scope limits:
+
+- A token that carries **no scope** (common for self-registered clients) is not limited.
+- `pmcp_` tokens, personal access tokens and the Studio session carry no scopes and are not limited.
+- `mcp:read` is not required to call a read-only tool, and there are no per-tool scopes: a token is either allowed
+  to call write tools (`mcp:write`) or not.
 
 ## Results and errors
 
