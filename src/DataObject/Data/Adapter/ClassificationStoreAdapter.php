@@ -63,6 +63,7 @@ use Pimcore\Model\DataObject\Exception\UnsupportedEngineFeatureException;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_diff;
+use function array_filter;
 use function array_is_list;
 use function array_key_exists;
 use function array_keys;
@@ -295,20 +296,44 @@ final readonly class ClassificationStoreAdapter implements
 
             $keyId = $this->getDeclaringKeyId($definition, substr($address, 0, $separator));
 
-            $entry = is_array($value) && array_key_exists('v', $value) ? $value : ['v' => $value];
-            $entry['var'] = substr($address, $separator + 1);
+            $variant = substr($address, $separator + 1);
 
             $held = $keys[$keyId] ?? [];
             $held = is_array($held) && array_is_list($held) && ($held === [] || is_array($held[0]))
                 ? $held
                 : [['v' => $held]];
-            $held[] = $entry;
+            foreach ($this->getAddressedEntries($value) as $entry) {
+                $entry['var'] = $variant;
+                $held[] = $entry;
+            }
 
             unset($keys[$address]);
             $keys[$keyId] = $held;
         }
 
         return $keys;
+    }
+
+    /**
+     * The entries one variant cell's patch carries: a repeating key's cell is a list of
+     * `{v, p}` entries, any other cell one entry object or a bare value.
+     *
+     * @return array<int, array<array-key, mixed>>
+     */
+    private function getAddressedEntries(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return [['v' => $value]];
+        }
+
+        if (array_key_exists('v', $value)) {
+            return [$value];
+        }
+
+        $isEntry = static fn (mixed $item): bool => is_array($item) && array_key_exists('v', $item);
+        $isEntryList = $value !== [] && array_is_list($value) && array_filter($value, $isEntry) === $value;
+
+        return $isEntryList ? $value : [['v' => $value]];
     }
 
     /**

@@ -984,6 +984,49 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
+     * A repeating key's variant cell travels as a list of entries; the address variant applies to each
+     * of them, so the positions survive instead of the list being taken as one value.
+     *
+     * @throws Exception
+     */
+    public function testAPatchOfARepeatingVariantCellKeepsThePositionsOfItsEntries(): void
+    {
+        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => '0']]];
+        $slots = [self::QUALIFIED_GROUP => [self::QUALIFIED_KEY => [self::LANGUAGE => [
+            self::IMPERIAL => [0 => '25'],
+        ]]]];
+        $written = [];
+        $writtenEntries = [];
+        $container = $this->createRecordingContainer(
+            $stored,
+            [self::QUALIFIED_GROUP => true],
+            $written,
+            $writtenEntries,
+            $slots
+        );
+
+        $this->writeLanguages(
+            $container,
+            $this->qualifiedKeyConfigs(),
+            $stored,
+            [self::LANGUAGE => [self::QUALIFIED_KEY . '#' . self::METRIC => [
+                ['v' => '60', 'p' => 0],
+                ['v' => '61', 'p' => 1],
+            ]]],
+            isPatch: true
+        );
+
+        $this->assertSame(
+            [0 => '60', 1 => '61'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::METRIC)
+        );
+        $this->assertSame(
+            [0 => '25'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::IMPERIAL)
+        );
+    }
+
+    /**
      * The variant of a cell address is held to the key's declaration like any other write.
      *
      * @throws Exception
