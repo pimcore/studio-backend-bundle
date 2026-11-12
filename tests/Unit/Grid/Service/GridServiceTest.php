@@ -22,10 +22,12 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolver
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnCollectorLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnDefinitionLoaderInterface;
@@ -522,6 +524,78 @@ final class GridServiceTest extends Unit
         $user->setAdmin($isAdmin);
 
         return $user;
+    }
+
+    /**
+     * The Studio UI can send a column without `config` (or with `config: false`). That must not fatal
+     * with a TypeError in the Column constructor.
+     *
+     * @dataProvider invalidColumnConfigProvider
+     */
+    public function testGetConfigurationForExportNormalizesInvalidColumnConfig(array $columnOverride): void
+    {
+        $result = $this->createService()->getConfigurationForExport(
+            [['key' => 'id', 'type' => 'system.id', ...$columnOverride]],
+            [$this->createExportableColumnConfiguration()]
+        );
+
+        $columns = $result->getColumns();
+        $this->assertCount(1, $columns);
+        $this->assertSame([], $columns[0]->getConfig());
+    }
+
+    public static function invalidColumnConfigProvider(): array
+    {
+        return [
+            'false' => [['config' => false]],
+            'null' => [['config' => null]],
+            'missing' => [[]],
+        ];
+    }
+
+    /**
+     * Malformed request data raises a TypeError in the strictly typed Column constructor. It must be
+     * reported as "Invalid column configuration" (422) instead of an uncaught TypeError (500).
+     * A null type is what a column without `type` resolves to in production (PEES-1995).
+     *
+     * @dataProvider malformedColumnProvider
+     */
+    public function testGetConfigurationForExportThrowsInvalidArgumentForMalformedColumn(array $column): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid column configuration');
+
+        // `config` is set so the column reaches the constructor without a PHP warning, like in production
+        $this->createService()->getConfigurationForExport(
+            [['key' => 'id', 'type' => 'system.id', 'config' => [], ...$column]],
+            [$this->createExportableColumnConfiguration()]
+        );
+    }
+
+    public static function malformedColumnProvider(): array
+    {
+        return [
+            'null type' => [['type' => null]],
+            'non numeric width' => [['width' => 'abc']],
+            'non array group' => [['group' => 'system']],
+        ];
+    }
+
+    private function createExportableColumnConfiguration(): ColumnConfiguration
+    {
+        return new ColumnConfiguration(
+            'id',
+            ['system'],
+            true,
+            false,
+            true,
+            true,
+            false,
+            null,
+            'system.id',
+            'id',
+            [],
+        );
     }
 
     private function createService(
