@@ -103,11 +103,17 @@ The following steps are necessary during updating to newer versions.
   `variants` or `multiValue` written into the definition of a key of any other type are ignored, not migrated: such a
   key keeps holding one value of its own type, and a value already stored for it is left as it is.
 - [Classification Store] Added: a store's whole configuration can be exported and applied again as one file, from the
-  store editor and from the console commands `studio-backend-bundle:classificationstore:export` and
-  `studio-backend-bundle:classificationstore:apply`. Applying creates and updates but never deletes, so un-assigning a
-  key from a group stays a manual step in the Studio UI, and it writes the file's store name and description onto the
-  store it is applied to. The report naming what was created, updated, adopted and left in place is the command's and
+  store editor, from an API endpoint that takes the file without a store id, and from the console commands
+  `studio-backend-bundle:classificationstore:export` and `studio-backend-bundle:classificationstore:apply`. Applying
+  creates and updates but never deletes, so un-assigning a key from a group stays a manual step in the Studio UI, and it
+  writes the file's store name and description onto the store it is applied to. An entry whose identifier is absent from
+  the store is created, while an entry whose name already belongs to another identifier is skipped and named in the
+  report, on both the store-scoped import and the new endpoint; such a file used to be refused with a conflict and is now
+  applied partly. The report naming what was created, updated, adopted, skipped and left in place is the command's and
   the API response's; the editor's import action only reports that the file was applied.
+- [Classification Store] Changed: a key's own `localized` flag is now honoured by the object data endpoints, where the
+  class field's flag alone used to decide, so a key localized inside a non-localized field is read and written per
+  language.
 - [Classification Store] Changed: a store configuration export now refuses when the configuration changed while it was
   being written, and must be run again. Over HTTP that arrives as a truncated download, on the console as a failed
   command.
