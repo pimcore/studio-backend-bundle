@@ -71,14 +71,14 @@ final class InputQuantityValueFilter implements FilterInterface
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
-                new WildcardSearch($key->getName(). '.value', $value['value'], true),
+                new WildcardSearch($filterValue->getIndexFieldName($key->getName()). '.value', $value['value'], true),
                 null
             );
 
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
-                new WildcardSearch($key->getName(). '.unitId', $value['unitId'], true),
+                new WildcardSearch($filterValue->getIndexFieldName($key->getName()). '.unitId', $value['unitId'], true),
                 null
             );
         }

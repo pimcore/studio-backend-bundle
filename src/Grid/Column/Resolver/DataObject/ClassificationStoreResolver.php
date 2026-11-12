@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
@@ -35,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ClassificationStoreConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
@@ -42,7 +44,10 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use function array_key_exists;
+use function array_map;
 use function is_int;
+use function is_string;
+use function json_encode;
 use function method_exists;
 use function sprintf;
 use function ucfirst;
@@ -68,6 +73,7 @@ final class ClassificationStoreResolver implements
         private readonly ToolResolverInterface $toolResolver,
         private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
         private readonly ColumnReferenceServiceInterface $columnReferenceService,
+        private readonly KeyConfigResolverInterface $keyConfigResolver,
     ) {
     }
 
@@ -115,11 +121,13 @@ final class ClassificationStoreResolver implements
             $value = null;
         }
 
-        // one cell holds one value, so a `multiValue` key shows its default slot - the same reduction
-        // the export makes ({@see self::resolveForExport()})
-        $keyConfig = KeyConfig::getById($config->getKeyId());
+        // one cell holds one variant of a `multiValue` key, the one its column addresses
+        $keyConfig = $this->keyConfigResolver->getById($config->getKeyId());
         if ($keyConfig instanceof KeyConfig && $this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
-            $value = $this->qualifiedValueSerializer->getDefaultSlotValue($value);
+            $value = $this->getCellValue($this->qualifiedValueSerializer->getVariantValues(
+                $value,
+                $config->getVariant()
+            ), $keyConfig, $config->getVariant());
         }
 
         $keyGroupRelation = $this->findKeyGroupRelation($config->getGroupId(), $config->getKeyId());
@@ -131,7 +139,7 @@ final class ClassificationStoreResolver implements
         }
 
         $returnData = new ColumnData(
-            key: $column->getKey() . '.' . $keyGroupRelation->getName(),
+            key: $column->getKey() . '.' . $keyGroupRelation->getName() . $this->getVariantSuffix($config),
             locale: $column->getLocale(),
             value: $value,
             fieldType: $keyGroupRelation->getType(),
@@ -159,7 +167,7 @@ final class ClassificationStoreResolver implements
         }
 
         $config = $this->getReference($column, $element);
-        $keyConfig = KeyConfig::getById(
+        $keyConfig = $this->keyConfigResolver->getById(
             $config->getKeyId(),
         );
 
@@ -167,9 +175,11 @@ final class ClassificationStoreResolver implements
             throw new InvalidArgumentException(sprintf('Key with %s not set', $config->getKeyId()));
         }
 
+        // the assignment's effective definition, so that its units and options format the value
+        $relation = $this->findKeyGroupRelation($config->getGroupId(), $config->getKeyId());
         $fieldDefinition = $this->classificationStoreServiceResolver->getFieldDefinitionFromJson(
-            json_decode($keyConfig->getDefinition(), true),
-            $keyConfig->getType()
+            $relation->getEffectiveDefinitionData(),
+            $relation->getType()
         );
 
         $locale = 'default';
@@ -185,13 +195,18 @@ final class ClassificationStoreResolver implements
             'language' => $locale,
         ]];
 
-        // the cell shows the default slot of a `multiValue` key, so the export injects that same one value
-        $defaultValue = $this->keyQualifierResolver->declaresQualifiers($keyConfig)
-            ? $this->getDefaultSlotValue($element, $column->getKey(), $config, $locale, $keyConfig)
-            : null;
+        if ($this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
+            $value = $this->getQualifiedExportValue(
+                $element,
+                $column->getKey(),
+                $config,
+                $locale,
+                $keyConfig,
+                $fieldDefinition,
+                $legacyParameters
+            );
 
-        if ($defaultValue !== null) {
-            $legacyParameters['injectedData'] = $defaultValue;
+            return $this->getColumnData($column, $value, $fieldDefinition->getFieldType());
         }
 
         $value = $this->dataService->getExportFieldValue(
@@ -245,7 +260,12 @@ final class ClassificationStoreResolver implements
             throw new InvalidArgumentException('groupId and keyId must be type of integer');
         }
 
-        return new ClassificationStoreConfig($config['groupId'], $config['keyId']);
+        $variant = $config['variant'] ?? null;
+        if ($variant !== null && (!is_string($variant) || $variant === '')) {
+            throw new InvalidArgumentException('variant must be a non-empty string');
+        }
+
+        return new ClassificationStoreConfig($config['groupId'], $config['keyId'], $variant);
     }
 
     /**
@@ -269,36 +289,69 @@ final class ClassificationStoreResolver implements
     }
 
     /**
-     * The one value a `multiValue` key shows at a (group, key, language): the values the store holds,
-     * reduced the way the grid cell reduces the payload the object data endpoint publishes.
+     * The cell of a `multiValue` column: the one value of its variant, or for a repeating key the entry list
+     * the write path reads ({@see \Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParser}),
+     * so that a cell sent back unchanged keeps every position. Joining the list for display is the renderer's.
      *
-     * The export is formatted by the key's own field definition, which reads the slot itself and
-     * cannot be handed a value - except through `injectedData`, which
-     * {@see \Pimcore\Model\DataObject\ClassDefinition\Data::getDataFromObjectParam()} honours ahead
-     * of its own read.
+     * @param mixed[] $values
+     *
+     * @return mixed|array<int, array<string, mixed>>
+     */
+    private function getCellValue(array $values, KeyConfig $keyConfig, ?string $variant): mixed
+    {
+        if ($values === []) {
+            return null;
+        }
+
+        if ($this->keyQualifierResolver->isMultiValue($keyConfig) !== true) {
+            return $values[0];
+        }
+
+        $entries = [];
+        foreach (array_values($values) as $position => $value) {
+            $entry = [QualifiedValueSerializerInterface::VALUE_MEMBER => $value];
+            if ($variant !== null) {
+                $entry[QualifiedValueSerializerInterface::VARIANT_MEMBER] = $variant;
+            }
+            $entry[QualifiedValueSerializerInterface::POSITION_MEMBER] = $position;
+            $entries[] = $entry;
+        }
+
+        return $entries;
+    }
+
+    /**
+     * The export of a `multiValue` column: the values its variant holds, each formatted by the key's own
+     * field definition, which reads the slot itself and cannot be handed a value except through
+     * `injectedData` ({@see \Pimcore\Model\DataObject\ClassDefinition\Data::getDataFromObjectParam()}).
+     * A repeating key exports them as a bare JSON array, one entry per position.
+     *
+     * @param array<string, mixed> $legacyParameters
      *
      * @throws Exception
      */
-    private function getDefaultSlotValue(
+    private function getQualifiedExportValue(
         Concrete $element,
         string $fieldName,
         ClassificationStoreConfig $config,
         string $locale,
-        KeyConfig $keyConfig
+        KeyConfig $keyConfig,
+        Data $fieldDefinition,
+        array $legacyParameters
     ): mixed {
         // the guard core's own read of this slot makes, so that a saved column naming a field the
         // class no longer has keeps exporting an empty cell rather than failing the export
         if (!method_exists($element, 'get' . ucfirst($fieldName))) {
-            return null;
+            return '';
         }
 
         $container = $element->get($fieldName);
 
         if (!$container instanceof Classificationstore) {
-            return null;
+            return '';
         }
 
-        return $this->qualifiedValueSerializer->getDefaultSlotValue(
+        $values = $this->qualifiedValueSerializer->getVariantValues(
             $this->qualifiedValueSerializer->toPayload(
                 $this->qualifiedValueSerializer->readStoredEntries(
                     $container,
@@ -307,8 +360,33 @@ final class ClassificationStoreResolver implements
                     $locale,
                     $keyConfig
                 )
-            )
+            ),
+            $config->getVariant()
         );
+
+        // not reading the slot itself, which would answer the default slot for a variant that holds nothing
+        $formatted = array_map(
+            fn (mixed $value): mixed => $this->dataService->getExportFieldValue(
+                $element,
+                $fieldDefinition,
+                $fieldName,
+                new FieldContextData(legacyParameters: [...$legacyParameters, 'injectedData' => $value])
+            ),
+            $values
+        );
+
+        if ($formatted === []) {
+            return '';
+        }
+
+        return $this->keyQualifierResolver->isMultiValue($keyConfig) === true
+            ? json_encode($formatted)
+            : $formatted[0];
+    }
+
+    private function getVariantSuffix(ClassificationStoreConfig $config): string
+    {
+        return $config->getVariant() !== null ? '#' . $config->getVariant() : '';
     }
 
     /**

@@ -17,10 +17,12 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\OptionsUnavailableReason;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\SelectOption;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 
 /**
- * The one place a key's own option vocabulary and unit vocabulary are resolved for the configuration
- * surfaces, from the key's own definition and never from the override of an assignment.
+ * The one place a key's option vocabulary and unit vocabulary are resolved for the configuration
+ * surfaces: from the key's own definition for a key configuration, and from the effective definition
+ * of the assignment, its override merged over the key's own, for a key group relation.
  *
  * Only a key whose own definition is a select or multiselect has options; a wrapper type's delegate
  * is not looked inside. No data object is involved, so a provider is asked for static options only.
@@ -51,4 +53,22 @@ interface KeyOptionsResolverInterface
      * The unit vocabulary the key's own definition exposes, or null where its type holds no units.
      */
     public function getUnits(KeyConfig $keyConfig): ?KeyUnits;
+
+    /**
+     * The options of the assignment, narrowed to its option subset, whatever their source - the same
+     * resolution as {@see self::getOptions()} otherwise.
+     *
+     * @return SelectOption[]|null
+     */
+    public function getRelationOptions(KeyGroupRelation $relation): ?array;
+
+    /**
+     * Why a select-like assignment publishes no options, or null where nothing failed.
+     */
+    public function getRelationOptionsUnavailableReason(KeyGroupRelation $relation): ?OptionsUnavailableReason;
+
+    /**
+     * The unit vocabulary of the assignment, its override applied, or null where its type holds no units.
+     */
+    public function getRelationUnits(KeyGroupRelation $relation): ?KeyUnits;
 }

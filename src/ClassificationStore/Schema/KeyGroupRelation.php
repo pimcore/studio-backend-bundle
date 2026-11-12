@@ -65,6 +65,24 @@ final class KeyGroupRelation implements AdditionalAttributesInterface
             nullable: true
         )]
         private readonly ?string $keyType = null,
+        #[Property(
+            description: 'Whether a grid filter can be applied to this key: false where filterUnavailableReason'
+                . ' says why not; null where the relation states no type or definition to tell.',
+            type: 'boolean',
+            example: true,
+            nullable: true
+        )]
+        private readonly ?bool $filterable = null,
+        #[Property(
+            description: 'Why the key cannot be filtered: "indexExcluded" where its definition leaves it out of'
+                . ' the search index, "typeUnsupported" where no filter supports its type,'
+                . ' "resolutionFailed" where its definition cannot be read. Null means it can be'
+                . ' filtered, or that the relation states no type or definition to tell.',
+            type: 'string',
+            example: 'indexExcluded',
+            nullable: true
+        )]
+        private readonly ?string $filterUnavailableReason = null,
     ) {
     }
 
@@ -106,5 +124,15 @@ final class KeyGroupRelation implements AdditionalAttributesInterface
     public function getKeyType(): ?string
     {
         return $this->keyType;
+    }
+
+    public function getFilterable(): ?bool
+    {
+        return $this->filterable;
+    }
+
+    public function getFilterUnavailableReason(): ?string
+    {
+        return $this->filterUnavailableReason;
     }
 }

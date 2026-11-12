@@ -42,4 +42,8 @@ enum HttpResponseErrorKeys: string
     case DUPLICATE_VALUE_QUALIFIER = 'error_duplicate_value_qualifier';
     case ENGINE_CAPABILITY_MISSING = 'error_engine_capability_missing';
     case KEY_NOT_REPEATABLE = 'error_key_not_repeatable';
+    case FILTER_TYPE_UNSUPPORTED = 'error_filter_type_unsupported';
+    case FILTER_KEY_NOT_INDEXED = 'error_filter_key_not_indexed';
+    case FILTER_VARIANT_UNDECLARED = 'error_filter_variant_undeclared';
+    case FILTER_DEFINITION_UNRESOLVABLE = 'error_filter_definition_unresolvable';
 }

@@ -69,7 +69,7 @@ final class BooleanFilter implements FilterInterface
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
-                new BooleanMultiSelectFilter($key->getName(), $filterValue->getValue(), true),
+                new BooleanMultiSelectFilter($filterValue->getIndexFieldName($key->getName()), $filterValue->getValue(), true),
                 $column->getLocale()
             );
         }

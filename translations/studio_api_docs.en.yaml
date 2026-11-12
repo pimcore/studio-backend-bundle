@@ -690,6 +690,10 @@ error_undeclared_variant: The value names a variant the key does not declare
 error_duplicate_value_qualifier: Two values of the key address the same variant and position
 error_engine_capability_missing: The engine of the key's store does not support this write
 error_key_not_repeatable: The key does not declare that it holds more than one value per variant
+error_filter_type_unsupported: No filter is supported for the type of the key
+error_filter_key_not_indexed: The key is excluded from the search index and cannot be filtered
+error_filter_variant_undeclared: The key does not declare the variant the filter names
+error_filter_definition_unresolvable: The definition of the key cannot be read, so no filter can be applied to it
 error_inconsistent_asset_type: Inconsistent asset binary type
 error_recycle_bin_restore: Cannot restore element from recycle bin
 error_recycle_bin_restore_missing_parent: Cannot restore element from recycle bin, parent element is missing

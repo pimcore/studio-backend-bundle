@@ -32,6 +32,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
 use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\MultiSelectOptionsProviderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\SelectOptionsProviderInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use stdClass;
 use Throwable;
 use TypeError;
@@ -83,6 +84,82 @@ final class KeyOptionsResolverTest extends Unit
         );
 
         $this->resolver = new KeyOptionsResolver($serviceResolver, $providerResolver, new SelectOptionHydrator());
+    }
+
+    public function testAnAssignmentNarrowsTheStaticOptionsOfTheKey(): void
+    {
+        $relation = $this->relation(
+            'select',
+            (string) json_encode(['options' => self::OWN_OPTIONS]),
+            ['options' => [self::OWN_OPTIONS[1]]]
+        );
+
+        $this->assertSame([self::OWN_OPTIONS[1]], $this->asArrays($this->resolver->getRelationOptions($relation)));
+    }
+
+    public function testAnAssignmentNarrowsTheOptionsOfAProviderReportingStaticOptionsTheSameWay(): void
+    {
+        $this->providers[self::PROVIDER] = $this->provider(true, self::OWN_OPTIONS);
+
+        $relation = $this->relation('select', self::STATIC_PROVIDER_DEFINITION, ['options' => [self::OWN_OPTIONS[1]]]);
+
+        $this->assertSame([self::OWN_OPTIONS[1]], $this->asArrays($this->resolver->getRelationOptions($relation)));
+        $this->assertNull($this->resolver->getRelationOptionsUnavailableReason($relation));
+    }
+
+    public function testTheKeyAloneStillPublishesItsWholeVocabularyAfterAnAssignmentNarrowedIt(): void
+    {
+        $definition = (string) json_encode(['options' => self::OWN_OPTIONS]);
+
+        $this->resolver->getRelationOptions($this->relation('select', $definition, ['options' => [self::OWN_OPTIONS[0]]]));
+
+        $this->assertSame(
+            self::OWN_OPTIONS,
+            $this->asArrays($this->resolver->getOptions($this->key('select', $definition)))
+        );
+    }
+
+    /**
+     * @dataProvider groupOrderProvider
+     *
+     * @param array<int, int> $order the indexes of the two assignments, in the order they are read
+     */
+    public function testTwoAssignmentsOfOneKeyEachPublishTheirOwnOptionsWhicheverIsReadFirst(array $order): void
+    {
+        $definition = (string) json_encode(['options' => self::OWN_OPTIONS]);
+        $relations = [
+            $this->relation('select', $definition, ['options' => [self::OWN_OPTIONS[0]]]),
+            $this->relation('select', $definition, ['options' => [self::OWN_OPTIONS[1]]]),
+        ];
+
+        foreach ($order as $index) {
+            $this->assertSame(
+                [self::OWN_OPTIONS[$index]],
+                $this->asArrays($this->resolver->getRelationOptions($relations[$index]))
+            );
+        }
+    }
+
+    /**
+     * @return array<string, array{0: array<int, int>}>
+     */
+    public static function groupOrderProvider(): array
+    {
+        return ['group A then group B' => [[0, 1]], 'group B then group A' => [[1, 0]]];
+    }
+
+    public function testAnAssignmentPublishesTheUnitsItOverrides(): void
+    {
+        $relation = $this->relation(
+            'quantityValue',
+            (string) json_encode(['defaultUnit' => 'm', 'validUnits' => ['m', 'kg']]),
+            ['defaultUnit' => 'kg', 'validUnits' => ['kg']]
+        );
+
+        $units = $this->resolver->getRelationUnits($relation);
+
+        $this->assertSame('kg', $units?->getDefaultUnit());
+        $this->assertSame(['kg'], $units?->getValidUnits());
     }
 
     public function testAProviderReportingStaticOptionsPublishesThemInItsOwnOrder(): void
@@ -427,6 +504,19 @@ final class KeyOptionsResolverTest extends Unit
         $keyConfig->setDefinition($definition);
 
         return $keyConfig;
+    }
+
+    /**
+     * @param array<string, mixed>|null $override
+     */
+    private function relation(string $type, string $definition, ?array $override): KeyGroupRelation
+    {
+        $relation = new KeyGroupRelation();
+        $relation->setType($type);
+        $relation->setDefinition($definition);
+        $relation->setDefinitionOverride($override);
+
+        return $relation;
     }
 
     /**

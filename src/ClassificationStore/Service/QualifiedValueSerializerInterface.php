@@ -106,6 +106,14 @@ interface QualifiedValueSerializerInterface
     public function getDefaultSlotValue(mixed $payload): mixed;
 
     /**
+     * The values a payload list of entries holds at one variant, in position order. A null variant is the
+     * default variant alone: an entry of a named variant is never read as the default slot's.
+     *
+     * @return mixed[]
+     */
+    public function getVariantValues(mixed $payload, ?string $variant): array;
+
+    /**
      * The stored entries with the supplied ones written over them, matched by (variant, position)
      * and never by position in the list, so a write addressing one slot leaves the rest of the
      * key's list intact. The stored order is kept and an entry the write adds is appended.

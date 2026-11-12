@@ -464,9 +464,14 @@ final readonly class ClassificationStoreAdapter implements
         array $keys,
         bool $isPatch
     ): void {
+        $relations = $this->getClassificationStoreKeysFromGroup($groupId);
         foreach ($keys as $keyId => $value) {
             $keyConfig = $definition->getKeyConfiguration($keyId);
-            $fieldDefinition = $this->serviceResolver->getFieldDefinitionFromKeyConfig($keyConfig);
+            $relation = $this->findRelation($relations, $keyId);
+            // an assignment is converted and validated against its own effective definition
+            $fieldDefinition = $relation !== null
+                ? $this->getEffectiveFieldDefinition($relation)
+                : $this->serviceResolver->getFieldDefinitionFromKeyConfig($keyConfig);
 
             if ($fieldDefinition === null) {
                 continue;
@@ -750,7 +755,7 @@ final readonly class ClassificationStoreAdapter implements
 
             $keys = $this->getClassificationStoreKeysFromGroup($groupId);
             foreach ($keys as $groupKey) {
-                $definition = $this->serviceResolver->getFieldDefinitionFromKeyConfig($groupKey);
+                $definition = $this->getEffectiveFieldDefinition($groupKey);
                 if ($definition === null) {
                     continue;
                 }
@@ -816,6 +821,31 @@ final readonly class ClassificationStoreAdapter implements
     }
 
     /**
+     * Built on every call from the assignment's own effective definition, never from a memo held per key.
+     */
+    private function getEffectiveFieldDefinition(KeyGroupRelation $relation): ?Data
+    {
+        return $this->serviceResolver->getFieldDefinitionFromJson(
+            $relation->getEffectiveDefinitionData(),
+            $relation->getType()
+        );
+    }
+
+    /**
+     * @param KeyGroupRelation[] $relations
+     */
+    private function findRelation(array $relations, int $keyId): ?KeyGroupRelation
+    {
+        foreach ($relations as $relation) {
+            if ($relation->getKeyId() === $keyId) {
+                return $relation;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @return KeyGroupRelation[]
      */
     private function getClassificationStoreKeysFromGroup(int $groupId): array
@@ -855,7 +885,7 @@ final readonly class ClassificationStoreAdapter implements
         string $language,
         KeyConfig $keyConfig,
     ): mixed {
-        $childDef = $this->serviceResolver->getFieldDefinitionFromKeyConfig($keyConfig);
+        $childDef = $this->getEffectiveFieldDefinition($key);
         if ($childDef === null) {
             return null;
         }
@@ -921,7 +951,7 @@ final readonly class ClassificationStoreAdapter implements
             return null;
         }
 
-        $fieldDefinition = $this->serviceResolver->getFieldDefinitionFromKeyConfig($keyConfig);
+        $fieldDefinition = $this->getEffectiveFieldDefinition($key);
         if ($fieldDefinition === null) {
             return null;
         }

@@ -40,8 +40,12 @@ trait ClassificationStoreFilterTestTrait
      *
      * @return array<int, array{fieldName: string, group: string, filter: mixed}> the recorded filter calls
      */
-    private function applyFilter(string $filterClass, string $columnType, string|array $value): array
-    {
+    private function applyFilter(
+        string $filterClass,
+        string $columnType,
+        string|array $value,
+        ?string $variant = null
+    ): array {
         $calls = [];
         $query = null;
         $query = $this->makeEmpty(DataObjectQueryInterface::class, [
@@ -72,7 +76,7 @@ trait ClassificationStoreFilterTestTrait
         $parameter = $this->getColumnFilterMock(
             self::FIELD_NAME,
             $columnType,
-            ['groupId' => 1, 'keyId' => 2, 'value' => $value]
+            ['groupId' => 1, 'keyId' => 2, 'value' => $value, ...($variant !== null ? ['variant' => $variant] : [])]
         );
 
         $filter->apply($parameter, $query);

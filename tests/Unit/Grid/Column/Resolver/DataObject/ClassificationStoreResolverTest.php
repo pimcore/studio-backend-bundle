@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Grid\Column\Resolver\Dat
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
@@ -37,11 +38,13 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ClassificationStoreConfig;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\MultiValueServiceResolver;
 use Pimcore\Cache\RuntimeCache;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\UserInterface;
+use function array_filter;
 use function array_key_exists;
 use function json_encode;
 
@@ -152,7 +155,7 @@ final class ClassificationStoreResolverTest extends Unit
                 $multiValue,
                 $declaring,
                 [['v' => '176', 'var' => 'imperial'], ['v' => '80']],
-                '80',
+                [['v' => '80', 'p' => 0]],
             ],
             'an empty qualified slot' => [$multiValue, $declaring, null, null],
             // every key that is not of type `multiValue` keeps reaching the cell untouched
@@ -170,9 +173,8 @@ final class ClassificationStoreResolverTest extends Unit
     }
 
     /**
-     * The cell and the export of one `multiValue` column show the same value: the default variant at
-     * position 0, the first visible value where there is none, and nothing where the key holds
-     * nothing. The cell is handed what the object data endpoint published for the row, and the
+     * The cell and the export of one `multiValue` default column show the same value: the default variant
+     * at position 0, and nothing where the key holds nothing or holds named variants alone. The cell is handed what the object data endpoint published for the row, and the
      * export is handed the one value it injects for the same store.
      *
      * @dataProvider slotHoldingEntriesProvider
@@ -203,7 +205,8 @@ final class ClassificationStoreResolverTest extends Unit
         $cell = $resolver->resolveForCoreElement($this->createKeyColumn(), $element);
         $resolver->resolveForExport($this->createKeyColumn(), $element, $this->makeEmpty(UserInterface::class));
 
-        $this->assertSame($expected, $cell->getValue());
+        // a repeating key's cell is the entry list the write path reads, the export formats the same value
+        $this->assertSame($expected === null ? null : [['v' => $expected, 'p' => 0]], $cell->getValue());
         $this->assertSame($expected, $injected);
     }
 
@@ -226,7 +229,7 @@ final class ClassificationStoreResolverTest extends Unit
             'no default value' => [
                 [['v' => '176', 'var' => 'imperial']],
                 ['imperial' => [0 => '176']],
-                '176',
+                null,
             ],
             'nothing at all' => [null, [], null],
         ];
@@ -321,10 +324,135 @@ final class ClassificationStoreResolverTest extends Unit
             $this->makeEmpty(UserInterface::class)
         );
 
-        // nothing is stored at a field the class does not have, so nothing is injected
+        // nothing is stored at a field the class does not have, so the export is never asked to format
         $this->assertFalse($reached);
-        $this->assertNull($injected);
+        $this->assertSame('untouched', $injected);
         $this->assertSame('', $result->getValue());
+    }
+
+    /**
+     * The export formats the value with the definition of the assignment, so a unit the assignment overrides
+     * is the one the value is formatted with.
+     *
+     * @throws Exception
+     */
+    public function testTheExportIsFormattedByTheEffectiveDefinitionOfTheAssignment(): void
+    {
+        $this->primeKeyConfig(['fieldtype' => 'quantityValue', 'defaultUnit' => 'm']);
+        $relation = $this->createRelation();
+        $relation->setType('quantityValue');
+        $relation->setDefinition('{"fieldtype":"quantityValue","defaultUnit":"m","validUnits":["m","kg"]}');
+        $relation->setDefinitionOverride(['defaultUnit' => 'kg']);
+
+        $received = null;
+        $serviceResolver = $this->makeEmpty(ServiceResolverInterface::class, [
+            'getFieldDefinitionFromJson' => static function (array $definition) use (&$received): Data {
+                $received = $definition;
+
+                return new Input();
+            },
+        ]);
+        $injected = null;
+        $reached = false;
+        $resolver = $this->createResolver(
+            null,
+            $serviceResolver,
+            $this->createExportRead($injected, $reached),
+            relation: $relation
+        );
+
+        $resolver->resolveForExport(
+            $this->createKeyColumn(),
+            $this->createElementHolding('5'),
+            $this->makeEmpty(UserInterface::class)
+        );
+
+        $this->assertSame('kg', $received['defaultUnit']);
+    }
+
+    /**
+     * @dataProvider variantColumnProvider
+     *
+     * @param array<string, mixed> $config
+     * @param array<string, array<int, mixed>> $stored
+     *
+     * @throws Exception
+     */
+    public function testAColumnShowsAndExportsTheVariantItAddresses(
+        array $config,
+        array $stored,
+        bool $repeating,
+        mixed $expectedCell,
+        mixed $expectedExport
+    ): void {
+        $this->primeKeyConfig(
+            ['variants' => ['Metric', 'Imperial'], 'multiValue' => $repeating],
+            MultiValueServiceResolver::MULTI_VALUE_TYPE
+        );
+        $published = [];
+        foreach ($stored as $variant => $values) {
+            foreach ($values as $position => $value) {
+                $published[] = array_filter(
+                    ['v' => $value, 'var' => $variant === 'default' ? null : $variant, 'p' => $position ?: null],
+                    static fn (mixed $member): bool => $member !== null
+                );
+            }
+        }
+
+        $injected = null;
+        $reached = false;
+        $resolver = $this->createResolver(
+            $published,
+            $this->createKeyFieldDefinitionResolver(),
+            $this->createExportRead($injected, $reached)
+        );
+        $column = $this->createColumn($config);
+        $element = $this->createElementHolding(null, $stored);
+
+        $cell = $resolver->resolveForCoreElement($column, $element);
+        $export = $resolver->resolveForExport($column, $element, $this->makeEmpty(UserInterface::class));
+
+        $this->assertSame($expectedCell, $cell->getValue());
+        $this->assertSame($expectedExport, $export->getValue());
+    }
+
+    /**
+     * @return array<string, array{0: array<string, mixed>, 1: array<string, array<int, mixed>>, 2: bool, 3: mixed, 4: mixed}>
+     */
+    public static function variantColumnProvider(): array
+    {
+        $base = ['groupId' => self::GROUP_ID, 'keyId' => self::KEY_ID];
+        $named = ['Metric' => [0 => '50'], 'Imperial' => [0 => '25']];
+
+        return [
+            'a column naming a variant reads that slot alone' => [
+                [...$base, 'variant' => 'Metric'], $named, false, '50', '50',
+            ],
+            'the same config without a variant reads the default slot, empty here' => [
+                $base, $named, false, null, '',
+            ],
+            'values under named variants only leave the other variant carrying its own' => [
+                [...$base, 'variant' => 'Imperial'], $named, false, '25', '25',
+            ],
+            'a repeating key exports a bare JSON array and shows its entries as the list the write path reads' => [
+                [...$base, 'variant' => 'Metric'], ['Metric' => [0 => '50', 1 => '55']], true, [['v' => '50', 'var' => 'Metric', 'p' => 0], ['v' => '55', 'var' => 'Metric', 'p' => 1]], '["50","55"]',
+            ],
+        ];
+    }
+
+    public function testAColumnConfigNamingAnEmptyVariantIsRefused(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createResolver()->validateConfig(['groupId' => 1, 'keyId' => 2, 'variant' => '']);
+    }
+
+    public function testAColumnConfigCarriesItsVariant(): void
+    {
+        $config = $this->createResolver()->validateConfig(['groupId' => 1, 'keyId' => 2, 'variant' => 'Metric']);
+
+        $this->assertSame('Metric', $config->getVariant());
+        $this->assertNull($this->createResolver()->validateConfig(['groupId' => 1, 'keyId' => 2])->getVariant());
     }
 
     public function testValidateConfigStillThrowsForMissingKeyConfig(): void
@@ -493,7 +621,16 @@ final class ClassificationStoreResolverTest extends Unit
             $this->makeEmpty(ToolResolverInterface::class),
             $this->makeEmpty(LocalizedFieldResolverInterface::class),
             $this->makeEmpty(ColumnReferenceServiceInterface::class, ['resolve' => $resolved]),
+            $this->keyConfigResolver(),
         );
+    }
+
+    private function keyConfigResolver(): KeyConfigResolverInterface
+    {
+        // the real model, primed in the runtime cache by primeKeyConfig()
+        return $this->makeEmpty(KeyConfigResolverInterface::class, [
+            'getById' => static fn (int $id): ?KeyConfig => KeyConfig::getById($id),
+        ]);
     }
 
     private function createBareColumn(): Column
@@ -541,7 +678,8 @@ final class ClassificationStoreResolverTest extends Unit
         mixed $normalized = null,
         ?ServiceResolverInterface $classificationStoreServiceResolver = null,
         ?DataServiceInterface $dataService = null,
-        ?ColumnReferenceServiceInterface $reference = null
+        ?ColumnReferenceServiceInterface $reference = null,
+        ?KeyGroupRelation $relation = null
     ): ClassificationStoreResolver {
         // the real two: standing them in would leave what a cell and an export show for a list
         // untested here, which is the whole of what this resolver decides about one
@@ -550,7 +688,7 @@ final class ClassificationStoreResolverTest extends Unit
         return new ClassificationStoreResolver(
             $this->createGridService($normalized),
             $this->makeEmpty(KeyRelationResolverInterface::class, [
-                'getByGroup' => [$this->createRelation()],
+                'getByGroup' => [$relation ?? $this->createRelation()],
             ]),
             $classificationStoreServiceResolver ?? $this->makeEmpty(ServiceResolverInterface::class),
             $dataService ?? $this->makeEmpty(DataServiceInterface::class),
@@ -563,6 +701,7 @@ final class ClassificationStoreResolverTest extends Unit
             $this->makeEmpty(ToolResolverInterface::class),
             $this->makeEmpty(LocalizedFieldResolverInterface::class),
             $reference ?? $this->makeEmpty(ColumnReferenceServiceInterface::class),
+            $this->keyConfigResolver(),
         );
     }
 
@@ -667,6 +806,7 @@ final class ClassificationStoreResolverTest extends Unit
         $relation->setGroupId(self::GROUP_ID);
         $relation->setName('weight');
         $relation->setType('input');
+        $relation->setDefinition('{"fieldtype":"input"}');
 
         return $relation;
     }

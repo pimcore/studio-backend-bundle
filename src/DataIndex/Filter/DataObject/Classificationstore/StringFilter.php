@@ -69,7 +69,7 @@ final class StringFilter implements FilterInterface
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
-                new WildcardSearch($key->getName(), $filterValue->getValue(), true),
+                new WildcardSearch($filterValue->getIndexFieldName($key->getName()), $filterValue->getValue(), true),
                 $column->getLocale()
             );
         }

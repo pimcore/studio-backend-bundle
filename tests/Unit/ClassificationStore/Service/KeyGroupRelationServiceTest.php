@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListC
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyGroupRelation;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyFilterResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupRelationService;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation as CoreKeyGroupRelation;
@@ -177,7 +178,7 @@ final class KeyGroupRelationServiceTest extends Unit
         $service = new KeyGroupRelationService(
             $repository,
             $groupService,
-            new KeyGroupRelationHydrator(),
+            new KeyGroupRelationHydrator($this->createMock(KeyFilterResolverInterface::class)),
             $groupConfigResolver,
             $this->createMock(EventDispatcherInterface::class),
             $keyLocalizationResolver,

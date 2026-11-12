@@ -18,10 +18,14 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Cache\RuntimeCacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnVariantExpander;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnVariantExpanderInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
@@ -40,6 +44,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnDefinitionLoaderInterf
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnResolverLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridService;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMergerInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ClassificationStoreConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ProvidedGridElement;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
@@ -47,6 +52,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowPermissionsAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\MultiValueServiceResolver;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Cache\RuntimeCache;
@@ -56,12 +62,14 @@ use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_map;
 
 /**
  * @internal
@@ -1198,6 +1206,129 @@ final class GridServiceTest extends Unit
         };
     }
 
+    /**
+     * @param array<string, mixed> $config
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function savedColumn(array $config, ?string $locale = null, ?string $title = null): array
+    {
+        return [[
+            'key' => 'cs',
+            'locale' => $locale,
+            'type' => 'dataobject.classificationstore',
+            'group' => ['data_object'],
+            'config' => $title === null ? $config : [...$config, 'fieldDefinition' => ['title' => $title]],
+        ]];
+    }
+
+    private function createVariantService(
+        string $type,
+        string $definition,
+        ?ColumnReferenceServiceInterface $reference = null
+    ): GridService {
+        $keyConfig = new KeyConfig();
+        $keyConfig->setType($type);
+        $keyConfig->setDefinition($definition);
+
+        return $this->createService(columnVariantExpander: new ColumnVariantExpander(
+            $this->makeEmpty(KeyConfigResolverInterface::class, ['getById' => $keyConfig]),
+            new KeyQualifierResolver(new MultiValueServiceResolver()),
+            $reference ?? $this->makeEmpty(ColumnReferenceServiceInterface::class)
+        ));
+    }
+
+    public function testAColumnNamingItsKeyByIdentifiersIsExpandedByTheKeyTheyResolveTo(): void
+    {
+        $service = $this->createVariantService(
+            MultiValueServiceResolver::MULTI_VALUE_TYPE,
+            '{"variants":["Metric","Imperial"]}',
+            $this->makeEmpty(ColumnReferenceServiceInterface::class, [
+                'resolve' => new ClassificationStoreConfig(3, 4802),
+            ])
+        );
+
+        // the integer pair is stale: it is not the key the identifiers name
+        $columns = $service->getConfigurationForExport(
+            $this->savedColumn(
+                ['groupId' => 1, 'keyId' => 1, 'groupIdentifier' => 'g', 'keyIdentifier' => 'k'],
+                'en',
+                'Length'
+            ),
+            [$this->createExportableColumnConfiguration()],
+            'class'
+        );
+
+        $this->assertCount(3, $columns->getColumns());
+    }
+
+    public function testAColumnNamingItsKeyByIdentifiersIsKeptWithoutAClassToResolveThemIn(): void
+    {
+        $service = $this->createVariantService(
+            MultiValueServiceResolver::MULTI_VALUE_TYPE,
+            '{"variants":["Metric","Imperial"]}'
+        );
+
+        $columns = $service->getConfigurationForExport(
+            $this->savedColumn(
+                ['groupId' => 1, 'keyId' => 1, 'groupIdentifier' => 'g', 'keyIdentifier' => 'k']
+            ),
+            [$this->createExportableColumnConfiguration()]
+        );
+
+        $this->assertCount(1, $columns->getColumns());
+    }
+
+    public function testASavedColumnNamingAMultiValueKeyIsExpandedIntoOneColumnPerVariantAndTheDefaultSlot(): void
+    {
+        $service = $this->createVariantService(
+            MultiValueServiceResolver::MULTI_VALUE_TYPE,
+            '{"variants":["Metric","Imperial"],"multiValue":false}'
+        );
+
+        $columns = $service->getConfigurationForExport(
+            $this->savedColumn(['groupId' => 3, 'keyId' => 7], 'en', 'Length'),
+            [$this->createExportableColumnConfiguration()]
+        );
+
+        $this->assertCount(3, $columns->getColumns());
+        $this->assertSame(
+            ['Length#Metric (en)', 'Length#Imperial (en)', 'Length (en)'],
+            $service->getColumnKeys($columns)
+        );
+        $this->assertSame(
+            ['Metric', 'Imperial', null],
+            array_map(static fn (Column $column): ?string => $column->getConfig()['variant'] ?? null, $columns->getColumns())
+        );
+    }
+
+    public function testAColumnSupplyingAVariantIsNotExpandedAgain(): void
+    {
+        $service = $this->createVariantService(
+            MultiValueServiceResolver::MULTI_VALUE_TYPE,
+            '{"variants":["Metric","Imperial"]}'
+        );
+
+        $columns = $service->getConfigurationForExport(
+            $this->savedColumn(['groupId' => 3, 'keyId' => 7, 'variant' => 'Metric']),
+            [$this->createExportableColumnConfiguration()]
+        );
+
+        $this->assertCount(1, $columns->getColumns());
+    }
+
+    public function testTheHeaderOfAColumnOfAKeyThatIsNotMultiValueIsUnchanged(): void
+    {
+        $service = $this->createVariantService('input', '{"fieldtype":"input","variants":["Metric"]}');
+
+        $columns = $service->getConfigurationForExport(
+            $this->savedColumn(['groupId' => 3, 'keyId' => 7], 'en', 'Length'),
+            [$this->createExportableColumnConfiguration()]
+        );
+
+        $this->assertSame(['Length (en)'], $service->getColumnKeys($columns));
+    }
+
     private function createExportableColumnConfiguration(): ColumnConfiguration
     {
         return new ColumnConfiguration(
@@ -1361,6 +1492,7 @@ final class GridServiceTest extends Unit
         ?EventDispatcherInterface $eventDispatcher = null,
         ?RuntimeCacheResolverInterface $runtimeCacheResolver = null,
         ?ClassDefinitionResolverInterface $classDefinitionResolver = null,
+        ?ColumnVariantExpanderInterface $columnVariantExpander = null,
     ): GridService {
         return new GridService(
             $this->makeEmpty(ColumnDefinitionLoaderInterface::class),
@@ -1383,6 +1515,11 @@ final class GridServiceTest extends Unit
             $localeService ?? $this->makeEmpty(LocaleServiceInterface::class),
             $runtimeCacheResolver ?? $this->makeEmpty(RuntimeCacheResolverInterface::class),
             $this->makeEmpty(ColumnReferenceServiceInterface::class),
+            $columnVariantExpander ?? new ColumnVariantExpander(
+                $this->makeEmpty(KeyConfigResolverInterface::class),
+                new KeyQualifierResolver(new MultiValueServiceResolver()),
+                $this->makeEmpty(ColumnReferenceServiceInterface::class)
+            ),
         );
     }
 }

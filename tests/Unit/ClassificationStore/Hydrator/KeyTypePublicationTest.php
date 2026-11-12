@@ -14,7 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Hydrator;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\KeyGroupRelationHydrator;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyFilterResolver;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolver;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 
@@ -37,7 +41,7 @@ final class KeyTypePublicationTest extends Unit
         $relation->setName('diameter');
         $relation->setType('input');
 
-        $hydrated = (new KeyGroupRelationHydrator())->hydrate($relation, $this->groupConfig());
+        $hydrated = $this->hydrator()->hydrate($relation, $this->groupConfig());
 
         $this->assertSame(
             'input',
@@ -52,12 +56,58 @@ final class KeyTypePublicationTest extends Unit
         $relation->setKeyId(7);
         $relation->setName('diameter');
 
-        $hydrated = (new KeyGroupRelationHydrator())->hydrate($relation, $this->groupConfig());
+        $hydrated = $this->hydrator()->hydrate($relation, $this->groupConfig());
 
         $this->assertNull(
             $hydrated->getKeyType(),
             'an unhydrated type is no type - it must not raise, and it must not be guessed'
         );
+    }
+
+    public function testTheFilterVerdictIsPublishedBesideTheKeyType(): void
+    {
+        $indexed = $this->hydrator()->hydrate($this->statedRelation('{"fieldtype":"input"}'), $this->groupConfig());
+        $excluded = $this->hydrator()->hydrate(
+            $this->statedRelation('{"fieldtype":"input","indexed":false}'),
+            $this->groupConfig()
+        );
+
+        $this->assertTrue($indexed->getFilterable());
+        $this->assertNull($indexed->getFilterUnavailableReason());
+        $this->assertFalse($excluded->getFilterable());
+        $this->assertSame('indexExcluded', $excluded->getFilterUnavailableReason());
+    }
+
+    public function testARelationThatStatesNoDefinitionPublishesNoVerdict(): void
+    {
+        $relation = new KeyGroupRelation();
+        $relation->setKeyId(7);
+        $relation->setName('diameter');
+        $relation->setType('input');
+
+        $hydrated = $this->hydrator()->hydrate($relation, $this->groupConfig());
+
+        $this->assertNull($hydrated->getFilterable());
+        $this->assertNull($hydrated->getFilterUnavailableReason());
+    }
+
+    private function statedRelation(string $definition): KeyGroupRelation
+    {
+        $relation = new KeyGroupRelation();
+        $relation->setKeyId(7);
+        $relation->setName('diameter');
+        $relation->setType('input');
+        $relation->setDefinition($definition);
+
+        return $relation;
+    }
+
+    private function hydrator(): KeyGroupRelationHydrator
+    {
+        return new KeyGroupRelationHydrator(new KeyFilterResolver(
+            $this->makeEmpty(ServiceResolverInterface::class, ['getFieldDefinitionFromJson' => new Input()]),
+            new SearchIndexFlagResolver()
+        ));
     }
 
     private function groupConfig(): GroupConfig

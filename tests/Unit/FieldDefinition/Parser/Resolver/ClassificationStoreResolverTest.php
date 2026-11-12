@@ -123,6 +123,8 @@ final class ClassificationStoreResolverTest extends Unit
         $keyGroupRelation = new KeyGroupRelation();
         $keyGroupRelation->setKeyId(6);
         $keyGroupRelation->setGroupId(2);
+        $keyGroupRelation->setType('select');
+        $keyGroupRelation->setDefinition('{"fieldtype":"select"}');
 
         $resolver = new ClassificationStoreResolver(
             $this->createGroupConfigRepository(self::STORE_ID),
@@ -137,7 +139,7 @@ final class ClassificationStoreResolverTest extends Unit
                 },
             ]),
             $this->makeEmpty(ServiceResolverInterface::class, [
-                'getFieldDefinitionFromKeyConfig' => new Select(),
+                'getFieldDefinitionFromJson' => new Select(),
             ]),
         );
         $resolver->setFieldDefinitions($this->getFieldDefinitions());
@@ -236,6 +238,8 @@ final class ClassificationStoreResolverTest extends Unit
         $keyGroupRelation = new KeyGroupRelation();
         $keyGroupRelation->setKeyId(6);
         $keyGroupRelation->setGroupId(2);
+        $keyGroupRelation->setType('select');
+        $keyGroupRelation->setDefinition('{"fieldtype":"select"}');
 
         $resolver = new ClassificationStoreResolver(
             $this->createGroupConfigRepository($groupStoreId),
@@ -243,7 +247,7 @@ final class ClassificationStoreResolverTest extends Unit
                 'getByGroupAndKey' => $keyGroupRelation,
             ]),
             $this->makeEmpty(ServiceResolverInterface::class, [
-                'getFieldDefinitionFromKeyConfig' => $keyDefinition ?? new Select(),
+                'getFieldDefinitionFromJson' => $keyDefinition ?? new Select(),
             ]),
         );
         $resolver->setFieldDefinitions($this->getFieldDefinitions());

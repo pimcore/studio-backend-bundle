@@ -110,6 +110,11 @@ final class ClassificationStoreAdapterTest extends Unit
     private const int UNPROCESSABLE = 422;
 
     /**
+     * @var array<string, mixed>|null
+     */
+    private ?array $relationOverride = null;
+
+    /**
      * @throws Exception
      */
     public function testGetDataForSetterReturnsNull(): void
@@ -209,7 +214,7 @@ final class ClassificationStoreAdapterTest extends Unit
                 'tryDataAdapter' => $inputAdapter,
             ]),
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
-                'getFieldDefinitionFromKeyConfig' => $inputDefinition,
+                'getFieldDefinitionFromJson' => $inputDefinition,
             ]),
         );
 
@@ -409,7 +414,7 @@ final class ClassificationStoreAdapterTest extends Unit
                 'tryDataAdapter' => $inputAdapter,
             ]),
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
-                'getFieldDefinitionFromKeyConfig' => $inputDefinition,
+                'getFieldDefinitionFromJson' => $inputDefinition,
             ]),
         );
 
@@ -1022,7 +1027,7 @@ final class ClassificationStoreAdapterTest extends Unit
                 'tryDataAdapter' => $relationAdapter,
             ]),
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
-                'getFieldDefinitionFromKeyConfig' => $this->makeEmpty(Data::class, ['getName' => 'related']),
+                'getFieldDefinitionFromJson' => $this->makeEmpty(Data::class, ['getName' => 'related']),
             ])
         );
 
@@ -1603,7 +1608,7 @@ final class ClassificationStoreAdapterTest extends Unit
                 ]),
             ]),
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
-                'getFieldDefinitionFromKeyConfig' => $this->make(EncryptedFieldDefinition::class, [
+                'getFieldDefinitionFromJson' => $this->make(EncryptedFieldDefinition::class, [
                     'getName' => 'secret',
                 ]),
             ])
@@ -2083,7 +2088,7 @@ final class ClassificationStoreAdapterTest extends Unit
             ),
             languageService: $languageService,
             serviceResolver: $serviceResolver ?? $this->makeEmpty(ServiceResolverInterface::class, [
-                'getFieldDefinitionFromKeyConfig' => $this->makeEmpty(Data::class, [
+                'getFieldDefinitionFromJson' => $this->makeEmpty(Data::class, [
                     'getName' => 'inputField',
                 ]),
             ]),
@@ -2175,12 +2180,84 @@ final class ClassificationStoreAdapterTest extends Unit
         ];
     }
 
+    /**
+     * The definition an assignment narrows and re-units, as the adapter hands it to core to build.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws Exception
+     */
+    private function readDefinitionBuiltFor(callable $run): array
+    {
+        $this->relationOverride = [
+            'options' => [['key' => 'B', 'value' => 'b']],
+            'defaultUnit' => 'kg',
+        ];
+
+        $built = [];
+        $serviceResolver = $this->makeEmpty(ServiceResolverInterface::class, [
+            'getFieldDefinitionFromJson' => static function (array $definition) use (&$built): Data {
+                $built = $definition;
+
+                return (new Input())->setName('inputField');
+            },
+        ]);
+
+        try {
+            $run($serviceResolver);
+        } finally {
+            $this->relationOverride = null;
+        }
+
+        return $built;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testTheReadPathBuildsTheDefinitionOfTheAssignmentNotOfTheKey(): void
+    {
+        $built = $this->readDefinitionBuiltFor(function (ServiceResolverInterface $serviceResolver): void {
+            $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => '80']]];
+            $keyConfigs = $this->qualifiedKeyConfigs();
+            $this->createQualifiedAdapter($keyConfigs, $stored, serviceResolver: $serviceResolver)
+                ->getPreviewFieldData(
+                    $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]),
+                    $this->createQualifiedFieldDefinition($keyConfigs),
+                    []
+                );
+        });
+
+        $this->assertSame([['key' => 'B', 'value' => 'b']], $built['options']);
+        $this->assertSame('kg', $built['defaultUnit']);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testTheWritePathConvertsAgainstTheDefinitionOfTheAssignmentNotOfTheKey(): void
+    {
+        $built = $this->readDefinitionBuiltFor(function (ServiceResolverInterface $serviceResolver): void {
+            $this->writeAndRecord(
+                $this->qualifiedKeyConfigs(),
+                [self::QUALIFIED_KEY => '80'],
+                serviceResolver: $serviceResolver
+            );
+        });
+
+        $this->assertSame([['key' => 'B', 'value' => 'b']], $built['options']);
+        $this->assertSame('kg', $built['defaultUnit']);
+    }
+
     private function createRelation(int $keyId, int $groupId): KeyGroupRelation
     {
         $relation = new KeyGroupRelation();
         $relation->setKeyId($keyId);
         $relation->setGroupId($groupId);
         $relation->setName('key-' . $keyId);
+        $relation->setType('input');
+        $relation->setDefinition('{"fieldtype":"input","options":[{"key":"A","value":"a"},{"key":"B","value":"b"}]}');
+        $relation->setDefinitionOverride($this->relationOverride);
 
         return $relation;
     }
@@ -2271,7 +2348,7 @@ final class ClassificationStoreAdapterTest extends Unit
             ]),
             keyRelationResolver: $this->createKeyRelationResolver($relationsByGroup, $requestedGroupIds),
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
-                'getFieldDefinitionFromKeyConfig' => $this->makeEmpty(Data::class, [
+                'getFieldDefinitionFromJson' => $this->makeEmpty(Data::class, [
                     'getName' => 'inputField',
                 ]),
             ]),

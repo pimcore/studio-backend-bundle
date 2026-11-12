@@ -30,7 +30,10 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use ReflectionClass;
 use function array_column;
+use function array_map;
+use function json_encode;
 use function str_contains;
+use function strtoupper;
 
 /**
  * The label is resolved through core's resolver, so none of the chain below the title column is
@@ -238,6 +241,45 @@ final class KeyGroupLayoutServiceTest extends Unit
         );
         $this->assertTrue($keyLayout->getMultiValue());
         $this->assertSame(3, $keyLayout->getMaximum());
+    }
+
+    public function testTheLayoutDefinitionIsBuiltFromTheOptionsTheAssignmentNarrowedTo(): void
+    {
+        $options = array_map(
+            static fn (string $value): array => ['key' => strtoupper($value), 'value' => $value],
+            ['a', 'b', 'c', 'd', 'e']
+        );
+        $relation = new KeyGroupRelation();
+        $relation->setKeyId(self::KEY_ID);
+        $relation->setGroupId(self::GROUP_ID);
+        $relation->setType('select');
+        $relation->setDefinition(json_encode(['fieldtype' => 'select', 'options' => $options]));
+        $relation->setDefinitionOverride(['options' => [$options[1], $options[3]]]);
+
+        $received = null;
+        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
+        $serviceResolver
+            ->method('getFieldDefinitionFromJson')
+            ->willReturnCallback(static function (array $definition) use (&$received): Input {
+                $received = $definition;
+
+                return new Input();
+            });
+
+        $service = new KeyGroupLayoutService(
+            $serviceResolver,
+            $this->createMock(KeyRelationResolverInterface::class),
+            new ConcreteObjectResolver(),
+            $this->createMock(KeyConfigResolverInterface::class),
+            $this->createLabelResolver([]),
+            $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
+            new InMemoryKeyLocalizationResolver(),
+            new KeyQualifierResolver($serviceResolver)
+        );
+
+        $service->getLayoutDefinition($relation, 'classificationStore');
+
+        $this->assertSame(['b', 'd'], array_column($received['options'], 'value'));
     }
 
     /**

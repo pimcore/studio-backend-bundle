@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyOptionsResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\OptionsUnavailableReason;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 
 /**
  * A resolver that publishes nothing, for the tests whose subject is another member of the payload.
@@ -36,6 +37,21 @@ final class NullKeyOptionsResolver implements KeyOptionsResolverInterface
     }
 
     public function getUnits(KeyConfig $keyConfig): ?KeyUnits
+    {
+        return null;
+    }
+
+    public function getRelationOptions(KeyGroupRelation $relation): ?array
+    {
+        return null;
+    }
+
+    public function getRelationOptionsUnavailableReason(KeyGroupRelation $relation): ?OptionsUnavailableReason
+    {
+        return null;
+    }
+
+    public function getRelationUnits(KeyGroupRelation $relation): ?KeyUnits
     {
         return null;
     }

@@ -109,7 +109,12 @@ final class ClassificationStoreResolver extends AbstractResolver
             );
         }
 
-        $fd = $this->classificationStoreServiceResolver->getFieldDefinitionFromKeyConfig($keyGroupRelation);
+        // Rebuilt from the assignment's effective definition: core memoises getFieldDefinitionFromKeyConfig()
+        // under the key id, which would serve the first group's override to every later group
+        $fd = $this->classificationStoreServiceResolver->getFieldDefinitionFromJson(
+            $keyGroupRelation->getEffectiveDefinitionData(),
+            $keyGroupRelation->getType()
+        );
 
         if ($fd === null) {
             throw new ParseException(sprintf('Classification store key "%s" has no field definition', $keyId));

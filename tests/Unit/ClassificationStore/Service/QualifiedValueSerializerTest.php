@@ -117,6 +117,17 @@ final class QualifiedValueSerializerTest extends Unit
     }
 
     /**
+     * A grid cell names the variant and position it addresses by sending its entry alone, as an object.
+     */
+    public function testACellSendsItsEntryAloneAndNamesItsVariant(): void
+    {
+        $values = $this->serializer->parseEntries(['v' => '60', 'var' => self::METRIC, 'p' => 1], $this->createKeyConfig());
+
+        $this->assertSame([[self::METRIC, 1]], $this->describe($values));
+        $this->assertSame('60', $values[0]->getValue());
+    }
+
+    /**
      * The array value of a multi-select or a relation field is not a list of entries, so a key that
      * declares qualifiers and holds such a type keeps storing its value whole.
      *
