@@ -7,19 +7,29 @@ description: Configure Mercure for real-time updates in Pimcore Studio.
 
 ## Start and configure Mercure server
 
-Use Mercure hub **1.1.3 or later**, e.g. via their docker container (`dunglas/mercure:v1`). For details see
-[Mercure docs](https://mercure.rocks/docs/getting-started/installation).
+Pimcore Studio supports two Mercure hub lines. Both are covered by the setup below, they differ only in one directive:
 
-> This bundle still speaks the Mercure 0.x protocol. Enable the hub's compatibility mode by adding
-> `protocol_version_compatibility 8` to the `MERCURE_EXTRA_DIRECTIVES` environment variable. It accepts the 0.x tokens,
-> cookie and subscription parameters this bundle uses, and relaxes access token validation for them.
-> Use the `v1` tag rather than `latest`, so that a future major version cannot break the setup.
+| Hub | Docker image | `MERCURE_EXTRA_DIRECTIVES` |
+|---|---|---|
+| Mercure **1.1.3 or later** (recommended) | `dunglas/mercure:v1` | `anonymous` and `protocol_version_compatibility 8` |
+| Mercure **0.x** (e.g. 0.24) | `dunglas/mercure:v0.24` | `anonymous` only |
+
+For details see the [Mercure docs](https://mercure.rocks/docs/getting-started/installation).
+
+> This bundle still speaks the Mercure 0.x protocol. A 0.x hub understands it natively. A 1.x hub needs its
+> compatibility mode, enabled with `protocol_version_compatibility 8`: it accepts the 0.x tokens, cookie and
+> subscription parameters this bundle uses, and relaxes access token validation for them.
+>
+> - Do not add `protocol_version_compatibility 8` to a 0.x hub: Mercure 0.24 only accepts `7` and refuses to start.
+> - Do not run a 1.x hub without it: publishing fails with `401 untrusted issuer ""` and Studio receives no live updates.
+> - Pin the image to `v1` or `v0.24` instead of using `latest` or an untagged image, so that a future major version
+>   cannot break the setup. Mercure no longer ships fixes for 0.x hubs.
 
 ### Mercure configuration
 Following Mercure configuration aspects need to be considered
 - Add same JWT key to `MERCURE_PUBLISHER_JWT_KEY` and `MERCURE_SUBSCRIBER_JWT_KEY`
 - JWT key needs to be minimum 256 bits (or 32 chars) long
-- Add `protocol_version_compatibility 8` to `MERCURE_EXTRA_DIRECTIVES`
+- On a Mercure 1.x hub, add `protocol_version_compatibility 8` to `MERCURE_EXTRA_DIRECTIVES` (not on a 0.x hub, see above)
 
 ## Example Configuration with docker compose
 Following there are configuration snippets for a setup with docker compose.
