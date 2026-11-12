@@ -942,6 +942,72 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
+     * A grid patch addressing one variant cell as `<keyId>#<variant>` writes that variant and leaves
+     * the other variants and the default slot as they are, on the stored slots.
+     *
+     * @throws Exception
+     */
+    public function testAPatchAddressingOneVariantCellLeavesTheOtherSlotsUntouched(): void
+    {
+        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => '0']]];
+        $slots = [self::QUALIFIED_GROUP => [self::QUALIFIED_KEY => [self::LANGUAGE => [
+            self::IMPERIAL => [0 => '25'],
+            self::METRIC => [0 => '50'],
+        ]]]];
+        $written = [];
+        $writtenEntries = [];
+        $container = $this->createRecordingContainer(
+            $stored,
+            [self::QUALIFIED_GROUP => true],
+            $written,
+            $writtenEntries,
+            $slots
+        );
+
+        $this->writeLanguages(
+            $container,
+            $this->qualifiedKeyConfigs(),
+            $stored,
+            [self::LANGUAGE => [self::QUALIFIED_KEY . '#' . self::METRIC => '60']],
+            isPatch: true
+        );
+
+        $this->assertSame(
+            [0 => '60'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::METRIC)
+        );
+        $this->assertSame(
+            [0 => '25'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::IMPERIAL)
+        );
+        $this->assertSame([0 => '0'], $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY));
+    }
+
+    /**
+     * The variant of a cell address is held to the key's declaration like any other write.
+     *
+     * @throws Exception
+     */
+    public function testAVariantCellAddressOfAKeyDeclaringNoVariantsIsRefused(): void
+    {
+        $written = [];
+
+        try {
+            $this->writeAndRecord(
+                $this->qualifiedKeyConfigs(),
+                [self::PLAIN_KEY . '#' . self::METRIC => '60'],
+                isPatch: true,
+                written: $written
+            );
+            $this->fail('Expected the write to be refused.');
+        } catch (AbstractApiException $exception) {
+            $this->assertSame(HttpResponseErrorKeys::UNDECLARED_VARIANT->value, $exception->getErrorKey());
+        }
+
+        $this->assertSame([], $written);
+    }
+
+    /**
      * The merge base is the store, not the view of it the patch merges into: `$elementStore` is built
      * under the user's language *view* permissions, so a language this user may edit and may not view
      * is missing from it entirely, and merging against that absence would drop the values the write

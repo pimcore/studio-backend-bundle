@@ -63,14 +63,19 @@ use Pimcore\Model\DataObject\Exception\UnsupportedEngineFeatureException;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_diff;
+use function array_is_list;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_unique;
+use function ctype_digit;
 use function in_array;
 use function is_array;
 use function is_int;
+use function is_string;
+use function strpos;
+use function substr;
 
 /**
  * @internal
@@ -125,6 +130,7 @@ final readonly class ClassificationStoreAdapter implements
         if ($isPatch) {
             $elementStore = $this->handleNormalize($element->get($key), $fieldDefinition, $user);
             $store['activeGroups'] = $this->getActiveGroupsFromStore($store);
+            $store = $this->foldVariantAddresses($fieldDefinition, $store);
             $store = $this->patchStore($fieldDefinition, $elementStore, $store);
         }
 
@@ -245,6 +251,62 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         return $data;
+    }
+
+    /**
+     * The grid's address of a variant cell, `<keyId>#<variant>`, folded into the entry the key's own
+     * id carries, so a patch of one variant cell is merged by qualifier like any other entry.
+     *
+     * @return array<array-key, mixed>
+     *
+     * @throws InvalidArgumentException
+     */
+    private function foldVariantAddresses(ClassificationstoreDefinition $definition, array $store): array
+    {
+        foreach ($store as $groupId => $groupData) {
+            if (!is_int($groupId) || !is_array($groupData)) {
+                continue;
+            }
+
+            foreach ($groupData as $language => $keys) {
+                if (!is_array($keys)) {
+                    continue;
+                }
+
+                foreach ($keys as $address => $value) {
+                    $separator = is_string($address) ? strpos($address, '#') : false;
+                    if ($separator === false) {
+                        continue;
+                    }
+
+                    $keyId = substr($address, 0, $separator);
+                    if (!ctype_digit($keyId)
+                        || !$this->keyQualifierResolver->declaresQualifiers($definition->getKeyConfiguration((int) $keyId))
+                    ) {
+                        throw new InvalidArgumentException(
+                            'The value names a variant the key does not declare.',
+                            errorKey: HttpResponseErrorKeys::UNDECLARED_VARIANT->value
+                        );
+                    }
+
+                    $entry = is_array($value) && array_key_exists('v', $value) ? $value : ['v' => $value];
+                    $entry['var'] = substr($address, $separator + 1);
+
+                    $held = $keys[(int) $keyId] ?? [];
+                    $held = is_array($held) && array_is_list($held) && ($held === [] || is_array($held[0]))
+                        ? $held
+                        : [['v' => $held]];
+                    $held[] = $entry;
+
+                    unset($keys[$address]);
+                    $keys[(int) $keyId] = $held;
+                }
+
+                $store[$groupId][$language] = $keys;
+            }
+        }
+
+        return $store;
     }
 
     /**
