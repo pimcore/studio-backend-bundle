@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository;
 
-use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
@@ -32,11 +31,8 @@ final readonly class ServiceUserRepository implements ServiceUserRepositoryInter
 {
     private const string TYPE = 'Service user';
 
-    private const string SERVICE_USER_TYPE = 'serviceuser';
-
     public function __construct(
         private UserResolverInterface $userResolver,
-        private Connection $connection,
     ) {
     }
 
@@ -84,14 +80,11 @@ final readonly class ServiceUserRepository implements ServiceUserRepositoryInter
     public function isServiceUserName(string $name): bool
     {
         try {
-            $type = $this->connection->fetchOne(
-                'SELECT `type` FROM users WHERE `name` = :name',
-                ['name' => $name],
-            );
+            // Core looks the name up among service users only, so a role or person of the
+            // same name never answers for a service user.
+            return User::getServiceUserByName($name) !== null;
         } catch (Exception $exception) {
             throw new DatabaseException('The user name could not be looked up.', $exception);
         }
-
-        return $type === self::SERVICE_USER_TYPE;
     }
 }

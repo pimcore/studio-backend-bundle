@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ServiceUser\Repository;
 
 use Codeception\Test\Unit;
-use Doctrine\DBAL\Connection;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository\ServiceUserRepository;
@@ -56,7 +55,6 @@ final class ServiceUserRepositoryTest extends Unit
     {
         return new ServiceUserRepository(
             $this->makeEmpty(UserResolverInterface::class, ['getById' => $resolved]),
-            $this->makeEmpty(Connection::class),
         );
     }
 }
