@@ -120,8 +120,6 @@ class PatAuthenticator extends AbstractAuthenticator
             throw new AuthenticationException('Bearer token is empty.');
         }
 
-        trigger_deprecation('pimcore/studio-backend-bundle', '2026.4', self::DEPRECATION_MESSAGE);
-
         // The username comes from an in-memory token map, so it is known without any
         // database work. Building the badge here - rather than after the lookup - is what
         // lets LoginThrottlingListener::checkPassport() block a throttled client:
@@ -166,11 +164,18 @@ class PatAuthenticator extends AbstractAuthenticator
         return new SecurityUser($pimcoreUser);
     }
 
+    /**
+     * Raises the deprecation here rather than in authenticate(): this runs only for a token
+     * the map knows and the login throttle has let through, so a request without valid
+     * credentials cannot write deprecation log lines.
+     */
     public function onAuthenticationSuccess(
         Request $request,
         TokenInterface $token,
         string $firewallName
     ): ?Response {
+        trigger_deprecation('pimcore/studio-backend-bundle', '2026.4', self::DEPRECATION_MESSAGE);
+
         return null;
     }
 
