@@ -49,5 +49,9 @@ final readonly class PublicTranslations
         'two-factor-setup-form.confirm',
         'two-factor-setup-form.load-error',
         'two-factor-setup-form.expired',
+        // Maintenance mode notice, which can show on the login page
+        'maintenance-mode.locked-out.title',
+        'maintenance-mode.locked-out.text',
+        'maintenance-mode.locked-out.reload',
     ];
 }
