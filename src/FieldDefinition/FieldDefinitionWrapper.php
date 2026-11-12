@@ -25,7 +25,8 @@ final readonly class FieldDefinitionWrapper
         private string $containerType,
         private string $fieldname,
         private ?string $subContainerType = null,
-        private ?string $subContainerKey = null
+        private ?string $subContainerKey = null,
+        private array $optionsProviderContext = []
     ) {
     }
 
@@ -52,5 +53,14 @@ final readonly class FieldDefinitionWrapper
     public function getSubContainerKey(): ?string
     {
         return $this->subContainerKey;
+    }
+
+    /**
+     * Additional context a dynamic options provider expects for this field,
+     * e.g. the owner information of a classification store key.
+     */
+    public function getOptionsProviderContext(): array
+    {
+        return $this->optionsProviderContext;
     }
 }
