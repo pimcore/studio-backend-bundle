@@ -150,7 +150,11 @@ final readonly class ObjectBricksAdapter implements
                 continue;
             }
 
-            $contextData = new FieldContextData($brick, $contextData?->getLanguage());
+            $contextData = new FieldContextData(
+                $brick,
+                $contextData?->getLanguage(),
+                resolveInheritedValue: $contextData?->shouldResolveInheritedValue() ?? false
+            );
             foreach ($brickDefinition->getFieldDefinitions() as $definition) {
                 $fieldName = $definition->getName();
                 $inheritanceData[$type][$fieldName] = $this->inheritanceService->processFieldDefinition(

@@ -34,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Pimcore\Model\Document as DocumentModel;
 use Pimcore\Model\UserInterface;
@@ -46,6 +47,7 @@ use function sprintf;
 final readonly class DocumentService implements DocumentServiceInterface
 {
     use ElementProviderTrait;
+    use ElementViewPermissionTrait;
     use UserPermissionTrait;
 
     public function __construct(
@@ -85,13 +87,14 @@ final readonly class DocumentService implements DocumentServiceInterface
         $filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
 
         $documentQuery = $this->documentQueryProvider->createDocumentQuery();
+        // The user has to be set before filtering, filters apply the user's permissions.
+        $documentQuery->setUser($this->securityService->getCurrentUser());
         $documentQuery = $filterService->applyFilters(
             $documentQuery,
             $parameters,
             ElementTypes::TYPE_DOCUMENT
         );
 
-        $documentQuery->setUser($this->securityService->getCurrentUser());
         $this->setTreeSorting($documentQuery, $parameters->getPathIncludeParent());
         $result = $this->documentSearchService->searchDocuments($documentQuery);
         $items = $result->getItems();
@@ -109,6 +112,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     public function getDocument(int $id, bool $getDetailData = true): DocumentDetail
     {
         $user = $this->securityService->getCurrentUser();
+        $this->assertElementViewPermission(ElementTypes::TYPE_DOCUMENT, $id, $user);
         $document = $this->documentSearchService->getDocumentById($id, $user);
 
         if ($getDetailData) {
@@ -124,6 +128,7 @@ final readonly class DocumentService implements DocumentServiceInterface
      */
     public function getDocumentForUser(int $id, UserInterface $user): DocumentDetail
     {
+        $this->assertElementViewPermission(ElementTypes::TYPE_DOCUMENT, $id, $user);
         $document = $this->documentSearchService->getDocumentById($id, $user);
 
         $this->dispatchDocumentEvent($document);

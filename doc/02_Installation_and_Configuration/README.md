@@ -61,6 +61,13 @@ security:
 > Symfony evaluates firewalls in order, so placing it first ensures `/pimcore-mcp/` requests are matched
 > by the correct firewall.
 
+**Optional: OAuth 2.1 authorization server**
+
+The bundle can also act as an embedded OAuth 2.1 authorization server, so standards-based clients can
+authenticate with standards-based bearer tokens instead of static credentials. It is opt-in and its endpoints
+live at the web root (outside the firewalls above), so it needs its own `access_control` rules. See the
+[OAuth 2.1 Authorization Server](./06_OAuth_Server.md) page for setup and configuration.
+
 4) Make sure the bundle is enabled in the `config/bundles.php` file. The following lines should be added:
 
 ```php
@@ -126,37 +133,59 @@ Also make sure that the keys configured in pimcore match the keys in the (docker
 
 Configure a JWT key for Mercure. This key signs and verifies the JWT tokens used for authentication.
 
-#### Optional Mercure configuration
+#### Mercure configuration
 
 URLs for accessing Mercure server-side (for updating state information within application
 services) and client-side (for getting updates in Pimcore Studio UI) can be configured via a symfony configuration.
 
-Additionally, you can configure the cookie parameters like:
+Optionally, you can configure the cookie parameters:
 - lifetime for the JWT token in seconds (default is 3600 seconds)
-- SameSite attribute (default is `strict`, possible values are `lax`, `strict` or `none`)
+- SameSite attribute (default is `Strict`; set `jwt_cookie_strictness` to `false` to use `None`). Browsers only
+  accept `SameSite=None` cookies with the `Secure` flag, which is set only when `hub_url_client` is an `https` URL.
+- domain of the cookie (`jwt_cookie_host`, e.g. `.example.com`; by default the host of `hub_url_client` is used, a leading
+  dot also makes the cookie available to sibling subdomains)
 
 ```yaml
 pimcore_studio_backend:
     mercure_settings:
         jwt_key: '<your-256-bit-secret-min-32-chars>'
+
+        # The url to the mercure hub for the server (must be set, there is no default).
+        # This can also be the docker container name (e.g., http://mercure/.well-known/mercure).
+        hub_url_server: 'http://mercure/.well-known/mercure'
+
         # Optional configuration
 
         # The url to the mercure hub for the (frontend) client.
         # If it is not set, the default will be set to "http(s)://<YOUR_CURRENT_PIMCORE_HOST>/hub".
         # It is possible to use "<PIMCORE_SCHEMA_HOST>" as a placeholder for the current schema and host if path to mercure should be different.
         hub_url_client: 'https://your-app-domain.com/hub'
-
-        # The url to the mercure hub for the server. 
-        # This can also be the docker container name (e.g., http://mercure/.well-known/mercure).
-        # If it is not set, the default will be set to "http(s)://<YOUR_CURRENT_PIMCORE_HOST>/hub/.well-known/mercure".
-        hub_url_server: 'http://mercure/.well-known/mercure'
         cookie_lifetime: 3600
-        cookie_same_site: 'strict'
+        jwt_cookie_strictness: true
+        jwt_cookie_host: '.your-app-domain.com'
 ```
 
 You need to configure the full URL including protocol, port and path to Mercure here.
 For client side url it is also possible to use `<PIMCORE_SCHEMA_HOST>` for the current schema and host of client. 
-If these settings are not set, URLs will be generated based on Pimcore host and default paths.
+If `hub_url_client` is not set, it is generated from the scheme and host of the current request and the default path `/hub`.
+`hub_url_server` must be set: it has no default and is not checked when the container is built. When it is empty,
+no Mercure updates are published and an error is written to the log.
+
+## Default Controllers for New Documents
+
+A new page, snippet or email document that is created without a predefined document type gets the controller
+configured in `pimcore.documents.default_controller`. A project that renders emails with a different controller than
+pages can configure a controller per document type; every type without an entry keeps the core default:
+
+```yaml
+pimcore_studio_backend:
+    documents:
+        default_controllers:
+            email: App\Controller\MailController::defaultAction
+```
+
+Only `page`, `snippet` and `email` are accepted as keys. A predefined document type selected while creating the
+document still takes precedence, as does the base document when a translation is added.
 
 ## Changing the prefix of the Studio Backend
 It is possible to change the route where you can reach the API. By default, the route is `/pimcore-studio/api/`.  

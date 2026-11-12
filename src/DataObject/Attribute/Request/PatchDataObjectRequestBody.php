@@ -18,6 +18,8 @@ use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\CoauthorProperty;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\CoauthorTypeProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateBooleanProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateIntegerProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateObjectProperty;
@@ -53,6 +55,8 @@ final class PatchDataObjectRequestBody extends RequestBody
                                 new UpdateIntegerProperty('index', 0),
                                 new UpdateStringProperty('key'),
                                 new Property(property:'task', type: 'string', enum: ElementSaveTasks::values()),
+                                new CoauthorTypeProperty(),
+                                new CoauthorProperty(),
                                 new UpdateStringProperty('locked'),
                                 new UpdateStringProperty('childrenSortBy'),
                                 new UpdateStringProperty('childrenSortOrder'),

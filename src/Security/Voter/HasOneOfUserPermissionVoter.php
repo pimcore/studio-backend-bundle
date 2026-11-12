@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 /**
@@ -42,7 +43,7 @@ final class HasOneOfUserPermissionVoter extends Voter
     /**
      * @throws ForbiddenException
      */
-    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
+    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
         foreach ($subject->getPermissionsToCheck() as $permissionToCheck) {
             if ($this->securityService->getCurrentUser()->isAllowed($permissionToCheck)) {

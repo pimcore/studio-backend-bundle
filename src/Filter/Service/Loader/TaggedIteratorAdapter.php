@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Filter\Service\Loader;
 
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceLoaderInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * @internal
@@ -24,7 +24,7 @@ final class TaggedIteratorAdapter implements FilterServiceLoaderInterface
     public const FILTER_SERVICE_TAG = 'pimcore.studio_backend.filter_service';
 
     public function __construct(
-        #[TaggedIterator(self::FILTER_SERVICE_TAG)]
+        #[AutowireIterator(self::FILTER_SERVICE_TAG)]
         private readonly iterable $taggedFilterServices,
     ) {
     }

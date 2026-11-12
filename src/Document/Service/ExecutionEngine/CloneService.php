@@ -39,6 +39,7 @@ use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use function sprintf;
+use function strlen;
 
 /**
  * @internal
@@ -140,13 +141,12 @@ final readonly class CloneService implements CloneServiceInterface
     ): Document {
         $originalParent = $this->documentService->getDocumentElement($user, $originalParentId);
         $parent = $this->documentService->getDocumentElement($user, $parentId);
-        $parentPath = preg_replace(
-            '@^' . $originalParent->getRealFullPath() . '@',
-            $parent . '/',
-            $source->getRealPath()
-        );
+        $relativePath = substr($source->getRealPath(), strlen($originalParent->getRealFullPath()));
 
-        return $this->documentService->getDocumentElementByPath($user, $parentPath);
+        return $this->documentService->getDocumentElementByPath(
+            $user,
+            rtrim($parent->getRealFullPath(), '/') . rtrim($relativePath, '/')
+        );
     }
 
     private function cloneChildrenWithExecutionEngine(

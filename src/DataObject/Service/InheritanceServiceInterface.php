@@ -25,11 +25,14 @@ use Pimcore\Model\DataObject\Concrete;
 interface InheritanceServiceInterface
 {
     /**
+     * @param bool $resolveInheritedValues also resolve InheritanceData::getInheritedValue() for every field
+     *
      * @throws NotFoundException
      */
     public function getInheritanceData(
         Concrete $object,
-        array $fieldDefinitions
+        array $fieldDefinitions,
+        bool $resolveInheritedValues = false
     ): array;
 
     /**
@@ -41,6 +44,19 @@ interface InheritanceServiceInterface
         string $key,
         ?FieldContextData $contextData = null
     ): array|InheritanceData;
+
+    /**
+     * Resolves the inheritance state of a single, non-container field. The inherited value is only
+     * resolved when the context data asks for it (FieldContextData::shouldResolveInheritedValue()).
+     *
+     * @throws NotFoundException
+     */
+    public function getFieldInheritanceData(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): InheritanceData;
 
     /**
      * @throws NotFoundException

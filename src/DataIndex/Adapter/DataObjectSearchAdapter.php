@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\UserPermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\DataObjectSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\QueryLanguage\ParsingException;
@@ -55,12 +56,14 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
     /**
      * @throws InvalidSearchException|GdiParsingException
      */
-    public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult
-    {
+    public function searchDataObjects(
+        QueryInterface $dataObjectQuery,
+        PermissionTypes $permissionType = PermissionTypes::LIST
+    ): DataObjectSearchResult {
         $search = $this->validateSearch($dataObjectQuery->getSearch());
 
         try {
-            $searchResult = $this->searchService->search($search);
+            $searchResult = $this->searchService->search($search, $permissionType);
         } catch (ParsingException $e) {
             throw new GdiParsingException(
                 $e->getMessage(),
@@ -111,13 +114,16 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
      *
      * @return array<int>
      */
-    public function fetchDataObjectIds(QueryInterface $dataObjectQuery): array
-    {
+    public function fetchDataObjectIds(
+        QueryInterface $dataObjectQuery,
+        PermissionTypes $permissionType = PermissionTypes::LIST
+    ): array {
         try {
             $search = $this->searchHelper->addSearchRestrictions(
                 search: $dataObjectQuery->getSearch(),
                 userPermission: UserPermissionTypes::OBJECTS->value,
                 workspaceType: DataObjectWorkspace::WORKSPACE_TYPE,
+                permissionType: $permissionType
             );
 
             return $this->searchResultIdListService->getAllIds($search);

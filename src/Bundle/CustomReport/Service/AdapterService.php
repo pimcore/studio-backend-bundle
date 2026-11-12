@@ -19,11 +19,13 @@ use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterFactoryIn
 use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterInterface;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use stdClass;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use function is_string;
 
 /**
  * @internal
@@ -37,15 +39,63 @@ final readonly class AdapterService implements AdapterServiceInterface
 
     public function getData(Config $report, ChartDataParameter $chartDataParameter): array
     {
+        [$sortBy, $sortOrder] = $this->resolveSort($report, $chartDataParameter);
+        [$offset, $limit] = $this->resolvePagination($chartDataParameter);
+
         return $this->getAdapter($report)->getData(
             $chartDataParameter->getFilters()->getColumnFilters(),
-            $chartDataParameter->getSortBy(),
-            $chartDataParameter->getSortOrder(),
-            ($chartDataParameter->getPage() - 1) * $chartDataParameter->getPageSize(),
-            $chartDataParameter->getPageSize(),
+            $sortBy,
+            $sortOrder,
+            $offset,
+            $limit,
             $chartDataParameter->getFields(),
             $chartDataParameter->getFilters()->getDrillDownFilters()
         );
+    }
+
+    /**
+     * An export contains all rows of the report unless a page was explicitly requested,
+     * so no offset/limit is applied by default.
+     *
+     * @return array{0: ?int, 1: ?int}
+     */
+    private function resolvePagination(ChartDataParameter $chartDataParameter): array
+    {
+        if ($chartDataParameter instanceof ExportParameter && !$chartDataParameter->isPaginated()) {
+            return [null, null];
+        }
+
+        return [
+            ($chartDataParameter->getPage() - 1) * $chartDataParameter->getPageSize(),
+            $chartDataParameter->getPageSize(),
+        ];
+    }
+
+    /**
+     * Falls back to the sort defined in the report configuration (orderby/orderbydir)
+     * when the request does not specify an explicit sort.
+     *
+     * @return array{0: ?string, 1: ?string}
+     */
+    private function resolveSort(Config $report, ChartDataParameter $chartDataParameter): array
+    {
+        $sortBy = $chartDataParameter->getSortBy();
+        if ($sortBy !== null && $sortBy !== '') {
+            return [$sortBy, $chartDataParameter->getSortOrder()];
+        }
+
+        $configuration = $report->getDataSourceConfig();
+        $orderBy = $configuration->orderby ?? null;
+        if (!is_string($orderBy) || $orderBy === '') {
+            return [null, null];
+        }
+
+        $orderByDir = $configuration->orderbydir ?? null;
+        if (!is_string($orderByDir) || $orderByDir === '') {
+            $orderByDir = 'ASC';
+        }
+
+        return [$orderBy, $orderByDir];
     }
 
     /**

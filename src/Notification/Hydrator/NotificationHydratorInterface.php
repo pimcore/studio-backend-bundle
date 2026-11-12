@@ -25,7 +25,11 @@ interface NotificationHydratorInterface
 {
     public function hydrate(NotificationModel $notification): NotificationListItem;
 
-    public function hydrateMinimal(NotificationModel $notification): NotificationMinimal;
+    /**
+     * @param bool $popup whether the recipient wants this notification to raise a toast;
+     *                    resolved from their preferences by the caller
+     */
+    public function hydrateMinimal(NotificationModel $notification, bool $popup = true): NotificationMinimal;
 
     public function hydrateDetail(NotificationModel $notification): Notification;
 }

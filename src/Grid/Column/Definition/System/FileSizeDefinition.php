@@ -48,6 +48,6 @@ final readonly class FileSizeDefinition implements ColumnDefinitionInterface
 
     public function isFilterable(): bool
     {
-        return false;
+        return true;
     }
 }

@@ -7,8 +7,12 @@ description: Configure Mercure for real-time updates in Pimcore Studio.
 
 ## Start and configure Mercure server
 
-It is recommended to use an up-to-date instance of Mercure, e.g. via their docker container. For details see
+Use Mercure hub **0.24**, e.g. via their docker container (`dunglas/mercure:v0.24`). For details see
 [Mercure docs](https://mercure.rocks/docs/hub/install).
+
+> Always pin the image to `v0.24` instead of using `latest` or an untagged image. Mercure 1.0 and later contain breaking
+> changes (token format, subscription parameters, hub configuration, development UI), so an unpinned image will pull a
+> hub that this setup is not written for.
 
 ### Mercure configuration
 Following Mercure configuration aspects need to be considered
@@ -60,7 +64,7 @@ Add Mercure to your docker compose file and make sure to add the configuration f
       - ~/.certs:/etc/nginx/certs
 
   mercure:
-    image: dunglas/mercure:latest
+    image: dunglas/mercure:v0.24
     restart: unless-stopped
     environment:
         # Disable HTTPS
@@ -83,6 +87,8 @@ Add Mercure to your docker compose file and make sure to add the configuration f
 ### config.yaml
 
 Configure Pimcore application with JWT key as well as the client side and server side URLs for Mercure.
+`hub_url_server` must be set and has no default; it is not checked at boot, but without it no updates are published.
+`hub_url_client` is optional; if it is not set, the scheme and host of the current request plus `/hub` is used.
 
 ```yaml
 pimcore_studio_backend:
@@ -99,7 +105,7 @@ If you would like to retrieve the URLs from within the application, you can use 
 These methods are available in the `Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface` class interface.
 
 ## Check if Mercure is running
-To see if Mercure is up and available, call ``https://your-app-domain.com/hub`` (or `client_side_url`
+To see if Mercure is up and available, call ``https://your-app-domain.com/hub`` (or `hub_url_client`
 you configured in configuration). This request should return the text
 
 ```
@@ -112,9 +118,10 @@ or
 Unauthorized
 ```
 
-> Also execute ``curl https://your-app-domain.com/hub`` (or `server_side_url` you configured in
-> configuration) from the command line of the server to ensure that the URL is also accessible by the
-> server itself.
+> Also execute `curl` against the `hub_url_server` you configured (e.g. ``curl http://mercure/.well-known/mercure``)
+> from the command line of the server, inside the PHP container if you use Docker, to ensure that the URL is
+> accessible by the server itself. The public `/hub` URL is not a substitute: it can answer while `hub_url_server`
+> is unreachable from PHP.
 
 
 ## Additional Aspects
@@ -129,7 +136,7 @@ When running Mercure as external service with external URL, make sure to configu
 Sample based on docker compose, important part is the `cors_origins` directive.
 ```yaml
   mercure:
-    image: dunglas/mercure
+    image: dunglas/mercure:v0.24
     restart: unless-stopped
     environment:
       # All other necessary configs ... 
@@ -171,7 +178,7 @@ With the configuration below, the development ui is available at `http://localho
 
 ```yaml
   mercure:
-    image: dunglas/mercure
+    image: dunglas/mercure:v0.24
     restart: unless-stopped
     environment:
       # All other necessary configs ... 

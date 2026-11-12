@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Model\Tool\Email\Log;
 use Pimcore\Model\Tool\Email\Log\Listing;
+use function in_array;
 
 /**
  * @internal
@@ -27,6 +28,8 @@ use Pimcore\Model\Tool\Email\Log\Listing;
 final readonly class EmailLogRepository implements EmailLogRepositoryInterface
 {
     private const DEFAULT_ORDER_KEY = 'sentDate';
+
+    private const array SORTABLE_KEYS = ['id', 'sentDate', 'from', 'to', 'subject'];
 
     public function __construct(
         private EmailLogResolverInterface $emailLogResolver,
@@ -120,7 +123,11 @@ final readonly class EmailLogRepository implements EmailLogRepositoryInterface
         $listing->setOffset($filter->getStart());
 
         $sortFilter = $filter->getSortFilter();
-        if ($sortFilter->getKey() && $sortFilter->getDirection()) {
+        if (
+            $sortFilter->getKey()
+            && in_array($sortFilter->getKey(), self::SORTABLE_KEYS, true)
+            && $sortFilter->getDirection()
+        ) {
             $listing->setOrderKey($sortFilter->getKey());
             $listing->setOrder(
                 strtolower($sortFilter->getDirection()) === SortDirection::DESC->value

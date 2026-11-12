@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Service\Loader;
 
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver\ResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Service\ResolverLoaderInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * @internal
@@ -28,7 +28,7 @@ final readonly class TaggedIteratorResolverLoader implements ResolverLoaderInter
      * @param iterable<ResolverInterface> $taggedFieldDefinitionResolvers
      */
     public function __construct(
-        #[TaggedIterator(self::FIELD_DEFINITION_RESOLVER_TAG)]
+        #[AutowireIterator(self::FIELD_DEFINITION_RESOLVER_TAG)]
         private iterable $taggedFieldDefinitionResolvers,
     ) {
     }

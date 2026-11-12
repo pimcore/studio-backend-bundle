@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\TransformerLoaderInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * @internal
@@ -28,7 +28,7 @@ final readonly class TaggedIteratorTransformerLoader implements TransformerLoade
      * @param iterable<TransformerInterface> $taggedTransformers
      */
     public function __construct(
-        #[TaggedIterator(self::TRANSFORMER_TAG)]
+        #[AutowireIterator(self::TRANSFORMER_TAG)]
         private iterable $taggedTransformers,
     ) {
     }

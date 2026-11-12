@@ -22,19 +22,29 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportDataStorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFile;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use function in_array;
 
 /**
  * @internal
  */
 final readonly class CsvCreationSubscriber implements EventSubscriberInterface
 {
+    private const array FINAL_STATES = [
+        JobRunStates::FINISHED->value,
+        JobRunStates::FINISHED_WITH_ERRORS->value,
+        JobRunStates::FAILED->value,
+        JobRunStates::CANCELLED->value,
+    ];
+
     public function __construct(
         private EventSubscriberServiceInterface $eventSubscriberService,
         private ExportServiceInterface $csvExportService,
+        private ExportDataStorageServiceInterface $exportDataStorageService,
         private UserTopicServiceInterface $userTopicService
     ) {
 
@@ -59,6 +69,11 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
     {
         if ($event->getJobName() !== Jobs::CREATE_CSV->value) {
             return;
+        }
+
+        // The rows stay until the job run is over: a retried creation step still needs them
+        if (in_array($event->getNewState(), self::FINAL_STATES, true)) {
+            $this->exportDataStorageService->cleanUp($event->getJobRunId());
         }
 
         match ($event->getNewState()) {

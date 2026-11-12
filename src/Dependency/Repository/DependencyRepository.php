@@ -23,6 +23,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\MappedParameter\DependencyParameters;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 
@@ -32,6 +33,7 @@ use Pimcore\Model\UserInterface;
 final readonly class DependencyRepository implements DependencyRepositoryInterface
 {
     use ElementProviderTrait;
+    use ElementViewPermissionTrait;
 
     public function __construct(
         private ElementSearchServiceInterface $elementSearchService,
@@ -45,6 +47,7 @@ final readonly class DependencyRepository implements DependencyRepositoryInterfa
         DependencyParameters $parameters,
         UserInterface $user
     ): ElementSearchResult {
+        $this->assertElementViewPermission($elementParameters->getType(), $elementParameters->getId(), $user);
         $element = $this->getElement(
             $this->serviceResolver,
             $elementParameters->getType(),
@@ -70,6 +73,7 @@ final readonly class DependencyRepository implements DependencyRepositoryInterfa
         DependencyParameters $parameters,
         UserInterface $user
     ): ElementSearchResult {
+        $this->assertElementViewPermission($elementParameters->getType(), $elementParameters->getId(), $user);
         $element = $this->getElement(
             $this->serviceResolver,
             $elementParameters->getType(),

@@ -88,7 +88,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
     {
         return match ($column) {
             'filename', 'index', 'classname',  => false,
-            default => $definition->isSortable(),
+            default => $definition->isFilterable(),
         };
     }
 

@@ -99,6 +99,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_notifications_description'
 )]
 #[Tag(
+    name: Tags::Oauth->value,
+    description: 'tag_oauth_description'
+)]
+#[Tag(
     name: Tags::OwnershipManagement->value,
     description: 'tag_ownership_management_description'
 )]
@@ -137,6 +141,10 @@ use OpenApi\Attributes\Tag;
 #[Tag(
     name: Tags::TagsForElement->value,
     description: 'tag_tags_for_element_description'
+)]
+#[Tag(
+    name: Tags::Telemetry->value,
+    description: 'tag_telemetry_description'
 )]
 #[Tag(
     name: Tags::Translation->value,
@@ -199,6 +207,7 @@ enum Tags: string
     case Metadata = 'Metadata';
     case Notes = 'Notes';
     case Notifications = 'Notifications';
+    case Oauth = 'OAuth';
     case OwnershipManagement = 'Ownership Management';
     case Perspectives = 'Perspectives';
     case Properties = 'Properties';
@@ -210,6 +219,7 @@ enum Tags: string
     case SettingsAdmin = 'Settings Admin';
     case Tags = 'Tags';
     case TagsForElement = 'Tags for Element';
+    case Telemetry = 'Telemetry';
     case Translation = 'Translation';
     case Units = 'Units';
     case User = 'User Management';

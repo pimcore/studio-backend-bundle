@@ -38,7 +38,7 @@ final readonly class NotificationHydrator implements NotificationHydratorInterfa
         );
     }
 
-    public function hydrateMinimal(NotificationModel $notification): NotificationMinimal
+    public function hydrateMinimal(NotificationModel $notification, bool $popup = true): NotificationMinimal
     {
         return new NotificationMinimal(
             $notification->getId(),
@@ -48,6 +48,8 @@ final readonly class NotificationHydrator implements NotificationHydratorInterfa
             (new Carbon($notification->getCreationDate(), 'UTC'))->getTimeStamp(),
             $notification->getRecipient()?->getId() ?? 0,
             $this->getRecipientName($notification->getSender()),
+            $popup,
+            $notification->getPayload(),
         );
     }
 

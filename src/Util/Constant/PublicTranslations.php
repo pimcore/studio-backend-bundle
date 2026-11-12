@@ -32,5 +32,8 @@ final readonly class PublicTranslations
         'forgot-password-form.reset-password',
         'forgot-password-form.back',
         'forgot-password-form.username.placeholder',
+        // Error dialog shown when a login attempt fails
+        'error',
+        'alert-modal.ok-text',
     ];
 }

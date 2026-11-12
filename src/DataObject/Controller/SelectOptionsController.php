@@ -19,9 +19,11 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Request\SelectOption
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\SelectOptionsParameter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\SelectOption;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\SelectOptionsServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -52,9 +54,11 @@ final class SelectOptionsController extends AbstractApiController
     }
 
     /**
-     * @throws DatabaseException
+     * @throws ElementSavingFailedException
+     * @throws ForbiddenException
      * @throws NotFoundException
      * @throws InvalidArgumentException
+     * @throws UserNotFoundException
      */
     #[Route(
         path: '/data-objects/select-options',
@@ -76,6 +80,7 @@ final class SelectOptionsController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::BAD_REQUEST,
     ])]

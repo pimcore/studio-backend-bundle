@@ -69,8 +69,10 @@ final class UpdateController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::UNPROCESSABLE_CONTENT,
     ])]
     public function dataObjectUpdateById(int $id, #[MapRequestPayload] DataParameter $parameter): JsonResponse
     {

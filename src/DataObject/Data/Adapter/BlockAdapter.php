@@ -66,7 +66,10 @@ final readonly class BlockAdapter implements
             return null;
         }
 
-        $blockData = $data[$key];
+        $blockData = $data[$key] ?? null;
+        if (!is_array($blockData)) {
+            return null;
+        }
 
         return $this->processBlockData($element, $user, $fieldDefinition, $blockData, $isPatch, $contextData);
     }
@@ -112,7 +115,7 @@ final readonly class BlockAdapter implements
         ?FieldContextData $contextData = null
     ): FieldContextData {
         $object = $contextData?->getContextObject() ?? $element;
-        $data = $object->get($fieldDefinition->getName())[$index] ?? [];
+        $data = $object->get($fieldDefinition->getName(), $contextData?->getLanguage())[$index] ?? [];
 
         return new FieldContextData(
             new BlockData(

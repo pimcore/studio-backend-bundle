@@ -75,5 +75,15 @@ studio_ee_job_element_usage_replace: Remplacer l'utilisation de l'élément
 preview_generator_locale: Language
 main_site: Site principal
 preview_generator_site: Site
+notifications.email.greeting: 'Bonjour %name%,'
+notifications.email.cta: 'Voir dans Pimcore Studio'
+notifications.email.footer: 'Vous recevez cet e-mail car vous êtes abonné à ces notifications dans Pimcore Studio.'
+notifications.channel.popup: 'Pop-up'
+notifications.channel.email: 'E-mail'
+notifications.channel.email.no-address: 'Aucune adresse e-mail sur votre compte — ajoutez-en une dans votre profil pour les recevoir.'
+notifications.type.general.label: 'Tout le reste'
+notifications.type.general.description: 'Étapes de workflow, messages système, notifications d''autres bundles. Elles arrivent toujours dans vos notifications ; choisissez si elles apparaissent également en pop-up.'
+notifications.type.general.solo_label: 'Toutes les notifications'
+notifications.type.general.solo_description: 'Tout ce que Pimcore vous envoie : étapes de workflow, messages système, notifications d''autres bundles. Elles arrivent toujours dans vos notifications ; choisissez si elles apparaissent également en pop-up.'
 ownership_management_type_grid_configuration: Configurations de Grid
 ownership_management_type_saved_search: Recherches enregistrées

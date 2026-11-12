@@ -25,13 +25,13 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\Collec
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Security\PermissionsToCheck;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -49,8 +49,6 @@ final class CollectionController extends AbstractApiController
     }
 
     #[Route('/emails', name: 'pimcore_studio_api_emails_log_list', methods: ['GET'])]
-    #[IsGranted(UserPermissions::EMAILS->value)]
-    #[IsGranted(UserPermissions::GDPR->value)]
     #[Get(
         path: self::PREFIX . '/emails',
         operationId: 'email_log_get_collection',
@@ -71,6 +69,14 @@ final class CollectionController extends AbstractApiController
     public function getEmailLogEntries(
         #[MapQueryString] CollectionParameters $parameters
     ): JsonResponse {
+        $this->denyAccessUnlessGranted(
+            'HasOneOf',
+            new PermissionsToCheck([
+                UserPermissions::EMAILS->value,
+                UserPermissions::GDPR->value,
+            ])
+        );
+
         $collection = $this->emailLogService->listEntries($parameters);
 
         return $this->getPaginatedCollection(

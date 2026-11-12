@@ -84,7 +84,8 @@ final readonly class LocalizedFieldsAdapter implements
             return null;
         }
 
-        $languageData = $this->getAllowedLanguages($element, $user, $data[$key]);
+        // localized fields without any value are sent as null (see resolveLocalizedData()), nothing to set then
+        $languageData = $this->getAllowedLanguages($element, $user, $data[$key] ?? []);
         $localizedField = $this->getLocalizedField($contextData, $element);
 
         foreach ($languageData as $name => $localizedData) {
@@ -105,7 +106,7 @@ final readonly class LocalizedFieldsAdapter implements
                     $name,
                     [$name => $fieldData],
                     $user,
-                    new FieldContextData(language: $language),
+                    new FieldContextData($contextData?->getContextObject(), $language),
                     $isPatch
                 );
                 if (!$this->validateEncryptedField($childFieldDefinition, $value)) {
@@ -169,15 +170,31 @@ final readonly class LocalizedFieldsAdapter implements
         $inheritedData = [];
         $contextObject = $contextData?->getContextObject();
         $fields = $this->processFieldChildren($fieldDefinition->getChildren());
+        $resolveInheritedValue = $contextData?->shouldResolveInheritedValue() ?? false;
+
+        // the inheritable/inherited flags are structural metadata for every configured language, same as
+        // elsewhere - but an actual inherited value is real localized content, so it must be restricted to
+        // the languages the current user is allowed to view, exactly like the object's own field values are
+        $languages = $resolveInheritedValue
+            ? $this->languageService->getUserAllowedLanguages(
+                $object,
+                $this->securityService->getCurrentUser(),
+                ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
+            )
+            : $this->toolResolver->getValidLanguages();
 
         foreach ($fields as $field) {
-            foreach ($this->toolResolver->getValidLanguages() as $language) {
+            foreach ($languages as $language) {
                 $fieldKey = $field->getName();
                 $inheritedData[$fieldKey][$language] = $this->inheritanceService->processFieldDefinition(
                     $object,
                     $field,
                     $fieldKey,
-                    new FieldContextData(contextObject: $contextObject, language: $language)
+                    new FieldContextData(
+                        contextObject: $contextObject,
+                        language: $language,
+                        resolveInheritedValue: $resolveInheritedValue
+                    )
                 );
             }
         }

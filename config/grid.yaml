@@ -15,6 +15,9 @@ services:
   #
   #  Services
   #
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMergerInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMerger
+
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridService
 
@@ -66,6 +69,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerService
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedColumnSourceFieldContextInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedColumnSourceFieldContext
+
   #
   # Repository
   #
@@ -94,6 +100,9 @@ services:
   #
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\IntegerDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\UserDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\IdDefinition:
@@ -291,6 +300,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\FieldCollectionDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\BlockDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\ClassificationStoreDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
@@ -306,6 +318,9 @@ services:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\IntegerResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\UserResolver:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\FileSizeResolver:

@@ -21,4 +21,10 @@ use Symfony\Component\HttpFoundation\Cookie;
 interface HubServiceInterface
 {
     public function createCookie(): Cookie;
+
+    /**
+     * Lifetime of the cookie returned by createCookie(), in seconds. Clients need it to
+     * renew their authorization before the hub stops accepting it.
+     */
+    public function getCookieLifetime(): int;
 }

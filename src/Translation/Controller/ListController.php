@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Controller;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Request\CollectionRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
@@ -51,6 +53,9 @@ final class ListController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws ForbiddenException|InvalidArgumentException
+     */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_translations_list', methods: ['POST'])]
     #[IsGranted(UserPermissions::TRANSLATIONS->value)]
     #[Post(
@@ -78,6 +83,7 @@ final class ListController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::FORBIDDEN,
     ])]
     public function getList(
         #[MapRequestPayload] CollectionFilterParameter $parameters,

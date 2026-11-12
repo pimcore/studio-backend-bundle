@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 
 #[Schema(
     title: 'UpdateVersion',
@@ -26,7 +27,21 @@ final readonly class UpdateVersion
         #[Property(description: 'Public', type: 'boolean', example: null)]
         private ?bool $public,
         #[Property(description: 'Note', type: 'string', example: null)]
-        private ?string $note
+        private ?string $note,
+        #[Property(
+            description: 'Coauthor type, empty string clears it',
+            type: 'string',
+            maxLength: VersionCoauthor::MAX_TYPE_LENGTH,
+            example: null
+        )]
+        private ?string $coauthorType = null,
+        #[Property(
+            description: 'Coauthor, empty string clears it',
+            type: 'string',
+            maxLength: VersionCoauthor::MAX_COAUTHOR_LENGTH,
+            example: null
+        )]
+        private ?string $coauthor = null
     ) {
     }
 
@@ -38,5 +53,15 @@ final readonly class UpdateVersion
     public function getNote(): ?string
     {
         return $this->note;
+    }
+
+    public function getCoauthorType(): ?string
+    {
+        return $this->coauthorType;
+    }
+
+    public function getCoauthor(): ?string
+    {
+        return $this->coauthor;
     }
 }

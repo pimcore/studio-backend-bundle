@@ -43,6 +43,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         private ServiceResolverInterface $serviceResolver,
         private ElementDataServiceInterface $elementDataService,
         private AdminLanguageServiceInterface $adminLanguageService,
+        private bool $autoCreateTranslations = true,
     ) {
         $this->systemSettings = $systemSettingsConfig->getSystemSettingsConfig();
     }
@@ -65,6 +66,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'availableAdminLanguages' => $this->adminLanguageService->getAvailableAdminLanguages(),
             'validLocales' => $this->toolResolver->getSupportedJSLocales(),
             'debug_admin_translations' => (bool)$this->systemSettings['general']['debug_admin_translations'],
+            'auto_create_translations' => $this->autoCreateTranslations,
             'main_domain' => $this->systemSettings['general']['domain'],
             'upload_max_filesize' => $this->getUploadMaxFilesize(),
             'session_gc_maxlifetime' => $this->getSessionLifeTime(),
