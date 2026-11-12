@@ -45,6 +45,9 @@ use function trigger_deprecation;
  * the `pimcore_studio_backend.mcp.authentication.tokens` configuration,
  * which maps Pimcore usernames to token lists.
  *
+ * @deprecated since 2026.4, to be removed in 2027.1. Use OAuth (authorization_code for people,
+ *             client_credentials for service users) or MCP access tokens instead.
+ *
  * @internal
  */
 class PatAuthenticator extends AbstractAuthenticator
