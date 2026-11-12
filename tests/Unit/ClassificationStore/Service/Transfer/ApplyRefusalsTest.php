@@ -281,7 +281,11 @@ final class ApplyRefusalsTest extends Unit
     public function testANameTheFileRenamesAwayFromIsFreeForANewEntry(): void
     {
         $context = $this->createContext();
-        $refusals = $this->createRefusals(groupNameTaken: true);
+        // the store holds one group, row 7 named "Dimensions"; "Lengths" is free
+        $refusals = $this->createRefusals(
+            groupNameTaken: static fn (string $name, ?int $exceptId): bool => $name === 'Dimensions'
+                && $exceptId !== 7
+        );
 
         $this->assertFalse(
             $refusals->refuseTakenName(
@@ -519,7 +523,7 @@ final class ApplyRefusalsTest extends Unit
      */
     private function createRefusals(
         bool $collectionNameTaken = false,
-        bool $groupNameTaken = false,
+        bool|callable $groupNameTaken = false,
         bool $subGroupNameTaken = false,
         array $assignedGroupNames = [],
     ): ApplyRefusals {
@@ -527,7 +531,13 @@ final class ApplyRefusalsTest extends Unit
         $collectionRepository->method('isNameTaken')->willReturn($collectionNameTaken);
 
         $groupRepository = $this->createMock(GroupRepositoryInterface::class);
-        $groupRepository->method('isNameTaken')->willReturn($groupNameTaken);
+        if (is_callable($groupNameTaken)) {
+            $groupRepository->method('isNameTaken')->willReturnCallback(
+                static fn (int $storeId, string $name, ?int $exceptId = null): bool => $groupNameTaken($name, $exceptId)
+            );
+        } else {
+            $groupRepository->method('isNameTaken')->willReturn($groupNameTaken);
+        }
 
         $subGroupRepository = $this->createMock(SubGroupRepositoryInterface::class);
         $subGroupRepository->method('isNameTaken')->willReturn($subGroupNameTaken);
