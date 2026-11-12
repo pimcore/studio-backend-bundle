@@ -21,7 +21,8 @@ final readonly class ClassificationStoreFilterValue
     public function __construct(
         private readonly int $groupId,
         private readonly int $keyId,
-        private readonly string|array $value
+        private readonly string|array $value,
+        private readonly ?string $variant = null
     ) {
 
     }
@@ -34,6 +35,22 @@ final readonly class ClassificationStoreFilterValue
     public function getKeyId(): int
     {
         return $this->keyId;
+    }
+
+    /**
+     * The variant of a `multiValue` key the filter addresses, null for the key's own (default) slot.
+     */
+    public function getVariant(): ?string
+    {
+        return $this->variant;
+    }
+
+    /**
+     * The name of the index field the filter searches: the key's own, or its `<key>_<variant>` sibling.
+     */
+    public function getIndexFieldName(string $keyName): string
+    {
+        return $this->variant === null ? $keyName : $keyName . '_' . $this->variant;
     }
 
     public function getValue(): string|array

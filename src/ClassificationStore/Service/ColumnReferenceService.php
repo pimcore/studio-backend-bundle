@@ -106,7 +106,12 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
             );
         }
 
-        return new ClassificationStoreConfig($groupId, $keyId);
+        $variant = $config['variant'] ?? null;
+        if ($variant !== null && (!is_string($variant) || $variant === '')) {
+            throw new InvalidArgumentException('variant must be a non-empty string');
+        }
+
+        return new ClassificationStoreConfig($groupId, $keyId, $variant);
     }
 
     /**

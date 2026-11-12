@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util;
  */
 readonly class ClassificationStoreConfig
 {
-    public function __construct(private int $group, private int $key)
+    public function __construct(private int $group, private int $key, private ?string $variant = null)
     {
     }
 
@@ -30,5 +30,13 @@ readonly class ClassificationStoreConfig
     public function getKeyId(): int
     {
         return $this->key;
+    }
+
+    /**
+     * The variant the column addresses, null for the default slot.
+     */
+    public function getVariant(): ?string
+    {
+        return $this->variant;
     }
 }

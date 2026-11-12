@@ -84,7 +84,7 @@ final class TimeFilter implements FilterInterface
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
                 $this->buildTimeFilterModifier(
-                    $key->getName(),
+                    $filterValue->getIndexFieldName($key->getName()),
                     $value['from'],
                     $value['to']
                 ),
@@ -99,7 +99,7 @@ final class TimeFilter implements FilterInterface
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
                 $this->buildTimeFilterModifier(
-                    $key->getName(),
+                    $filterValue->getIndexFieldName($key->getName()),
                     null,
                     null,
                     $value['on']
@@ -113,7 +113,7 @@ final class TimeFilter implements FilterInterface
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
                 $this->buildTimeFilterModifier(
-                    $key->getName(),
+                    $filterValue->getIndexFieldName($key->getName()),
                     null,
                     $value['to']
                 ),
@@ -126,7 +126,7 @@ final class TimeFilter implements FilterInterface
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
                 $this->buildTimeFilterModifier(
-                    $key->getName(),
+                    $filterValue->getIndexFieldName($key->getName()),
                     $value['from']
                 ),
                 $column->getLocale()

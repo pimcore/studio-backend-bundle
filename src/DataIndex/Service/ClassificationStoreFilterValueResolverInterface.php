@@ -27,7 +27,9 @@ interface ClassificationStoreFilterValueResolverInterface
     /**
      * The identifiers of the filter value, when it carries both, are the reference and the integer pair is not
      * consulted. They are resolved in the store of the classification store field `$fieldName` of the filtered
-     * class, which `$parameters` names when it carries a class id.
+     * class, which `$parameters` names when it carries a class id. A `variant` member names the variant of a
+     * `multiValue` key the filter addresses, and is carried as it came: the key declaring it is checked where
+     * the key is known.
      *
      * @throws InvalidArgumentException when the value carries neither a resolvable reference nor a full pair
      * @throws NotFoundException when the identifiers do not resolve in this installation

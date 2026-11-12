@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyGroupRelation;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyFilterResolverInterface;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation as CoreKeyGroupRelation;
 use ReflectionProperty;
@@ -23,11 +24,19 @@ use ReflectionProperty;
  */
 final class KeyGroupRelationHydrator implements KeyGroupRelationHydratorInterface
 {
+    public function __construct(
+        private readonly KeyFilterResolverInterface $keyFilterResolver,
+    ) {
+    }
+
     public function hydrate(
         CoreKeyGroupRelation $keyGroupRelation,
         GroupConfig $groupConfig,
         ?bool $keyLocalized = null,
     ): KeyGroupRelation {
+        $filterStated = $this->statesTypeAndDefinition($keyGroupRelation);
+        $filterReason = $filterStated ? $this->keyFilterResolver->getFilterUnavailableReason($keyGroupRelation) : null;
+
         return new KeyGroupRelation(
             keyId: $keyGroupRelation->getKeyId(),
             groupId: $groupConfig->getId(),
@@ -38,6 +47,8 @@ final class KeyGroupRelationHydrator implements KeyGroupRelationHydratorInterfac
             localized: $keyLocalized,
             // off the relation already loaded, so no key configuration and no statement is added
             keyType: $this->readType($keyGroupRelation),
+            filterable: $filterStated ? $filterReason === null : null,
+            filterUnavailableReason: $filterReason?->value,
         );
     }
 
@@ -57,5 +68,15 @@ final class KeyGroupRelationHydrator implements KeyGroupRelationHydratorInterfac
         }
 
         return $keyGroupRelation->getType();
+    }
+
+    /**
+     * Whether the relation carries both the type and the definition a filter is decided from. Both are typed
+     * properties without a default, so they are checked before they are read.
+     */
+    private function statesTypeAndDefinition(CoreKeyGroupRelation $keyGroupRelation): bool
+    {
+        return (new ReflectionProperty(CoreKeyGroupRelation::class, 'type'))->isInitialized($keyGroupRelation)
+            && (new ReflectionProperty(CoreKeyGroupRelation::class, 'definition'))->isInitialized($keyGroupRelation);
     }
 }

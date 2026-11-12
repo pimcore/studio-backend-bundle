@@ -64,6 +64,37 @@ final class ClassificationStoreFilterValueResolverTest extends Unit
         $this->assertSame([7, 8], [$value->getGroupId(), $value->getKeyId()]);
     }
 
+    public function testAVariantIsCarriedAndNamesTheSiblingIndexField(): void
+    {
+        $value = $this->getValue(
+            ['groupId' => 7, 'keyId' => 8, 'value' => 'needle', 'variant' => 'Metric'],
+            $this->createParameter(),
+            null
+        );
+
+        $this->assertSame('Metric', $value->getVariant());
+        $this->assertSame('weight_Metric', $value->getIndexFieldName('weight'));
+    }
+
+    public function testNoVariantAddressesTheKeysOwnField(): void
+    {
+        $value = $this->getValue(['groupId' => 7, 'keyId' => 8, 'value' => 'needle'], $this->createParameter(), null);
+
+        $this->assertNull($value->getVariant());
+        $this->assertSame('weight', $value->getIndexFieldName('weight'));
+    }
+
+    public function testAnEmptyVariantIsRefused(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->getValue(
+            ['groupId' => 7, 'keyId' => 8, 'value' => 'needle', 'variant' => ''],
+            $this->createParameter(),
+            null
+        );
+    }
+
     public function testUnresolvableIdentifiersThrowNotFoundAndDoNotFallBackToThePair(): void
     {
         $this->expectException(NotFoundException::class);

@@ -63,14 +63,20 @@ use Pimcore\Model\DataObject\Exception\UnsupportedEngineFeatureException;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_diff;
+use function array_filter;
+use function array_is_list;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_unique;
+use function ctype_digit;
 use function in_array;
 use function is_array;
 use function is_int;
+use function is_string;
+use function strpos;
+use function substr;
 
 /**
  * @internal
@@ -125,6 +131,7 @@ final readonly class ClassificationStoreAdapter implements
         if ($isPatch) {
             $elementStore = $this->handleNormalize($element->get($key), $fieldDefinition, $user);
             $store['activeGroups'] = $this->getActiveGroupsFromStore($store);
+            $store = $this->foldVariantAddresses($fieldDefinition, $store);
             $store = $this->patchStore($fieldDefinition, $elementStore, $store);
         }
 
@@ -245,6 +252,105 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         return $data;
+    }
+
+    /**
+     * The grid's address of a variant cell, `<keyId>#<variant>`, folded into the entry the key's own
+     * id carries, so a patch of one variant cell is merged by qualifier like any other entry.
+     *
+     * @return array<array-key, mixed>
+     *
+     * @throws InvalidArgumentException
+     */
+    private function foldVariantAddresses(ClassificationstoreDefinition $definition, array $store): array
+    {
+        foreach ($store as $groupId => $groupData) {
+            if (!is_int($groupId) || !is_array($groupData)) {
+                continue;
+            }
+
+            foreach ($groupData as $language => $keys) {
+                if (is_array($keys)) {
+                    $store[$groupId][$language] = $this->foldBucketAddresses($definition, $keys);
+                }
+            }
+        }
+
+        return $store;
+    }
+
+    /**
+     * @param array<array-key, mixed> $keys one (group, language) bucket
+     *
+     * @return array<array-key, mixed>
+     *
+     * @throws InvalidArgumentException
+     */
+    private function foldBucketAddresses(ClassificationstoreDefinition $definition, array $keys): array
+    {
+        foreach ($keys as $address => $value) {
+            $separator = is_string($address) ? strpos($address, '#') : false;
+            if ($separator === false) {
+                continue;
+            }
+
+            $keyId = $this->getDeclaringKeyId($definition, substr($address, 0, $separator));
+
+            $variant = substr($address, $separator + 1);
+
+            $held = $keys[$keyId] ?? [];
+            $held = is_array($held) && array_is_list($held) && ($held === [] || is_array($held[0]))
+                ? $held
+                : [['v' => $held]];
+            foreach ($this->getAddressedEntries($value) as $entry) {
+                $entry['var'] = $variant;
+                $held[] = $entry;
+            }
+
+            unset($keys[$address]);
+            $keys[$keyId] = $held;
+        }
+
+        return $keys;
+    }
+
+    /**
+     * The entries one variant cell's patch carries: a repeating key's cell is a list of
+     * `{v, p}` entries, any other cell one entry object or a bare value.
+     *
+     * @return array<int, array<array-key, mixed>>
+     */
+    private function getAddressedEntries(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return [['v' => $value]];
+        }
+
+        if (array_key_exists('v', $value)) {
+            return [$value];
+        }
+
+        $isEntry = static fn (mixed $item): bool => is_array($item) && array_key_exists('v', $item);
+        $isEntryList = $value !== [] && array_is_list($value) && array_filter($value, $isEntry) === $value;
+
+        return $isEntryList ? $value : [['v' => $value]];
+    }
+
+    /**
+     * @throws InvalidArgumentException when the address names no key, or one that declares no variants
+     */
+    private function getDeclaringKeyId(ClassificationstoreDefinition $definition, string $keyId): int
+    {
+        if (!ctype_digit($keyId)
+            || !$this->keyQualifierResolver->declaresQualifiers($definition->getKeyConfiguration((int) $keyId))
+        ) {
+            throw new InvalidArgumentException(
+                'The value names a variant the key does not declare.',
+                errorKey: HttpResponseErrorKeys::UNDECLARED_VARIANT->value
+            );
+        }
+
+        return (int) $keyId;
     }
 
     /**
@@ -464,9 +570,14 @@ final readonly class ClassificationStoreAdapter implements
         array $keys,
         bool $isPatch
     ): void {
+        $relations = $this->getClassificationStoreKeysFromGroup($groupId);
         foreach ($keys as $keyId => $value) {
             $keyConfig = $definition->getKeyConfiguration($keyId);
-            $fieldDefinition = $this->serviceResolver->getFieldDefinitionFromKeyConfig($keyConfig);
+            $relation = $this->findRelation($relations, $keyId);
+            // an assignment is converted and validated against its own effective definition
+            $fieldDefinition = $relation !== null
+                ? $this->getEffectiveFieldDefinition($relation)
+                : $this->serviceResolver->getFieldDefinitionFromKeyConfig($keyConfig);
 
             if ($fieldDefinition === null) {
                 continue;
@@ -750,7 +861,7 @@ final readonly class ClassificationStoreAdapter implements
 
             $keys = $this->getClassificationStoreKeysFromGroup($groupId);
             foreach ($keys as $groupKey) {
-                $definition = $this->serviceResolver->getFieldDefinitionFromKeyConfig($groupKey);
+                $definition = $this->getEffectiveFieldDefinition($groupKey);
                 if ($definition === null) {
                     continue;
                 }
@@ -816,6 +927,31 @@ final readonly class ClassificationStoreAdapter implements
     }
 
     /**
+     * Built on every call from the assignment's own effective definition, never from a memo held per key.
+     */
+    private function getEffectiveFieldDefinition(KeyGroupRelation $relation): ?Data
+    {
+        return $this->serviceResolver->getFieldDefinitionFromJson(
+            $relation->getEffectiveDefinitionData(),
+            $relation->getType()
+        );
+    }
+
+    /**
+     * @param KeyGroupRelation[] $relations
+     */
+    private function findRelation(array $relations, int $keyId): ?KeyGroupRelation
+    {
+        foreach ($relations as $relation) {
+            if ($relation->getKeyId() === $keyId) {
+                return $relation;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @return KeyGroupRelation[]
      */
     private function getClassificationStoreKeysFromGroup(int $groupId): array
@@ -855,7 +991,7 @@ final readonly class ClassificationStoreAdapter implements
         string $language,
         KeyConfig $keyConfig,
     ): mixed {
-        $childDef = $this->serviceResolver->getFieldDefinitionFromKeyConfig($keyConfig);
+        $childDef = $this->getEffectiveFieldDefinition($key);
         if ($childDef === null) {
             return null;
         }
@@ -921,7 +1057,7 @@ final readonly class ClassificationStoreAdapter implements
             return null;
         }
 
-        $fieldDefinition = $this->serviceResolver->getFieldDefinitionFromKeyConfig($keyConfig);
+        $fieldDefinition = $this->getEffectiveFieldDefinition($key);
         if ($fieldDefinition === null) {
             return null;
         }

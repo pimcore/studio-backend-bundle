@@ -51,7 +51,7 @@ final class OptionsPublicationParityTest extends Unit
         $keyDetail = (new KeyHydrator(new InMemoryKeyLocalizationResolver(), $resolver))
             ->hydrateKeyDetail($keyConfig);
         $relationDetail = (new KeyGroupRelationHydrator($resolver))->hydrateKeyGroupRelationDetail(
-            $this->relation(),
+            $this->relation($keyConfig),
             $keyConfig->getName(),
             $keyConfig->getDescription(),
             'My Group',
@@ -76,7 +76,7 @@ final class OptionsPublicationParityTest extends Unit
         $keyDetail = (new KeyHydrator(new InMemoryKeyLocalizationResolver(), $resolver))
             ->hydrateKeyDetail($keyConfig);
         $relationDetail = (new KeyGroupRelationHydrator($resolver))->hydrateKeyGroupRelationDetail(
-            $this->relation(),
+            $this->relation($keyConfig),
             $keyConfig->getName(),
             $keyConfig->getDescription(),
             'My Group',
@@ -134,11 +134,13 @@ final class OptionsPublicationParityTest extends Unit
         return $keyConfig;
     }
 
-    private function relation(): KeyGroupRelation
+    private function relation(KeyConfig $keyConfig): KeyGroupRelation
     {
         $relation = new KeyGroupRelation();
         $relation->setKeyId(self::KEY_ID);
         $relation->setGroupId(self::GROUP_ID);
+        $relation->setType($keyConfig->getType());
+        $relation->setDefinition($keyConfig->getDefinition());
 
         return $relation;
     }

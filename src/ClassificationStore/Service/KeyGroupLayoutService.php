@@ -56,9 +56,8 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
         string $fieldName,
         ?Concrete $object = null,
     ): EncryptedField|Data {
-        $definition = json_decode($keyGroupRelation->getDefinition(), true);
         $definition = $this->serviceResolver->getFieldDefinitionFromJson(
-            $definition,
+            $keyGroupRelation->getEffectiveDefinitionData(),
             $keyGroupRelation->getType()
         );
 

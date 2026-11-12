@@ -52,7 +52,12 @@ final readonly class Column
         )]
         private ?array $group,
         #[Property(
-            description: 'Config',
+            description: 'Config. A dataobject.classificationstore column names its key by groupId and keyId,'
+                . ' or by groupIdentifier and keyIdentifier, which take precedence where both are given.'
+                . ' The optional `variant` member addresses one declared variant of a multiValue key: a column'
+                . ' without it is expanded by the backend into one column per declared variant, in declaration'
+                . ' order, followed by the default slot. An expanded column carries its `variant` in this config,'
+                . ' and its cell key is suffixed with `#<variant>`.',
             type: 'array',
             items: new Items(
                 anyOf: [

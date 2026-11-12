@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResol
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnVariantExpanderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
@@ -62,6 +63,7 @@ use TypeError;
 use function array_key_exists;
 use function in_array;
 use function is_array;
+use function is_string;
 
 /**
  * @internal
@@ -102,6 +104,7 @@ final class GridService implements GridServiceInterface
         private readonly LocaleServiceInterface $localeService,
         private readonly RuntimeCacheResolverInterface $runtimeCacheResolver,
         private readonly ColumnReferenceServiceInterface $columnReferenceService,
+        private readonly ColumnVariantExpanderInterface $columnVariantExpander,
     ) {
     }
 
@@ -228,7 +231,8 @@ final class GridService implements GridServiceInterface
             return $this->getCollectionFromSearchResult(
                 $result,
                 $gridParameter,
-                ElementTypes::TYPE_OBJECT
+                ElementTypes::TYPE_OBJECT,
+                $classId
             );
         } finally {
             $this->localizedFieldResolver->setGetFallbackValues($fallbackBackup);
@@ -343,7 +347,17 @@ final class GridService implements GridServiceInterface
         string $elementType,
     ): Collection {
         $user = $this->securityService->getCurrentUser();
-        $columns = $this->getConfigurationFromArray($gridParameter->getColumns());
+        // the class the provided objects are of, so a column referenced by identifier expands as in the listing
+        $classId = null;
+        foreach ($elements as $providedElement) {
+            if ($providedElement->getElement() instanceof Concrete) {
+                $classId = $providedElement->getElement()->getClassId();
+
+                break;
+            }
+        }
+
+        $columns = $this->getConfigurationFromArray($gridParameter->getColumns(), $classId);
 
         $fallbackBackup = $this->localizedFieldResolver->getGetFallbackValues();
         $this->localizedFieldResolver->setGetFallbackValues($gridParameter->getApplyFallbackLanguages());
@@ -388,8 +402,10 @@ final class GridService implements GridServiceInterface
         if ($databaseElement !== null
             && !$this->isLocaleViewableForElement($databaseElement, $column->getLocale(), $user, $isLocalizedField)
         ) {
+            $variant = $column->getConfig()['variant'] ?? null;
+
             return new ColumnData(
-                key: $column->getKey(),
+                key: $column->getKey() . (is_string($variant) && $variant !== '' ? '#' . $variant : ''),
                 locale: $column->getLocale(),
                 value: null,
                 fieldType: $column->getType(),
@@ -504,7 +520,8 @@ final class GridService implements GridServiceInterface
      */
     public function getConfigurationForExport(
         array $config,
-        array $columnsDefinitions
+        array $columnsDefinitions,
+        ?string $classId = null
     ): ColumnCollection {
         $exportableColumns = [];
         foreach ($config as $column) {
@@ -521,31 +538,39 @@ final class GridService implements GridServiceInterface
             $exportableColumns[] = $column;
         }
 
-        return $this->getConfigurationFromArray($exportableColumns);
+        return $this->getConfigurationFromArray($exportableColumns, $classId);
     }
 
     public function getColumnKeys(ColumnCollection $columnCollection, bool $withGroup = false): array
     {
         return array_map(
-            function (Column $column) use ($withGroup) {
+            function (Column $column) use ($withGroup): string {
                 if ($withGroup === true && !$column->getGroup()) {
                     throw new InvalidArgumentException('Group must be set when withGroup is true');
                 }
-                $firstGroup = $column->getGroup()[0] ?? '';
-                $fd = $column->getConfig()['fieldDefinition'] ?? null;
 
-                if ($withGroup) {
-                    $key = $fd ? ($fd['name'] ?? $column->getKey()) : $column->getKey();
-                } else {
-                    $key = $fd ? ($fd['title'] ?? $column->getKey()) : $column->getKey();
-                }
+                $key = $this->appendLocale($this->getColumnKeyName($column, $withGroup), $column);
 
-                $key = $this->appendLocale($key, $column);
-
-                return ($withGroup ? $firstGroup . '~' : '') . $key;
+                return ($withGroup ? ($column->getGroup()[0] ?? '') . '~' : '') . $key;
             },
             $columnCollection->getColumns()
         );
+    }
+
+    /**
+     * The column's name as an export header carries it, a variant column addressing its variant as `#variant`.
+     */
+    private function getColumnKeyName(Column $column, bool $withGroup): string
+    {
+        $fd = $column->getConfig()['fieldDefinition'] ?? null;
+        $field = $withGroup ? 'name' : 'title';
+        $key = $fd ? ($fd[$field] ?? $column->getKey()) : $column->getKey();
+
+        if ($column->getType() === 'dataobject.classificationstore' && isset($column->getConfig()['variant'])) {
+            $key .= '#' . $column->getConfig()['variant'];
+        }
+
+        return $key;
     }
 
     private function appendLocale(string $key, Column $column): string
@@ -562,7 +587,8 @@ final class GridService implements GridServiceInterface
      * @throws InvalidArgumentException
      */
     private function getConfigurationFromArray(
-        array $config
+        array $config,
+        ?string $classId = null
     ): ColumnCollection {
 
         $columns = [];
@@ -582,7 +608,7 @@ final class GridService implements GridServiceInterface
             }
         }
 
-        return new ColumnCollection($columns);
+        return new ColumnCollection($this->columnVariantExpander->expand($columns, $classId));
     }
 
     private function supports(Column $column, string $elementType): bool
@@ -642,7 +668,8 @@ final class GridService implements GridServiceInterface
     private function getCollectionFromSearchResult(
         SearchResultItemInterface $searchResultItem,
         GridParameter $gridParameter,
-        string $elementType
+        string $elementType,
+        ?string $classId = null
     ): Collection {
         $items = $searchResultItem->getItems();
 
@@ -651,7 +678,7 @@ final class GridService implements GridServiceInterface
         }
 
         $data = [];
-        $columns = $this->getConfigurationFromArray($gridParameter->getColumns());
+        $columns = $this->getConfigurationFromArray($gridParameter->getColumns(), $classId);
         foreach ($items as $item) {
             $rowCacheKey = $this->getRowObjectCacheKey($elementType, $item->getId());
 

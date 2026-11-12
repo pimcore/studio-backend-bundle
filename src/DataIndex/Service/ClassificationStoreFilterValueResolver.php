@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\ClassificationStoreFilter
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ClassificationStoreConfig;
+use function is_string;
 
 /**
  * @internal
@@ -60,10 +61,16 @@ final readonly class ClassificationStoreFilterValueResolver implements Classific
             throw new InvalidArgumentException('Classificationstore filter need a value');
         }
 
+        $variant = $rawFilterValue['variant'] ?? null;
+        if ($variant !== null && (!is_string($variant) || $variant === '')) {
+            throw new InvalidArgumentException('Classificationstore filter variant must be a non-empty string');
+        }
+
         return new ClassificationStoreFilterValue(
             $rawFilterValue['groupId'],
             $rawFilterValue['keyId'],
-            $rawFilterValue['value']
+            $rawFilterValue['value'],
+            $variant
         );
     }
 

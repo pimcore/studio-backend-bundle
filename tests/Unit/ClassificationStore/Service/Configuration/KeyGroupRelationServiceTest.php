@@ -158,19 +158,19 @@ final class KeyGroupRelationServiceTest extends Unit
     }
 
     /**
-     * Options and units are resolved from the key configuration the service already loads, never from
-     * the assignment's override, and the key's stored type is published beside them.
+     * Options and units are resolved for the assignment, its override applied, and the key's stored type is
+     * published beside them.
      *
      * @throws Exception
      */
-    public function testBothReadPathsPublishTheResolvedMembersOfTheKeyNotOfTheOverride(): void
+    public function testBothReadPathsPublishTheResolvedMembersOfTheAssignment(): void
     {
         $options = [new SelectOption('A', 'a'), new SelectOption('B', 'b')];
         $units = new KeyUnits('kg', ['kg', 'g']);
         $keyOptionsResolver = $this->createMock(KeyOptionsResolverInterface::class);
-        $keyOptionsResolver->method('getOptions')->willReturn($options);
-        $keyOptionsResolver->method('getOptionsUnavailableReason')->willReturn(null);
-        $keyOptionsResolver->method('getUnits')->willReturn($units);
+        $keyOptionsResolver->method('getRelationOptions')->willReturn($options);
+        $keyOptionsResolver->method('getRelationOptionsUnavailableReason')->willReturn(null);
+        $keyOptionsResolver->method('getRelationUnits')->willReturn($units);
 
         $relation = $this->createRelation(null);
         $relation->setDefinitionOverride(['options' => [['key' => 'A', 'value' => 'a']], 'validUnits' => ['kg']]);

@@ -40,6 +40,9 @@ services:
     arguments:
       $labelResolver: '@Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface'
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyFilterResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyFilterResolver
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolver
 
@@ -51,6 +54,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolver
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnVariantExpanderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnVariantExpander
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceLocatorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceLocator

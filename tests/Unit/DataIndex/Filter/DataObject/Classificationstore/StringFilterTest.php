@@ -46,6 +46,19 @@ final class StringFilterTest extends Unit
         $this->assertSame('needle', $filter->getSearchTerm());
     }
 
+    public function testAVariantAddressesTheSiblingFieldOfTheKey(): void
+    {
+        $calls = $this->applyFilter(
+            StringFilter::class,
+            ColumnType::CLASSIFICATION_STORE_STRING->value,
+            'needle',
+            'Metric'
+        );
+
+        $this->assertCount(1, $calls);
+        $this->assertSame(self::KEY_NAME . '_Metric', $calls[0]['filter']->getFieldName());
+    }
+
     public function testNonStringValueThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);

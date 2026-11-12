@@ -27,6 +27,7 @@ use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\MultiSelectO
 use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\SelectOptionsProviderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Helper\OptionsProviderResolver;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Symfony\Contracts\Service\ResetInterface;
 use Throwable;
 use function array_key_exists;
@@ -36,6 +37,7 @@ use function hash;
 use function in_array;
 use function is_array;
 use function json_decode;
+use function json_encode;
 use function method_exists;
 
 /**
@@ -100,17 +102,35 @@ final class KeyOptionsResolver implements KeyOptionsResolverInterface, ResetInte
         return $this->resolve($keyConfig)['units'];
     }
 
+    public function getRelationOptions(KeyGroupRelation $relation): ?array
+    {
+        return $this->resolve($relation)['options'];
+    }
+
+    public function getRelationOptionsUnavailableReason(KeyGroupRelation $relation): ?OptionsUnavailableReason
+    {
+        return $this->resolve($relation)['reason'];
+    }
+
+    public function getRelationUnits(KeyGroupRelation $relation): ?KeyUnits
+    {
+        return $this->resolve($relation)['units'];
+    }
+
     /**
      * @return array{options: SelectOption[]|null, reason: OptionsUnavailableReason|null, units: KeyUnits|null}
      */
-    private function resolve(KeyConfig $keyConfig): array
+    private function resolve(KeyConfig|KeyGroupRelation $subject): array
     {
-        $memoKey = $keyConfig->getType() . "\0" . hash(self::MEMO_HASH, $keyConfig->getDefinition());
+        // an assignment is told apart from its key by its override, which is part of what it resolves from
+        $override = $subject instanceof KeyGroupRelation ? json_encode($subject->getDefinitionOverride()) : '';
+        $memoKey = $subject->getType() . "\0" . hash(self::MEMO_HASH, $subject->getDefinition())
+            . "\0" . hash(self::MEMO_HASH, (string)$override);
         if (array_key_exists($memoKey, $this->resolved)) {
             return $this->resolved[$memoKey];
         }
 
-        $this->resolved[$memoKey] = $this->resolveDefinition($keyConfig);
+        $this->resolved[$memoKey] = $this->resolveDefinition($subject);
 
         return $this->resolved[$memoKey];
     }
@@ -118,10 +138,13 @@ final class KeyOptionsResolver implements KeyOptionsResolverInterface, ResetInte
     /**
      * @return array{options: SelectOption[]|null, reason: OptionsUnavailableReason|null, units: KeyUnits|null}
      */
-    private function resolveDefinition(KeyConfig $keyConfig): array
+    private function resolveDefinition(KeyConfig|KeyGroupRelation $keyConfig): array
     {
         try {
             $decoded = json_decode($keyConfig->getDefinition(), true, 512, JSON_THROW_ON_ERROR);
+            if ($keyConfig instanceof KeyGroupRelation && is_array($decoded)) {
+                $decoded = $keyConfig->getEffectiveDefinitionData();
+            }
         } catch (JsonException) {
             return $this->publishUnresolved($keyConfig);
         }
@@ -149,7 +172,10 @@ final class KeyOptionsResolver implements KeyOptionsResolverInterface, ResetInte
         $resolved['units'] = $this->resolveUnits($definition);
 
         if ($definition instanceof Select || $definition instanceof Multiselect) {
-            [$resolved['options'], $resolved['reason']] = $this->resolveOptions($definition);
+            [$resolved['options'], $resolved['reason']] = $this->resolveOptions(
+                $definition,
+                $keyConfig instanceof KeyGroupRelation ? $keyConfig : null
+            );
         }
 
         return $resolved;
@@ -158,7 +184,7 @@ final class KeyOptionsResolver implements KeyOptionsResolverInterface, ResetInte
     /**
      * @return array{0: SelectOption[]|null, 1: OptionsUnavailableReason|null}
      */
-    private function resolveOptions(Select|Multiselect $definition): array
+    private function resolveOptions(Select|Multiselect $definition, ?KeyGroupRelation $relation): array
     {
         try {
             if ($definition->useConfiguredOptions()) {
@@ -187,7 +213,9 @@ final class KeyOptionsResolver implements KeyOptionsResolverInterface, ResetInte
                 return [null, OptionsUnavailableReason::PROVIDER_NOT_STATIC];
             }
 
-            return [$this->mapOptions($provider->getOptions($context, $definition)), null];
+            $options = $provider->getOptions($context, $definition);
+
+            return [$this->mapOptions($relation?->applyOptionSubset($options) ?? $options), null];
         } catch (Throwable) {
             return [null, OptionsUnavailableReason::RESOLUTION_FAILED];
         }
@@ -238,7 +266,7 @@ final class KeyOptionsResolver implements KeyOptionsResolverInterface, ResetInte
      *
      * @return array{options: null, reason: OptionsUnavailableReason|null, units: null}
      */
-    private function publishUnresolved(KeyConfig $keyConfig): array
+    private function publishUnresolved(KeyConfig|KeyGroupRelation $keyConfig): array
     {
         if (!in_array($keyConfig->getType(), self::SELECT_LIKE_TYPES, true)) {
             return $this->publishNothing();

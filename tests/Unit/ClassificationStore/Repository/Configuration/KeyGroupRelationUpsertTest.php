@@ -23,6 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Dao as GroupConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Dao as KeyGroupRelationDao;
+use function array_unique;
+use function array_values;
 use function str_contains;
 
 /**
@@ -546,6 +548,26 @@ final class KeyGroupRelationUpsertTest extends Unit
 
         $this->assertNothingWasWritten();
         $this->assertSame(['begin', 'rollback'], $this->getTransactionSteps());
+    }
+
+    /**
+     * Changing the sub group of an assignment is a write of the relations table alone: a key that already
+     * holds values keeps them, because no statement of the write is addressed to a value table.
+     */
+    public function testChangingTheSubGroupWritesTheRelationsTableOnly(): void
+    {
+        $this->stubDatabase([$this->createRow()], [self::STORE_ID, self::STORED_SUB_GROUP]);
+
+        $this->createRepository()->createOrUpdate($this->createPayload([self::COLUMN_SUB_GROUP => 'dimensions']));
+
+        $this->assertNotSame([], $this->writtenTables);
+        $this->assertSame(
+            [KeyGroupRelationDao::TABLE_NAME_RELATIONS],
+            array_values(array_unique($this->writtenTables))
+        );
+        foreach ($this->writtenTables as $table) {
+            $this->assertStringNotContainsString('object_classificationstore_', $table);
+        }
     }
 
     /**

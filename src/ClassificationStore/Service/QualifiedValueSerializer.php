@@ -19,12 +19,15 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Model\DataObject\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Exception\UnsupportedEngineFeatureException;
+use function array_filter;
 use function array_is_list;
+use function array_map;
 use function array_merge;
 use function array_values;
 use function is_array;
 use function is_int;
 use function is_string;
+use function usort;
 
 /**
  * The qualified values of one `multiValue` key in one language: what core's store holds at its
@@ -111,6 +114,24 @@ final readonly class QualifiedValueSerializer implements QualifiedValueSerialize
         }
 
         return $values === [] ? null : $values[0]->getValue();
+    }
+
+    public function getVariantValues(mixed $payload, ?string $variant): array
+    {
+        if (!is_array($payload) || !array_is_list($payload)) {
+            return [];
+        }
+
+        $values = array_filter(
+            $this->readPayload($payload),
+            static fn (QualifiedValue $value): bool => $value->getVariant() === $variant
+        );
+        usort(
+            $values,
+            static fn (QualifiedValue $a, QualifiedValue $b): int => $a->getPosition() <=> $b->getPosition()
+        );
+
+        return array_map(static fn (QualifiedValue $value): mixed => $value->getValue(), $values);
     }
 
     public function mergeEntries(array $stored, array $supplied): array

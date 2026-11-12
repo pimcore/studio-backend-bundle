@@ -47,12 +47,18 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
             return [];
         }
 
+        $declared = $this->keyQualifierResolver->getVariants($keyConfig) ?? [];
+
+        // a grid cell addresses one variant and position, so it sends its entry alone: an object carrying `v`
+        if (is_array($payload) && !array_is_list($payload) && $this->isEntry($payload)) {
+            $payload = [$payload];
+        }
+
         if (!$this->looksLikeEntryList($payload)) {
             // an un-updated client sends the value itself, which is the default variant at position 0
             return [new QualifiedValue($payload)];
         }
 
-        $declared = $this->keyQualifierResolver->getVariants($keyConfig) ?? [];
         $repeatable = $this->keyQualifierResolver->isMultiValue($keyConfig) === true;
         $values = [];
         $seen = [];

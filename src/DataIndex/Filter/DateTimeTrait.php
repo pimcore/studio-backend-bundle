@@ -146,7 +146,7 @@ trait DateTimeTrait
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
                 $this->buildDateFilterModifier(
-                    $key->getName(),
+                    $filterValue->getIndexFieldName($key->getName()),
                     $this->getFromAsCarbon(),
                     $this->getToAsCarbon(),
                     null,
@@ -163,7 +163,7 @@ trait DateTimeTrait
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
                 $this->buildDateFilterModifier(
-                    $key->getName(),
+                    $filterValue->getIndexFieldName($key->getName()),
                     null,
                     null,
                     $this->getOnAsCarbon(),
@@ -178,7 +178,7 @@ trait DateTimeTrait
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
                 $this->buildDateFilterModifier(
-                    $key->getName(),
+                    $filterValue->getIndexFieldName($key->getName()),
                     null,
                     $this->getToAsCarbon(),
                     null,
@@ -193,7 +193,7 @@ trait DateTimeTrait
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
                 $this->buildDateFilterModifier(
-                    $key->getName(),
+                    $filterValue->getIndexFieldName($key->getName()),
                     $this->getFromAsCarbon(),
                     null,
                     null,

@@ -69,7 +69,7 @@ final class SelectFilter implements FilterInterface
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
-                new MultiSelectFilter($key->getName(), $filterValue->getValue(), true),
+                new MultiSelectFilter($filterValue->getIndexFieldName($key->getName()), $filterValue->getValue(), true),
                 $column->getLocale()
             );
         }

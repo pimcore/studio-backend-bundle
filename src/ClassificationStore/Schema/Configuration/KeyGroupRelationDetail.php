@@ -88,9 +88,10 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
         )]
         private readonly ?string $keyType = null,
         #[Property(
-            description: 'The resolved view of this key\'s option vocabulary for this request, whatever its source:'
-                . ' its own stored options, or the options of an options provider that reports static options,'
-                . ' in the order they are resolved. Null where the key is not a select or multiselect, and where'
+            description: 'The resolved view of this assignment\'s option vocabulary for this request, whatever its'
+                . ' source: the stored options, or the options of an options provider that reports static options,'
+                . ' in the order they are resolved, narrowed to the option subset of the assignment\'s'
+                . ' definitionOverride. Null where the key is not a select or multiselect, and where'
                 . ' optionsUnavailableReason says why not. The stored definition remains authoritative for'
                 . ' storage.',
             type: 'array',
@@ -109,9 +110,10 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
         )]
         private readonly ?string $optionsUnavailableReason = null,
         #[Property(
-            description: 'The unit vocabulary of the key\'s own definition, never of an assignment override, and'
-                . ' null where its type holds no units. Where validUnits is null the definition restricts nothing;'
-                . ' the type tells that apart from a type with no units at all.',
+            description: 'The unit vocabulary of this assignment: the key\'s own definition with the assignment\'s'
+                . ' definitionOverride applied, and null where its type'
+                . ' holds no units. Where validUnits is null the definition restricts nothing; the type tells that'
+                . ' apart from a type with no units at all.',
             ref: KeyUnits::class,
             nullable: true
         )]

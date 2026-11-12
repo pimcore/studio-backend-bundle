@@ -10,6 +10,8 @@ The following steps are necessary during updating to newer versions.
   options and its unit vocabulary, so a configuration screen no longer needs the object editor to learn them.
 - [Classification Store] Added: a saved grid column that shows a classification store attribute now also records the
   stable identifier of its group and key, and configurations saved earlier keep working as they are.
+- [Classification Store] Changed: a classification store filter the grid cannot apply is now refused with a `422`
+  naming the key, instead of returning every row.
 - [Classification Store] Added: collections, groups, sub groups and keys carry free-form custom metadata that can be
   read, edited and exported with the store configuration; Pimcore itself reads none of it.
 - [Classification Store] Changed: the key relations of a group are loaded once per request and shared by every

@@ -82,6 +82,13 @@ trait RelationWriteDatabaseStubTrait
      */
     private array $transactionSteps = [];
 
+    /**
+     * The table of every statement that wrote, in order, whatever method of the connection issued it.
+     *
+     * @var list<string>
+     */
+    private array $writtenTables = [];
+
     private bool $inTransaction = false;
 
     /**
@@ -157,7 +164,23 @@ trait RelationWriteDatabaseStubTrait
 
                 return true;
             },
+            'update' => function (string $table): int {
+                $this->writtenTables[] = $table;
+
+                return 1;
+            },
+            'delete' => function (string $table): int {
+                $this->writtenTables[] = $table;
+
+                return 1;
+            },
+            'executeStatement' => function (string $sql): int {
+                $this->writtenTables[] = $sql;
+
+                return 0;
+            },
             'insert' => function (string $table, array $data): int {
+                $this->writtenTables[] = $table;
                 $this->writtenRows[] = $data;
                 $this->applyWrite($this->unquoteColumns($data));
 
@@ -333,6 +356,7 @@ trait RelationWriteDatabaseStubTrait
     protected function _after(): void
     {
         $this->writtenRows = [];
+        $this->writtenTables = [];
         $this->storedRows = [];
         $this->lockingReads = [];
         $this->transactionSteps = [];

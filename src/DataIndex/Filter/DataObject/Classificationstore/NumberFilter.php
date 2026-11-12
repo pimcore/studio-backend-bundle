@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterModes;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreFilterValueResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\ClassificationStoreFilterValue;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
@@ -77,6 +78,7 @@ final class NumberFilter implements FilterInterface
                     $filterValue->getKeyId()
                 ),
                 $this->groupConfigRepository->getById($filterValue->getGroupId()),
+                $filterValue,
                 $mode,
                 $isValue,
                 $fromValue,
@@ -115,6 +117,7 @@ final class NumberFilter implements FilterInterface
         ColumnFilter $column,
         KeyGroupRelation $key,
         GroupConfig $group,
+        ClassificationStoreFilterValue $filterValue,
         string $mode,
         int|float|null $isValue,
         int|float|null $fromValue,
@@ -126,7 +129,7 @@ final class NumberFilter implements FilterInterface
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
                 new IntegerFilter(
-                    $key->getName(),
+                    $filterValue->getIndexFieldName($key->getName()),
                     $isValue,
                     true
                 ),
@@ -138,7 +141,7 @@ final class NumberFilter implements FilterInterface
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
                 new NumberRangeFilter(
-                    $key->getName(),
+                    $filterValue->getIndexFieldName($key->getName()),
                     $fromValue,
                     $toValue,
                     true
@@ -151,7 +154,7 @@ final class NumberFilter implements FilterInterface
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
                 new NumberRangeFilter(
-                    $key->getName(),
+                    $filterValue->getIndexFieldName($key->getName()),
                     null,
                     $toValue,
                     true
@@ -164,7 +167,7 @@ final class NumberFilter implements FilterInterface
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
                 new NumberRangeFilter(
-                    $key->getName(),
+                    $filterValue->getIndexFieldName($key->getName()),
                     $fromValue,
                     null,
                     true

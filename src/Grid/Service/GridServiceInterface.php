@@ -113,7 +113,8 @@ interface GridServiceInterface
      */
     public function getConfigurationForExport(
         array $config,
-        array $columnsDefinitions
+        array $columnsDefinitions,
+        ?string $classId = null
     ): ColumnCollection;
 
     /**

@@ -110,6 +110,11 @@ final class ClassificationStoreAdapterTest extends Unit
     private const int UNPROCESSABLE = 422;
 
     /**
+     * @var array<string, mixed>|null
+     */
+    private ?array $relationOverride = null;
+
+    /**
      * @throws Exception
      */
     public function testGetDataForSetterReturnsNull(): void
@@ -209,7 +214,7 @@ final class ClassificationStoreAdapterTest extends Unit
                 'tryDataAdapter' => $inputAdapter,
             ]),
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
-                'getFieldDefinitionFromKeyConfig' => $inputDefinition,
+                'getFieldDefinitionFromJson' => $inputDefinition,
             ]),
         );
 
@@ -409,7 +414,7 @@ final class ClassificationStoreAdapterTest extends Unit
                 'tryDataAdapter' => $inputAdapter,
             ]),
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
-                'getFieldDefinitionFromKeyConfig' => $inputDefinition,
+                'getFieldDefinitionFromJson' => $inputDefinition,
             ]),
         );
 
@@ -937,6 +942,115 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
+     * A grid patch addressing one variant cell as `<keyId>#<variant>` writes that variant and leaves
+     * the other variants and the default slot as they are, on the stored slots.
+     *
+     * @throws Exception
+     */
+    public function testAPatchAddressingOneVariantCellLeavesTheOtherSlotsUntouched(): void
+    {
+        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => '0']]];
+        $slots = [self::QUALIFIED_GROUP => [self::QUALIFIED_KEY => [self::LANGUAGE => [
+            self::IMPERIAL => [0 => '25'],
+            self::METRIC => [0 => '50'],
+        ]]]];
+        $written = [];
+        $writtenEntries = [];
+        $container = $this->createRecordingContainer(
+            $stored,
+            [self::QUALIFIED_GROUP => true],
+            $written,
+            $writtenEntries,
+            $slots
+        );
+
+        $this->writeLanguages(
+            $container,
+            $this->qualifiedKeyConfigs(),
+            $stored,
+            [self::LANGUAGE => [self::QUALIFIED_KEY . '#' . self::METRIC => '60']],
+            isPatch: true
+        );
+
+        $this->assertSame(
+            [0 => '60'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::METRIC)
+        );
+        $this->assertSame(
+            [0 => '25'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::IMPERIAL)
+        );
+        $this->assertSame([0 => '0'], $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY));
+    }
+
+    /**
+     * A repeating key's variant cell travels as a list of entries; the address variant applies to each
+     * of them, so the positions survive instead of the list being taken as one value.
+     *
+     * @throws Exception
+     */
+    public function testAPatchOfARepeatingVariantCellKeepsThePositionsOfItsEntries(): void
+    {
+        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => '0']]];
+        $slots = [self::QUALIFIED_GROUP => [self::QUALIFIED_KEY => [self::LANGUAGE => [
+            self::IMPERIAL => [0 => '25'],
+        ]]]];
+        $written = [];
+        $writtenEntries = [];
+        $container = $this->createRecordingContainer(
+            $stored,
+            [self::QUALIFIED_GROUP => true],
+            $written,
+            $writtenEntries,
+            $slots
+        );
+
+        $this->writeLanguages(
+            $container,
+            $this->qualifiedKeyConfigs(),
+            $stored,
+            [self::LANGUAGE => [self::QUALIFIED_KEY . '#' . self::METRIC => [
+                ['v' => '60', 'p' => 0],
+                ['v' => '61', 'p' => 1],
+            ]]],
+            isPatch: true
+        );
+
+        $this->assertSame(
+            [0 => '60', 1 => '61'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::METRIC)
+        );
+        $this->assertSame(
+            [0 => '25'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::IMPERIAL)
+        );
+    }
+
+    /**
+     * The variant of a cell address is held to the key's declaration like any other write.
+     *
+     * @throws Exception
+     */
+    public function testAVariantCellAddressOfAKeyDeclaringNoVariantsIsRefused(): void
+    {
+        $written = [];
+
+        try {
+            $this->writeAndRecord(
+                $this->qualifiedKeyConfigs(),
+                [self::PLAIN_KEY . '#' . self::METRIC => '60'],
+                isPatch: true,
+                written: $written
+            );
+            $this->fail('Expected the write to be refused.');
+        } catch (AbstractApiException $exception) {
+            $this->assertSame(HttpResponseErrorKeys::UNDECLARED_VARIANT->value, $exception->getErrorKey());
+        }
+
+        $this->assertSame([], $written);
+    }
+
+    /**
      * The merge base is the store, not the view of it the patch merges into: `$elementStore` is built
      * under the user's language *view* permissions, so a language this user may edit and may not view
      * is missing from it entirely, and merging against that absence would drop the values the write
@@ -1022,7 +1136,7 @@ final class ClassificationStoreAdapterTest extends Unit
                 'tryDataAdapter' => $relationAdapter,
             ]),
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
-                'getFieldDefinitionFromKeyConfig' => $this->makeEmpty(Data::class, ['getName' => 'related']),
+                'getFieldDefinitionFromJson' => $this->makeEmpty(Data::class, ['getName' => 'related']),
             ])
         );
 
@@ -1603,7 +1717,7 @@ final class ClassificationStoreAdapterTest extends Unit
                 ]),
             ]),
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
-                'getFieldDefinitionFromKeyConfig' => $this->make(EncryptedFieldDefinition::class, [
+                'getFieldDefinitionFromJson' => $this->make(EncryptedFieldDefinition::class, [
                     'getName' => 'secret',
                 ]),
             ])
@@ -2083,7 +2197,7 @@ final class ClassificationStoreAdapterTest extends Unit
             ),
             languageService: $languageService,
             serviceResolver: $serviceResolver ?? $this->makeEmpty(ServiceResolverInterface::class, [
-                'getFieldDefinitionFromKeyConfig' => $this->makeEmpty(Data::class, [
+                'getFieldDefinitionFromJson' => $this->makeEmpty(Data::class, [
                     'getName' => 'inputField',
                 ]),
             ]),
@@ -2175,12 +2289,84 @@ final class ClassificationStoreAdapterTest extends Unit
         ];
     }
 
+    /**
+     * The definition an assignment narrows and re-units, as the adapter hands it to core to build.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws Exception
+     */
+    private function readDefinitionBuiltFor(callable $run): array
+    {
+        $this->relationOverride = [
+            'options' => [['key' => 'B', 'value' => 'b']],
+            'defaultUnit' => 'kg',
+        ];
+
+        $built = [];
+        $serviceResolver = $this->makeEmpty(ServiceResolverInterface::class, [
+            'getFieldDefinitionFromJson' => static function (array $definition) use (&$built): Data {
+                $built = $definition;
+
+                return (new Input())->setName('inputField');
+            },
+        ]);
+
+        try {
+            $run($serviceResolver);
+        } finally {
+            $this->relationOverride = null;
+        }
+
+        return $built;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testTheReadPathBuildsTheDefinitionOfTheAssignmentNotOfTheKey(): void
+    {
+        $built = $this->readDefinitionBuiltFor(function (ServiceResolverInterface $serviceResolver): void {
+            $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => '80']]];
+            $keyConfigs = $this->qualifiedKeyConfigs();
+            $this->createQualifiedAdapter($keyConfigs, $stored, serviceResolver: $serviceResolver)
+                ->getPreviewFieldData(
+                    $this->createRecordingContainer($stored, [self::QUALIFIED_GROUP => true]),
+                    $this->createQualifiedFieldDefinition($keyConfigs),
+                    []
+                );
+        });
+
+        $this->assertSame([['key' => 'B', 'value' => 'b']], $built['options']);
+        $this->assertSame('kg', $built['defaultUnit']);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testTheWritePathConvertsAgainstTheDefinitionOfTheAssignmentNotOfTheKey(): void
+    {
+        $built = $this->readDefinitionBuiltFor(function (ServiceResolverInterface $serviceResolver): void {
+            $this->writeAndRecord(
+                $this->qualifiedKeyConfigs(),
+                [self::QUALIFIED_KEY => '80'],
+                serviceResolver: $serviceResolver
+            );
+        });
+
+        $this->assertSame([['key' => 'B', 'value' => 'b']], $built['options']);
+        $this->assertSame('kg', $built['defaultUnit']);
+    }
+
     private function createRelation(int $keyId, int $groupId): KeyGroupRelation
     {
         $relation = new KeyGroupRelation();
         $relation->setKeyId($keyId);
         $relation->setGroupId($groupId);
         $relation->setName('key-' . $keyId);
+        $relation->setType('input');
+        $relation->setDefinition('{"fieldtype":"input","options":[{"key":"A","value":"a"},{"key":"B","value":"b"}]}');
+        $relation->setDefinitionOverride($this->relationOverride);
 
         return $relation;
     }
@@ -2271,7 +2457,7 @@ final class ClassificationStoreAdapterTest extends Unit
             ]),
             keyRelationResolver: $this->createKeyRelationResolver($relationsByGroup, $requestedGroupIds),
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
-                'getFieldDefinitionFromKeyConfig' => $this->makeEmpty(Data::class, [
+                'getFieldDefinitionFromJson' => $this->makeEmpty(Data::class, [
                     'getName' => 'inputField',
                 ]),
             ]),
