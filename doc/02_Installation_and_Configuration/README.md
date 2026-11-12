@@ -174,6 +174,11 @@ pimcore_studio_backend:
 Only `page`, `snippet` and `email` are accepted as keys. A predefined document type selected while creating the
 document still takes precedence, as does the base document when a translation is added.
 
+## Publish and Save Permissions
+
+For data objects, the `publish` and `unpublish` permissions include saving the changes sent with the request. See
+[Publish and Save Permissions](./06_Publish_and_Save_Permissions.md) for the details.
+
 ## Changing the prefix of the Studio Backend
 It is possible to change the route where you can reach the API. By default, the route is `/pimcore-studio/api/`.  
 If you want to change the prefix, you can do so by changing the configuration like the following:
