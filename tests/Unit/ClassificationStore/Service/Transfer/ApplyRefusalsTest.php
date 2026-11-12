@@ -66,28 +66,65 @@ final class ApplyRefusalsTest extends Unit
     }
 
     /**
-     * A collection's and a group's ::update() do not probe the name, so a rename at those levels is
-     * written - and the store is not even asked.
+     * A collection's and a group's own ::update() do not probe the name, but the apply does: a file
+     * entry for one identifier renamed onto a name another identifier holds is skipped and named, and
+     * the row being updated stays resolvable under the identifier the file gives it.
      */
-    public function testARenameIsNotRefusedAtTheLevelsWhoseUpdateDoesNotProbeTheName(): void
+    public function testARenameOntoANameAnotherIdentifierHoldsIsSkippedAtEveryLevel(): void
     {
         foreach ([ArtifactSection::COLLECTIONS, ArtifactSection::GROUPS] as $section) {
             $context = $this->createContext();
             $refusals = $this->createRefusals(collectionNameTaken: true, groupNameTaken: true);
 
-            $this->assertFalse(
+            $this->assertTrue(
                 $refusals->refuseTakenName(
                     $context,
                     $section,
                     ApplyOutcome::UPDATED,
                     'Alpha',
-                    new MatchedRow(7),
+                    new MatchedRow(7, 'Beta'),
                     'label',
                     'id'
                 ),
                 $section->value
             );
             $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+            $this->assertSame(1, $context->getReport()->getCount(ApplyOutcome::SKIPPED), $section->value);
+            $this->assertFalse($context->isSkipped($section, 'id'), $section->value);
+        }
+    }
+
+    /**
+     * A nameless row selected by name is adopted only when no other row holds the name under another
+     * identifier; otherwise nothing is written, so the identifier is skipped and what refers to it
+     * is skipped with it rather than resolving to the row left without one.
+     */
+    public function testAnAmbiguousAdoptionSkipsTheIdentifierAtEveryLevel(): void
+    {
+        $sections = [ArtifactSection::SUB_GROUPS, ArtifactSection::COLLECTIONS, ArtifactSection::GROUPS];
+
+        foreach ($sections as $section) {
+            $context = $this->createContext();
+            $refusals = $this->createRefusals(
+                collectionNameTaken: true,
+                groupNameTaken: true,
+                subGroupNameTaken: true
+            );
+
+            $this->assertTrue(
+                $refusals->refuseTakenName(
+                    $context,
+                    $section,
+                    ApplyOutcome::ADOPTED,
+                    'Alpha',
+                    new MatchedRow(7, 'Alpha'),
+                    'label',
+                    'id'
+                ),
+                $section->value
+            );
+            $this->assertSame(1, $context->getReport()->getCount(ApplyOutcome::SKIPPED), $section->value);
+            $this->assertTrue($context->isSkipped($section, 'id'), $section->value);
         }
     }
 

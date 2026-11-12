@@ -1438,7 +1438,8 @@ final class ReconcilerTest extends Unit
                 => self::inIdentifierPhase($collections, $withIdentifier)
         );
         $collectionRepository->method('isNameTaken')->willReturnCallback(
-            static fn (int $storeId, string $name): bool => self::rowsCarryName($collections, $name)
+            static fn (int $storeId, string $name, ?int $exceptId = null): bool
+                => self::rowsCarryName($collections, $name, $exceptId)
         );
         $collectionRepository->method('saveFromArtifact')->willReturnCallback(
             function (?CollectionConfig $config, int $storeId, string $identifier, string $name): CollectionConfig {
@@ -1462,7 +1463,8 @@ final class ReconcilerTest extends Unit
                 => self::inIdentifierPhase($groups, $withIdentifier)
         );
         $groupRepository->method('isNameTaken')->willReturnCallback(
-            static fn (int $storeId, string $name): bool => self::rowsCarryName($groups, $name)
+            static fn (int $storeId, string $name, ?int $exceptId = null): bool
+                => self::rowsCarryName($groups, $name, $exceptId)
         );
         $groupRepository->method('saveFromArtifact')->willReturnCallback(
             function (?GroupConfig $config, int $storeId, string $identifier, string $name): GroupConfig {
