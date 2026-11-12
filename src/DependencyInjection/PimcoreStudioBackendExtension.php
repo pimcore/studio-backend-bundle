@@ -234,6 +234,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition->setArguments([
             '$serverSideUrl' => $config['mercure_settings']['hub_url_server'],
             '$clientSideUrl' => $config['mercure_settings']['hub_url_client'],
+            '$resourceIdentifier' => $config['mercure_settings']['resource_identifier'],
         ]);
 
         $container->setParameter(

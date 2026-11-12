@@ -28,6 +28,7 @@ final readonly class HubService implements HubServiceInterface
         private int $cookieLifetime = 3600,
         private bool $jwtCookieStrictness = true,
         private ?string $jwtCookieHost = null,
+        private ?string $cookieName = null,
     ) {
     }
 
@@ -49,16 +50,28 @@ final readonly class HubService implements HubServiceInterface
             $host = $urlParts[Mercure::URL_HOST->value];
         }
 
+        $secure = ($urlParts[Mercure::URL_SCHEME->value] ?? null) === Mercure::URL_SCHEME_HTTPS->value;
+
         return new Cookie(
-            Mercure::AUTHORIZATION_COOKIE_NAME->value,
+            $this->getCookieName($secure),
             $this->tokenProvider->getJwt(),
             time() + $this->cookieLifetime,
             $urlParts[Mercure::URL_PATH->value] ?? '/',
             $host,
-            $urlParts[Mercure::URL_SCHEME->value] === Mercure::URL_SCHEME_HTTPS->value,
+            $secure,
             true,
             false,
             $this->jwtCookieStrictness ? Cookie::SAMESITE_STRICT : Cookie::SAMESITE_NONE
         );
+    }
+
+    private function getCookieName(bool $secure): string
+    {
+        if (!empty($this->cookieName)) {
+            return $this->cookieName;
+        }
+
+        // Browsers drop __Secure- cookies that are not sent over HTTPS
+        return $secure ? Mercure::SECURE_COOKIE_NAME->value : Mercure::COOKIE_NAME->value;
     }
 }

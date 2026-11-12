@@ -3,6 +3,17 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Mercure] Changed: Studio speaks the Mercure 1.0 protocol and needs a Mercure 1.x hub (`dunglas/mercure:v1`); hubs
+  older than 1.0 reject its tokens. The bundle requires `symfony/mercure` `^0.10` and `symfony/mercure-bundle` `^0.7`.
+  The access tokens carry `iss` (new `mercure_settings.issuer`, default `https://localhost`): set
+  `MERCURE_TRUSTED_ISSUERS` on the hub to the issuer. Their `aud` covers `hub_url_server` and the host of
+  `hub_url_client`; the new `mercure_settings.resource_identifier` overrides it. The authorization cookie is renamed
+  from `mercureAuthorization` to `__Secure-mercure_access_token`, or `mercure_access_token` for a plain HTTP
+  `hub_url_client`, which needs `cookie_name mercure_access_token` on the hub (new `mercure_settings.cookie_name`).
+  The UI subscribes with `match` and `last_event_id` instead of `topic` and `lastEventID`. `hub_url_client` defaults to
+  `<host>/.well-known/mercure` instead of `<host>/hub`: route that path to the hub in the reverse proxy, without
+  rewriting it, or set `hub_url_client` to keep `/hub`. `UrlServiceInterface` got
+  `getResourceIdentifier()` and `getSubscriberAudience()`. See [Mercure Setup](./01_Mercure_Setup.md).
 - [Elements] Changed: the `422` response of a failed element validation (`PUT /pimcore-studio/api/assets/{id}`,
   `.../data-objects/{id}`, `.../documents/{id}` and the synchronous `POST .../assets/add/{parentId}` and
   `POST .../assets/{id}/replace`) now carries `validationErrors` next to `message` and `errorKey`, one entry per failed

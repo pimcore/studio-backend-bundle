@@ -120,7 +120,7 @@ automatically enabled. For setup instructions, see the
 ## Mercure
 
 The Studio Backend uses Mercure to push real-time updates to the frontend. Set up a Mercure hub
-and configure the bundle to use it. See [Mercure official docs](https://mercure.rocks/docs/hub/install)
+(1.x) and configure the bundle to use it. See [Mercure official docs](https://mercure.rocks/docs/getting-started/installation)
 for general setup. The simplest approach is the Docker image with a reverse proxy to avoid CSP issues.
 For detailed configuration, see the [Mercure Setup page](./01_Mercure_Setup.md).
 
@@ -162,9 +162,17 @@ pimcore_studio_backend:
         # Optional configuration
 
         # The url to the mercure hub for the (frontend) client.
-        # If it is not set, the default will be set to "http(s)://<YOUR_CURRENT_PIMCORE_HOST>/hub".
+        # If it is not set, the default will be set to "http(s)://<YOUR_CURRENT_PIMCORE_HOST>/.well-known/mercure".
         # It is possible to use "<PIMCORE_SCHEMA_HOST>" as a placeholder for the current schema and host if path to mercure should be different.
-        hub_url_client: 'https://your-app-domain.com/hub'
+        hub_url_client: 'https://your-app-domain.com/.well-known/mercure'
+
+        # Issuer ("iss" claim) of the access tokens, must be trusted by the hub (MERCURE_TRUSTED_ISSUERS).
+        issuer: 'https://your-app-domain.com'
+        # Audience ("aud" claim) of the access tokens, i.e. the hub's resource identifier.
+        # Defaults to hub_url_server and the host of hub_url_client; set it when a proxy exposes the hub under another host.
+        resource_identifier: 'https://hub.your-app-domain.com/.well-known/mercure'
+        # Defaults to "__Secure-mercure_access_token" for an https hub_url_client, "mercure_access_token" otherwise.
+        cookie_name: '__Secure-mercure_access_token'
         cookie_lifetime: 3600
         jwt_cookie_strictness: true
         jwt_cookie_host: '.your-app-domain.com'
@@ -172,7 +180,7 @@ pimcore_studio_backend:
 
 You need to configure the full URL including protocol, port and path to Mercure here.
 For client side url it is also possible to use `<PIMCORE_SCHEMA_HOST>` for the current schema and host of client. 
-If `hub_url_client` is not set, it is generated from the scheme and host of the current request and the default path `/hub`.
+If `hub_url_client` is not set, it is generated from the scheme and host of the current request and the default path `/.well-known/mercure`.
 `hub_url_server` must be set: it has no default and is not checked when the container is built. When it is empty,
 no Mercure updates are published and an error is written to the log.
 

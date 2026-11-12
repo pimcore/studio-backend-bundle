@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ClientTokenService;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubService;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TopicLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Component\Mercure\Jwt\LcobucciFactory;
 use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
 
@@ -80,6 +81,11 @@ final class HubServiceTest extends Unit
                     'loadTopics' => new TopicCollection([], [], [], ['studio-backend-default']),
                 ]),
                 new LcobucciFactory(self::JWT_KEY),
+                $this->makeEmpty(UrlServiceInterface::class, [
+                    'getSubscriberAudience' => ['http://mercure/.well-known/mercure'],
+                ]),
+                $this->makeEmpty(SecurityServiceInterface::class, ['isLoggedIn' => false]),
+                'https://example.com',
                 $lifetime
             ),
             $this->makeEmpty(UrlServiceInterface::class, ['getClientSideUrl' => 'https://example.com/hub']),
@@ -92,6 +98,41 @@ final class HubServiceTest extends Unit
         $this->assertSame($lifetime, $service->getCookieLifetime());
         $this->assertEqualsWithDelta($lifetime, $claims['exp'] - time(), 5);
         $this->assertEqualsWithDelta($claims['exp'], $cookie->getExpiresTime(), 5);
+    }
+
+    public function testCookieNameIsSecurePrefixedOverHttps(): void
+    {
+        $cookie = $this->createHubService(self::CUSTOM_LIFETIME)->createCookie();
+
+        $this->assertSame('__Secure-mercure_access_token', $cookie->getName());
+        $this->assertTrue($cookie->isSecure());
+    }
+
+    /**
+     * Browsers drop __Secure- cookies that are not sent over HTTPS.
+     */
+    public function testCookieNameHasNoPrefixOverHttp(): void
+    {
+        $service = new HubService(
+            $this->makeEmpty(TokenProviderInterface::class, ['getJwt' => 'jwt']),
+            $this->makeEmpty(UrlServiceInterface::class, ['getClientSideUrl' => 'http://localhost/hub']),
+        );
+
+        $cookie = $service->createCookie();
+
+        $this->assertSame('mercure_access_token', $cookie->getName());
+        $this->assertFalse($cookie->isSecure());
+    }
+
+    public function testConfiguredCookieNameIsUsed(): void
+    {
+        $service = new HubService(
+            $this->makeEmpty(TokenProviderInterface::class, ['getJwt' => 'jwt']),
+            $this->makeEmpty(UrlServiceInterface::class, ['getClientSideUrl' => 'https://example.com/hub']),
+            cookieName: 'custom_mercure_cookie'
+        );
+
+        $this->assertSame('custom_mercure_cookie', $service->createCookie()->getName());
     }
 
     /**
