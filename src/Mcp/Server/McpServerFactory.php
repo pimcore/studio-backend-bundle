@@ -15,14 +15,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Server;
 
 use Mcp\Capability\Discovery\DocBlockParser;
 use Mcp\Capability\Discovery\SchemaGenerator;
+use Mcp\Capability\Registry\ReferenceHandler;
 use Mcp\Schema\ServerCapabilities;
 use Mcp\Server;
 use Mcp\Server\Builder;
 use Mcp\Server\Session\Psr16SessionStore;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContextInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolReference;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\ToolInputSchemaNormalizer;
+use Pimcore\Model\Version\CoauthorContextInterface;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 use ReflectionMethod;
@@ -51,6 +54,8 @@ final class McpServerFactory implements McpServerFactoryInterface
         private readonly McpToolRegistryInterface $toolRegistry,
         private readonly CacheInterface $sessionCache,
         private readonly LoggerInterface $logger,
+        private readonly CoauthorContextInterface $coauthorContext,
+        private readonly McpCallContextInterface $mcpCallContext,
     ) {
     }
 
@@ -76,7 +81,15 @@ final class McpServerFactory implements McpServerFactoryInterface
                 )
             )
             ->setContainer($this->toolRegistry->getLocator())
-            ->setLogger($this->logger);
+            ->setLogger($this->logger)
+            // The one stamping point: every tool call of this server runs with the version coauthor
+            // `mcp-server` + the server's slug and marked as an MCP call.
+            ->setReferenceHandler(new CoauthorReferenceHandler(
+                new ReferenceHandler($this->toolRegistry->getLocator()),
+                $this->coauthorContext,
+                $this->mcpCallContext,
+                $server->urlSlug,
+            ));
 
         foreach ($server->toolIds as $toolId) {
             $tool = $this->toolRegistry->get($toolId);

@@ -26,9 +26,10 @@ final class CoauthorProperty extends Property
     {
         parent::__construct(
             property: ElementSaveServiceInterface::INDEX_COAUTHOR,
-            description: 'Optional coauthor identifier stored on versions created by this save',
+            description: 'Optional coauthor identifier stored on versions created by this save. Deprecated: the server sets the coauthor, removed in 2027.1 (pimcore/platform-version#814)',
             type: 'string',
             maxLength: VersionCoauthor::MAX_COAUTHOR_LENGTH,
+            deprecated: true,
             example: 'product-data-agent',
         );
     }

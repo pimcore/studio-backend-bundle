@@ -16,12 +16,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mcp\Server;
 use Codeception\Test\Unit;
 use Mcp\Schema\ToolAnnotations;
 use Mcp\Server;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContext;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccess;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolReference;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Server\McpServerFactory;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\Builtin\PingTool;
+use Pimcore\Model\Version\CoauthorContext;
 use Psr\Log\NullLogger;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Psr16Cache;
@@ -72,7 +74,13 @@ final class McpServerFactoryTest extends Unit
             PingTool::class => static fn (): PingTool => new PingTool(),
         ]));
 
-        return new McpServerFactory($registry, new Psr16Cache(new ArrayAdapter()), new NullLogger());
+        return new McpServerFactory(
+            $registry,
+            new Psr16Cache(new ArrayAdapter()),
+            new NullLogger(),
+            new CoauthorContext(),
+            new McpCallContext(),
+        );
     }
 
     /**

@@ -29,17 +29,19 @@ final readonly class UpdateVersion
         #[Property(description: 'Note', type: 'string', example: null, nullable: true)]
         private ?string $note,
         #[Property(
-            description: 'Coauthor type, empty string clears it',
+            description: 'Coauthor type, empty string clears it. Deprecated: removed in 2027.1 (pimcore/platform-version#814)',
             type: 'string',
             maxLength: VersionCoauthor::MAX_TYPE_LENGTH,
+            deprecated: true,
             example: null,
             nullable: true
         )]
         private ?string $coauthorType = null,
         #[Property(
-            description: 'Coauthor, empty string clears it',
+            description: 'Coauthor, empty string clears it. Deprecated: removed in 2027.1 (pimcore/platform-version#814)',
             type: 'string',
             maxLength: VersionCoauthor::MAX_COAUTHOR_LENGTH,
+            deprecated: true,
             example: null,
             nullable: true
         )]

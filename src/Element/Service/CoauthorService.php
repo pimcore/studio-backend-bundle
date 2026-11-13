@@ -14,11 +14,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContextInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Model\Version\CoauthorContextInterface;
 use function is_string;
 use function mb_strlen;
 use function sprintf;
+use function trigger_deprecation;
 
 /**
  * @internal
@@ -27,6 +29,7 @@ final readonly class CoauthorService implements CoauthorServiceInterface
 {
     public function __construct(
         private CoauthorContextInterface $coauthorContext,
+        private McpCallContextInterface $mcpCallContext,
     ) {
     }
 
@@ -35,6 +38,12 @@ final readonly class CoauthorService implements CoauthorServiceInterface
      */
     public function extractFromPayload(array $payload): ?array
     {
+        // Inside an MCP tool call the coauthor is set by the MCP server only (or there is none): a value
+        // claimed in the payload is dropped, whether or not a server-side coauthor is active.
+        if ($this->mcpCallContext->isInMcpCall()) {
+            return null;
+        }
+
         $coauthorType = $payload[ElementSaveServiceInterface::INDEX_COAUTHOR_TYPE] ?? null;
         $coauthor = $payload[ElementSaveServiceInterface::INDEX_COAUTHOR] ?? null;
 
@@ -51,6 +60,16 @@ final readonly class CoauthorService implements CoauthorServiceInterface
             ElementSaveServiceInterface::INDEX_COAUTHOR,
             $coauthor,
             VersionCoauthor::MAX_COAUTHOR_LENGTH
+        );
+
+        trigger_deprecation(
+            'pimcore/studio-backend-bundle',
+            '2026.4',
+            'Sending "%s" and "%s" in an element patch or update payload is deprecated and will be removed in ' .
+            '2027.1 (https://github.com/pimcore/platform-version/issues/814). The version coauthor is set by the ' .
+            'server: MCP servers stamp it themselves.',
+            ElementSaveServiceInterface::INDEX_COAUTHOR_TYPE,
+            ElementSaveServiceInterface::INDEX_COAUTHOR
         );
 
         return ['type' => $coauthorType, 'coauthor' => $coauthor];

@@ -3,6 +3,17 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [MCP] Changed: every tool call on a configured MCP server (`/pimcore-mcp/studio/{slug}`) runs with the version
+  coauthor type `mcp-server` and the server's URL slug as coauthor, set by the server (`McpServerFactory`) and never
+  by a tool or the client. Versions a tool creates through the connecting user show "MCP server" and the slug in the
+  versions tab (translation key `version.coauthor-type.mcp-server`). Inside an MCP tool call, `coauthorType` and
+  `coauthor` in a save payload (and in `PUT /pimcore-studio/api/versions/{id}`) are ignored: the version gets the MCP
+  coauthor, or none when coauthor stamping is switched off. The new `McpCallContextInterface` marks such a call;
+  `McpServerFactory`, `CoauthorService` and `VersionRepository` (all `@internal`) got constructor arguments for it.
+- [Elements] Deprecated: `coauthorType` and `coauthor` in the bodies of the element patch and update endpoints
+  and of `PUT /pimcore-studio/api/versions/{id}`. Outside MCP they work as before, are marked `deprecated` in the
+  OpenAPI schema and raise a deprecation notice. They are removed in 2027.1
+  (https://github.com/pimcore/platform-version/issues/814). The coauthor is set by the server: MCP servers stamp it themselves.
 - [Authentication] Deprecated: static MCP personal access tokens (`pimcore_studio_backend.mcp.authentication.tokens`,
   handled by `PatAuthenticator`). They keep working on 2026.x; configuring them and each request they authenticate
   raise a deprecation. They are removed in 2027.1. Migrate integrations to MCP access tokens issued for a dedicated

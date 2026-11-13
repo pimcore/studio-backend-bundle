@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContext;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\AdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -57,11 +58,14 @@ final class PatchServiceTest extends Unit
 
     private CoauthorContext $coauthorContext;
 
+    private McpCallContext $mcpCallContext;
+
     protected function _before(): void
     {
         $this->element = $this->makeEmpty(Asset::class);
         $this->user = $this->makeEmpty(UserInterface::class);
         $this->coauthorContext = new CoauthorContext();
+        $this->mcpCallContext = new McpCallContext();
     }
 
     public function testPatchRejectsAnEmptyList(): void
@@ -95,6 +99,38 @@ final class PatchServiceTest extends Unit
             [['id' => 1], ['key' => 'no-id']],
             $this->user
         );
+    }
+
+    public function testPatchInsideMcpCallIgnoresPayloadCoauthorAndKeepsTheMcpCoauthor(): void
+    {
+        $captured = [];
+        $service = $this->createService(function () use (&$captured): void {
+            $captured[] = [$this->coauthorContext->getType(), $this->coauthorContext->getCoauthor()];
+        });
+
+        $this->coauthorContext->withCoauthor('mcp-server', 'pme-test', function () use ($service): void {
+            $this->mcpCallContext->run(fn () => $service->patchElement($this->element, ElementTypes::TYPE_ASSET, [
+                'coauthorType' => 'agent',
+                'coauthor' => 'claimed-by-the-payload',
+            ], $this->user));
+        });
+
+        $this->assertSame([['mcp-server', 'pme-test']], $captured);
+    }
+
+    public function testPatchInsideMcpCallWithoutStampSavesWithoutCoauthor(): void
+    {
+        $captured = [];
+        $service = $this->createService(function () use (&$captured): void {
+            $captured[] = $this->coauthorContext->isActive();
+        });
+
+        $this->mcpCallContext->run(fn () => $service->patchElement($this->element, ElementTypes::TYPE_ASSET, [
+            'coauthorType' => 'agent',
+            'coauthor' => 'claimed-by-the-payload',
+        ], $this->user));
+
+        $this->assertSame([false], $captured);
     }
 
     public function testPatchActivatesCoauthorContextDuringSaveAndRestoresAfter(): void
@@ -582,7 +618,7 @@ final class PatchServiceTest extends Unit
                 'save' => $onSave,
             ]),
             securityService: $this->makeEmpty(SecurityServiceInterface::class),
-            coauthorService: new CoauthorService($this->coauthorContext),
+            coauthorService: new CoauthorService($this->coauthorContext, $this->mcpCallContext),
         );
     }
 }
