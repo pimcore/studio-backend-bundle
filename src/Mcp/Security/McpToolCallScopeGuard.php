@@ -23,6 +23,7 @@ use function in_array;
 use function is_array;
 use function is_string;
 use function json_decode;
+use function trim;
 
 /**
  * @internal
@@ -42,29 +43,40 @@ final readonly class McpToolCallScopeGuard implements McpToolCallScopeGuardInter
             return;
         }
 
-        foreach ($this->messages($requestBody) as $message) {
+        $messages = $this->messages($requestBody);
+        if ($messages === null) {
+            throw InsufficientMcpScopeException::forUnreadableRequest(McpScopes::WRITE);
+        }
+
+        foreach ($messages as $message) {
             $tool = $this->calledTool($message);
             if ($tool !== null && $this->toolRegistry->get($tool)?->isReadOnly() === false) {
-                throw new InsufficientMcpScopeException($tool, McpScopes::WRITE);
+                throw InsufficientMcpScopeException::forTool($tool, McpScopes::WRITE);
             }
         }
     }
 
     /**
-     * An unparsable body is left to the MCP transport, which answers it with its own error.
+     * A request without a body (the GET and DELETE of the streamable transport) calls no tool. A body that is not a
+     * JSON-RPC object or batch cannot be checked and is refused for a limited token: the transport would not run
+     * it as a tool call either, so nothing legitimate is lost.
      *
-     * @return list<mixed>
+     * @return list<mixed>|null null when the body is present but cannot be read as JSON-RPC
      */
-    private function messages(string $requestBody): array
+    private function messages(string $requestBody): ?array
     {
-        try {
-            $decoded = json_decode($requestBody, true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException) {
+        if (trim($requestBody) === '') {
             return [];
         }
 
+        try {
+            $decoded = json_decode($requestBody, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return null;
+        }
+
         if (!is_array($decoded)) {
-            return [];
+            return null;
         }
 
         return array_is_list($decoded) ? $decoded : [$decoded];

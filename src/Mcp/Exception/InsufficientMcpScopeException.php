@@ -21,10 +21,20 @@ use function sprintf;
  */
 final class InsufficientMcpScopeException extends RuntimeException
 {
-    public function __construct(string $tool, string $requiredScope)
+    public static function forTool(string $tool, string $requiredScope): self
     {
-        parent::__construct(
+        return new self(
             sprintf('The access token lacks the scope "%s" required to call the tool "%s".', $requiredScope, $tool)
+        );
+    }
+
+    public static function forUnreadableRequest(string $requiredScope): self
+    {
+        return new self(
+            sprintf(
+                'The access token lacks the scope "%s" and the request cannot be checked against the tools it calls.',
+                $requiredScope
+            )
         );
     }
 }

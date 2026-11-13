@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistry;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpToolCallScopeGuard;
 use stdClass;
 use function json_encode;
+use function sprintf;
 
 final class McpToolCallScopeGuardTest extends Unit
 {
@@ -70,10 +71,33 @@ final class McpToolCallScopeGuardTest extends Unit
         $guard = $this->guard();
         $guard->assertAllowed(json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list']), ['mcp:read']);
         $guard->assertAllowed($this->call('unknown_tool'), ['mcp:read']);
-        $guard->assertAllowed('not json', ['mcp:read']);
-        $guard->assertAllowed('"a string"', ['mcp:read']);
+        $guard->assertAllowed('', ['mcp:read']);
 
-        $this->addToAssertionCount(4);
+        $this->addToAssertionCount(3);
+    }
+
+    public function testReadOnlyTokenIsRefusedABodyThatCannotBeRead(): void
+    {
+        $guard = $this->guard();
+
+        foreach (['not json', '"a string"', '42'] as $body) {
+            try {
+                $guard->assertAllowed($body, ['mcp:read']);
+                self::fail(sprintf('The body %s was not refused.', $body));
+            } catch (InsufficientMcpScopeException $exception) {
+                self::assertStringContainsString('mcp:write', $exception->getMessage());
+            }
+        }
+    }
+
+    public function testUnreadableBodyIsLeftAloneWhenTheTokenIsNotLimited(): void
+    {
+        $guard = $this->guard();
+        $guard->assertAllowed('not json', []);
+        $guard->assertAllowed('not json', null);
+        $guard->assertAllowed('not json', ['mcp:read', 'mcp:write']);
+
+        $this->addToAssertionCount(3);
     }
 
     public function testWriteToolInsideABatchIsRefused(): void

@@ -96,7 +96,8 @@ resource advertises as `scopes_supported`.
 
 A Studio-managed MCP server checks the scope of an OAuth access token when a tool is **called**: a `tools/call` of a
 tool that is not annotated `readOnlyHint: true` is refused (HTTP 403) when the token carries scopes and `mcp:write` is
-not among them. Listing tools and calling read-only tools are not limited. This is all the scope limits:
+not among them. A request body that cannot be read as a JSON-RPC message is refused for such a token as well, as it
+cannot be checked. Listing tools and calling read-only tools are not limited. This is all the scope limits:
 
 - A token that carries **no scope** (common for self-registered clients) is not limited.
 - `pmcp_` tokens, personal access tokens and the Studio session carry no scopes and are not limited.
