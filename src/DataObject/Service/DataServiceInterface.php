@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
@@ -71,9 +72,16 @@ interface DataServiceInterface
     public function getPreviewFieldName(Data $fieldDefinition): string;
 
     /**
-     * @throws ElementSavingFailedException|FieldValidationFailedException
+     * @param bool $applyRemoteChanges false skips fields that persist other elements (e.g. reverse relations)
+     *
+     * @throws ElementSavingFailedException|FieldValidationFailedException|ForbiddenException
      */
-    public function updateEditableData(Concrete $element, array $editableData, UserInterface $user): void;
+    public function updateEditableData(
+        Concrete $element,
+        array $editableData,
+        UserInterface $user,
+        bool $applyRemoteChanges = true
+    ): void;
 
     /**
      * @throws DatabaseException|NotFoundException

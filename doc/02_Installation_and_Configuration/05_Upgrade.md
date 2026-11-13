@@ -3,6 +3,19 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.3.5
+- [Data Objects] Fixed: `POST /data-objects/select-options` resolves the keys of a classification store, so select
+  and multiselect keys with an options provider load their options. They are addressed as
+  `<storeFieldName>.<groupId>.<keyId>`, or `<storeFieldName>.<groupId>.<language>.<keyId>` in the language comparison
+  view. The provider receives the same owner context as on the initial layout load (`ownerType`, `ownerName`, `keyId`,
+  `groupId`, `keyDefinition`). This needs `pimcore/studio-ui-bundle` 2026.3.5 or later, which sends the new field name.
+
+> **Note:** a field name this endpoint cannot resolve now returns `422` with the parse error instead of `404`
+> "Class with ID: ... not found". This applies to every field type, not only classification store keys. The context of
+> the request stays in the nested `context` key of the options provider context and does not overwrite the keys above.
+
+- [Data Objects] Fixed: the auto-save of a data object draft no longer writes the owner objects of a reverse object relation. These edits are applied only on an explicit save (and on updates without a task). The same applies to `PATCH` requests carrying an auto-save task.
+
+> **Note:** edits of such a field that were skipped by an auto-save are not part of the stored draft, so reopening the draft cannot recover them; the client has to send them again with the explicit save. This also applies to custom data adapters that implement the public marker `RemoteStorageDataInterface`: they are skipped while an auto-save stores a draft, and in `POST /data-objects/select-options`. The marker is only checked on the adapter of a top-level field; adapters nested in localized fields, object bricks or field collections are not checked. `DataServiceInterface::updateEditableData()` gained an optional `bool $applyRemoteChanges = true` parameter; the default keeps the previous behavior.
 - [Users] Security (GHSA-x3pq-323g-f95v): a user who may manage users (`users` permission) can no longer hand out more
   privilege than they hold themselves. This changes the behavior of the following endpoints for non-admin user
   managers (admins are not affected):
@@ -23,6 +36,16 @@ The following steps are necessary during updating to newer versions.
 - [Studio UI] The "login as different user" action and the role options in the user form should be limited to what the
   backend now allows (admins only for login links, the caller's own roles for non-admins). Until then, non-admin user
   managers see `403` errors for these actions.
+
+## Upgrade to 2026.3.4
+- [Translations] Fixed: the `admin` translation domain is maintained in Studio with the website languages, but the
+  backend still used the admin UI languages for it. Columns of website languages that are no admin UI language
+  (e.g. `fr_BE`) stayed empty and sorting by them failed. `POST /translations/list`, `POST /translations/export` and
+  the CSV import now use the website translation languages the user is allowed to view for the `admin` domain, and the
+  list only returns the values of these languages. Only the `studio` domain uses the admin UI languages.
+
+> **Note:** this replaces the `admin` domain part of the 2025.4.15 entry below. As for the other website domains, a
+> user without any valid website translation language receives `403` for list, export and import of the `admin` domain.
 
 ## Upgrade to 2026.3.3
 - [Data Objects] Changed: the data object detail loads `manyToManyObjectRelation` and `manyToManyRelation` values of
