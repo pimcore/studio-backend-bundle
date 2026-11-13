@@ -124,7 +124,9 @@ final class CloneHandler extends AbstractHandler
         if ($cloneData->isUpdateReferences() === true &&
             $this->getTotalSteps($jobRun) === ($this->getCurrentStep($jobRun) + 1)
         ) {
-            $rewriteConfiguration = $jobRun->getContext()[EnvironmentVariables::REWRITE_CONFIGURATION->value] ?? [];
+            // `+` keeps the integer id keys, array_merge() would renumber them
+            $rewriteConfiguration = ($environmentVariables[EnvironmentVariables::REWRITE_CONFIGURATION->value] ?? [])
+                + ($jobRun->getContext()[EnvironmentVariables::REWRITE_CONFIGURATION->value] ?? []);
             $childJobRunId = $this->elementReferenceService->rewriteReferencesWithExecutionEngine(
                 $user,
                 $rewriteConfiguration,
