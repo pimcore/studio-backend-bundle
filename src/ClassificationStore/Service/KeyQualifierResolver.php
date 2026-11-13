@@ -34,9 +34,11 @@ final class KeyQualifierResolver implements KeyQualifierResolverInterface, Reset
 {
     private const string TYPE_PROPERTY = 'type';
 
-    private const string DEFAULT_VARIANT_PERMITTED_GETTER = 'isDefaultVariantAllowed';
+    // Core's own accessors for the declaration, on Data\MultiValue. Named here rather than
+    // called directly only so a core without them resolves to the permitted default below.
+    private const string DEFAULT_VARIANT_PERMITTED_GETTER = 'permitsUnqualifiedValue';
 
-    private const string DEFAULT_VARIANT_LABEL_GETTER = 'getDefaultVariantLabel';
+    private const string DEFAULT_VARIANT_LABEL_GETTER = 'getUnqualifiedValueLabel';
 
     /**
      * The digest the memo key spells a `definition` blob as. Deliberately a NON-cryptographic hash:
