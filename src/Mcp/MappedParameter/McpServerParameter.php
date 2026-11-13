@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Regex;
@@ -39,6 +41,7 @@ final readonly class McpServerParameter
         private string $name,
         #[NotBlank]
         #[Regex(pattern: '/^[a-z0-9-]+$/', message: 'The url slug may only contain a-z, 0-9 and hyphens.')]
+        #[Length(max: VersionCoauthor::MAX_COAUTHOR_LENGTH)]
         private string $urlSlug,
         private ?string $description = null,
         #[All(new Type('string'))]

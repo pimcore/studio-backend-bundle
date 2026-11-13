@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Patcher\Service;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
@@ -26,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\PatchFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContext;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\AdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchService;
@@ -116,6 +119,48 @@ final class PatchServiceTest extends Unit
         });
 
         $this->assertSame([['mcp-server', 'pme-test']], $captured);
+    }
+
+    public function testAsyncBatchPatchInsideMcpCallDropsThePayloadCoauthorBeforeTheWorkerSeesIt(): void
+    {
+        $job = null;
+        $service = $this->createService(static fn () => null, jobCapture: $job);
+
+        $this->mcpCallContext->run(fn () => $service->patch(ElementTypes::TYPE_ASSET, [
+            ['id' => 1, 'coauthorType' => 'agent', 'coauthor' => 'claimed', 'key' => 'a'],
+            ['id' => 2, 'key' => 'b'],
+        ], $this->user));
+
+        $this->assertInstanceOf(Job::class, $job);
+        $this->assertSame([1 => ['id' => 1, 'key' => 'a'], 2 => ['id' => 2, 'key' => 'b']], $job->getEnvironmentData());
+    }
+
+    public function testAsyncBatchPatchOutsideMcpKeepsThePayloadCoauthor(): void
+    {
+        $job = null;
+        $service = $this->createService(static fn () => null, jobCapture: $job);
+
+        $service->patch(ElementTypes::TYPE_ASSET, [
+            ['id' => 1, 'coauthorType' => 'agent', 'coauthor' => 'claimed'],
+            ['id' => 2],
+        ], $this->user);
+
+        $this->assertSame('claimed', $job->getEnvironmentData()[1]['coauthor']);
+    }
+
+    public function testFolderPatchInsideMcpCallDropsThePayloadCoauthorBeforeTheWorkerSeesIt(): void
+    {
+        $job = null;
+        $service = $this->createService(static fn () => null, jobCapture: $job);
+
+        $this->mcpCallContext->run(fn () => $service->patchFolder(
+            5,
+            ElementTypes::TYPE_ASSET,
+            new PatchFolderParameter(['coauthorType' => 'agent', 'coauthor' => 'claimed', 'key' => 'a'], null),
+            $this->user
+        ));
+
+        $this->assertSame([5 => ['key' => 'a']], $job->getEnvironmentData());
     }
 
     public function testPatchInsideMcpCallWithoutStampSavesWithoutCoauthor(): void
@@ -604,15 +649,24 @@ final class PatchServiceTest extends Unit
         return array_map(static fn (array $item) => [$item['id'], $item['type']], $items);
     }
 
-    private function createService(callable $onSave, ?DataAdapterServiceInterface $dataAdapterService = null): PatchService
-    {
+    private function createService(
+        callable $onSave,
+        ?DataAdapterServiceInterface $dataAdapterService = null,
+        ?Job &$jobCapture = null,
+    ): PatchService {
         return new PatchService(
             adapterLoader: $this->makeEmpty(AdapterLoaderInterface::class, [
                 'loadAdapters' => [],
             ]),
             dataAdapterService: $dataAdapterService ?? $this->makeEmpty(DataAdapterServiceInterface::class),
             elementService: $this->makeEmpty(ElementServiceInterface::class),
-            jobExecutionAgent: $this->makeEmpty(JobExecutionAgentInterface::class),
+            jobExecutionAgent: $this->makeEmpty(JobExecutionAgentInterface::class, [
+                'startJobExecution' => function (Job $job) use (&$jobCapture): JobRun {
+                    $jobCapture = $job;
+
+                    return $this->makeEmpty(JobRun::class, ['getId' => 7]);
+                },
+            ]),
             indexService: $this->makeEmpty(ElementIndexServiceInterface::class),
             elementSaveService: $this->makeEmpty(ElementSaveServiceInterface::class, [
                 'save' => $onSave,

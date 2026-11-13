@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Server;
 use Mcp\Capability\Registry\ElementReference;
 use Mcp\Capability\Registry\ReferenceHandlerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContextInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Model\Version\CoauthorContextInterface;
 
 /**
@@ -27,8 +28,6 @@ use Pimcore\Model\Version\CoauthorContextInterface;
  */
 final readonly class CoauthorReferenceHandler implements ReferenceHandlerInterface
 {
-    public const string COAUTHOR_TYPE = 'mcp-server';
-
     public function __construct(
         private ReferenceHandlerInterface $inner,
         private CoauthorContextInterface $coauthorContext,
@@ -44,7 +43,7 @@ final readonly class CoauthorReferenceHandler implements ReferenceHandlerInterfa
     {
         return $this->mcpCallContext->run(
             fn (): mixed => $this->coauthorContext->withCoauthor(
-                self::COAUTHOR_TYPE,
+                VersionCoauthor::TYPE_MCP_SERVER,
                 $this->serverSlug,
                 fn (): mixed => $this->inner->handle($reference, $arguments),
             )

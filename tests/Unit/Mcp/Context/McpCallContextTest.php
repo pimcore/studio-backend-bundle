@@ -48,6 +48,19 @@ final class McpCallContextTest extends Unit
         $this->assertFalse($context->isInMcpCall());
     }
 
+    public function testResetInsideACallbackDoesNotLeaveANegativeDepth(): void
+    {
+        $context = new McpCallContext();
+
+        $context->run(static function () use ($context): void {
+            $context->reset();
+        });
+
+        // a later call is still seen as an MCP call, whatever happened before
+        $this->assertFalse($context->isInMcpCall());
+        $this->assertTrue($context->run(static fn (): bool => $context->isInMcpCall()));
+    }
+
     public function testMarkIsRemovedWhenTheCallbackThrows(): void
     {
         $context = new McpCallContext();

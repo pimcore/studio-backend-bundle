@@ -7,8 +7,9 @@ The following steps are necessary during updating to newer versions.
   coauthor type `mcp-server` and the server's URL slug as coauthor, set by the server (`McpServerFactory`) and never
   by a tool or the client. Versions a tool creates through the connecting user show "MCP server" and the slug in the
   versions tab (translation key `version.coauthor-type.mcp-server`). Inside an MCP tool call, `coauthorType` and
-  `coauthor` in a save payload (and in `PUT /pimcore-studio/api/versions/{id}`) are ignored: the version gets the MCP
-  coauthor, or none when coauthor stamping is switched off. The new `McpCallContextInterface` marks such a call;
+  `coauthor` in a save payload are ignored: the version gets the MCP coauthor, or none when coauthor stamping is
+  switched off. The same fields of `PUT /pimcore-studio/api/versions/{id}` are ignored too: the version keeps the
+  coauthor it has. Batch and folder patches drop them before their job is queued. The new `McpCallContextInterface` marks such a call;
   `McpServerFactory`, `CoauthorService` and `VersionRepository` (all `@internal`) got constructor arguments for it.
 - [Elements] Deprecated: `coauthorType` and `coauthor` in the bodies of the element patch and update endpoints
   and of `PUT /pimcore-studio/api/versions/{id}`. Outside MCP they work as before, are marked `deprecated` in the

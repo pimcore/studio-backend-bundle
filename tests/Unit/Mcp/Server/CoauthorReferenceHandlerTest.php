@@ -16,6 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mcp\Server;
 use Codeception\Test\Unit;
 use Mcp\Capability\Registry\ElementReference;
 use Mcp\Capability\Registry\ReferenceHandlerInterface;
+use Mcp\Schema\Request\CallToolRequest;
+use Mcp\Server\Session\SessionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContext;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Server\CoauthorReferenceHandler;
 use Pimcore\Model\Version\CoauthorContext;
@@ -87,8 +89,13 @@ final class CoauthorReferenceHandlerTest extends Unit
             return null;
         });
 
-        // the SDK passes the session (with the clientInfo the client claimed) in the arguments
-        $handler->handle(new ElementReference(['T', 'm']), ['_session' => ['client_info' => ['name' => 'evil-client']]]);
+        // the SDK adds its session and the request (which carry the clientInfo the client claimed) to the arguments
+        $session = $this->createMock(SessionInterface::class);
+        $session->method('get')->willReturn(['name' => 'evil-client']);
+        $handler->handle(
+            new ElementReference(['T', 'm']),
+            ['name' => 'x', '_session' => $session, '_request' => new CallToolRequest('t', ['name' => 'x'])]
+        );
 
         $this->assertSame(['mcp-server', 'pme-test'], $seen);
     }

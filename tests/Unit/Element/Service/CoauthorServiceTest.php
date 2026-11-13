@@ -50,6 +50,18 @@ final class CoauthorServiceTest extends Unit
         $this->assertStringContainsString('platform-version/issues/814', $deprecations[0]);
     }
 
+    public function testPayloadForLaterSavingLosesItsCoauthorInsideAnMcpCall(): void
+    {
+        $payload = ['key' => 'a', 'coauthorType' => 'agent', 'coauthor' => 'x'];
+
+        $inside = $this->mcpCallContext->run(
+            fn (): array => $this->service->withoutPayloadCoauthorInMcpCall($payload)
+        );
+
+        $this->assertSame(['key' => 'a'], $inside);
+        $this->assertSame($payload, $this->service->withoutPayloadCoauthorInMcpCall($payload));
+    }
+
     public function testOutsideMcpWithoutPayloadCoauthorNoDeprecation(): void
     {
         $deprecations = $this->collectDeprecations(function (): void {

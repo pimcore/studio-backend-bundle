@@ -21,6 +21,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
  */
 final class VersionCoauthor
 {
+    public const string TYPE_MCP_SERVER = 'mcp-server';
+
     public const int MAX_TYPE_LENGTH = 50;
 
     public const int MAX_COAUTHOR_LENGTH = 255;

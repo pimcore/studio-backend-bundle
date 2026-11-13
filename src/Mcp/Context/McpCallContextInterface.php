@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Context;
 
 /**
- * Marks that the current code runs inside an MCP tool call. Both MCP servers (the configured servers of this
- * bundle and the Agent bundle's chat endpoints) wrap each tool call in {@see self::run()}.
+ * Marks that the current code runs inside an MCP tool call. The configured servers of this bundle wrap each
+ * tool call in {@see self::run()}; the Agent bundle's endpoints are to do the same (separate change in that bundle).
  *
  * Inside an MCP call a coauthor claimed in a save payload is never honoured: the coauthor comes only from the
  * server-side coauthor context, or there is none.

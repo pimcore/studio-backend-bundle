@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -39,6 +40,7 @@ use function is_array;
 use function is_int;
 use function is_null;
 use function is_string;
+use function mb_strlen;
 use function preg_match;
 use function sprintf;
 
@@ -881,6 +883,14 @@ class Configuration implements ConfigurationInterface
                         static fn (int|string $id): bool => preg_match(McpPath::STUDIO_SLUG_PATTERN, (string) $id) !== 1
                     ) !== [])
                     ->thenInvalid('MCP server ids are their URL slug and may only contain a-z, 0-9 and hyphens: %s')
+                ->end()
+                // The id is stamped as the version coauthor, which is limited to the column width.
+                ->validate()
+                    ->ifTrue(static fn (array $servers): bool => array_filter(
+                        array_keys($servers),
+                        static fn (int|string $id): bool => mb_strlen((string) $id) > VersionCoauthor::MAX_COAUTHOR_LENGTH
+                    ) !== [])
+                    ->thenInvalid('MCP server ids are stamped as the version coauthor and may have at most 255 characters: %s')
                 ->end()
                 ->arrayPrototype()
                     ->children()

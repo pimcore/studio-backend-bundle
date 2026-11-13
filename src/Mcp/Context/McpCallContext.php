@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Context;
 
 use Symfony\Contracts\Service\ResetInterface;
+use function max;
 
 /**
  * @internal
@@ -34,7 +35,8 @@ final class McpCallContext implements McpCallContextInterface, ResetInterface
         try {
             return $callback();
         } finally {
-            $this->depth--;
+            // reset() may have run inside the callback: never go below zero.
+            $this->depth = max(0, $this->depth - 1);
         }
     }
 

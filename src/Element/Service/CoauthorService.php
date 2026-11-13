@@ -78,6 +78,23 @@ final readonly class CoauthorService implements CoauthorServiceInterface
     /**
      * {@inheritdoc}
      */
+    public function withoutPayloadCoauthorInMcpCall(array $payload): array
+    {
+        if (!$this->mcpCallContext->isInMcpCall()) {
+            return $payload;
+        }
+
+        unset(
+            $payload[ElementSaveServiceInterface::INDEX_COAUTHOR_TYPE],
+            $payload[ElementSaveServiceInterface::INDEX_COAUTHOR]
+        );
+
+        return $payload;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function runWithCoauthor(?array $coauthor, callable $callback): void
     {
         if ($coauthor === null) {
