@@ -28,6 +28,12 @@ The following steps are necessary during updating to newer versions.
   - `User::getById()` returns the `User` for a service-user id as for any user id, with `isServiceUser()` true. Code that
     assumes an id always names a human must call `isServiceUser()` first.
 - [Service Users] MCP server sharing: a service user's entry in `access.shared_users` is stored with `canRead` and `canEdit` false, whatever the client sent; `canAccess` is kept as sent. See [MCP Server Management](../04_Development_Details/09_MCP_Server_Management.md#access-and-sharing).
+- [Service Users] Added: the service-user schema carries `responsibleUsers` and `responsibleRoles` (lists of ids, the
+  people and the roles who answer for the service user), and `POST /service-user` and `PUT /service-user/{id}` accept
+  both as optional lists. On create a missing list means none; on update a missing (or `null`) list keeps the stored
+  values and an empty list clears them. An unknown user or role id answers `404`; a
+  service-user id in `responsibleUsers` answers `422`. Needs `pimcore/pimcore` with `User::getResponsibleUsers()` and
+  `getResponsibleRoles()`. Additive; no endpoint or permission changes.
 - [Service Users] Added: the service-user schema (`GET /pimcore-studio/api/service-users` and
   `/service-user/{id}`, and the responses that return it) carries `clientCredentialsEnabled` (whether the OAuth
   `client_credentials` grant is on) and `mcpTokens` (`active`, `latestExpiresAt`; a summary of the MCP access tokens,

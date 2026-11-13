@@ -19,12 +19,14 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ClientCredentials;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\DynamicClient;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\ServiceUserClientException;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ServiceUserClientStoreInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Service\ServiceUserClientServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Repository\McpAccessTokenRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Event\ServiceUserEvent;
@@ -42,9 +44,11 @@ use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneServiceInterface;
 use Pimcore\Model\User;
+use Pimcore\Model\User\Role;
 use Pimcore\Model\User\Workspace\Asset as AssetWorkspace;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_fill_keys;
+use function in_array;
 
 /**
  * @internal
@@ -469,6 +473,124 @@ final class ServiceUserServiceTest extends Unit
         $this->assertSame('svc_client', $service->getServiceUser(42)->getClientId());
     }
 
+    public function testCreateAppliesResponsibleUsersAndRoles(): void
+    {
+        $service = $this->service(userRepository: $this->userRepositoryWith([3 => $this->human(3)]));
+
+        $service->createServiceUser(new CreateParameter(
+            name: 'svc-erp-sync',
+            responsibleUsers: [3],
+            responsibleRoles: [5],
+        ));
+
+        $this->assertSame([3], $this->saved[0]->getResponsibleUsers());
+        $this->assertSame([5], $this->saved[0]->getResponsibleRoles());
+    }
+
+    public function testCreateWithAnUnknownResponsibleUserIsNotFoundAndRemovesTheServiceUser(): void
+    {
+        $service = $this->service(userRepository: $this->userRepositoryWith([]));
+
+        try {
+            $service->createServiceUser(new CreateParameter(name: 'svc-erp-sync', responsibleUsers: [99]));
+            $this->fail('NotFoundException expected');
+        } catch (NotFoundException) {
+            $this->assertCount(1, $this->deleted);
+        }
+    }
+
+    public function testUpdateAppliesResponsibleUsersAndRoles(): void
+    {
+        $existing = $this->serviceUser();
+        $service = $this->service(
+            repository: $this->repository($existing),
+            userRepository: $this->userRepositoryWith([3 => $this->human(3), 4 => $this->human(4)]),
+        );
+
+        $schema = $service->updateServiceUser(42, new UpdateParameter(
+            responsibleUsers: [3, 4],
+            responsibleRoles: [5, 6],
+        ));
+
+        $this->assertSame([3, 4], $existing->getResponsibleUsers());
+        $this->assertSame([5, 6], $existing->getResponsibleRoles());
+        $this->assertSame(42, $schema->getId());
+    }
+
+    public function testUpdateWithEmptyListsClearsTheResponsibles(): void
+    {
+        $existing = $this->serviceUser();
+        $existing->setResponsibleUsers([3]);
+        $existing->setResponsibleRoles([5]);
+        $service = $this->service(repository: $this->repository($existing));
+
+        $service->updateServiceUser(42, new UpdateParameter(responsibleUsers: [], responsibleRoles: []));
+
+        $this->assertSame([], $existing->getResponsibleUsers());
+        $this->assertSame([], $existing->getResponsibleRoles());
+        $this->assertSame($existing, $this->saved[0]);
+    }
+
+    public function testUpdateWithoutTheResponsibleKeysKeepsTheStoredResponsibles(): void
+    {
+        $existing = $this->serviceUser();
+        $existing->setResponsibleUsers([3]);
+        $existing->setResponsibleRoles([5]);
+        $service = $this->service(repository: $this->repository($existing));
+
+        $service->updateServiceUser(42, new UpdateParameter(permissions: ['assets']));
+
+        $this->assertSame([3], $existing->getResponsibleUsers());
+        $this->assertSame([5], $existing->getResponsibleRoles());
+        $this->assertSame($existing, $this->saved[0]);
+    }
+
+    public function testUpdateWithAnUnknownResponsibleUserIsNotFound(): void
+    {
+        $service = $this->service(
+            repository: $this->repository($this->serviceUser()),
+            userRepository: $this->userRepositoryWith([]),
+        );
+
+        $this->expectException(NotFoundException::class);
+        $this->expectExceptionMessageMatches('/User/');
+
+        $service->updateServiceUser(42, new UpdateParameter(responsibleUsers: [99]));
+    }
+
+    public function testUpdateWithAnUnknownResponsibleRoleIsNotFound(): void
+    {
+        $existing = $this->serviceUser();
+        $service = $this->service(repository: $this->repository($existing));
+
+        try {
+            $service->updateServiceUser(42, new UpdateParameter(responsibleRoles: [77]));
+            $this->fail('NotFoundException expected');
+        } catch (NotFoundException $exception) {
+            $this->assertStringContainsString('Role', $exception->getMessage());
+            $this->assertSame([], $this->saved);
+        }
+    }
+
+    public function testUpdateRefusesAServiceUserAsResponsible(): void
+    {
+        $other = $this->serviceUser();
+        $other->setId(7);
+        $service = $this->service(
+            repository: $this->repository($this->serviceUser()),
+            userRepository: $this->userRepositoryWith([7 => $other]),
+        );
+
+        try {
+            $service->updateServiceUser(42, new UpdateParameter(responsibleUsers: [7]));
+            $this->fail('UnprocessableContentException expected');
+        } catch (UnprocessableContentException $exception) {
+            $this->assertSame(422, $exception->getStatusCode());
+            $this->assertSame('A service user cannot be responsible for a service user', $exception->getMessage());
+            $this->assertSame([], $this->saved);
+        }
+    }
+
     private function service(
         ?ServiceUserRepositoryInterface $repository = null,
         ?UserRepositoryInterface $userRepository = null,
@@ -478,6 +600,7 @@ final class ServiceUserServiceTest extends Unit
         ?McpAccessTokenRepositoryInterface $tokenRepository = null,
         ?bool $clientCredentialsEnabled = null,
         ?ServiceUserClientStoreInterface $clientStore = null,
+        ?RoleRepositoryInterface $roleRepository = null,
     ): ServiceUserService {
         return new ServiceUserService(
             $repository ?? $this->repository(),
@@ -526,12 +649,15 @@ final class ServiceUserServiceTest extends Unit
                         lastLogin: null,
                         clientCredentialsEnabled: false,
                         mcpTokens: $mcpTokens,
+                        responsibleUsers: [],
+                        responsibleRoles: [],
                     ),
                 ]),
                 $eventDispatcher ?? $this->makeEmpty(EventDispatcherInterface::class),
                 $tokenRepository ?? $this->makeEmpty(McpAccessTokenRepositoryInterface::class),
             ),
             $currentUser ?? $this->currentUser(isAdmin: false),
+            $roleRepository ?? $this->roleRepository([5, 6]),
         );
     }
 
@@ -574,6 +700,40 @@ final class ServiceUserServiceTest extends Unit
             'updateDataObjectWorkspaces' => static fn (array $workspaces, $user) => $user,
             'updateDocumentWorkspaces' => static fn (array $workspaces, $user) => $user,
         ]);
+    }
+
+    /**
+     * @param int[] $knownIds
+     */
+    private function roleRepository(array $knownIds): RoleRepositoryInterface
+    {
+        return $this->makeEmpty(RoleRepositoryInterface::class, [
+            'getRoleById' => static function (int $id) use ($knownIds): Role {
+                if (!in_array($id, $knownIds, true)) {
+                    throw new NotFoundException('Role', $id);
+                }
+
+                return new Role();
+            },
+        ]);
+    }
+
+    /**
+     * @param array<int, User> $users
+     */
+    private function userRepositoryWith(array $users): UserRepositoryInterface
+    {
+        return $this->makeEmpty(UserRepositoryInterface::class, [
+            'getUserById' => static fn (int $id): User => $users[$id] ?? throw new NotFoundException('User', $id),
+        ]);
+    }
+
+    private function human(int $id): User
+    {
+        $user = new User();
+        $user->setId($id);
+
+        return $user;
     }
 
     private function currentUser(bool $isAdmin): SecurityServiceInterface
