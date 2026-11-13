@@ -22,8 +22,13 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField as EncryptedFieldDefinition;
+use Pimcore\Model\DataObject\Classificationstore;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\EncryptedField;
+use function array_key_exists;
+use function is_array;
+use function is_int;
+use function is_string;
 
 /**
  * @internal
@@ -52,6 +57,49 @@ trait ValidateObjectDataTrait
                 this might lead to an unwanted side effect that you cannot load the child element anymore
                 See ticket https://github.com/pimcore/studio-backend-bundle/issues/879
             */
+            return null;
+        }
+    }
+
+    /**
+     * The value an export is asked to format: the one the context supplies, then the one at the
+     * classification store address in its legacy parameters, then the plain field lookup.
+     */
+    private function getContextExportValue(
+        Concrete $object,
+        string $key,
+        ?FieldContextData $contextData = null,
+    ): mixed {
+        $legacyParameters = $contextData?->getLegacyParameters() ?? [];
+        if (array_key_exists('injectedData', $legacyParameters)) {
+            return $legacyParameters['injectedData'];
+        }
+
+        $address = $legacyParameters['context'] ?? null;
+        if (
+            !is_array($address)
+            || ($address['containerType'] ?? null) !== 'classificationstore'
+            || !is_int($address['groupId'] ?? null)
+            || !is_int($address['keyId'] ?? null)
+            || !is_string($address['fieldname'] ?? null)
+        ) {
+            return $this->getValidFieldValue($object, $key, $contextData);
+        }
+
+        try {
+            $store = $object->get($address['fieldname']);
+
+            return $store instanceof Classificationstore
+                ? $store->getLocalizedKeyValue(
+                    $address['groupId'],
+                    $address['keyId'],
+                    is_string($address['language'] ?? null) ? $address['language'] : 'default',
+                    true,
+                    true
+                )
+                : null;
+        } catch (Exception) {
+            // a store the object does not carry exports nothing, the way the plain lookup does
             return null;
         }
     }

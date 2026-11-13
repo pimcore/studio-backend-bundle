@@ -134,7 +134,7 @@ final readonly class ImageGalleryAdapter implements
         string $key,
         ?FieldContextData $contextData = null
     ): string {
-        $data = $this->getValidFieldValue($object, $key, $contextData);
+        $data = $this->getContextExportValue($object, $key, $contextData);
 
         if (!$data instanceof ImageGalleryData) {
             return '';
@@ -142,7 +142,7 @@ final readonly class ImageGalleryAdapter implements
 
         $items = $data->getItems();
         $paths = array_map(
-            static fn ($item) => $item->getImage()?->getFrontendFullPath(),
+            static fn ($item) => $item?->getImage()?->getFrontendFullPath(),
             $items
         );
 
