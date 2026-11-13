@@ -128,11 +128,11 @@ final readonly class DataObjectProvider implements DataProviderInterface
         $object = DataObject::getById($id);
 
         if ($object === null) {
-            throw new NotFoundException('Data Object Not Found', $id);
+            throw new NotFoundException('data object', $id);
         }
 
         if (!$object instanceof Concrete) {
-            throw new NotFoundException('Requested object is not a Concrete data object', $id);
+            throw new NotFoundException('concrete data object', $id);
         }
 
         if (!$object->isAllowed(ElementPermissions::VIEW_PERMISSION)) {

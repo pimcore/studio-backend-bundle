@@ -521,7 +521,7 @@ final class TwoFactorServiceTest extends Unit
     {
         $admin = $this->user(id: 1, admin: true);
         $repository = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => static fn () => throw new NotFoundException('User', 99),
+            'getPersonById' => static fn () => throw new NotFoundException('User', 99),
             'updateUser' => Expected::never(),
         ]);
 
@@ -571,7 +571,7 @@ final class TwoFactorServiceTest extends Unit
     private function repository(User $user, int $saves, array $byId = [], ?array $stored = null): UserRepositoryInterface
     {
         return $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => static fn (int $id) => $byId[$id] ?? throw new NotFoundException('User', $id),
+            'getPersonById' => static fn (int $id) => $byId[$id] ?? throw new NotFoundException('User', $id),
             'getStoredTwoFactorAuthentication' => static fn () => $stored ?? $user->getTwoFactorAuthentication(),
             'updateUser' => Expected::exactly($saves, static function (User $saved) use ($user): void {
                 if ($saved !== $user) {

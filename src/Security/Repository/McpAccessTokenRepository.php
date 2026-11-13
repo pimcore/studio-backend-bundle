@@ -14,8 +14,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Repository;
 
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Mcp\McpAccessToken;
+use function array_values;
 
 /**
  * @internal
@@ -55,6 +57,32 @@ final readonly class McpAccessTokenRepository implements McpAccessTokenRepositor
         $this->entityManager->createQuery(
             'DELETE FROM ' . McpAccessToken::class . ' t WHERE t.userId = :userId'
         )->setParameter('userId', $userId)->execute();
+    }
+
+    public function summarizeByUserIds(array $userIds, int $now): array
+    {
+        if ($userIds === []) {
+            return [];
+        }
+
+        $rows = $this->entityManager->createQuery(
+            'SELECT t.userId AS userId, COUNT(t.tokenHash) AS active, MAX(t.expiresAt) AS latestExpiresAt '
+            . 'FROM ' . McpAccessToken::class . ' t '
+            . 'WHERE t.userId IN (:userIds) AND t.expiresAt > :now GROUP BY t.userId'
+        )
+            ->setParameter('userIds', array_values($userIds), ArrayParameterType::INTEGER)
+            ->setParameter('now', $now)
+            ->getArrayResult();
+
+        $summaries = [];
+        foreach ($rows as $row) {
+            $summaries[(int) $row['userId']] = [
+                'active' => (int) $row['active'],
+                'latestExpiresAt' => (int) $row['latestExpiresAt'],
+            ];
+        }
+
+        return $summaries;
     }
 
     public function deleteExpired(int $now): int
