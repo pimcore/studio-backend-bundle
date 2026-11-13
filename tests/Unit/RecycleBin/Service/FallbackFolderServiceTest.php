@@ -54,7 +54,9 @@ final class FallbackFolderServiceTest extends Unit
         $element = $this->createMock(Asset::class);
         $element->method('getParentId')->willReturn($parentId);
 
-        $this->assertTrue($this->createService(serviceResolver: $serviceResolver)->hasMissingParent($element));
+        $this->assertTrue(
+            $this->createService(serviceResolver: $serviceResolver)->hasMissingParent($element, '/deleted/image.jpg')
+        );
     }
 
     public static function parentWithoutLookupProvider(): array
@@ -87,7 +89,7 @@ final class FallbackFolderServiceTest extends Unit
 
         $this->assertSame(
             $expected,
-            $this->createService(serviceResolver: $serviceResolver)->hasMissingParent($element)
+            $this->createService(serviceResolver: $serviceResolver)->hasMissingParent($element, '/deleted/my-key')
         );
     }
 
@@ -99,6 +101,36 @@ final class FallbackFolderServiceTest extends Unit
             'data object parent deleted' => [Concrete::class, 'object', false, true],
             'asset parent exists' => [Asset::class, 'asset', true, false],
             'data object parent exists' => [Concrete::class, 'object', true, false],
+        ];
+    }
+
+    /**
+     * @throws Exception
+     * @dataProvider rootParentProvider
+     */
+    #[DataProvider('rootParentProvider')]
+    public function testReportsTheRootAsMissingParentOnlyForAnElementThatWasNotUnderTheRoot(
+        string $originalPath,
+        bool $expected
+    ): void {
+        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
+        $serviceResolver->expects($this->never())->method('getElementById');
+
+        $element = $this->createMock(Concrete::class);
+        $element->method('getParentId')->willReturn(1);
+
+        $this->assertSame(
+            $expected,
+            $this->createService(serviceResolver: $serviceResolver)->hasMissingParent($element, $originalPath)
+        );
+    }
+
+    public static function rootParentProvider(): array
+    {
+        return [
+            'placeholder of an element from a deleted folder' => ['/deleted/car', true],
+            'placeholder of an element from a deleted nested folder' => ['/a/b/car', true],
+            'element that was under the root' => ['/car', false],
         ];
     }
 
@@ -132,7 +164,7 @@ final class FallbackFolderServiceTest extends Unit
             ...$resolvers,
             securityService: $securityService,
             serviceResolver: $this->createServiceResolver($coreType, $folder)
-        )->moveToFallbackFolder($element, $user);
+        )->moveToFallbackFolder($element, $user, '/deleted/my-key');
     }
 
     /**
@@ -165,7 +197,7 @@ final class FallbackFolderServiceTest extends Unit
             ...$resolvers,
             securityService: $securityService,
             serviceResolver: $this->createServiceResolver($coreType, null, $root)
-        )->moveToFallbackFolder($element, $user);
+        )->moveToFallbackFolder($element, $user, '/deleted/my-key');
     }
 
     /**
@@ -190,7 +222,7 @@ final class FallbackFolderServiceTest extends Unit
 
         $this->createService(
             serviceResolver: $this->createServiceResolver($coreType, $this->createMock($folderClass), null, $takenKeys)
-        )->moveToFallbackFolder($element, $this->makeEmpty(UserInterface::class));
+        )->moveToFallbackFolder($element, $this->makeEmpty(UserInterface::class), '/deleted/' . $key);
     }
 
     public static function takenKeyProvider(): array
@@ -262,7 +294,76 @@ final class FallbackFolderServiceTest extends Unit
                 null,
                 ['car-a' => 7]
             )
-        )->moveToFallbackFolder($element, $this->makeEmpty(UserInterface::class));
+        )->moveToFallbackFolder($element, $this->makeEmpty(UserInterface::class), '/deleted/car-a');
+    }
+
+    /**
+     * @param array<string, int> $takenKeys key => ID of the element that holds it in the fallback folder
+     *
+     * @throws Exception
+     * @dataProvider originalKeyProvider
+     */
+    #[DataProvider('originalKeyProvider')]
+    public function testNamesTheElementAfterItsKeyAtDeletion(
+        string $elementClass,
+        string $folderClass,
+        string $coreType,
+        string $key,
+        string $originalPath,
+        array $takenKeys,
+        ?string $expectedKey
+    ): void {
+        $element = $this->createMock($elementClass);
+        $element->method('getId')->willReturn(7);
+        $element->method('getKey')->willReturn($key);
+        if ($expectedKey === null) {
+            $element->expects($this->never())->method('setKey');
+        } else {
+            $element->expects($this->once())->method('setKey')->with($expectedKey);
+        }
+
+        $this->createService(
+            serviceResolver: $this->createServiceResolver($coreType, $this->createMock($folderClass), null, $takenKeys)
+        )->moveToFallbackFolder($element, $this->makeEmpty(UserInterface::class), $originalPath);
+    }
+
+    public static function originalKeyProvider(): array
+    {
+        $asset = [Asset::class, AssetFolder::class, 'asset'];
+
+        return [
+            'asset that core renamed for its taken original path' => [
+                ...$asset,
+                'image.jpg_restore',
+                '/old/image.jpg',
+                [],
+                'image.jpg',
+            ],
+            'asset that core renamed, with its key taken in the fallback folder' => [
+                ...$asset,
+                'image.jpg_restore',
+                '/old/image.jpg',
+                ['image.jpg' => 1],
+                'image_1.jpg',
+            ],
+            'data object that core renamed' => [
+                Concrete::class,
+                DataObjectFolder::class,
+                'object',
+                'car_restore',
+                '/old/car',
+                [],
+                'car',
+            ],
+            'key that ends in _restore at deletion' => [...$asset, 'notes_restore', '/old/notes_restore', [], null],
+            'key that ends in _restore at deletion, renamed by core' => [
+                ...$asset,
+                'notes_restore_restore',
+                '/old/notes_restore',
+                [],
+                'notes_restore',
+            ],
+        ];
     }
 
     public static function elementTypeProvider(): array
@@ -293,9 +394,27 @@ final class FallbackFolderServiceTest extends Unit
             serviceResolver: $this->createServiceResolver('asset', $folder)
         );
 
-        $this->assertMissingParentException(
-            fn () => $service->moveToFallbackFolder($element, $this->makeEmpty(UserInterface::class))
+        $this->assertMoveFailsWithTheMissingParentKey($service, $element);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testFailsWithTheMissingParentKeyWhenAnAssetFileTakesTheFallbackFolderPath(): void
+    {
+        $element = $this->createMock(Asset::class);
+        $element->expects($this->never())->method('setParent');
+
+        $securityService = $this->createMock(SecurityServiceInterface::class);
+        $securityService->expects($this->never())->method('hasElementPermission');
+
+        $service = $this->createService(
+            ...$this->createResolvers('assetServiceResolver'),
+            securityService: $securityService,
+            serviceResolver: $this->createServiceResolver('asset', $this->createMock(Asset::class))
         );
+
+        $this->assertMoveFailsWithTheMissingParentKey($service, $element);
     }
 
     /**
@@ -322,9 +441,7 @@ final class FallbackFolderServiceTest extends Unit
             serviceResolver: $this->createServiceResolver('asset', null, $root)
         );
 
-        $this->assertMissingParentException(
-            fn () => $service->moveToFallbackFolder($element, $this->makeEmpty(UserInterface::class))
-        );
+        $this->assertMoveFailsWithTheMissingParentKey($service, $element);
     }
 
     /**
@@ -343,9 +460,7 @@ final class FallbackFolderServiceTest extends Unit
             serviceResolver: $this->createServiceResolver('asset', null, null)
         );
 
-        $this->assertMissingParentException(
-            fn () => $service->moveToFallbackFolder($element, $this->makeEmpty(UserInterface::class))
-        );
+        $this->assertMoveFailsWithTheMissingParentKey($service, $element);
     }
 
     /**
@@ -367,9 +482,7 @@ final class FallbackFolderServiceTest extends Unit
             serviceResolver: $this->createServiceResolver('asset', null, $this->createMock(AssetFolder::class))
         );
 
-        $this->assertMissingParentException(
-            fn () => $service->moveToFallbackFolder($element, $this->makeEmpty(UserInterface::class))
-        );
+        $this->assertMoveFailsWithTheMissingParentKey($service, $element);
     }
 
     public static function folderCreationFailureProvider(): array
@@ -449,10 +562,15 @@ final class FallbackFolderServiceTest extends Unit
         return $serviceResolver;
     }
 
-    private function assertMissingParentException(callable $callable): void
-    {
+    /**
+     * @throws Exception
+     */
+    private function assertMoveFailsWithTheMissingParentKey(
+        FallbackFolderService $service,
+        ElementInterface $element
+    ): void {
         try {
-            $callable();
+            $service->moveToFallbackFolder($element, $this->makeEmpty(UserInterface::class), '/deleted/image.jpg');
             $this->fail('EnvironmentException expected');
         } catch (EnvironmentException $exception) {
             $this->assertSame(

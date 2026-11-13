@@ -60,12 +60,17 @@ final readonly class RestoreFallbackFolderSubscriber implements EventSubscriberI
         }
 
         $user = $this->restoreContext->getUser();
-        $element = $event->getElement();
-        if ($user === null || !$this->fallbackFolderService->hasMissingParent($element)) {
+        $originalPath = $this->restoreContext->getOriginalPath();
+        if ($user === null || $originalPath === null) {
             return;
         }
 
-        $this->fallbackFolderService->moveToFallbackFolder($element, $user);
+        $element = $event->getElement();
+        if (!$this->fallbackFolderService->hasMissingParent($element, $originalPath)) {
+            return;
+        }
+
+        $this->fallbackFolderService->moveToFallbackFolder($element, $user, $originalPath);
         $this->restoreContext->addRelocatedElement($element);
     }
 }

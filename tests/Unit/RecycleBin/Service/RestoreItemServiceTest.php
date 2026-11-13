@@ -82,8 +82,9 @@ final class RestoreItemServiceTest extends Unit
 
         $restoreContext = $this->createMock(RestoreContextInterface::class);
         $restoreContext->method('start')->willReturnCallback(
-            function (UserInterface $contextUser) use (&$calls, $user): void {
+            function (UserInterface $contextUser, string $originalPath) use (&$calls, $user): void {
                 $this->assertSame($user, $contextUser);
+                $this->assertSame('/deleted/image.jpg', $originalPath);
                 $calls[] = 'start';
             }
         );
@@ -118,7 +119,7 @@ final class RestoreItemServiceTest extends Unit
         $securityService->expects($this->once())->method('getCurrentUser')->willReturn($user);
 
         $restoreContext = $this->createMock(RestoreContextInterface::class);
-        $restoreContext->expects($this->once())->method('start')->with($user);
+        $restoreContext->expects($this->once())->method('start')->with($user, '/deleted/image.jpg');
         $restoreContext->method('getRelocatedElements')->willReturn([]);
 
         $service = $this->createService(
@@ -235,6 +236,7 @@ final class RestoreItemServiceTest extends Unit
     {
         return $this->makeEmpty(ItemResolverInterface::class, [
             'getById' => $this->make(Item::class, [
+                'path' => '/deleted/image.jpg',
                 'restore' => $restore ?? static function (): void {
                 },
             ]),

@@ -96,11 +96,15 @@ final class RestoreFallbackFolderSubscriberTest extends Unit
     public function testLeavesAnElementWithAnExistingParentAlone(): void
     {
         $fallbackFolderService = $this->createMock(FallbackFolderServiceInterface::class);
-        $fallbackFolderService->method('hasMissingParent')->willReturn(false);
+        $fallbackFolderService->expects($this->once())
+            ->method('hasMissingParent')
+            ->with($this->anything(), '/deleted/car')
+            ->willReturn(false);
         $fallbackFolderService->expects($this->never())->method('moveToFallbackFolder');
 
         $restoreContext = $this->createMock(RestoreContextInterface::class);
         $restoreContext->method('getUser')->willReturn($this->makeEmpty(UserInterface::class));
+        $restoreContext->method('getOriginalPath')->willReturn('/deleted/car');
         $restoreContext->expects($this->never())->method('addRelocatedElement');
 
         $subscriber = new RestoreFallbackFolderSubscriber($fallbackFolderService, $restoreContext);
@@ -116,11 +120,17 @@ final class RestoreFallbackFolderSubscriberTest extends Unit
         $element = $this->makeEmpty(ElementInterface::class);
 
         $fallbackFolderService = $this->createMock(FallbackFolderServiceInterface::class);
-        $fallbackFolderService->expects($this->once())->method('hasMissingParent')->with($element)->willReturn(true);
-        $fallbackFolderService->expects($this->once())->method('moveToFallbackFolder')->with($element, $user);
+        $fallbackFolderService->expects($this->once())
+            ->method('hasMissingParent')
+            ->with($element, '/deleted/car')
+            ->willReturn(true);
+        $fallbackFolderService->expects($this->once())
+            ->method('moveToFallbackFolder')
+            ->with($element, $user, '/deleted/car');
 
         $restoreContext = $this->createMock(RestoreContextInterface::class);
         $restoreContext->method('getUser')->willReturn($user);
+        $restoreContext->method('getOriginalPath')->willReturn('/deleted/car');
         $restoreContext->expects($this->once())->method('addRelocatedElement')->with($element);
 
         $subscriber = new RestoreFallbackFolderSubscriber($fallbackFolderService, $restoreContext);

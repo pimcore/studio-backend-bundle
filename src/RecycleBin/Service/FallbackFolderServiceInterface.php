@@ -28,16 +28,20 @@ interface FallbackFolderServiceInterface
     public const string FOLDER_PATH = '/__restored';
 
     /**
+     * $originalPath is the path of the recycle bin item. Only the item's own element can have a missing parent, core
+     * restores its children below it.
+     *
      * @throws InvalidElementTypeException
      */
-    public function hasMissingParent(ElementInterface $element): bool;
+    public function hasMissingParent(ElementInterface $element, string $originalPath): bool;
 
     /**
-     * Sets the fallback folder of the element type as parent; a taken key gets a number (_1, _2, ...), placed before
-     * the extension of an asset file. The user needs the publish permission on the folder, or on the root of the
-     * element type while the folder does not exist yet; it is created only after that check.
+     * Sets the fallback folder of the element type as parent and the key from $originalPath, the element's full path
+     * at deletion; a taken key gets a number (_1, _2, ...), placed before the extension of an asset file. The user
+     * needs the publish permission on the folder, or on the root of the element type while the folder does not exist
+     * yet; it is created only after that check.
      *
      * @throws EnvironmentException|InvalidElementTypeException
      */
-    public function moveToFallbackFolder(ElementInterface $element, UserInterface $user): void;
+    public function moveToFallbackFolder(ElementInterface $element, UserInterface $user, string $originalPath): void;
 }

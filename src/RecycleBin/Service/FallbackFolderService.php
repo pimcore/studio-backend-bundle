@@ -29,8 +29,11 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Folder as AssetFolder;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use function dirname;
 use function pathinfo;
 use function sprintf;
+use function strrpos;
+use function substr;
 
 /**
  * @internal
@@ -48,32 +51,50 @@ final readonly class FallbackFolderService implements FallbackFolderServiceInter
     ) {
     }
 
-    public function hasMissingParent(ElementInterface $element): bool
+    public function hasMissingParent(ElementInterface $element, string $originalPath): bool
     {
         $parentId = $element->getParentId();
         if ($parentId === null || $parentId === 0) {
             return true;
         }
 
+        // with a logged-in user, core saves the data object placeholder under the root when the parent is gone
+        if ($parentId === 1) {
+            return dirname($originalPath) !== '/';
+        }
+
         return $this->serviceResolver->getElementById($this->getElementType($element, true), $parentId) === null;
     }
 
-    public function moveToFallbackFolder(ElementInterface $element, UserInterface $user): void
+    public function moveToFallbackFolder(ElementInterface $element, UserInterface $user, string $originalPath): void
     {
         $elementType = $this->getElementType($element);
         $coreType = $this->getElementType($element, true);
         $folder = $this->serviceResolver->getElementByPath($coreType, self::FOLDER_PATH);
+        if ($folder instanceof Asset && !$folder instanceof AssetFolder) {
+            throw new EnvironmentException(
+                sprintf('The path of the fallback folder %s is taken by an asset file', self::FOLDER_PATH),
+                HttpResponseErrorKeys::RECYCLE_BIN_RESTORE_MISSING_PARENT->value
+            );
+        }
 
         // a folder that does not exist yet takes the root's permissions, so a denied restore creates nothing
         $this->checkPublishPermission($folder ?? $this->getRoot($coreType), $user);
         $folder ??= $this->createFallbackFolder($elementType);
 
         $element->setParent($folder);
-        $key = (string) $element->getKey();
-        $freeKey = $this->getFreeKey($element, $coreType, $key);
-        if ($freeKey !== $key) {
+        // core appends _restore while the original path is taken, that clash is not in the fallback folder
+        $freeKey = $this->getFreeKey($element, $coreType, $this->getOriginalKey($originalPath));
+        if ($freeKey !== (string) $element->getKey()) {
             $element->setKey($freeKey);
         }
+    }
+
+    private function getOriginalKey(string $originalPath): string
+    {
+        $position = strrpos($originalPath, '/');
+
+        return $position === false ? $originalPath : substr($originalPath, $position + 1);
     }
 
     /**

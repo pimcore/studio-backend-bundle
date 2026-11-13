@@ -24,12 +24,20 @@ use Pimcore\Model\UserInterface;
  */
 interface RestoreContextInterface
 {
-    public function start(UserInterface $user): void;
+    /**
+     * @param string $originalPath the path of the recycle bin item: the full path of its element at deletion
+     */
+    public function start(UserInterface $user, string $originalPath): void;
 
     /**
      * Returns null when no recycle bin restore is running.
      */
     public function getUser(): ?UserInterface;
+
+    /**
+     * Returns null when no recycle bin restore is running.
+     */
+    public function getOriginalPath(): ?string;
 
     /**
      * @throws InvalidElementTypeException

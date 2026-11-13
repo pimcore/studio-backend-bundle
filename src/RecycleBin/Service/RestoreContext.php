@@ -27,20 +27,28 @@ final class RestoreContext implements RestoreContextInterface
 
     private ?UserInterface $user = null;
 
+    private ?string $originalPath = null;
+
     /**
      * @var array<string, ElementInterface>
      */
     private array $relocatedElements = [];
 
-    public function start(UserInterface $user): void
+    public function start(UserInterface $user, string $originalPath): void
     {
         $this->user = $user;
+        $this->originalPath = $originalPath;
         $this->relocatedElements = [];
     }
 
     public function getUser(): ?UserInterface
     {
         return $this->user;
+    }
+
+    public function getOriginalPath(): ?string
+    {
+        return $this->originalPath;
     }
 
     public function addRelocatedElement(ElementInterface $element): void
@@ -57,6 +65,7 @@ final class RestoreContext implements RestoreContextInterface
     public function clear(): void
     {
         $this->user = null;
+        $this->originalPath = null;
         $this->relocatedElements = [];
     }
 }

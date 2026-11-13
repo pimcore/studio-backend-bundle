@@ -65,7 +65,7 @@ final readonly class RestoreItemService implements RestoreItemServiceInterface
 
         try {
             $this->synchronousProcessing->enable();
-            $this->restoreContext->start($user);
+            $this->restoreContext->start($user, $item->getPath());
             $item->restore();
             $relocatedElements = $this->restoreContext->getRelocatedElements();
         } catch (Exception $e) {

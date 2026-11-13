@@ -27,7 +27,10 @@ final class RestoreContextTest extends Unit
 {
     public function testIsInactiveUntilARestoreStarts(): void
     {
-        $this->assertNull((new RestoreContext())->getUser());
+        $context = new RestoreContext();
+
+        $this->assertNull($context->getUser());
+        $this->assertNull($context->getOriginalPath());
     }
 
     /**
@@ -40,7 +43,7 @@ final class RestoreContextTest extends Unit
         $asset = $this->makeEmpty(Asset::class, ['getId' => 5]);
 
         $context = new RestoreContext();
-        $context->start($this->makeEmpty(UserInterface::class));
+        $context->start($this->makeEmpty(UserInterface::class), '/deleted/car');
         $context->addRelocatedElement($placeholder);
         $context->addRelocatedElement($asset);
         $context->addRelocatedElement($restoredObject);
@@ -54,12 +57,13 @@ final class RestoreContextTest extends Unit
     public function testClearEndsTheRestore(): void
     {
         $context = new RestoreContext();
-        $context->start($this->makeEmpty(UserInterface::class));
+        $context->start($this->makeEmpty(UserInterface::class), '/deleted/image.jpg');
         $context->addRelocatedElement($this->makeEmpty(Asset::class, ['getId' => 5]));
 
         $context->clear();
 
         $this->assertNull($context->getUser());
+        $this->assertNull($context->getOriginalPath());
         $this->assertSame([], $context->getRelocatedElements());
     }
 
@@ -70,12 +74,13 @@ final class RestoreContextTest extends Unit
     {
         $user = $this->makeEmpty(UserInterface::class);
         $context = new RestoreContext();
-        $context->start($this->makeEmpty(UserInterface::class));
+        $context->start($this->makeEmpty(UserInterface::class), '/deleted/image.jpg');
         $context->addRelocatedElement($this->makeEmpty(Asset::class, ['getId' => 5]));
 
-        $context->start($user);
+        $context->start($user, '/deleted/car');
 
         $this->assertSame($user, $context->getUser());
+        $this->assertSame('/deleted/car', $context->getOriginalPath());
         $this->assertSame([], $context->getRelocatedElements());
     }
 }
