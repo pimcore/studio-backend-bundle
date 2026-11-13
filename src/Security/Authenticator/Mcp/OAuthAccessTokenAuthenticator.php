@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp;
 
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpScopes;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenService;
@@ -113,6 +114,9 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
         if (!$user instanceof User) {
             throw new AuthenticationException('Invalid or expired OAuth access token.');
         }
+
+        // Kept for the MCP endpoint, which limits the tools a token may call to its scopes.
+        $request->attributes->set(McpScopes::REQUEST_ATTRIBUTE, $resolved->scopes);
 
         return new SelfValidatingPassport(
             new UserBadge($user->getUsername(), static fn () => new SecurityUser($user)),
