@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\TokenLink;
 
 /**
  * @internal
@@ -35,5 +34,5 @@ interface UserLoginServiceInterface
     /**
      * @throws ForbiddenException|NotFoundException
      */
-    public function getLoginTokenUrl(int $id, TokenLink $parameter): string;
+    public function getLoginTokenUrl(int $id): string;
 }
