@@ -179,8 +179,8 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
      * @param int[] $roles
      * @param string[] $classes
      * @param string[] $docTypes
-     * @param int[] $responsibleUsers
-     * @param int[] $responsibleRoles
+     * @param int[]|null $responsibleUsers null keeps the stored responsible users
+     * @param int[]|null $responsibleRoles null keeps the stored responsible roles
      *
      * @throws NotFoundException
      * @throws UnprocessableContentException
@@ -191,8 +191,8 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
         array $roles,
         array $classes,
         array $docTypes,
-        array $responsibleUsers,
-        array $responsibleRoles,
+        ?array $responsibleUsers,
+        ?array $responsibleRoles,
     ): void {
         $this->updateService->updatePermissions($permissions, $serviceUser);
         $this->updateService->updateRoles($roles, $serviceUser);
@@ -202,27 +202,32 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
     }
 
     /**
-     * @param int[] $responsibleUsers
-     * @param int[] $responsibleRoles
+     * @param int[]|null $responsibleUsers null keeps the stored responsible users
+     * @param int[]|null $responsibleRoles null keeps the stored responsible roles
      *
      * @throws NotFoundException
      * @throws UnprocessableContentException
      */
-    private function applyResponsibles(User $serviceUser, array $responsibleUsers, array $responsibleRoles): void
+    private function applyResponsibles(User $serviceUser, ?array $responsibleUsers, ?array $responsibleRoles): void
     {
-        foreach ($responsibleUsers as $userId) {
+        foreach ($responsibleUsers ?? [] as $userId) {
             $user = $this->userRepository->getUserById($userId);
             if ($user instanceof User && $user->isServiceUser()) {
                 throw new UnprocessableContentException('A service user cannot be responsible for a service user');
             }
         }
 
-        foreach ($responsibleRoles as $roleId) {
+        foreach ($responsibleRoles ?? [] as $roleId) {
             $this->roleRepository->getRoleById($roleId);
         }
 
-        $serviceUser->setResponsibleUsers($responsibleUsers);
-        $serviceUser->setResponsibleRoles($responsibleRoles);
+        if ($responsibleUsers !== null) {
+            $serviceUser->setResponsibleUsers($responsibleUsers);
+        }
+
+        if ($responsibleRoles !== null) {
+            $serviceUser->setResponsibleRoles($responsibleRoles);
+        }
     }
 
     /**

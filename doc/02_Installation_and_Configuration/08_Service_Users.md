@@ -50,8 +50,9 @@ name; a service user is deactivated through its deactivate endpoint.
 ### Responsible users and roles
 
 A service user names the people who answer for it: `responsibleUsers` (user ids) and `responsibleRoles` (role ids)
-are returned by the read endpoints and accepted, as optional lists, by create and update. An update with empty lists
-clears them. An unknown user or role id answers `404`; a service-user id in `responsibleUsers` answers `422`
+are returned by the read endpoints and accepted, as optional lists, by create and update. An update that leaves a
+key out (or sends `null`) keeps the stored list, so a client that does not know the fields cannot wipe them; an
+update with an empty list clears it. An unknown user or role id answers `404`; a service-user id in `responsibleUsers` answers `422`
 ("A service user cannot be responsible for a service user").
 
 ## MCP access tokens

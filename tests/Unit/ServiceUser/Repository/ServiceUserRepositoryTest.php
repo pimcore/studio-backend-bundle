@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ServiceUser\Repository;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository\ServiceUserRepository;
 use Pimcore\Model\User;
 
@@ -49,6 +50,22 @@ final class ServiceUserRepositoryTest extends Unit
     {
         $this->expectException(NotFoundException::class);
         $this->repository(null)->getServiceUser(99);
+    }
+
+    public function testSaveRefusedByCoreValidationIsUnprocessable(): void
+    {
+        // Core throws InvalidServiceUserException before it touches the database: only a service user
+        // may have responsibles.
+        $user = new User();
+        $user->setResponsibleUsers([3]);
+
+        try {
+            $this->repository(null)->saveServiceUser($user);
+            $this->fail('UnprocessableContentException expected');
+        } catch (UnprocessableContentException $exception) {
+            $this->assertSame(422, $exception->getStatusCode());
+            $this->assertSame('Only a service user can have responsible users or roles.', $exception->getMessage());
+        }
     }
 
     private function repository(?User $resolved): ServiceUserRepository

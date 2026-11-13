@@ -41,8 +41,8 @@ final readonly class UpdateParameter
     /**
      * @param string[] $permissions
      * @param int[] $roles
-     * @param int[] $responsibleUsers
-     * @param int[] $responsibleRoles
+     * @param int[]|null $responsibleUsers null keeps the stored responsible users, [] clears them
+     * @param int[]|null $responsibleRoles null keeps the stored responsible roles, [] clears them
      * @param string[] $classes
      * @param string[] $docTypes
      * @param UserWorkspace[] $assetWorkspaces
@@ -81,19 +81,23 @@ final readonly class UpdateParameter
         )]
         private array $documentWorkspaces = [],
         #[Property(
-            description: 'IDs of the users who answer for the service user; service users are not allowed',
+            description: 'IDs of the users who answer for the service user; service users are not allowed. '
+            . 'Leave the key out to keep the stored users, send an empty list to clear them',
             type: 'array',
             items: new Items(type: 'integer'),
-            example: [3]
+            example: [3],
+            nullable: true
         )]
-        private array $responsibleUsers = [],
+        private ?array $responsibleUsers = null,
         #[Property(
-            description: 'IDs of the roles whose members answer for the service user',
+            description: 'IDs of the roles whose members answer for the service user. '
+            . 'Leave the key out to keep the stored roles, send an empty list to clear them',
             type: 'array',
             items: new Items(type: 'integer'),
-            example: [5]
+            example: [5],
+            nullable: true
         )]
-        private array $responsibleRoles = [],
+        private ?array $responsibleRoles = null,
     ) {
     }
 
@@ -159,17 +163,17 @@ final readonly class UpdateParameter
     }
 
     /**
-     * @return int[]
+     * @return int[]|null null when the payload leaves the stored responsible users unchanged
      */
-    public function getResponsibleUsers(): array
+    public function getResponsibleUsers(): ?array
     {
         return $this->responsibleUsers;
     }
 
     /**
-     * @return int[]
+     * @return int[]|null null when the payload leaves the stored responsible roles unchanged
      */
-    public function getResponsibleRoles(): array
+    public function getResponsibleRoles(): ?array
     {
         return $this->responsibleRoles;
     }

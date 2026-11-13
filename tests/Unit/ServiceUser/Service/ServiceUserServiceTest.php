@@ -524,10 +524,24 @@ final class ServiceUserServiceTest extends Unit
         $existing->setResponsibleRoles([5]);
         $service = $this->service(repository: $this->repository($existing));
 
-        $service->updateServiceUser(42, new UpdateParameter());
+        $service->updateServiceUser(42, new UpdateParameter(responsibleUsers: [], responsibleRoles: []));
 
         $this->assertSame([], $existing->getResponsibleUsers());
         $this->assertSame([], $existing->getResponsibleRoles());
+        $this->assertSame($existing, $this->saved[0]);
+    }
+
+    public function testUpdateWithoutTheResponsibleKeysKeepsTheStoredResponsibles(): void
+    {
+        $existing = $this->serviceUser();
+        $existing->setResponsibleUsers([3]);
+        $existing->setResponsibleRoles([5]);
+        $service = $this->service(repository: $this->repository($existing));
+
+        $service->updateServiceUser(42, new UpdateParameter(permissions: ['assets']));
+
+        $this->assertSame([3], $existing->getResponsibleUsers());
+        $this->assertSame([5], $existing->getResponsibleRoles());
         $this->assertSame($existing, $this->saved[0]);
     }
 

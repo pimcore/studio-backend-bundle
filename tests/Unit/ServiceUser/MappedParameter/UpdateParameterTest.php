@@ -82,16 +82,20 @@ final class UpdateParameterTest extends Unit
         $this->assertSame([5], $parameter->getRoles());
     }
 
-    public function testResponsibleUsersAndRolesAreAcceptedAndDefaultToEmpty(): void
+    public function testResponsibleUsersAndRolesAreAcceptedAndAMissingKeyIsNull(): void
     {
         $parameter = $this->deserialize(['responsibleUsers' => [3, 4], 'responsibleRoles' => [5]]);
 
         $this->assertSame([3, 4], $parameter->getResponsibleUsers());
         $this->assertSame([5], $parameter->getResponsibleRoles());
 
-        $empty = $this->deserialize(['permissions' => ['assets']]);
-        $this->assertSame([], $empty->getResponsibleUsers());
-        $this->assertSame([], $empty->getResponsibleRoles());
+        $missing = $this->deserialize(['permissions' => ['assets']]);
+        $this->assertNull($missing->getResponsibleUsers());
+        $this->assertNull($missing->getResponsibleRoles());
+
+        $cleared = $this->deserialize(['responsibleUsers' => [], 'responsibleRoles' => []]);
+        $this->assertSame([], $cleared->getResponsibleUsers());
+        $this->assertSame([], $cleared->getResponsibleRoles());
     }
 
     /**
