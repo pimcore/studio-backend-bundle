@@ -888,9 +888,13 @@ class Configuration implements ConfigurationInterface
                 ->validate()
                     ->ifTrue(static fn (array $servers): bool => array_filter(
                         array_keys($servers),
-                        static fn (int|string $id): bool => mb_strlen((string) $id) > VersionCoauthor::MAX_COAUTHOR_LENGTH
+                        static fn (int|string $id): bool => mb_strlen((string) $id)
+                            > VersionCoauthor::MAX_COAUTHOR_LENGTH
                     ) !== [])
-                    ->thenInvalid('MCP server ids are stamped as the version coauthor and may have at most 255 characters: %s')
+                    ->thenInvalid(
+                        'MCP server ids are stamped as the version coauthor '
+                        . 'and may have at most 255 characters: %s'
+                    )
                 ->end()
                 ->arrayPrototype()
                     ->children()
