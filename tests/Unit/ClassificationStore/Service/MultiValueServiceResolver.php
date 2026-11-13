@@ -16,10 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Serv
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
-use Pimcore\Model\DataObject\ClassDefinition\Data\MultiValue;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
-use function array_key_exists;
 use function is_array;
 use function json_decode;
 
@@ -51,9 +49,7 @@ final class MultiValueServiceResolver implements ServiceResolverInterface
             return new Input();
         }
 
-        $multiValue = array_key_exists('defaultVariant', $definition)
-            ? new DefaultVariantMultiValue($definition['defaultVariant'], $definition['defaultVariantLabel'] ?? null)
-            : new MultiValue();
+        $multiValue = DeclaredMultiValue::from($definition);
         $multiValue->setVariants($definition['variants'] ?? []);
         $multiValue->setMultiValue($definition['multiValue'] ?? false);
         $multiValue->setMaximum($definition['maximum'] ?? null);

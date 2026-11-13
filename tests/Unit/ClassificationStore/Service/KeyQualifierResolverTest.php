@@ -20,7 +20,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\MultiValue;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
-use function array_key_exists;
 use function json_encode;
 
 /**
@@ -176,8 +175,8 @@ final class KeyQualifierResolverTest extends Unit
     }
 
     /**
-     * A core declaring the setting answers it, with its label; a blob omitting it and a core that
-     * does not carry the accessor at all answer the same permitted default; any other type answers null.
+     * A blob declaring the setting answers it, with its label; a blob omitting it answers core's
+     * own permitted default; any other type answers null.
      */
     public function testTheDefaultVariantIsReadFromTheMemoizedDeclaration(): void
     {
@@ -190,25 +189,23 @@ final class KeyQualifierResolverTest extends Unit
                     return new Input();
                 }
 
-                return array_key_exists('defaultVariant', $definition)
-                    ? new DefaultVariantMultiValue($definition['defaultVariant'], $definition['defaultVariantLabel'] ?? null)
-                    : new MultiValue();
+                return DeclaredMultiValue::from($definition);
             }
         );
         $resolver = new KeyQualifierResolver($serviceResolver);
 
         $declared = $this->createKeyConfig(
             self::MULTI_VALUE_TYPE,
-            ['defaultVariant' => false, 'defaultVariantLabel' => 'Standard']
+            ['unqualifiedValue' => false, 'unqualifiedValueLabel' => 'Standard']
         );
-        $withoutAccessor = $this->createKeyConfig(self::MULTI_VALUE_TYPE, ['variants' => []]);
+        $omitted = $this->createKeyConfig(self::MULTI_VALUE_TYPE, ['variants' => []]);
 
         $this->assertFalse($resolver->getDefaultVariant($declared)?->isPermitted());
         $this->assertSame('Standard', $resolver->getDefaultVariant($declared)->getLabel());
         $this->assertSame(1, $resolved);
 
-        $this->assertTrue($resolver->getDefaultVariant($withoutAccessor)?->isPermitted());
-        $this->assertNull($resolver->getDefaultVariant($withoutAccessor)->getLabel());
+        $this->assertTrue($resolver->getDefaultVariant($omitted)?->isPermitted());
+        $this->assertNull($resolver->getDefaultVariant($omitted)->getLabel());
 
         $this->assertNull($resolver->getDefaultVariant($this->createKeyConfig(self::OTHER_TYPE, [])));
     }

@@ -30,7 +30,6 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use ReflectionClass;
 use function array_column;
-use function array_key_exists;
 use function array_map;
 use function json_encode;
 use function str_contains;
@@ -232,7 +231,7 @@ final class KeyGroupLayoutServiceTest extends Unit
         $keyConfig->setType('multiValue');
         $keyConfig->setDefinition(
             '{"variants":[{"name":"metric","label":"Metric"},"imperial"],"multiValue":true,"maximum":3,'
-            . '"defaultVariant":false,"defaultVariantLabel":"Standard"}'
+            . '"unqualifiedValue":false,"unqualifiedValueLabel":"Standard"}'
         );
 
         $keyLayout = $this->getKeyLayout($keyConfig);
@@ -387,9 +386,7 @@ final class KeyGroupLayoutServiceTest extends Unit
                     return new Input();
                 }
 
-                $multiValue = array_key_exists('defaultVariant', $definition)
-                    ? new DefaultVariantMultiValue($definition['defaultVariant'], $definition['defaultVariantLabel'] ?? null)
-                    : new MultiValue();
+                $multiValue = DeclaredMultiValue::from($definition);
                 $multiValue->setVariants($definition['variants'] ?? []);
                 $multiValue->setMultiValue($definition['multiValue'] ?? false);
                 $multiValue->setMaximum($definition['maximum'] ?? null);
