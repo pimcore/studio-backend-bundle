@@ -42,8 +42,8 @@ use function is_array;
 use function is_resource;
 use function is_string;
 use function sprintf;
-use function strlen;
 use function stream_get_contents;
+use function strlen;
 
 /**
  * Serves a configured MCP server over HTTP at /pimcore-mcp/studio/{server}, under
@@ -91,6 +91,7 @@ final readonly class McpServerController
         }
 
         $scopes = $this->tokenScopes($request);
+
         try {
             if ($this->scopeGuard->limits($scopes)) {
                 $this->scopeGuard->assertAllowed($this->boundedBody($request), $scopes);

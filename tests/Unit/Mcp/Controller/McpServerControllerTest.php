@@ -36,6 +36,7 @@ use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Throwable;
 use function json_encode;
 
 /**
@@ -109,7 +110,7 @@ final class McpServerControllerTest extends Unit
             $this->controller($guard)($this->request($this->call('write_tool'), []), self::SLUG);
         } catch (AccessDeniedHttpException $exception) {
             self::fail('An unlimited token was refused.');
-        } catch (\Throwable) {
+        } catch (Throwable) {
             // the transport and server are not wired in this test
         }
 
