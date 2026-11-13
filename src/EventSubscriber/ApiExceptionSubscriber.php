@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ValidationErrorPath;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\GdiParsingException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
 use Pimcore\Model\Element\ValidationException;
@@ -27,10 +28,13 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\Serializer\Exception\ExtraAttributesException;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use function array_key_exists;
 use function array_map;
+use function implode;
 use function in_array;
+use function sprintf;
 
 /**
  * @internal
@@ -78,6 +82,16 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
             && !$exception instanceof RateLimitException
         ) {
             return;
+        }
+
+        if ($exception instanceof ExtraAttributesException) {
+            $exception = new InvalidArgumentException(
+                sprintf(
+                    'The request contains unsupported fields: %s.',
+                    implode(', ', $exception->getExtraAttributes())
+                ),
+                $exception
+            );
         }
 
         if (!$exception instanceof HttpExceptionInterface) {

@@ -3,6 +3,44 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Authentication] Deprecated: static MCP personal access tokens (`pimcore_studio_backend.mcp.authentication.tokens`,
+  handled by `PatAuthenticator`). They keep working on 2026.x; configuring them and each request they authenticate
+  raise a deprecation. They are removed in 2027.1. Migrate integrations to MCP access tokens issued for a dedicated
+  Pimcore user (`McpAccessTokenServiceInterface::issue()`), and people to OAuth `authorization_code`. See [MCP Server](../04_Development_Details/08_MCP_Server.md#patauthenticator-external-clients---deprecated).
+- [Service Users] Added: machine identities, a Pimcore user of type `serviceuser` (a `Pimcore\Model\User` whose `isServiceUser()` is true),
+  managed through the new "Service User Management" endpoints and the console command
+  `studio-backend-bundle:service-user:mcp-token`. Everything is additive: no existing endpoint, schema or user type
+  changes. The service-user endpoints need a core release that provides `User::newServiceUser()`
+  (pimcore/pimcore#19692). See [Service Users](./08_Service_Users.md).
+- [Service Users] Semantic notes, for code that works with users:
+  - A service user never logs in with a password. Setting one or setting it as an administrator is refused on the
+    core class; every save stores an unusable random value that no password verifies against (as users created
+    through OpenID Connect have), so `Authentication::isValidUser()` treats it like any user. It is never an administrator, has no two-factor authentication and cannot log in to
+    Studio. Its `email` is an optional contact address for the team responsible. Logging in and password recovery do
+    not use it.
+  - Identity kinds never mix. `User::getByName()`, `User\Listing` and the user endpoints return humans only: the
+    user tree and lists leave service users out, and the endpoints that read or change one user by id (detail,
+    update, password, delete, login link, two-factor reset, object dependencies) answer `404` for a service-user id.
+    Only the user image is served for any id, as authors are shown by id. A service user is reached through the
+    service-user endpoints, and its name is unique across humans and service users. Nothing converts one kind into
+    the other: creating a service user from a human copies permissions, roles and workspaces and leaves the human
+    unchanged.
+  - `User::getById()` returns the `User` for a service-user id as for any user id, with `isServiceUser()` true. Code that
+    assumes an id always names a human must call `isServiceUser()` first.
+- [Service Users] MCP server sharing: a service user's entry in `access.shared_users` is stored with `canRead` and `canEdit` false, whatever the client sent; `canAccess` is kept as sent. See [MCP Server Management](../04_Development_Details/09_MCP_Server_Management.md#access-and-sharing).
+- [Service Users] Added: the service-user schema (`GET /pimcore-studio/api/service-users` and
+  `/service-user/{id}`, and the responses that return it) carries `clientCredentialsEnabled` (whether the OAuth
+  `client_credentials` grant is on) and `mcpTokens` (`active`, `latestExpiresAt`; a summary of the MCP access tokens,
+  read with one grouped query for the whole collection, as are the client ids). Additive; no endpoint, permission
+  or token lifetime changes.
+- [Service Users] Changed: `clientSecret` is nullable in the service-user credentials response (create, create from a
+  user, rotate secret). It is `null` while `pimcore_studio_backend.oauth.client_credentials.enabled` is off; the key is
+  still present. See [Service Users](./08_Service_Users.md#which-credential-to-use).
+- [OAuth] Added: the Client Credentials grant for clients bound to a service user, behind
+  `pimcore_studio_backend.oauth.client_credentials.enabled` (default `false`). Its tokens last
+  `oauth.client_credentials.access_token_ttl` seconds (default 900, minimum 60) and carry no refresh token. Nothing
+  changes until the switch is turned on. The guarantee that every token acts for a logged-in human no longer holds
+  once it is on. See [OAuth Server](./06_OAuth_Server.md#service-user-clients-client-credentials).
 - [Elements] Changed: the `422` response of a failed element validation (`PUT /pimcore-studio/api/assets/{id}`,
   `.../data-objects/{id}`, `.../documents/{id}` and the synchronous `POST .../assets/add/{parentId}` and
   `POST .../assets/{id}/replace`) now carries `validationErrors` next to `message` and `errorKey`, one entry per failed
@@ -74,9 +112,61 @@ The following steps are necessary during updating to newer versions.
 > Connect (SSO) login.
 
 ## Upgrade to 2026.3.5
+- [Data Objects] Fixed: `POST /data-objects/select-options` resolves the keys of a classification store, so select
+  and multiselect keys with an options provider load their options. They are addressed as
+  `<storeFieldName>.<groupId>.<keyId>`, or `<storeFieldName>.<groupId>.<language>.<keyId>` in the language comparison
+  view. The provider receives the same owner context as on the initial layout load (`ownerType`, `ownerName`, `keyId`,
+  `groupId`, `keyDefinition`). This needs `pimcore/studio-ui-bundle` 2026.3.5 or later, which sends the new field name.
+
+> **Note:** a field name this endpoint cannot resolve now returns `422` with the parse error instead of `404`
+> "Class with ID: ... not found". This applies to every field type, not only classification store keys. The context of
+> the request stays in the nested `context` key of the options provider context and does not overwrite the keys above.
+
 - [Data Objects] Fixed: the auto-save of a data object draft no longer writes the owner objects of a reverse object relation. These edits are applied only on an explicit save (and on updates without a task). The same applies to `PATCH` requests carrying an auto-save task.
 
 > **Note:** edits of such a field that were skipped by an auto-save are not part of the stored draft, so reopening the draft cannot recover them; the client has to send them again with the explicit save. This also applies to custom data adapters that implement the public marker `RemoteStorageDataInterface`: they are skipped while an auto-save stores a draft, and in `POST /data-objects/select-options`. The marker is only checked on the adapter of a top-level field; adapters nested in localized fields, object bricks or field collections are not checked. `DataServiceInterface::updateEditableData()` gained an optional `bool $applyRemoteChanges = true` parameter; the default keeps the previous behavior.
+- [Users] Security (GHSA-x3pq-323g-f95v): a user who may manage users (`users` permission) can no longer hand out more
+  privilege than they hold themselves. This changes the behavior of the following endpoints for non-admin user
+  managers (admins are not affected):
+  - Saving a user or role (`PUT /user/{id}`, `PUT /role/{id}`) returns `403` if the submitted permissions contain one
+    the caller does not hold (directly or through a role). The full submitted set is checked, so re-saving a user or
+    role that carries a permission the caller lacks fails until it is reduced first.
+  - Assigning a role the caller does not hold returns `403`. Clearing roles stays allowed. Role ids that are unknown or
+    not integers return `404`.
+  - Changing the password (`PUT /user/{id}/password`) or the email (`PUT /user/{id}`) of another user is admin-only
+    and returns `403` otherwise. Users can still change their own password and email.
+  - Login token links for another user (`POST /user/token-link/{id}`) are admin-only and return `403` otherwise. A
+    link for the caller's own account still works.
+- [Users] Changed: the login token link is built on the server as
+  `<scheme>://<host><base url><pimcore_studio_ui.url_path>/login/?token=...`. A `tokenLink` request body is ignored;
+  `TokenLinkRequestBody` and `TokenLink` are deprecated and without effect. Scheme, host and port come from the
+  request context, so behind a reverse proxy configure `framework.trusted_proxies` (and `trusted_headers`), otherwise
+  the link may point to a different origin than the one the browser uses.
+- [Studio UI] The "login as different user" action and the role options in the user form should be limited to what the
+  backend now allows (admins only for login links, the caller's own roles for non-admins). Until then, non-admin user
+  managers see `403` errors for these actions.
+
+## Upgrade to 2025.4.20
+- [Users] Security (GHSA-x3pq-323g-f95v): a user who may manage users (`users` permission) can no longer hand out more
+  privilege than they hold themselves. This changes the behavior of the following endpoints for non-admin user
+  managers (admins are not affected):
+  - Saving a user or role (`PUT /user/{id}`, `PUT /role/{id}`) returns `403` if the submitted permissions contain one
+    the caller does not hold (directly or through a role). The full submitted set is checked, so re-saving a user or
+    role that carries a permission the caller lacks fails until it is reduced first.
+  - Assigning a role the caller does not hold returns `403`. Clearing roles stays allowed. Role ids that are unknown or
+    not integers return `404`.
+  - Changing the password (`PUT /user/{id}/password`) or the email (`PUT /user/{id}`) of another user is admin-only
+    and returns `403` otherwise. Users can still change their own password and email.
+  - Login token links for another user (`POST /user/token-link/{id}`) are admin-only and return `403` otherwise. A
+    link for the caller's own account still works.
+- [Users] Changed: the login token link is built on the server as
+  `<scheme>://<host><base url><pimcore_studio_ui.url_path>/login/?token=...`. A `tokenLink` request body is ignored;
+  `TokenLinkRequestBody` and `TokenLink` are deprecated and without effect. Scheme, host and port come from the
+  request context, so behind a reverse proxy configure `framework.trusted_proxies` (and `trusted_headers`), otherwise
+  the link may point to a different origin than the one the browser uses.
+- [Studio UI] The "login as different user" action and the role options in the user form should be limited to what the
+  backend now allows (admins only for login links, the caller's own roles for non-admins). Until then, non-admin user
+  managers see `403` errors for these actions.
 
 ## Upgrade to 2026.3.4
 - [Translations] Fixed: the `admin` translation domain is maintained in Studio with the website languages, but the

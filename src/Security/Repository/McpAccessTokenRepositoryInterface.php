@@ -31,6 +31,16 @@ interface McpAccessTokenRepositoryInterface
 
     public function deleteByUserId(int $userId): void;
 
+    /**
+     * One grouped query for all given users: the number of tokens still valid at `$now` and the
+     * latest expiry among them. A user without a valid token has no entry.
+     *
+     * @param int[] $userIds
+     *
+     * @return array<int, array{active: int, latestExpiresAt: int}>
+     */
+    public function summarizeByUserIds(array $userIds, int $now): array;
+
     /** @return int number of rows deleted */
     public function deleteExpired(int $now): int;
 }

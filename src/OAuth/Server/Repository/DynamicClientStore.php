@@ -40,6 +40,9 @@ final readonly class DynamicClientStore implements DynamicClientStoreInterface
             $client->confidential,
             $client->secretHash,
         );
+        if ($client->serviceUserId !== null) {
+            $record->bindToServiceUser($client->serviceUserId);
+        }
         $record->setMetadataHash($client->metadataHash);
 
         $this->entityManager->persist($record);
@@ -82,6 +85,7 @@ final readonly class DynamicClientStore implements DynamicClientStoreInterface
             $record->getSecretHash(),
             $record->getMetadataHash(),
             $record->getCreatedAt(),
+            $record->getServiceUserId(),
         );
     }
 }

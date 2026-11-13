@@ -800,6 +800,18 @@ login_token_summary: Session-based login with user token.
 logout_description: Logout and invalidate current session for active user.
 logout_success_response: Logout successful.
 logout_summary: Logout and invalidate current session for active user.
+maintenance_mode_activate_description: |
+    Activate the maintenance mode. Every request from another session is answered with HTTP 503 until the mode
+    is deactivated; only the session that activated it keeps access. If that session ends (logout, expiry),
+    deactivate the mode with <strong>bin/console pimcore:maintenance-mode --disable</strong>.
+maintenance_mode_activate_success_response: Maintenance mode activated, the current session is exempt
+maintenance_mode_activate_summary: Activate maintenance mode
+maintenance_mode_deactivate_description: Deactivate the maintenance mode so that all sessions regain access.
+maintenance_mode_deactivate_success_response: Maintenance mode deactivated
+maintenance_mode_deactivate_summary: Deactivate maintenance mode
+maintenance_mode_get_description: Get whether the maintenance mode is currently active.
+maintenance_mode_get_success_response: Current maintenance mode state
+maintenance_mode_get_summary: Get maintenance mode state
 mcp_create_server_description: |
     Create a new MCP server configuration. The <strong>urlSlug</strong> is used as the identifier and
     determines the server's serving URL; it must be unique and contain only lowercase letters, digits and hyphens.
@@ -1094,6 +1106,60 @@ saved_search_update_menu_shortcut_description: |
   Only the owner of the configuration is allowed to update it.
 saved_search_update_menu_shortcut_summary: Update a saved search menu shortcut
 saved_search_update_menu_shortcut_success_response: Saved search menu shortcut updated successfully
+service_user_create_description: |
+  Creates a service user, a machine identity with its own permissions, roles and workspaces, together with
+  its confidential OAuth client (client_credentials). The response carries the client id and the client secret.
+  The secret is shown only in this response; only its hash is stored. A service user is never an administrator
+  and has no password.
+service_user_create_success_response: Client credentials of the new service user. The secret is shown only once.
+service_user_create_summary: Create a service user
+service_user_create_from_user_description: |
+  Creates a service user that takes over the permissions, roles, class and document type restrictions and
+  workspaces of the user with the given {id}. The user itself is not changed, and admin rights are never taken
+  over. Only an administrator may create a service user from an administrator.
+service_user_create_from_user_success_response: Client credentials of the new service user. The secret is shown only once.
+service_user_create_from_user_summary: Create a service user from a user
+service_user_deactivate_by_id_description: |
+  Deactivates the service user with the given {id}. Its client credentials, OAuth tokens and MCP access tokens
+  are refused from the next request on.
+service_user_deactivate_by_id_success_response: The deactivated service user
+service_user_deactivate_by_id_summary: Deactivate a service user
+service_user_delete_by_id_description: |
+  Deletes the service user with the given {id}. Its OAuth client is deleted, its OAuth tokens and MCP access
+  tokens are revoked, and its entries are removed from the access lists of every managed MCP server, so a later
+  user with the same name inherits nothing.
+service_user_delete_by_id_success_response: Service user deleted
+service_user_delete_by_id_summary: Delete a service user
+service_user_get_by_id_description: |
+  Returns the service user with the given {id}, with its permissions, roles, workspaces and the id of its
+  OAuth client. The client secret is never returned here.
+service_user_get_by_id_success_response: The service user
+service_user_get_by_id_summary: Get a service user
+service_user_get_collection_description: |
+  Lists all service users. Service users are not part of the user tree or the user collection.
+service_user_get_collection_success_response: List of service users
+service_user_get_collection_summary: List service users
+service_user_mcp_token_issue_description: |
+  Issues an MCP access token for the service user with the given {id}, the interim credential until OAuth
+  client_credentials is enabled. The lifetime is 1 to 90 days (default 30). The token is shown only in this
+  response; only its hash is stored. Earlier tokens stay valid until they expire or are revoked.
+service_user_mcp_token_issue_success_response: The MCP access token. It is shown only once.
+service_user_mcp_token_issue_summary: Issue an MCP access token for a service user
+service_user_mcp_token_revoke_description: |
+  Revokes every MCP access token of the service user with the given {id}.
+service_user_mcp_token_revoke_success_response: MCP access tokens revoked
+service_user_mcp_token_revoke_summary: Revoke the MCP access tokens of a service user
+service_user_rotate_secret_description: |
+  Replaces the client secret of the service user with the given {id}. The previous secret stops working at
+  once. The new secret is shown only in this response.
+service_user_rotate_secret_success_response: Client credentials with the new secret. The secret is shown only once.
+service_user_rotate_secret_summary: Rotate the client secret of a service user
+service_user_update_by_id_description: |
+  Updates the contact email, permissions, roles, class and document type restrictions and workspaces of the
+  service user with the given {id}. Name, password, admin rights and two-factor settings cannot be set; a
+  request that contains any other field is refused.
+service_user_update_by_id_success_response: The updated service user
+service_user_update_by_id_summary: Update a service user
 simple_search_get_description: |
   Search for elements based on the given <strong>{search term}</strong>. <br>
   Elements are searched with the fulltext filter applied via Generic Data Index. <br>
@@ -1192,6 +1258,7 @@ tag_get_collection_for_element_by_type_and_id_success_response: Paginated tags f
 tag_get_collection_for_element_by_type_and_id_summary: Get tags for an element
 tag_get_collection_success_response: All tags for a parent filtered based on type and query parameters
 tag_get_collection_summary: Get all tags for a parent
+tag_maintenance_mode_description: Maintenance mode operations to get the state, activate and deactivate it
 tag_mcp_description: MCP server management operations to get/create/update/delete servers and list available tools
 tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
 tag_metadata_description: Metadata operations to get/update/create/delete metadata
@@ -1204,6 +1271,7 @@ tag_recycle_bin_description: Recycle bin operations to list/restore/flush delete
 tag_role_description: Role Management operations
 tag_search_description: Operations to get search configuration, search elements and get search result previews
 tag_schedule_description: Get schedules for an element
+tag_service_user_description: Manage service users, their OAuth client and their MCP access tokens
 tag_settings_description: Get System Settings
 tag_tags_description: Tag operations to get/list/create/update/delete tags
 tag_tags_for_element_description: Tag operations to get tags for an element
@@ -1784,6 +1852,17 @@ custom_reports_config_delete_description: |
 custom_reports_config_delete_summary: Delete a custom reports configuration
 custom_reports_config_delete_success_response: Successfully deleted custom report configuration
 custom_reports_config_delete_name_parameter: Name of the custom report to delete
+custom_reports_config_export_description: |
+  Export the custom report configuration with the given <strong>{name}</strong> as a JSON file. <br>
+  Environment specific values such as creation and modification dates are not part of the export. <br>
+  The file can be imported again via the import endpoint.
+custom_reports_config_export_summary: Export a custom report configuration as JSON
+custom_reports_config_export_success_response: JSON file containing the custom report configuration
+custom_reports_config_import_description: |
+  Import a custom report configuration from a JSON file that was created by the export endpoint. <br>
+  A new report is created with the <strong>name</strong> stored in the file. The name must not be in use yet.
+custom_reports_config_import_summary: Import a custom report configuration from JSON
+custom_reports_config_import_success_response: Successfully imported custom report configuration
 custom_reports_get_tree_success_response: Get all reports for the current user to display in configuration tree.
 custom_reports_get_tree_description: Get all reports for the current user to display in tree.
 custom_reports_get_tree_summary: All reports for the current user to display in tree.

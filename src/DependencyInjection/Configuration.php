@@ -840,6 +840,13 @@ class Configuration implements ConfigurationInterface
                                     'Map of Pimcore username to bearer token list. '
                                     . 'Tokens can reference env vars: \'%%env(MY_TOKEN)%%\'.'
                                 )
+                                ->setDeprecated(
+                                    'pimcore/studio-backend-bundle',
+                                    '2026.4',
+                                    'Static MCP personal access tokens are deprecated and will be removed in 2027.1. '
+                                    . 'Use OAuth (authorization_code for people, client_credentials for service users) '
+                                    . 'or MCP access tokens.'
+                                )
                                 ->useAttributeAsKey('username')
                                 ->arrayPrototype()
                                     ->scalarPrototype()->end()
@@ -1024,6 +1031,7 @@ class Configuration implements ConfigurationInterface
                         ->scalarPrototype()->end()
                         ->defaultValue([])
                     ->end()
+                    ->append($this->addOAuthClientCredentialsNode())
                     ->append($this->addOAuthClientIdMetadataDocumentsNode())
                     ->append($this->addOAuthDynamicClientRegistrationNode())
                     ->arrayNode('keys')
@@ -1132,6 +1140,31 @@ class Configuration implements ConfigurationInterface
         }
 
         return false;
+    }
+
+    private function addOAuthClientCredentialsNode(): ArrayNodeDefinition
+    {
+        $node = (new TreeBuilder('client_credentials'))->getRootNode();
+        $node
+            ->addDefaultsIfNotSet()
+            ->info(
+                'OAuth client_credentials grant for confidential clients bound to a service user. '
+                . 'The token is issued for the bound service user, without a refresh token. '
+                . 'Dynamically registered and CIMD clients never get this grant. Opt-in; default off.'
+            )
+            ->children()
+                ->booleanNode('enabled')
+                    ->info('Enable the grant at the token endpoint and advertise it in metadata.')
+                    ->defaultFalse()
+                ->end()
+                ->integerNode('access_token_ttl')
+                    ->info('Access-token lifetime in seconds for this grant. Keep it short.')
+                    ->min(60)
+                    ->defaultValue(900)
+                ->end()
+            ->end();
+
+        return $node;
     }
 
     private function addOAuthClientIdMetadataDocumentsNode(): ArrayNodeDefinition

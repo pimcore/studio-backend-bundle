@@ -648,9 +648,11 @@ final class Installer extends SettingsStoreAwareInstaller
         $table->addColumn('token_endpoint_auth_method', 'string', ['notnull' => true, 'length' => 40]);
         $table->addColumn('metadata_hash', 'string', ['notnull' => false, 'length' => 64]);
         $table->addColumn('created_at', 'bigint', ['notnull' => true, 'unsigned' => true]);
+        $table->addColumn('service_user_id', 'integer', ['notnull' => false, 'unsigned' => true]);
 
         $table->setPrimaryKey(['client_id'], 'pk_' . OAuthClientRecord::TABLE_NAME);
         $table->addIndex(['metadata_hash'], 'idx_oauth_client_metadata_hash');
+        $table->addUniqueIndex(['service_user_id'], 'uniq_oauth_client_service_user_id');
     }
 
     /**

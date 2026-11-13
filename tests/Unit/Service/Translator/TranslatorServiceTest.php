@@ -105,6 +105,24 @@ final class TranslatorServiceTest extends Unit
     }
 
     /**
+     * Maintenance mode can start while the login page is open, so its notice can show before the login.
+     */
+    public function testMaintenanceModeNoticeKeysArePublic(): void
+    {
+        $translatorService = $this->mockTranslatorService(false);
+
+        $keys = $translatorService->getAllTranslationsByLocale('en', true)->getKeys();
+
+        foreach ([
+            'maintenance-mode.locked-out.title',
+            'maintenance-mode.locked-out.text',
+            'maintenance-mode.locked-out.reload',
+        ] as $key) {
+            $this->assertArrayHasKey($key, $keys);
+        }
+    }
+
+    /**
      * @throws Exception
      */
     public function testGetTranslationsForKeys(): void
