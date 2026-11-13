@@ -22,6 +22,7 @@ studio_ee_job_step_ownership_management_reassign_owner: Ponowne przypisywanie w�
 studio_ee_job_step_ownership_management_delete: Usuwanie konfiguracji
 studio_ee_recycle_bin_delete_failed: "Nie udało się usunąć elementu o ID %id% z kosza: %message%"
 studio_ee_recycle_bin_restore_failed: "Nie można przywrócić elementu z kosza o ID %id%: %message%"
+studio_ee_recycle_bin_restore_relocated: Element typu %type% o ID %id% został przywrócony do %path%, ponieważ jego element nadrzędny już nie istnieje
 studio_ee_csv_data_collection_failed: "Nie można pobrać danych do eksportu CSV dla %id%: %message%"
 studio_ee_element_patch_failed: "Nie można zaktualizować elementu typu %type% o ID %id%: %message%"
 studio_ee_element_rewrite_references_failed: "Nie można przepisać odwołań elementu typu %type% o ID %id%: %message%"

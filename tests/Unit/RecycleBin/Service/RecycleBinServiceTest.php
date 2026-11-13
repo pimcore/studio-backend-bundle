@@ -16,16 +16,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\RecycleBin\Service;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Exception;
-use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\RecycleBin\ItemResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ItemsParameter;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Event\PreResponse\RelocatedItemEvent;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RecycleBinHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Repository\RecycleBinRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Schema\RelocatedItem;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\JobServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RecycleBinService;
-use Pimcore\Model\Element\Recyclebin\Item;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RestoreItemServiceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -38,10 +39,8 @@ final class RecycleBinServiceTest extends Unit
      */
     public function testRestoreSingleItemDoesNotCreateJob(): void
     {
-        $itemResolver = $this->makeEmpty(ItemResolverInterface::class, [
-            'getById' => $this->make(Item::class, [
-                'restore' => null,
-            ]),
+        $restoreItemService = $this->makeEmpty(RestoreItemServiceInterface::class, [
+            'restoreItem' => Expected::once([]),
         ]);
 
         $jobService = $this->makeEmpty(JobServiceInterface::class, [
@@ -50,12 +49,13 @@ final class RecycleBinServiceTest extends Unit
 
         $service = $this->createService(
             jobService: $jobService,
-            itemResolver: $itemResolver,
+            restoreItemService: $restoreItemService,
         );
 
         $result = $service->restore(new ItemsParameter([42]));
 
-        $this->assertNull($result);
+        $this->assertNull($result->getJobRunId());
+        $this->assertSame([], $result->getRelocatedItems());
     }
 
     /**
@@ -78,7 +78,7 @@ final class RecycleBinServiceTest extends Unit
 
         $result = $service->restore(new ItemsParameter([1, 2]));
 
-        $this->assertSame(50, $result);
+        $this->assertSame(50, $result->getJobRunId());
     }
 
     /**
@@ -86,11 +86,13 @@ final class RecycleBinServiceTest extends Unit
      */
     public function testRestoreItemException(): void
     {
-        $itemResolver = $this->makeEmpty(ItemResolverInterface::class, [
-            'getById' => null,
+        $restoreItemService = $this->makeEmpty(RestoreItemServiceInterface::class, [
+            'restoreItem' => static function (int $id): array {
+                throw new NotFoundException('recycle bin item', $id);
+            },
         ]);
 
-        $service = $this->createService(itemResolver: $itemResolver);
+        $service = $this->createService(restoreItemService: $restoreItemService);
 
         $this->expectException(NotFoundException::class);
         $service->restore(new ItemsParameter([999]));
@@ -128,7 +130,7 @@ final class RecycleBinServiceTest extends Unit
 
         $result = $service->restore(new ItemsParameter([15, 5, 10]));
 
-        $this->assertSame(123, $result);
+        $this->assertSame(123, $result->getJobRunId());
         // Verify original IDs were passed to the repository
         $this->assertSame([15, 5, 10], $capturedIds);
     }
@@ -160,8 +162,53 @@ final class RecycleBinServiceTest extends Unit
         $items = [1, 2, 3, 4, 5];
         $result = $service->restore(new ItemsParameter($items));
 
-        $this->assertSame(77, $result);
+        $this->assertSame(77, $result->getJobRunId());
         $this->assertSame($items, $capturedIds);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRestoreSingleItemReturnsTheRelocatedItemsAndDispatchesTheirEvents(): void
+    {
+        $relocatedItem = new RelocatedItem(83, 'asset', '/__restored/image.jpg');
+
+        $restoreItemService = $this->createMock(RestoreItemServiceInterface::class);
+        $restoreItemService->expects($this->once())
+            ->method('restoreItem')
+            ->with(42, null)
+            ->willReturn([$relocatedItem]);
+
+        $dispatchedEvents = [];
+        $eventDispatcher = $this->makeEmpty(EventDispatcherInterface::class, [
+            'dispatch' => static function (object $event, string $eventName) use (&$dispatchedEvents): object {
+                $dispatchedEvents[$eventName] = $event;
+
+                return $event;
+            },
+        ]);
+
+        $service = $this->createService(
+            eventDispatcher: $eventDispatcher,
+            restoreItemService: $restoreItemService,
+        );
+
+        $result = $service->restore(new ItemsParameter([42]));
+
+        $this->assertSame([$relocatedItem], $result->getRelocatedItems());
+        $this->assertInstanceOf(RelocatedItemEvent::class, $dispatchedEvents[RelocatedItemEvent::EVENT_NAME]);
+        $this->assertSame($relocatedItem, $dispatchedEvents[RelocatedItemEvent::EVENT_NAME]->getRelocatedItem());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRestoreItemDelegatesForTheCurrentUser(): void
+    {
+        $restoreItemService = $this->createMock(RestoreItemServiceInterface::class);
+        $restoreItemService->expects($this->once())->method('restoreItem')->with(42, null)->willReturn([]);
+
+        $this->createService(restoreItemService: $restoreItemService)->restoreItem(42);
     }
 
     /**
@@ -170,16 +217,17 @@ final class RecycleBinServiceTest extends Unit
     private function createService(
         ?RecycleBinRepositoryInterface $repository = null,
         ?JobServiceInterface $jobService = null,
-        ?ItemResolverInterface $itemResolver = null,
+        ?EventDispatcherInterface $eventDispatcher = null,
+        ?RestoreItemServiceInterface $restoreItemService = null,
     ): RecycleBinService {
         return new RecycleBinService(
-            $this->makeEmpty(EventDispatcherInterface::class),
+            $eventDispatcher ?? $this->makeEmpty(EventDispatcherInterface::class),
             $this->makeEmpty(FilterMapperServiceInterface::class),
-            $itemResolver ?? $this->makeEmpty(ItemResolverInterface::class),
+            $this->makeEmpty(ItemResolverInterface::class),
             $jobService ?? $this->makeEmpty(JobServiceInterface::class),
             $this->makeEmpty(RecycleBinHydratorInterface::class),
             $repository ?? $this->makeEmpty(RecycleBinRepositoryInterface::class),
-            $this->makeEmpty(SynchronousProcessingServiceInterface::class),
+            $restoreItemService ?? $this->makeEmpty(RestoreItemServiceInterface::class, ['restoreItem' => []]),
         );
     }
 }
