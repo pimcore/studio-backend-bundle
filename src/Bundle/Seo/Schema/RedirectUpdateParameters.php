@@ -42,6 +42,14 @@ final readonly class RedirectUpdateParameters
         public ?int $targetSite = null,
         #[Property(description: 'Target URL', type: 'string', example: '/new-path', nullable: true)]
         public ?string $target = null,
+        #[Property(
+            description: "Type of the element the target points to - 'document', 'asset' or 'object'. " .
+                'Detected from the target when omitted.',
+            type: 'string',
+            example: 'document',
+            nullable: true
+        )]
+        public ?string $targetType = null,
         #[Property(description: 'Status code', type: 'integer', example: 301)]
         public int $statusCode = 301,
         #[Property(description: 'Priority', type: 'integer', example: 8)]
@@ -85,6 +93,11 @@ final readonly class RedirectUpdateParameters
     public function getTarget(): ?string
     {
         return $this->target;
+    }
+
+    public function getTargetType(): ?string
+    {
+        return $this->targetType;
     }
 
     public function getStatusCode(): int
