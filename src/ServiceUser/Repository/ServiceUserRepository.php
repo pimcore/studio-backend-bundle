@@ -19,8 +19,10 @@ use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Exception\DuplicateUserNameException;
+use Pimcore\Model\User\Exception\InvalidServiceUserException;
 use Pimcore\Model\User\ServiceUser\Listing as ServiceUserListing;
 use function sprintf;
 
@@ -63,6 +65,9 @@ final readonly class ServiceUserRepository implements ServiceUserRepositoryInter
             throw new ElementExistsException(
                 sprintf('A user or service user named "%s" already exists.', (string) $serviceUser->getName())
             );
+        } catch (InvalidServiceUserException $exception) {
+            // Core re-validates the responsible users and roles on save; one deleted in the meantime is a client error
+            throw new UnprocessableContentException($exception->getMessage());
         } catch (Exception $exception) {
             throw new DatabaseException('The service user could not be saved.', $exception);
         }

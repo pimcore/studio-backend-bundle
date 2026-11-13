@@ -52,6 +52,9 @@ jobs:
 
         - name: Set up matrix
           id: set-matrix
+          env:
+            HEAD_REF: ${{ github.head_ref }}
+            SERVICE_USER_CORE: "dev-service-user-responsibles as 2026.4.99"
           run: |
             php_versions="${{ steps.parse-php-versions.outputs.php_versions }}"
 
@@ -67,6 +70,13 @@ jobs:
                 .matrix[]
               ]
             }')
+
+            # Temporary: the service user code needs the core service user model, which is not on
+            # pimcore/pimcore 2026.x yet. Remove this override once the core change is merged.
+            if [ "$HEAD_REF" = "service-user-responsibles" ]; then
+              FILTERED_MATRIX_JSON=$(echo "$FILTERED_MATRIX_JSON" | jq --arg core "$SERVICE_USER_CORE" '
+                .matrix |= map(.pimcore_version = $core)')
+            fi
 
             ENCODED_MATRIX_JSON=$(echo $FILTERED_MATRIX_JSON | jq -c .)
 
