@@ -88,16 +88,22 @@ trait ValidateObjectDataTrait
 
         try {
             $store = $object->get($address['fieldname']);
+            if (!$store instanceof Classificationstore) {
+                return null;
+            }
 
-            return $store instanceof Classificationstore
-                ? $store->getLocalizedKeyValue(
-                    $address['groupId'],
-                    $address['keyId'],
-                    is_string($address['language'] ?? null) ? $address['language'] : 'default',
-                    true,
-                    true
-                )
-                : null;
+            $language = 'default';
+            if (is_string($address['language'] ?? null)) {
+                $language = $address['language'];
+            }
+
+            return $store->getLocalizedKeyValue(
+                $address['groupId'],
+                $address['keyId'],
+                $language,
+                true,
+                true
+            );
         } catch (Exception) {
             // a store the object does not carry exports nothing, the way the plain lookup does
             return null;
