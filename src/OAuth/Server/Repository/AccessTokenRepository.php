@@ -18,6 +18,7 @@ use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\OAuth\OAuthTokenRecord;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\AccessTokenEntity;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\ClientEntity;
 use function ctype_digit;
 
 /**
@@ -46,6 +47,12 @@ final class AccessTokenRepository implements AccessTokenRepositoryInterface
         $token->setClient($clientEntity);
         foreach ($scopes as $scope) {
             $token->addScope($scope);
+        }
+
+        // league issues a client_credentials token without a user; a bound client's token
+        // is the service user's, so the record (and revocation by user) carries that id.
+        if ($clientEntity instanceof ClientEntity && $clientEntity->getServiceUserId() !== null) {
+            $userIdentifier = (string) $clientEntity->getServiceUserId();
         }
 
         if ($userIdentifier !== null) {

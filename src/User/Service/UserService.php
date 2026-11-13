@@ -85,7 +85,7 @@ final readonly class UserService implements UserServiceInterface
     public function deleteUser(int $userId): void
     {
         $currentUser = $this->securityService->getCurrentUser();
-        $userToDelete = $this->userRepository->getUserById($userId);
+        $userToDelete = $this->userRepository->getPersonById($userId);
 
         if (!$currentUser->isAdmin() && $userToDelete->isAdmin()) {
             throw new ForbiddenException('Only admins can delete other admins');
@@ -156,7 +156,7 @@ final readonly class UserService implements UserServiceInterface
 
     public function getUserById(int $userId): UserSchema
     {
-        $user = $this->userRepository->getUserById($userId);
+        $user = $this->userRepository->getPersonById($userId);
 
         if ($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
             throw new ForbiddenException('Only admins can view other admins');

@@ -15,14 +15,20 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Publisher;
 
 use Pimcore\Model\Document;
 use Pimcore\Model\UserInterface;
+use Pimcore\Model\Version;
 
 /**
  * @internal
  */
 interface DocumentVersionPublisherInterface
 {
+    /**
+     * Publishes the state restored from a version into $versionDocument, written into $existingVersion when given
+     * instead of a new version
+     */
     public function publish(
         Document $versionDocument,
-        UserInterface $user
+        UserInterface $user,
+        ?Version $existingVersion = null
     ): void;
 }

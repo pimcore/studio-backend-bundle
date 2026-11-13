@@ -303,6 +303,10 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $container->getDefinition(AccessTokenRepository::class)
             ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
+        // Both flags, like registration below: the sub-flag qualifies a server that runs.
+        $clientCredentials = $config['oauth']['client_credentials'];
+        $clientCredentialsEnabled = $clientCredentials['enabled'] && $config['oauth']['enabled'];
+
         $container->getDefinition(AuthorizationServerFactory::class)
             ->setArgument('$privateKey', $config['oauth']['keys']['private_key'])
             ->setArgument('$passphrase', $config['oauth']['keys']['passphrase'])
@@ -310,7 +314,12 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             ->setArgument('$accessTokenTtl', $config['oauth']['access_token_ttl'])
             ->setArgument('$authCodeTtl', $config['oauth']['auth_code_ttl'])
             ->setArgument('$refreshTokenTtl', $config['oauth']['refresh_token_ttl'])
-            ->setArgument('$allowLocalhostLoopback', $config['oauth']['allow_localhost_loopback_redirect']);
+            ->setArgument('$allowLocalhostLoopback', $config['oauth']['allow_localhost_loopback_redirect'])
+            ->setArgument('$clientCredentialsEnabled', $clientCredentialsEnabled)
+            ->setArgument('$clientCredentialsAccessTokenTtl', $clientCredentials['access_token_ttl']);
+
+        // What the service-user schema reports: the grant only works when the server runs as well.
+        $container->setParameter('pimcore_studio_backend.oauth.client_credentials_enabled', $clientCredentialsEnabled);
 
         $cimd = $config['oauth']['client_id_metadata_documents'];
         $container->setParameter('pimcore_studio_backend.oauth.cimd_enabled', $cimd['enabled']);
@@ -321,7 +330,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $container->getDefinition(AuthorizationServerMetadataController::class)
             ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer'])
             ->setArgument('$clientIdMetadataDocumentSupported', $cimd['enabled'])
-            ->setArgument('$registrationEnabled', $dcrEnabled);
+            ->setArgument('$registrationEnabled', $dcrEnabled)
+            ->setArgument('$clientCredentialsEnabled', $clientCredentialsEnabled);
 
         $container->getDefinition(CimdClientMetadataResolver::class)
             ->setArgument(self::ARG_ENABLED, $cimd['enabled'])
@@ -508,6 +518,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
     /**
      * Prepended, so the application's own scheb_two_factor config still wins. `security_tokens`
      * is left to scheb's defaults: lists are merged, so a prepended one could never be narrowed.
+     * Without a `server_name`, none is prepended, so core's main-domain default (or no host) applies.
      *
      * @param array{issuer: string, server_name: ?string} $config
      */
@@ -517,13 +528,17 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             return;
         }
 
+        $google = [
+            'enabled' => true,
+            'issuer' => $config['issuer'],
+        ];
+        if ($config['server_name'] !== null) {
+            $google['server_name'] = $config['server_name'];
+        }
+
         $container->prependExtensionConfig('scheb_two_factor', [
             'two_factor_condition' => UserCondition::class,
-            'google' => [
-                'enabled' => true,
-                'issuer' => $config['issuer'],
-                'server_name' => $config['server_name'] ?? '%router.request_context.host%',
-            ],
+            'google' => $google,
         ]);
     }
 

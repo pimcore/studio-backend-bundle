@@ -21,12 +21,28 @@ permissions) apply automatically: if a user cannot edit a data object via Pimcor
 tools either. OAuth tokens carry `mcp:read` and `mcp:write`, but nothing compares a granted scope against an operation
 - they are consent labels, and authorization remains the resolved user's own permissions.
 
+### Credentials at a glance
+
+Four kinds of credential reach the MCP endpoints. They differ in who they stand for, who issues them, how long they
+live and how they end.
+
+| Credential | Stands for | Issued by | Expiry | Revoked or ended by |
+|------------|------------|-----------|--------|---------------------|
+| OAuth `authorization_code` token (JWT, `Authorization: Bearer <jwt>`) | A person who signed in and consented | The [embedded OAuth server](../02_Installation_and_Configuration/06_OAuth_Server.md) at `/pimcore-oauth/token`, after the consent screen | `oauth.access_token_ttl` (default 3600 s); a refresh token only if the client registered `refresh_token` (`refresh_token_ttl`, default 30 days) | Revoked through its stored token record; a deactivated user is refused at the next request (`isValidUser`) |
+| OAuth `client_credentials` token (JWT) | A service user | `POST /pimcore-oauth/token` with the secret of the client bound to the service user. Off unless `oauth.client_credentials.enabled` is `true` (default `false`) | `oauth.client_credentials.access_token_ttl` (default 900 s, minimum 60). No refresh token | Deactivation is refused at the next request. Deleting the service user revokes its tokens by `jti`. Rotating the secret does not revoke issued tokens; they expire |
+| MCP access token (`Bearer pmcp_…`) | An AI agent session, or a service user until the grant above is on | `McpAccessTokenServiceInterface::issue()` for agent sessions; for service users the Studio API `POST /pimcore-studio/api/service-user/{id}/mcp-token` or the console command `studio-backend-bundle:service-user:mcp-token` | Bounded TTL. For service users 1 to 90 days, default 30 | `DELETE /pimcore-studio/api/service-user/{id}/mcp-token` or `--revoke`; `revoke()` and `revokeByUser()`; deactivation and deletion of the service user |
+| Static personal access token (`pimcore_studio_backend.mcp.authentication.tokens`) | An external MCP client, configured by hand | Written into the YAML configuration | None; valid until removed from the configuration | Remove it from the configuration. **Deprecated since 2026.4, removed in 2027.1.** No new feature accepts static PATs |
+
+Service users have no password and no interactive login, so their credentials are the OAuth client secret and the
+MCP access tokens above. See [Service Users](../02_Installation_and_Configuration/08_Service_Users.md) for the API
+and the console command.
+
 ### Who calls MCP endpoints, and with which credential
 
 | Caller | Credential | Authenticator |
 |--------|------------|---------------|
 | Pimcore AI agent-server (internal, per chat session) | `Authorization: Bearer pmcp_…` | `McpAccessTokenAuthenticator` |
-| External MCP client (Claude Desktop, Cursor, …) | `Authorization: Bearer <static PAT>` | `PatAuthenticator` |
+| External MCP client (Claude Desktop, Cursor, …), deprecated | `Authorization: Bearer <static PAT>` | `PatAuthenticator` |
 | Caller presenting a Pimcore Studio session cookie | Pimcore session cookie (`PHPSESSID`) | `SessionBridgeAuthenticator` |
 
 The **primary internal path is the MCP access token** (`Bearer pmcp_…`): the Pimcore AI agent-server mints one dynamic,
@@ -162,7 +178,21 @@ server, or for another application, is refused at the others. Scopes are adverti
 See [OAuth 2.1 Authorization Server](../02_Installation_and_Configuration/06_OAuth_Server.md) for enabling and
 configuring the server.
 
-### `PatAuthenticator` (external clients)
+### `PatAuthenticator` (external clients) - deprecated
+
+> **Deprecated since 2026.4, removed in 2027.1.** Static Personal Access Tokens in
+> `pimcore_studio_backend.mcp.authentication.tokens` keep working on 2026.x. Each authenticated request
+> through this authenticator raises a deprecation, and the configuration node carries the same deprecation
+> (visible in `bin/console debug:config pimcore_studio_backend`). Migrate before 2027.1:
+>
+> - **Integrations and pipelines**: issue an MCP access token for a dedicated Pimcore user with
+>   `McpAccessTokenServiceInterface::issue()`, which has a bounded TTL, and refresh or re-issue it from the
+>   integration. Use a dedicated user, not a person's account.
+> - **People using an MCP client**: connect through OAuth (`authorization_code`, see the
+>   [OAuth Server](../02_Installation_and_Configuration/06_OAuth_Server.md)) so the client receives tokens for the
+>   signed-in user instead of a shared secret.
+>
+> No new feature accepts static PATs.
 
 External MCP clients authenticate with static Personal Access Tokens configured in YAML. It deliberately
 declines two shapes it does not own: any `Bearer pmcp_…` token (handled by `McpAccessTokenAuthenticator`) and
@@ -270,6 +300,7 @@ pimcore_studio_backend:
     mcp:
         authentication:
             tokens:
+                # DEPRECATED since 2026.4, removed in 2027.1: static PATs. Migrate to MCP access tokens or OAuth.
                 # Map: Pimcore username => list of bearer tokens (external PATs)
                 <username>:
                     - '<token-string-or-env-ref>'

@@ -17,6 +17,7 @@ use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetInfo;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -42,6 +43,7 @@ interface UploadServiceInterface
     /**
      * @throws DatabaseException
      * @throws EnvironmentException
+     * @throws FieldValidationFailedException
      * @throws FilesystemException
      * @throws ForbiddenException
      * @throws NotFoundException
@@ -71,6 +73,7 @@ interface UploadServiceInterface
     /**
      * @throws DatabaseException
      * @throws EnvironmentException
+     * @throws FieldValidationFailedException
      * @throws ForbiddenException
      * @throws NotFoundException
      */

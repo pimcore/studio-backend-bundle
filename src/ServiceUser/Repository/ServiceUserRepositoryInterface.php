@@ -1,0 +1,53 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository;
+
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Model\User;
+
+/**
+ * @internal
+ */
+interface ServiceUserRepositoryInterface
+{
+    /**
+     * @return User[]
+     */
+    public function listServiceUsers(): array;
+
+    /**
+     * @throws NotFoundException when the id is unknown or belongs to a human user, a role or a folder
+     */
+    public function getServiceUser(int $id): User;
+
+    /**
+     * @throws ElementExistsException when a user or service user already has the name
+     * @throws DatabaseException
+     */
+    public function saveServiceUser(User $serviceUser): void;
+
+    /**
+     * @throws DatabaseException
+     */
+    public function deleteServiceUser(User $serviceUser): void;
+
+    /**
+     * Whether the name belongs to a service user. False for a human user, a role, a folder or an unknown name.
+     *
+     * @throws DatabaseException
+     */
+    public function isServiceUserName(string $name): bool;
+}

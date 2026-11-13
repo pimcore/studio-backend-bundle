@@ -37,8 +37,14 @@ use function in_array;
  * is used by default; an allow-list may be configured to restrict it. Credentials
  * are never enabled, so both "*" and the allow-list stay CORS-valid.
  *
+ * The MCP endpoints ({@see \Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath::PREFIX}) get the same
+ * policy for the same reason: a browser-based MCP client sends a preflight that carries no credentials,
+ * so it has to be answered before the firewall and the router (whose routes name no OPTIONS) see it.
+ * Their methods and headers differ (DELETE ends a session, the Mcp-* headers carry the session and,
+ * since the stateless MCP revision, the request's method and name), and the session id must be readable.
+ *
  * Scoped to the authorization server's own root-level endpoints
- * ({@see \Pimcore\Bundle\StudioBackendBundle\OAuth\OAuthPath::ROOT_PREFIXES}) and gated on
+ * ({@see \Pimcore\Bundle\StudioBackendBundle\OAuth\OAuthPath::ROOT_PREFIXES}) and the MCP path space, gated on
  * `oauth.enabled`, so it is inert everywhere else and when the server is off. The consent
  * API is deliberately not covered: it lives under the Studio API prefix, it is
  * cookie-authenticated, and {@see \Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber}
@@ -54,6 +60,15 @@ final readonly class OAuthCorsSubscriber implements EventSubscriberInterface
     private const string ALLOW_METHODS = 'GET, POST, OPTIONS';
 
     private const string ALLOW_HEADERS = 'Authorization, Content-Type, Accept, MCP-Protocol-Version';
+
+    private const string EXPOSE_HEADERS = 'WWW-Authenticate';
+
+    private const string MCP_ALLOW_METHODS = 'GET, POST, DELETE, OPTIONS';
+
+    private const string MCP_ALLOW_HEADERS = 'Authorization, Content-Type, Accept, Last-Event-ID, '
+        . 'Mcp-Protocol-Version, Mcp-Session-Id, Mcp-Method, Mcp-Name';
+
+    private const string MCP_EXPOSE_HEADERS = 'Mcp-Session-Id, WWW-Authenticate, Retry-After';
 
     /**
      * @param list<string> $allowedOrigins empty = any origin (wildcard)
@@ -81,15 +96,23 @@ final readonly class OAuthCorsSubscriber implements EventSubscriberInterface
         }
 
         $request = $event->getRequest();
-        if ($request->getMethod() !== 'OPTIONS' || !$this->isOAuthPath($this->routedPath($request))) {
+        $path = $this->routedPath($request);
+        $isMcp = $this->isMcpPath($path);
+        if ($request->getMethod() !== 'OPTIONS' || !($isMcp || $this->isOAuthPath($path))) {
             return;
         }
 
         $response = new Response(status: Response::HTTP_NO_CONTENT);
-        $response->headers->set('Access-Control-Allow-Methods', self::ALLOW_METHODS);
-        $response->headers->set('Access-Control-Allow-Headers', self::ALLOW_HEADERS);
+        $response->headers->set(
+            'Access-Control-Allow-Methods',
+            $isMcp ? self::MCP_ALLOW_METHODS : self::ALLOW_METHODS
+        );
+        $response->headers->set(
+            'Access-Control-Allow-Headers',
+            $isMcp ? self::MCP_ALLOW_HEADERS : self::ALLOW_HEADERS
+        );
         $response->headers->set('Access-Control-Max-Age', '3600');
-        $this->applyAllowOrigin($request, $response);
+        $this->applyAllowOrigin($request, $response, $isMcp);
 
         $event->setResponse($response);
     }
@@ -101,14 +124,16 @@ final readonly class OAuthCorsSubscriber implements EventSubscriberInterface
         }
 
         $request = $event->getRequest();
-        if (!$this->isOAuthPath($this->routedPath($request))) {
+        $path = $this->routedPath($request);
+        $isMcp = $this->isMcpPath($path);
+        if (!$isMcp && !$this->isOAuthPath($path)) {
             return;
         }
 
-        $this->applyAllowOrigin($request, $event->getResponse());
+        $this->applyAllowOrigin($request, $event->getResponse(), $isMcp);
     }
 
-    private function applyAllowOrigin(Request $request, Response $response): void
+    private function applyAllowOrigin(Request $request, Response $response, bool $isMcp): void
     {
         $origin = $this->resolveAllowedOrigin($request);
         if ($origin === null) {
@@ -116,8 +141,12 @@ final readonly class OAuthCorsSubscriber implements EventSubscriberInterface
         }
 
         $response->headers->set('Access-Control-Allow-Origin', $origin);
-        // Lets clients read the RFC 9728 challenge when it is served cross-origin.
-        $response->headers->set('Access-Control-Expose-Headers', 'WWW-Authenticate');
+        // Lets clients read the RFC 9728 challenge when it is served cross-origin, and on
+        // MCP the session id the transport assigns.
+        $response->headers->set(
+            'Access-Control-Expose-Headers',
+            $isMcp ? self::MCP_EXPOSE_HEADERS : self::EXPOSE_HEADERS
+        );
         if ($origin !== '*') {
             $response->headers->set('Vary', 'Origin');
         }

@@ -3,6 +3,61 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Authentication] Deprecated: static MCP personal access tokens (`pimcore_studio_backend.mcp.authentication.tokens`,
+  handled by `PatAuthenticator`). They keep working on 2026.x; configuring them and each request they authenticate
+  raise a deprecation. They are removed in 2027.1. Migrate integrations to MCP access tokens issued for a dedicated
+  Pimcore user (`McpAccessTokenServiceInterface::issue()`), and people to OAuth `authorization_code`. See [MCP Server](../04_Development_Details/08_MCP_Server.md#patauthenticator-external-clients---deprecated).
+- [Service Users] Added: machine identities, a Pimcore user of type `serviceuser` (a `Pimcore\Model\User` whose `isServiceUser()` is true),
+  managed through the new "Service User Management" endpoints and the console command
+  `studio-backend-bundle:service-user:mcp-token`. Everything is additive: no existing endpoint, schema or user type
+  changes. The service-user endpoints need a core release that provides `User::newServiceUser()`
+  (pimcore/pimcore#19692). See [Service Users](./08_Service_Users.md).
+- [Service Users] Semantic notes, for code that works with users:
+  - A service user never logs in with a password. Setting one or setting it as an administrator is refused on the
+    core class; every save stores an unusable random value that no password verifies against (as users created
+    through OpenID Connect have), so `Authentication::isValidUser()` treats it like any user. It is never an administrator, has no two-factor authentication and cannot log in to
+    Studio. Its `email` is an optional contact address for the team responsible. Logging in and password recovery do
+    not use it.
+  - Identity kinds never mix. `User::getByName()`, `User\Listing` and the user endpoints return humans only: the
+    user tree and lists leave service users out, and the endpoints that read or change one user by id (detail,
+    update, password, delete, login link, two-factor reset, object dependencies) answer `404` for a service-user id.
+    Only the user image is served for any id, as authors are shown by id. A service user is reached through the
+    service-user endpoints, and its name is unique across humans and service users. Nothing converts one kind into
+    the other: creating a service user from a human copies permissions, roles and workspaces and leaves the human
+    unchanged.
+  - `User::getById()` returns the `User` for a service-user id as for any user id, with `isServiceUser()` true. Code that
+    assumes an id always names a human must call `isServiceUser()` first.
+- [Service Users] MCP server sharing: a service user's entry in `access.shared_users` is stored with `canRead` and `canEdit` false, whatever the client sent; `canAccess` is kept as sent. See [MCP Server Management](../04_Development_Details/09_MCP_Server_Management.md#access-and-sharing).
+- [Service Users] Added: the service-user schema (`GET /pimcore-studio/api/service-users` and
+  `/service-user/{id}`, and the responses that return it) carries `clientCredentialsEnabled` (whether the OAuth
+  `client_credentials` grant is on) and `mcpTokens` (`active`, `latestExpiresAt`; a summary of the MCP access tokens,
+  read with one grouped query for the whole collection, as are the client ids). Additive; no endpoint, permission
+  or token lifetime changes.
+- [Service Users] Changed: `clientSecret` is nullable in the service-user credentials response (create, create from a
+  user, rotate secret). It is `null` while `pimcore_studio_backend.oauth.client_credentials.enabled` is off; the key is
+  still present. See [Service Users](./08_Service_Users.md#which-credential-to-use).
+- [OAuth] Added: the Client Credentials grant for clients bound to a service user, behind
+  `pimcore_studio_backend.oauth.client_credentials.enabled` (default `false`). Its tokens last
+  `oauth.client_credentials.access_token_ttl` seconds (default 900, minimum 60) and carry no refresh token. Nothing
+  changes until the switch is turned on. The guarantee that every token acts for a logged-in human no longer holds
+  once it is on. See [OAuth Server](./06_OAuth_Server.md#service-user-clients-client-credentials).
+- [Elements] Changed: the `422` response of a failed element validation (`PUT /pimcore-studio/api/assets/{id}`,
+  `.../data-objects/{id}`, `.../documents/{id}` and the synchronous `POST .../assets/add/{parentId}` and
+  `POST .../assets/{id}/replace`) now carries `validationErrors` next to `message` and `errorKey`, one entry per failed
+  field with `field`, `fieldTitle`, `path`, `message`, `messageKey` and `parameters`. `message` and `errorKey` are
+  unchanged. A client that translates the errors needs `pimcore/pimcore` `^2026.4` (`StructuredValidationException`).
+  The synchronous asset upload and replace answer `422` instead of `500` when the validation of the asset fails. An
+  error of a data object in a language the user may not view is reduced to the generic message
+  `The value is not valid.`, its `messageKey` and empty `parameters`; the top-level `message` is then
+  `Validation failed`. `message` is untrusted text and must be escaped before it is rendered.
+- [Authorization] Added: `GET /pimcore-studio/api/session` tells whether the request carries a Studio session
+  (`{"authenticated": true|false}`, plus the two-factor step of a login that waits for its code). It always answers 200
+  and reveals only the state of the caller's own session. With the matching Studio UI the login page no longer shows a
+  failed `user/current-user-information` request. The bundle opens the route itself with a `PUBLIC_ACCESS` rule for
+  `<url_prefix>/session`, put in front of the application's `security.access_control` rules when the container is
+  compiled: `config/packages/security.yaml` needs no change, and this works with a custom `url_prefix` as well. The rule
+  has no `ips`, `host` or `channel` restriction, so an IP or https restriction of the application does not apply to this
+  one route. `user/current-user-information` keeps answering 401 without a session.
 - [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
   is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
   `TextEncoder` got the optional constructor argument `$maxFileSize`.
@@ -44,13 +99,12 @@ The following steps are necessary during updating to newer versions.
 - [Security] Added: two-factor authentication for the Studio login (authenticator app codes). See
   [Two-Factor Authentication](./07_Two_Factor_Authentication.md).
   - New configuration: `pimcore_studio_backend.two_factor_authentication.issuer` (default `Pimcore`) and
-    `server_name` (default: the router's request context host, i.e. `framework.router.default_uri`, or `localhost`
-    without it).
+    `server_name` (default: the main domain `pimcore.general.domain` if set, otherwise no host).
   - New rate limiter `studio_two_factor_code` (5 wrong codes per user in 5 minutes).
   - New endpoints: `POST /login/2fa`, `POST /user/two-factor/setup`, `POST /user/two-factor/confirm`,
     `DELETE /user/two-factor`, `DELETE /user/{id}/two-factor`. No change to `access_control` is needed.
 
-> **Note:** `POST /login` changes for users with two-factor authentication required or enabled: it answers `200` with
+> **Note:** `POST /login` changes for users with two-factor authentication required: it answers `200` with
 > `{"twoFactorRequired": true, "twoFactorStep": "verify"|"setup", "digits": 6}` instead of an empty body, and the user is not logged
 > in until the code is sent to `POST /login/2fa`. Clients that treat any `200` from `POST /login` as logged in break
 > for these users only; users without two-factor authentication get the same empty `200` as before. Users who have
@@ -58,6 +112,31 @@ The following steps are necessary during updating to newer versions.
 > the login. The login token (`POST /login/token`) still skips the code. While a code is pending, other endpoints
 > answer `401` with the same `twoFactorRequired`, `twoFactorStep` and `digits`, e.g. for a client returning from an OpenID
 > Connect (SSO) login.
+
+## Upgrade to 2026.3.5
+- [Data Objects] Fixed: `POST /data-objects/select-options` resolves the keys of a classification store, so select
+  and multiselect keys with an options provider load their options. They are addressed as
+  `<storeFieldName>.<groupId>.<keyId>`, or `<storeFieldName>.<groupId>.<language>.<keyId>` in the language comparison
+  view. The provider receives the same owner context as on the initial layout load (`ownerType`, `ownerName`, `keyId`,
+  `groupId`, `keyDefinition`). This needs `pimcore/studio-ui-bundle` 2026.3.5 or later, which sends the new field name.
+
+> **Note:** a field name this endpoint cannot resolve now returns `422` with the parse error instead of `404`
+> "Class with ID: ... not found". This applies to every field type, not only classification store keys. The context of
+> the request stays in the nested `context` key of the options provider context and does not overwrite the keys above.
+
+- [Data Objects] Fixed: the auto-save of a data object draft no longer writes the owner objects of a reverse object relation. These edits are applied only on an explicit save (and on updates without a task). The same applies to `PATCH` requests carrying an auto-save task.
+
+> **Note:** edits of such a field that were skipped by an auto-save are not part of the stored draft, so reopening the draft cannot recover them; the client has to send them again with the explicit save. This also applies to custom data adapters that implement the public marker `RemoteStorageDataInterface`: they are skipped while an auto-save stores a draft, and in `POST /data-objects/select-options`. The marker is only checked on the adapter of a top-level field; adapters nested in localized fields, object bricks or field collections are not checked. `DataServiceInterface::updateEditableData()` gained an optional `bool $applyRemoteChanges = true` parameter; the default keeps the previous behavior.
+
+## Upgrade to 2026.3.4
+- [Translations] Fixed: the `admin` translation domain is maintained in Studio with the website languages, but the
+  backend still used the admin UI languages for it. Columns of website languages that are no admin UI language
+  (e.g. `fr_BE`) stayed empty and sorting by them failed. `POST /translations/list`, `POST /translations/export` and
+  the CSV import now use the website translation languages the user is allowed to view for the `admin` domain, and the
+  list only returns the values of these languages. Only the `studio` domain uses the admin UI languages.
+
+> **Note:** this replaces the `admin` domain part of the 2025.4.15 entry below. As for the other website domains, a
+> user without any valid website translation language receives `403` for list, export and import of the `admin` domain.
 
 ## Upgrade to 2026.3.3
 - [Data Objects] Changed: the data object detail loads `manyToManyObjectRelation` and `manyToManyRelation` values of

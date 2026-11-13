@@ -15,14 +15,26 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\EventSubscriber;
 
 use Codeception\Test\Unit;
+use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ValidationErrorHydrator;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ValidationError;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ValidationErrorPath;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ValidationFailedError;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\ApiExceptionSubscriber;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
+use Pimcore\Model\Element\StructuredValidationException;
+use Pimcore\Model\Element\ValidationMessageKey;
+use Pimcore\Model\Element\ValidationPathSegment;
+use ReflectionClass;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\Serializer\Exception\ExtraAttributesException;
 use Throwable;
 
 /**
@@ -117,6 +129,36 @@ final class ApiExceptionSubscriberTest extends Unit
      * path. Only this bundle's own RateLimitException is claimed everywhere, because only
      * this bundle raises it.
      */
+    /**
+     * A request DTO mapped with allow_extra_attributes false refuses keys it does not
+     * declare. The serializer reports that with a non-HTTP exception, which would end as a
+     * 500; it is the client's mistake, so it becomes a 422 that names the keys.
+     */
+    public function testUnknownRequestFieldsAreRefusedAsUnprocessable(): void
+    {
+        $event = $this->createEvent(
+            '/pimcore-studio/api/service-user/42',
+            new ExtraAttributesException(['active', 'permission'])
+        );
+
+        $this->createSubscriber()->onKernelException($event);
+
+        $response = $event->getResponse();
+        $this->assertNotNull($response);
+        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        $this->assertSame('The request contains unsupported fields: active, permission.', $body['message']);
+    }
+
+    public function testUnknownRequestFieldsOutsideTheStudioApiAreIgnored(): void
+    {
+        $event = $this->createEvent('/somewhere-else', new ExtraAttributesException(['active']));
+
+        $this->createSubscriber()->onKernelException($event);
+
+        $this->assertNull($event->getResponse());
+    }
+
     public function testForeignExceptionOnANonStudioPathIsIgnored(): void
     {
         $event = $this->createEvent('/some/other/path', new NotFoundHttpException('not ours'));
@@ -126,9 +168,149 @@ final class ApiExceptionSubscriberTest extends Unit
         $this->assertNull($event->getResponse());
     }
 
+    public function testFieldValidationFailureCarriesTheValidationErrors(): void
+    {
+        $leaf = (new StructuredValidationException('Empty mandatory field [ name ]'))
+            ->setTranslation(ValidationMessageKey::MANDATORY)
+            ->setField('name', 'Name')
+            ->addPathSegment(new ValidationPathSegment(field: 'localizedfields', language: 'en'));
+        $exception = new FieldValidationFailedException('Validation failed: Empty mandatory field', previous: $leaf);
+        $event = $this->createEvent('/pimcore-studio/api/data-objects/1', $exception);
+
+        $this->createSubscriber()->onKernelException($event);
+
+        $response = $event->getResponse();
+        $this->assertNotNull($response);
+        $this->assertSame(422, $response->getStatusCode());
+        $raw = $response->getContent();
+        $this->assertStringContainsString('"parameters":{}', $raw);
+        $data = json_decode($raw, true);
+        $this->assertSame('Validation failed: Empty mandatory field', $data['message']);
+        $this->assertSame('error_element_validation_failed', $data['errorKey']);
+        $this->assertSame(
+            [
+                'field' => 'name',
+                'fieldTitle' => 'Name',
+                'path' => [
+                    [
+                        'field' => 'localizedfields',
+                        'title' => null,
+                        'language' => 'en',
+                        'index' => null,
+                        'type' => null,
+                        'typeTitle' => null,
+                    ],
+                ],
+                'message' => 'Empty mandatory field [ name ]',
+                'messageKey' => 'validation.mandatory',
+                'parameters' => [],
+            ],
+            $data['validationErrors'][0]
+        );
+    }
+
+    public function testEmptyMessageStillReturnsTheValidationErrors(): void
+    {
+        $leaf = (new StructuredValidationException('Leaf'))->setTranslation(ValidationMessageKey::MANDATORY)->setField('name');
+        $exception = new FieldValidationFailedException('', previous: $leaf);
+        $event = $this->createEvent('/pimcore-studio/api/data-objects/1', $exception);
+
+        $this->createSubscriber()->onKernelException($event);
+
+        $data = json_decode($event->getResponse()->getContent(), true);
+        $this->assertSame('', $data['message']);
+        $this->assertSame('name', $data['validationErrors'][0]['field']);
+    }
+
+    public function testValueOfALanguageTheUserCannotViewIsNotReturned(): void
+    {
+        $leaf = (new StructuredValidationException("Invalid option 'not-an-email' for field [ mail ]"))
+            ->setTranslation(ValidationMessageKey::INVALID_EMAIL, ['value' => 'not-an-email'])
+            ->setField('mail')
+            ->addPathSegment(new ValidationPathSegment(field: 'localizedfields', language: 'en'));
+        $exception = new FieldValidationFailedException(
+            "Invalid option 'not-an-email' for field [ mail ]",
+            previous: $leaf,
+            viewableLanguages: ['de']
+        );
+        $event = $this->createEvent('/pimcore-studio/api/data-objects/1', $exception);
+
+        $this->createSubscriber()->onKernelException($event);
+
+        $raw = $event->getResponse()->getContent();
+        $this->assertStringContainsString('"parameters":{}', $raw);
+        $this->assertStringNotContainsString('not-an-email', $raw);
+        $this->assertSame('Validation failed', json_decode($raw, true)['message']);
+    }
+
+    public function testPayloadMatchesTheDocumentedSchema(): void
+    {
+        $leaf = (new StructuredValidationException('Empty mandatory field [ name ]'))
+            ->setTranslation(ValidationMessageKey::MANDATORY)
+            ->setField('name')
+            ->addPathSegment(new ValidationPathSegment(field: 'localizedfields', language: 'en'));
+        $event = $this->createEvent(
+            '/pimcore-studio/api/data-objects/1',
+            new FieldValidationFailedException('Validation failed', previous: $leaf)
+        );
+
+        $this->createSubscriber()->onKernelException($event);
+
+        $data = json_decode($event->getResponse()->getContent(), true);
+        $this->assertSame([], array_diff($this->requiredKeys(ValidationFailedError::class), array_keys($data)));
+        $this->assertEqualsCanonicalizing(
+            $this->requiredKeys(ValidationError::class),
+            array_keys($data['validationErrors'][0])
+        );
+        $this->assertEqualsCanonicalizing(
+            $this->requiredKeys(ValidationErrorPath::class),
+            array_keys($data['validationErrors'][0]['path'][0])
+        );
+    }
+
+    public function testUnprocessableRequestWithoutErrorKeyStillMatchesTheDocumentedSchema(): void
+    {
+        $event = $this->createEvent(
+            '/pimcore-studio/api/assets/1',
+            new UnprocessableEntityHttpException('Unreadable body')
+        );
+
+        $this->createSubscriber()->onKernelException($event);
+
+        $data = json_decode($event->getResponse()->getContent(), true);
+        $this->assertSame(422, $event->getResponse()->getStatusCode());
+        $this->assertSame([], array_diff($this->requiredKeys(ValidationFailedError::class), array_keys($data)));
+        $this->assertArrayNotHasKey('errorKey', $data);
+    }
+
+    public function testFieldValidationFailureWithoutElementExceptionKeepsTheLegacyShape(): void
+    {
+        $event = $this->createEvent(
+            '/pimcore-studio/api/data-objects/1',
+            new FieldValidationFailedException('Something failed')
+        );
+
+        $this->createSubscriber()->onKernelException($event);
+
+        $this->assertSame(
+            ['message' => 'Something failed', 'errorKey' => 'error_element_validation_failed'],
+            json_decode($event->getResponse()->getContent(), true)
+        );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function requiredKeys(string $schemaClass): array
+    {
+        $schema = (new ReflectionClass($schemaClass))->getAttributes(Schema::class)[0]->newInstance();
+
+        return $schema->required;
+    }
+
     private function createSubscriber(): ApiExceptionSubscriber
     {
-        return new ApiExceptionSubscriber('prod', self::URL_PREFIX);
+        return new ApiExceptionSubscriber('prod', self::URL_PREFIX, new ValidationErrorHydrator());
     }
 
     private function createEvent(string $path, Throwable $exception): ExceptionEvent
