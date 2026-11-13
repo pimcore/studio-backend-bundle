@@ -3,6 +3,8 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Classification Store] Changed: an `imageGallery` or `encryptedField` key now exports its value in the grid export,
+  where it previously produced an empty cell.
 - [Classification Store] Added: disabled keys can be listed and re-enabled. Re-enabling restores the key
   configuration; this endpoint neither deletes nor re-creates any group assignment — whether a key's assignments
   survive being disabled is decided by the disable itself.

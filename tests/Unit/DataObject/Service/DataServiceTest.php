@@ -313,6 +313,32 @@ final class DataServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testAKeyWithoutAnExportAdapterIsExportedFromTheObjectWithTheContextItIsGiven(): void
+    {
+        $object = $this->makeEmpty(Concrete::class);
+        $parameters = [
+            'context' => ['containerType' => 'classificationstore', 'groupId' => 3, 'keyId' => 7],
+        ];
+        $seen = [];
+        $definition = $this->makeEmpty(Input::class, [
+            'getFieldType' => 'input',
+            'getForCsvExport' => static function (mixed $received, array $params) use (&$seen): string {
+                $seen = [$received, $params];
+
+                return 'csv';
+            },
+        ]);
+
+        $export = $this->createService($this->makeEmpty(SetterDataInterface::class))->getExportFieldValue($object, $definition, 'key', new FieldContextData(legacyParameters: $parameters));
+
+        $this->assertSame('csv', $export);
+        $this->assertSame($object, $seen[0]);
+        $this->assertSame($parameters, $seen[1]);
+    }
+
+    /**
+     * @throws Exception
+     */
     private function updateWith(SetterDataInterface $adapter, bool $applyRemoteChanges): void
     {
         $this->createUpdateService($adapter)->updateEditableData(
