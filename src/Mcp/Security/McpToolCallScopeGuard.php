@@ -63,8 +63,8 @@ final readonly class McpToolCallScopeGuard implements McpToolCallScopeGuardInter
 
     /**
      * A request without a body (the GET and DELETE of the streamable transport) calls no tool. A body that is not a
-     * JSON-RPC object or non-empty batch of objects cannot be checked and is refused for a limited token: the transport would not run
-     * it as a tool call either, so nothing legitimate is lost.
+     * JSON-RPC object or non-empty batch of objects cannot be checked and is refused for a limited token: the
+     * transport would not run it as a tool call either, so nothing legitimate is lost.
      *
      * @return list<mixed>|null null when the body is present but cannot be read as JSON-RPC
      */
