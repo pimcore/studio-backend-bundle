@@ -16,6 +16,26 @@ The following steps are necessary during updating to newer versions.
 - [Data Objects] Fixed: the auto-save of a data object draft no longer writes the owner objects of a reverse object relation. These edits are applied only on an explicit save (and on updates without a task). The same applies to `PATCH` requests carrying an auto-save task.
 
 > **Note:** edits of such a field that were skipped by an auto-save are not part of the stored draft, so reopening the draft cannot recover them; the client has to send them again with the explicit save. This also applies to custom data adapters that implement the public marker `RemoteStorageDataInterface`: they are skipped while an auto-save stores a draft, and in `POST /data-objects/select-options`. The marker is only checked on the adapter of a top-level field; adapters nested in localized fields, object bricks or field collections are not checked. `DataServiceInterface::updateEditableData()` gained an optional `bool $applyRemoteChanges = true` parameter; the default keeps the previous behavior.
+- [Users] Security (GHSA-x3pq-323g-f95v): a user who may manage users (`users` permission) can no longer hand out more
+  privilege than they hold themselves. This changes the behavior of the following endpoints for non-admin user
+  managers (admins are not affected):
+  - Saving a user or role (`PUT /user/{id}`, `PUT /role/{id}`) returns `403` if the submitted permissions contain one
+    the caller does not hold (directly or through a role). The full submitted set is checked, so re-saving a user or
+    role that carries a permission the caller lacks fails until it is reduced first.
+  - Assigning a role the caller does not hold returns `403`. Clearing roles stays allowed. Role ids that are unknown or
+    not integers return `404`.
+  - Changing the password (`PUT /user/{id}/password`) or the email (`PUT /user/{id}`) of another user is admin-only
+    and returns `403` otherwise. Users can still change their own password and email.
+  - Login token links for another user (`POST /user/token-link/{id}`) are admin-only and return `403` otherwise. A
+    link for the caller's own account still works.
+- [Users] Changed: the login token link is built on the server as
+  `<scheme>://<host><base url><pimcore_studio_ui.url_path>/login/?token=...`. A `tokenLink` request body is ignored;
+  `TokenLinkRequestBody` and `TokenLink` are deprecated and without effect. Scheme, host and port come from the
+  request context, so behind a reverse proxy configure `framework.trusted_proxies` (and `trusted_headers`), otherwise
+  the link may point to a different origin than the one the browser uses.
+- [Studio UI] The "login as different user" action and the role options in the user form should be limited to what the
+  backend now allows (admins only for login links, the caller's own roles for non-admins). Until then, non-admin user
+  managers see `403` errors for these actions.
 
 ## Upgrade to 2026.3.4
 - [Translations] Fixed: the `admin` translation domain is maintained in Studio with the website languages, but the
