@@ -50,6 +50,8 @@ final class ServiceUserHydratorTest extends Unit
         $serviceUser->setClasses(['CAR']);
         $serviceUser->setDocTypes(['3']);
         $serviceUser->setLastLogin(1718757677);
+        $serviceUser->setResponsibleUsers([3, 4]);
+        $serviceUser->setResponsibleRoles([5]);
 
         $hydrator = new ServiceUserHydrator($this->makeEmpty(WorkspaceHydratorInterface::class, [
             'hydrateAssetWorkspace' => [$assetWorkspace],
@@ -73,6 +75,8 @@ final class ServiceUserHydratorTest extends Unit
         $this->assertSame('svc_client', $schema->getClientId());
         $this->assertSame(1718757677, $schema->getLastLogin());
         $this->assertTrue($schema->isClientCredentialsEnabled());
+        $this->assertSame([3, 4], $schema->getResponsibleUsers());
+        $this->assertSame([5], $schema->getResponsibleRoles());
         $this->assertSame(2, $schema->getMcpTokens()->getActive());
         $this->assertSame(1900000000, $schema->getMcpTokens()->getLatestExpiresAt());
     }

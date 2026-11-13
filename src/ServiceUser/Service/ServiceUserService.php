@@ -16,7 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\MappedParameter\CreateFromUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\MappedParameter\CreateParameter;
@@ -43,6 +45,7 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
         private ServiceUserCredentialsServiceInterface $credentialsService,
         private ServiceUserSchemaBuilderInterface $schemaBuilder,
         private SecurityServiceInterface $securityService,
+        private RoleRepositoryInterface $roleRepository,
     ) {
     }
 
@@ -71,6 +74,8 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
                 $parameter->getRoles(),
                 $parameter->getClasses(),
                 $parameter->getDocTypes(),
+                $parameter->getResponsibleUsers(),
+                $parameter->getResponsibleRoles(),
             );
             $this->updateService->updateAssetWorkspaces($parameter->getAssetWorkspaces(), $serviceUser);
             $this->updateService->updateDataObjectWorkspaces($parameter->getDataObjectWorkspaces(), $serviceUser);
@@ -128,6 +133,8 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
             $parameter->getRoles(),
             $parameter->getClasses(),
             $parameter->getDocTypes(),
+            $parameter->getResponsibleUsers(),
+            $parameter->getResponsibleRoles(),
         );
         $this->updateService->updateAssetWorkspaces($parameter->getAssetWorkspaces(), $serviceUser);
         $this->updateService->updateDataObjectWorkspaces($parameter->getDataObjectWorkspaces(), $serviceUser);
@@ -172,8 +179,11 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
      * @param int[] $roles
      * @param string[] $classes
      * @param string[] $docTypes
+     * @param int[] $responsibleUsers
+     * @param int[] $responsibleRoles
      *
      * @throws NotFoundException
+     * @throws UnprocessableContentException
      */
     private function applyAuthorization(
         User $serviceUser,
@@ -181,11 +191,38 @@ final readonly class ServiceUserService implements ServiceUserServiceInterface
         array $roles,
         array $classes,
         array $docTypes,
+        array $responsibleUsers,
+        array $responsibleRoles,
     ): void {
         $this->updateService->updatePermissions($permissions, $serviceUser);
         $this->updateService->updateRoles($roles, $serviceUser);
         $this->updateService->updateClasses($classes, $serviceUser);
         $serviceUser->setDocTypes($docTypes);
+        $this->applyResponsibles($serviceUser, $responsibleUsers, $responsibleRoles);
+    }
+
+    /**
+     * @param int[] $responsibleUsers
+     * @param int[] $responsibleRoles
+     *
+     * @throws NotFoundException
+     * @throws UnprocessableContentException
+     */
+    private function applyResponsibles(User $serviceUser, array $responsibleUsers, array $responsibleRoles): void
+    {
+        foreach ($responsibleUsers as $userId) {
+            $user = $this->userRepository->getUserById($userId);
+            if ($user instanceof User && $user->isServiceUser()) {
+                throw new UnprocessableContentException('A service user cannot be responsible for a service user');
+            }
+        }
+
+        foreach ($responsibleRoles as $roleId) {
+            $this->roleRepository->getRoleById($roleId);
+        }
+
+        $serviceUser->setResponsibleUsers($responsibleUsers);
+        $serviceUser->setResponsibleRoles($responsibleRoles);
     }
 
     /**

@@ -41,6 +41,8 @@ final readonly class UpdateParameter
     /**
      * @param string[] $permissions
      * @param int[] $roles
+     * @param int[] $responsibleUsers
+     * @param int[] $responsibleRoles
      * @param string[] $classes
      * @param string[] $docTypes
      * @param UserWorkspace[] $assetWorkspaces
@@ -78,6 +80,20 @@ final readonly class UpdateParameter
             items: new Items(ref: UserDocumentWorkspace::class)
         )]
         private array $documentWorkspaces = [],
+        #[Property(
+            description: 'IDs of the users who answer for the service user; service users are not allowed',
+            type: 'array',
+            items: new Items(type: 'integer'),
+            example: [3]
+        )]
+        private array $responsibleUsers = [],
+        #[Property(
+            description: 'IDs of the roles whose members answer for the service user',
+            type: 'array',
+            items: new Items(type: 'integer'),
+            example: [5]
+        )]
+        private array $responsibleRoles = [],
     ) {
     }
 
@@ -140,5 +156,21 @@ final readonly class UpdateParameter
     public function getDocumentWorkspaces(): array
     {
         return $this->documentWorkspaces;
+    }
+
+    /**
+     * @return int[]
+     */
+    public function getResponsibleUsers(): array
+    {
+        return $this->responsibleUsers;
+    }
+
+    /**
+     * @return int[]
+     */
+    public function getResponsibleRoles(): array
+    {
+        return $this->responsibleRoles;
     }
 }

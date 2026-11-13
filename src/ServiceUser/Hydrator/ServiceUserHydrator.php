@@ -50,6 +50,8 @@ final readonly class ServiceUserHydrator implements ServiceUserHydratorInterface
             lastLogin: $serviceUser->getLastLogin(),
             clientCredentialsEnabled: $this->clientCredentialsEnabled,
             mcpTokens: $mcpTokens,
+            responsibleUsers: $serviceUser->getResponsibleUsers(),
+            responsibleRoles: $serviceUser->getResponsibleRoles(),
         );
     }
 }

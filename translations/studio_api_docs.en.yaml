@@ -1110,7 +1110,8 @@ service_user_create_description: |
   Creates a service user, a machine identity with its own permissions, roles and workspaces, together with
   its confidential OAuth client (client_credentials). The response carries the client id and the client secret.
   The secret is shown only in this response; only its hash is stored. A service user is never an administrator
-  and has no password.
+  and has no password. Optionally names the users (responsibleUsers) and roles (responsibleRoles) who answer for it;
+  a service user cannot be one of them.
 service_user_create_success_response: Client credentials of the new service user. The secret is shown only once.
 service_user_create_summary: Create a service user
 service_user_create_from_user_description: |
@@ -1155,7 +1156,8 @@ service_user_rotate_secret_description: |
 service_user_rotate_secret_success_response: Client credentials with the new secret. The secret is shown only once.
 service_user_rotate_secret_summary: Rotate the client secret of a service user
 service_user_update_by_id_description: |
-  Updates the contact email, permissions, roles, class and document type restrictions and workspaces of the
+  Updates the contact email, permissions, roles, class and document type restrictions, workspaces and the
+  responsible users and roles (responsibleUsers, responsibleRoles; empty lists clear them) of the
   service user with the given {id}. Name, password, admin rights and two-factor settings cannot be set; a
   request that contains any other field is refused.
 service_user_update_by_id_success_response: The updated service user

@@ -82,6 +82,18 @@ final class UpdateParameterTest extends Unit
         $this->assertSame([5], $parameter->getRoles());
     }
 
+    public function testResponsibleUsersAndRolesAreAcceptedAndDefaultToEmpty(): void
+    {
+        $parameter = $this->deserialize(['responsibleUsers' => [3, 4], 'responsibleRoles' => [5]]);
+
+        $this->assertSame([3, 4], $parameter->getResponsibleUsers());
+        $this->assertSame([5], $parameter->getResponsibleRoles());
+
+        $empty = $this->deserialize(['permissions' => ['assets']]);
+        $this->assertSame([], $empty->getResponsibleUsers());
+        $this->assertSame([], $empty->getResponsibleRoles());
+    }
+
     /**
      * Studio sends the workspaces back as it read them, so their keys must pass too.
      */
