@@ -39,7 +39,7 @@ final readonly class McpToolCallScopeGuard implements McpToolCallScopeGuardInter
 
     public function assertAllowed(string $requestBody, ?array $grantedScopes): void
     {
-        if ($grantedScopes === null || $grantedScopes === [] || in_array(McpScopes::WRITE, $grantedScopes, true)) {
+        if (!$this->limits($grantedScopes)) {
             return;
         }
 
@@ -56,9 +56,14 @@ final readonly class McpToolCallScopeGuard implements McpToolCallScopeGuardInter
         }
     }
 
+    public function limits(?array $grantedScopes): bool
+    {
+        return $grantedScopes !== null && $grantedScopes !== [] && !in_array(McpScopes::WRITE, $grantedScopes, true);
+    }
+
     /**
      * A request without a body (the GET and DELETE of the streamable transport) calls no tool. A body that is not a
-     * JSON-RPC object or batch cannot be checked and is refused for a limited token: the transport would not run
+     * JSON-RPC object or non-empty batch of objects cannot be checked and is refused for a limited token: the transport would not run
      * it as a tool call either, so nothing legitimate is lost.
      *
      * @return list<mixed>|null null when the body is present but cannot be read as JSON-RPC
@@ -79,7 +84,19 @@ final readonly class McpToolCallScopeGuard implements McpToolCallScopeGuardInter
             return null;
         }
 
-        return array_is_list($decoded) ? $decoded : [$decoded];
+        // Like the transport: a batch is a non-empty list, every message a JSON-RPC 2.0 object.
+        $messages = array_is_list($decoded) ? $decoded : [$decoded];
+        if ($messages === []) {
+            return null;
+        }
+
+        foreach ($messages as $message) {
+            if (!is_array($message) || array_is_list($message) || ($message['jsonrpc'] ?? null) !== '2.0') {
+                return null;
+            }
+        }
+
+        return $messages;
     }
 
     private function calledTool(mixed $message): ?string

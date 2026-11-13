@@ -80,7 +80,7 @@ final class McpToolCallScopeGuardTest extends Unit
     {
         $guard = $this->guard();
 
-        foreach (['not json', '"a string"', '42'] as $body) {
+        foreach (['not json', '"a string"', '42', '[]', '{}', '[1]', '{"method":"tools/call"}', '[{"jsonrpc":"2.0","method":"ping"},[]]'] as $body) {
             try {
                 $guard->assertAllowed($body, ['mcp:read']);
                 self::fail(sprintf('The body %s was not refused.', $body));

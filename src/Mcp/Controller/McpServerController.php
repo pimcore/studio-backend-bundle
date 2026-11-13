@@ -33,13 +33,17 @@ use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use function array_filter;
 use function array_values;
 use function is_array;
+use function is_resource;
 use function is_string;
 use function sprintf;
+use function strlen;
+use function stream_get_contents;
 
 /**
  * Serves a configured MCP server over HTTP at /pimcore-mcp/studio/{server}, under
@@ -55,6 +59,8 @@ use function sprintf;
 #[IsGranted('ROLE_PIMCORE_USER')]
 final readonly class McpServerController
 {
+    private const int MAX_BODY_BYTES = 4 * 1024 * 1024;
+
     public function __construct(
         private McpServerConfigRepositoryInterface $serverRepository,
         private McpServerFactoryInterface $serverFactory,
@@ -84,8 +90,11 @@ final readonly class McpServerController
             );
         }
 
+        $scopes = $this->tokenScopes($request);
         try {
-            $this->scopeGuard->assertAllowed($request->getContent(), $this->tokenScopes($request));
+            if ($this->scopeGuard->limits($scopes)) {
+                $this->scopeGuard->assertAllowed($this->boundedBody($request), $scopes);
+            }
         } catch (InsufficientMcpScopeException $exception) {
             throw new AccessDeniedHttpException($exception->getMessage(), $exception);
         }
@@ -109,6 +118,23 @@ final readonly class McpServerController
         $response = $this->serverFactory->createServer($definition)->run($transport);
 
         return $this->httpFoundationFactory->createResponse($response);
+    }
+
+    /**
+     * Reads at most the transport's body limit, so a limited token cannot make the check itself allocate an
+     * unbounded payload; a larger body is answered with 413 like the transport does.
+     */
+    private function boundedBody(Request $request): string
+    {
+        $stream = $request->getContent(true);
+        $body = is_resource($stream) ? stream_get_contents($stream, self::MAX_BODY_BYTES + 1) : $stream;
+        $body = is_string($body) ? $body : '';
+
+        if (strlen($body) > self::MAX_BODY_BYTES) {
+            throw new HttpException(Response::HTTP_REQUEST_ENTITY_TOO_LARGE, 'The request body is too large.');
+        }
+
+        return $body;
     }
 
     /**

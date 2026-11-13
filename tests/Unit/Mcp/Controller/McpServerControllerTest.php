@@ -35,6 +35,7 @@ use Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface;
 use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use function json_encode;
 
 /**
@@ -60,6 +61,7 @@ final class McpServerControllerTest extends Unit
     {
         $body = $this->call('read_tool');
         $guard = $this->createMock(McpToolCallScopeGuardInterface::class);
+        $guard->method('limits')->willReturn(true);
         $guard->expects($this->once())
             ->method('assertAllowed')
             ->with($body, ['mcp:read', 'mcp:write'])
@@ -76,6 +78,7 @@ final class McpServerControllerTest extends Unit
     public function testRequestWithoutTheScopeAttributeReachesTheGuardAsUnlimited(): void
     {
         $guard = $this->createMock(McpToolCallScopeGuardInterface::class);
+        $guard->method('limits')->willReturn(true);
         $guard->expects($this->once())
             ->method('assertAllowed')
             ->with($this->anything(), null)
@@ -94,6 +97,39 @@ final class McpServerControllerTest extends Unit
         $this->expectException(AccessDeniedHttpException::class);
 
         $this->controller($guard, false)($this->request($this->call('read_tool'), []), self::SLUG);
+    }
+
+    public function testUnlimitedTokenIsNotReadByTheGuard(): void
+    {
+        $guard = $this->createMock(McpToolCallScopeGuardInterface::class);
+        $guard->method('limits')->willReturn(false);
+        $guard->expects($this->never())->method('assertAllowed');
+
+        try {
+            $this->controller($guard)($this->request($this->call('write_tool'), []), self::SLUG);
+        } catch (AccessDeniedHttpException $exception) {
+            self::fail('An unlimited token was refused.');
+        } catch (\Throwable) {
+            // the transport and server are not wired in this test
+        }
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function testOversizedBodyOfALimitedTokenIsAnsweredWith413(): void
+    {
+        $guard = $this->createMock(McpToolCallScopeGuardInterface::class);
+        $guard->method('limits')->willReturn(true);
+        $guard->expects($this->never())->method('assertAllowed');
+
+        $request = $this->request(str_repeat('a', 4 * 1024 * 1024 + 1), [McpScopes::REQUEST_ATTRIBUTE => ['mcp:read']]);
+
+        try {
+            $this->controller($guard)($request, self::SLUG);
+            self::fail('The oversized body was not refused.');
+        } catch (HttpException $exception) {
+            self::assertSame(413, $exception->getStatusCode());
+        }
     }
 
     /**

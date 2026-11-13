@@ -33,4 +33,12 @@ interface McpToolCallScopeGuardInterface
      * @throws InsufficientMcpScopeException
      */
     public function assertAllowed(string $requestBody, ?array $grantedScopes): void;
+
+    /**
+     * Whether the scopes limit the token at all (scopes given, `mcp:write` not among them), so that the caller
+     * reads the request body only when it has to be checked.
+     *
+     * @param list<string>|null $grantedScopes null when the credential carries no scopes
+     */
+    public function limits(?array $grantedScopes): bool;
 }
