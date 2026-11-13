@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DependencyInjection;
 
 use Codeception\Test\Unit;
+use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Command\ApplyStoreCommand;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Command\ExportStoreCommand;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Controller\Configuration\Store\ApplyController;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Controller\Configuration\Store\ExportController;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Controller\Configuration\Store\ImportController;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilder;
@@ -124,6 +126,11 @@ final class ConfigurationTransferWiringTest extends Unit
                 '/classification-store/configuration/stores/{id}/import',
                 'POST',
             ],
+            ApplyController::class => [
+                'pimcore_studio_api_cs_configuration_store_apply',
+                '/classification-store/configuration/stores/apply',
+                'POST',
+            ],
         ];
 
         foreach ($expected as $controller => [$name, $path, $method]) {
@@ -141,18 +148,29 @@ final class ConfigurationTransferWiringTest extends Unit
      */
     public function testBothEndpointsAreGuardedByTheClassificationStorePermission(): void
     {
-        foreach ([ExportController::class, ImportController::class] as $controller) {
+        foreach ([ExportController::class, ImportController::class, ApplyController::class] as $controller) {
             $arguments = $this->getAttributeArguments($controller, IsGranted::class);
 
             $this->assertSame(UserPermissions::CLASSIFICATION_STORE->value, $arguments[0]);
         }
     }
 
+    /**
+     * The operation id is what the generated OpenAPI document carries the route under.
+     */
+    public function testTheApplyRouteIsDocumentedUnderItsOperationId(): void
+    {
+        $arguments = $this->getAttributeArguments(ApplyController::class, Post::class);
+
+        $this->assertSame(self::OPERATION_PREFIX . 'apply', $arguments['operationId']);
+        $this->assertStringEndsWith('/classification-store/configuration/stores/apply', $arguments['path']);
+    }
+
     public function testEveryOperationHasItsApiDocTranslations(): void
     {
         $catalogue = Yaml::parseFile(dirname(__DIR__, 3) . '/translations/studio_api_docs.en.yaml');
 
-        foreach (['export', 'import'] as $operation) {
+        foreach (['export', 'import', 'apply'] as $operation) {
             foreach (['_description', '_summary', '_success_response'] as $suffix) {
                 $key = self::OPERATION_PREFIX . $operation . $suffix;
 

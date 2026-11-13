@@ -21,7 +21,6 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
 use function explode;
 use function implode;
-use function mb_strtolower;
 use function sprintf;
 
 /**
@@ -40,23 +39,6 @@ final readonly class ApplyDiagnostics implements ApplyDiagnosticsInterface
         ArtifactSection::KEYS->value => 'key',
         ArtifactSection::COLLECTION_GROUP_RELATIONS->value => 'collection group relation',
         ArtifactSection::KEY_GROUP_RELATIONS->value => 'key assignment',
-    ];
-
-    /**
-     * Whether a name of the level answers for one row of the store at most, which is what makes a
-     * name the file reuses under another identifier a refusal rather than a second row.
-     *
-     * Keys are the exception, and are listed as such rather than left out: key names are
-     * deliberately non-unique - the duplicate-name guard was withdrawn in the requirements register
-     * because it would make a call that succeeds today start failing - so two keys of one store may
-     * both be called `weight`. Refusing the one the file does not name, because the file names the
-     * other, would roll back a whole import over a row that is simply target only.
-     */
-    private const array NAME_IS_UNIQUE_PER_STORE = [
-        ArtifactSection::SUB_GROUPS->value => true,
-        ArtifactSection::COLLECTIONS->value => true,
-        ArtifactSection::GROUPS->value => true,
-        ArtifactSection::KEYS->value => false,
     ];
 
     /**
@@ -85,14 +67,12 @@ final readonly class ApplyDiagnostics implements ApplyDiagnosticsInterface
     /**
      * {@inheritdoc}
      */
-    public function unmatchedTargetAwaitsTheLevel(
-        ArtifactSection $section,
-        array $entriesByName,
-        SubGroupConfig|CollectionConfig|GroupConfig|KeyConfig $target,
-    ): bool {
-        return (self::NAME_IS_UNIQUE_PER_STORE[$section->value] ?? false)
-            && $target->getIdentifier() !== null
-            && isset($entriesByName[mb_strtolower($target->getName())]);
+    public function recordSkippedEndpoints(ApplyContext $context, string $label, array $skipped): void
+    {
+        $context->record(
+            ApplyOutcome::SKIPPED,
+            sprintf('%s: it names "%s", which this apply skipped', $label, implode('" and "', $skipped))
+        );
     }
 
     /**
@@ -101,26 +81,13 @@ final readonly class ApplyDiagnostics implements ApplyDiagnosticsInterface
     public function recordUnmatchedTarget(
         ApplyContext $context,
         ArtifactSection $section,
-        array $entriesByName,
         SubGroupConfig|CollectionConfig|GroupConfig|KeyConfig $target,
-        array $claimed = [],
     ): void {
         $identifier = $target->getIdentifier();
-        $label = $this->label($section, $target->getName());
-        $nameIsUnique = self::NAME_IS_UNIQUE_PER_STORE[$section->value] ?? false;
-        $sharedEntry = $entriesByName[mb_strtolower($target->getName())] ?? null;
-        $sharedEntryIsUnanswered = $sharedEntry !== null && !isset($claimed[$sharedEntry]);
 
-        if ($nameIsUnique && $identifier !== null && $sharedEntryIsUnanswered) {
-            $context->record(
-                ApplyOutcome::CONFLICT,
-                sprintf('%s already carries another identifier than the one the file gives it', $label)
-            );
-
-            return;
-        }
-
-        $context->record(ApplyOutcome::TARGET_ONLY, $label);
+        // a row whose name the file reuses under another identifier is left as it is, and the entry
+        // is the one reported as skipped ({@see ApplyRefusals::refuseTakenName()})
+        $context->record(ApplyOutcome::TARGET_ONLY, $this->label($section, $target->getName()));
 
         if ($identifier !== null && $target->getId() !== null) {
             // a relation of the file may still name it, so it stays resolvable

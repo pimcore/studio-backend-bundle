@@ -213,6 +213,8 @@ final class ArtifactRoundTripTest extends Unit
         $this->assertSame(0, $report->getCount(ApplyOutcome::CREATED));
         $this->assertSame(0, $report->getCount(ApplyOutcome::UPDATED));
         $this->assertSame(0, $report->getCount(ApplyOutcome::ADOPTED));
+        $this->assertGreaterThan(0, $report->getCount(ApplyOutcome::MATCHED_UNCHANGED));
+        $this->assertSame(0, $report->getCount(ApplyOutcome::SKIPPED));
         $this->assertSame([], $this->appliedEntities);
         $this->assertSame([], $this->appliedKeys);
         $this->assertSame([], $this->appliedAssignments);

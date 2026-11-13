@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Appl
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusals;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyReport;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactAssignmentEntry;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\MatchedRow;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
@@ -51,32 +52,79 @@ final class ApplyRefusalsTest extends Unit
             ArtifactSection::SUB_GROUPS,
             ApplyOutcome::UPDATED,
             'Dimensions',
-            7,
-            'sub group "Dimensions"'
+            new MatchedRow(7),
+            'sub group "Dimensions"',
+            '01SUB'
         );
 
         $this->assertTrue($refused);
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
         $this->assertSame(
-            ['sub group "Dimensions": the name is already another entry\'s in this store'],
-            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+            ['sub group "Dimensions": the target holds the name under another identifier than the file gives it'],
+            $context->getReport()->getNamed(ApplyOutcome::SKIPPED)
         );
     }
 
     /**
-     * A collection's and a group's ::update() do not probe the name, so a rename at those levels is
-     * written - and the store is not even asked.
+     * A collection's and a group's own ::update() do not probe the name, but the apply does: a file
+     * entry for one identifier renamed onto a name another identifier holds is skipped and named, and
+     * the row being updated stays resolvable under the identifier the file gives it.
      */
-    public function testARenameIsNotRefusedAtTheLevelsWhoseUpdateDoesNotProbeTheName(): void
+    public function testARenameOntoANameAnotherIdentifierHoldsIsSkippedAtEveryLevel(): void
     {
         foreach ([ArtifactSection::COLLECTIONS, ArtifactSection::GROUPS] as $section) {
             $context = $this->createContext();
             $refusals = $this->createRefusals(collectionNameTaken: true, groupNameTaken: true);
 
-            $this->assertFalse(
-                $refusals->refuseTakenName($context, $section, ApplyOutcome::UPDATED, 'Alpha', 7, 'label'),
+            $this->assertTrue(
+                $refusals->refuseTakenName(
+                    $context,
+                    $section,
+                    ApplyOutcome::UPDATED,
+                    'Alpha',
+                    new MatchedRow(7, 'Beta'),
+                    'label',
+                    'id'
+                ),
                 $section->value
             );
             $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+            $this->assertSame(1, $context->getReport()->getCount(ApplyOutcome::SKIPPED), $section->value);
+            $this->assertFalse($context->isSkipped($section, 'id'), $section->value);
+        }
+    }
+
+    /**
+     * A nameless row selected by name is adopted only when no other row holds the name under another
+     * identifier; otherwise nothing is written, so the identifier is skipped and what refers to it
+     * is skipped with it rather than resolving to the row left without one.
+     */
+    public function testAnAmbiguousAdoptionSkipsTheIdentifierAtEveryLevel(): void
+    {
+        $sections = [ArtifactSection::SUB_GROUPS, ArtifactSection::COLLECTIONS, ArtifactSection::GROUPS];
+
+        foreach ($sections as $section) {
+            $context = $this->createContext();
+            $refusals = $this->createRefusals(
+                collectionNameTaken: true,
+                groupNameTaken: true,
+                subGroupNameTaken: true
+            );
+
+            $this->assertTrue(
+                $refusals->refuseTakenName(
+                    $context,
+                    $section,
+                    ApplyOutcome::ADOPTED,
+                    'Alpha',
+                    new MatchedRow(7, 'Alpha'),
+                    'label',
+                    'id'
+                ),
+                $section->value
+            );
+            $this->assertSame(1, $context->getReport()->getCount(ApplyOutcome::SKIPPED), $section->value);
+            $this->assertTrue($context->isSkipped($section, 'id'), $section->value);
         }
     }
 
@@ -101,7 +149,7 @@ final class ApplyRefusalsTest extends Unit
             );
 
             $this->assertTrue(
-                $refusals->refuseTakenName($context, $section, ApplyOutcome::CREATED, 'Alpha', null, 'label'),
+                $refusals->refuseTakenName($context, $section, ApplyOutcome::CREATED, 'Alpha', null, 'label', 'id'),
                 $section->value
             );
         }
@@ -121,8 +169,9 @@ final class ApplyRefusalsTest extends Unit
                 ArtifactSection::SUB_GROUPS,
                 ApplyOutcome::MATCHED_UNCHANGED,
                 'Dimensions',
-                7,
-                'label'
+                new MatchedRow(7),
+                'label',
+                'id'
             )
         );
     }
@@ -137,15 +186,152 @@ final class ApplyRefusalsTest extends Unit
         $refusals = $this->createRefusals();
 
         $this->assertFalse(
-            $refusals->refuseTakenName($context, ArtifactSection::GROUPS, ApplyOutcome::CREATED, 'Alpha', null, 'one')
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::GROUPS,
+                ApplyOutcome::CREATED,
+                'Alpha',
+                null,
+                'one',
+                'id1'
+            )
         );
         $this->assertTrue(
-            $refusals->refuseTakenName($context, ArtifactSection::GROUPS, ApplyOutcome::CREATED, 'alpha', null, 'two')
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::GROUPS,
+                ApplyOutcome::CREATED,
+                'alpha',
+                null,
+                'two',
+                'id2'
+            )
         );
         $this->assertSame(
             ['two: the name is already another entry\'s in this store'],
             $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
         );
+    }
+
+    /**
+     * The name is claimed by every entry that carries it after the apply, so a file naming it twice is
+     * a conflict even when the first of the two is the row the store already has.
+     */
+    public function testAMatchedEntryAndANewOneClaimingOneNameAreAConflict(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals(groupNameTaken: true);
+
+        $this->assertFalse(
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::GROUPS,
+                ApplyOutcome::MATCHED_UNCHANGED,
+                'Measurements',
+                new MatchedRow(7),
+                'one',
+                '01GROUP'
+            )
+        );
+        $this->assertTrue(
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::GROUPS,
+                ApplyOutcome::CREATED,
+                'Measurements',
+                null,
+                'two',
+                '01OTHER'
+            )
+        );
+        $this->assertSame(1, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::SKIPPED));
+    }
+
+    /**
+     * A store already holding two rows of one name applies its own export: entries matched unchanged
+     * only carry the name, they do not write it.
+     */
+    public function testTwoMatchedEntriesCarryingOneNameAreNotAConflict(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals(groupNameTaken: true);
+
+        foreach ([[7, 'A'], [8, 'B']] as [$id, $identifier]) {
+            $this->assertFalse(
+                $refusals->refuseTakenName(
+                    $context,
+                    ArtifactSection::GROUPS,
+                    ApplyOutcome::MATCHED_UNCHANGED,
+                    'Dimensions',
+                    new MatchedRow($id, 'Dimensions'),
+                    $identifier,
+                    $identifier
+                )
+            );
+        }
+
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+    }
+
+    /**
+     * A name another entry of the file renames its row away from is free for a new entry, in a dry run
+     * (which has written no rename) as in a real one.
+     */
+    public function testANameTheFileRenamesAwayFromIsFreeForANewEntry(): void
+    {
+        $context = $this->createContext();
+        // the store holds one group, row 7 named "Dimensions"; "Lengths" is free
+        $refusals = $this->createRefusals(
+            groupNameTaken: static fn (string $name, ?int $exceptId): bool => $name === 'Dimensions'
+                && $exceptId !== 7
+        );
+
+        $this->assertFalse(
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::GROUPS,
+                ApplyOutcome::UPDATED,
+                'Lengths',
+                new MatchedRow(7, 'Dimensions'),
+                'A',
+                'A'
+            )
+        );
+        $this->assertFalse(
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::GROUPS,
+                ApplyOutcome::CREATED,
+                'Dimensions',
+                null,
+                'B',
+                'B'
+            )
+        );
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::SKIPPED));
+    }
+
+    /**
+     * A sub group whose rename is skipped is still in the store under the identifier the file gives
+     * it, so what names it is not skipped along with it.
+     */
+    public function testARefusedRenameLeavesTheSubGroupResolvable(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals(groupNameTaken: true);
+
+        $refusals->refuseTakenName(
+            $context,
+            ArtifactSection::GROUPS,
+            ApplyOutcome::UPDATED,
+            'Sizes',
+            new MatchedRow(7),
+            'sub group "Sizes"',
+            '01SUB'
+        );
+
+        $this->assertFalse($context->isSkipped(ArtifactSection::SUB_GROUPS, '01SUB'));
     }
 
     /**
@@ -337,7 +523,7 @@ final class ApplyRefusalsTest extends Unit
      */
     private function createRefusals(
         bool $collectionNameTaken = false,
-        bool $groupNameTaken = false,
+        bool|callable $groupNameTaken = false,
         bool $subGroupNameTaken = false,
         array $assignedGroupNames = [],
     ): ApplyRefusals {
@@ -345,7 +531,13 @@ final class ApplyRefusalsTest extends Unit
         $collectionRepository->method('isNameTaken')->willReturn($collectionNameTaken);
 
         $groupRepository = $this->createMock(GroupRepositoryInterface::class);
-        $groupRepository->method('isNameTaken')->willReturn($groupNameTaken);
+        if (is_callable($groupNameTaken)) {
+            $groupRepository->method('isNameTaken')->willReturnCallback(
+                static fn (int $storeId, string $name, ?int $exceptId = null): bool => $groupNameTaken($name, $exceptId)
+            );
+        } else {
+            $groupRepository->method('isNameTaken')->willReturn($groupNameTaken);
+        }
 
         $subGroupRepository = $this->createMock(SubGroupRepositoryInterface::class);
         $subGroupRepository->method('isNameTaken')->willReturn($subGroupNameTaken);

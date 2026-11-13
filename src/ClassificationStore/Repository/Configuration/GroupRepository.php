@@ -206,10 +206,12 @@ final readonly class GroupRepository implements GroupRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function isNameTaken(int $storeId, string $name): bool
+    public function isNameTaken(int $storeId, string $name, ?int $exceptId = null): bool
     {
         try {
-            return (bool) $this->groupConfigResolver->getByName($name, $storeId);
+            $existing = $this->groupConfigResolver->getByName($name, $storeId);
+
+            return (bool) $existing && ($exceptId === null || (int) $existing->getId() !== $exceptId);
         } catch (Exception $e) {
             throw new DatabaseException('Failed to check the group name: ' . $e->getMessage(), $e);
         }

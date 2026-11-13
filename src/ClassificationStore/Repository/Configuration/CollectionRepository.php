@@ -116,10 +116,12 @@ final readonly class CollectionRepository implements CollectionRepositoryInterfa
     /**
      * {@inheritdoc}
      */
-    public function isNameTaken(int $storeId, string $name): bool
+    public function isNameTaken(int $storeId, string $name, ?int $exceptId = null): bool
     {
         try {
-            return (bool) $this->collectionConfigResolver->getByName($name, $storeId);
+            $existing = $this->collectionConfigResolver->getByName($name, $storeId);
+
+            return (bool) $existing && ($exceptId === null || (int) $existing->getId() !== $exceptId);
         } catch (Exception $e) {
             throw new DatabaseException('Failed to check the collection name: ' . $e->getMessage(), $e);
         }

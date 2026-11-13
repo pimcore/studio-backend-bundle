@@ -22,7 +22,10 @@ use Symfony\Contracts\Service\ResetInterface;
 use function array_key_exists;
 use function hash;
 use function is_array;
+use function is_bool;
+use function is_string;
 use function json_decode;
+use function method_exists;
 
 /**
  * @internal
@@ -30,6 +33,10 @@ use function json_decode;
 final class KeyQualifierResolver implements KeyQualifierResolverInterface, ResetInterface
 {
     private const string TYPE_PROPERTY = 'type';
+
+    private const string DEFAULT_VARIANT_PERMITTED_GETTER = 'isDefaultVariantAllowed';
+
+    private const string DEFAULT_VARIANT_LABEL_GETTER = 'getDefaultVariantLabel';
 
     /**
      * The digest the memo key spells a `definition` blob as. Deliberately a NON-cryptographic hash:
@@ -93,6 +100,31 @@ final class KeyQualifierResolver implements KeyQualifierResolverInterface, Reset
     public function getMaximum(KeyConfig $keyConfig): ?int
     {
         return $this->getDeclaration($keyConfig)?->getMaximum();
+    }
+
+    public function getDefaultVariant(KeyConfig $keyConfig): ?DefaultVariant
+    {
+        $declaration = $this->getDeclaration($keyConfig);
+        if ($declaration === null) {
+            return null;
+        }
+
+        $permitted = $this->readAccessor($declaration, self::DEFAULT_VARIANT_PERMITTED_GETTER);
+        $label = $this->readAccessor($declaration, self::DEFAULT_VARIANT_LABEL_GETTER);
+
+        return new DefaultVariant(
+            is_bool($permitted) ? $permitted : true,
+            is_string($label) ? $label : null
+        );
+    }
+
+    /**
+     * The accessor by name: `composer.json` allows a core whose `multiValue` declares no default
+     * variant setting, and against one of those the answer is the one a blob omitting it gets.
+     */
+    private function readAccessor(MultiValue $declaration, string $accessor): mixed
+    {
+        return method_exists($declaration, $accessor) ? $declaration->$accessor() : null;
     }
 
     /**

@@ -55,9 +55,7 @@ final readonly class KeyLayout
         #[Property(
             description: 'Whether the key holds a value per language, as the key stores it: true, false, or null'
                 . ' where the key states nothing and the `localized` flag of the class definition field the key'
-                . ' is rendered in decides. It is not resolved against that field here. The flag is not yet'
-                . ' honoured by the object data endpoints, which still read and write a classification store'
-                . ' field under the language set of the class definition field alone.',
+                . ' is rendered in decides. It is not resolved against that field here.',
             type: 'boolean',
             example: true,
             nullable: true
@@ -88,6 +86,22 @@ final readonly class KeyLayout
             nullable: true
         )]
         private ?int $maximum = null,
+        #[Property(
+            description: 'Whether a key of type `multiValue` permits a value carrying no variant; null for a key of'
+                . ' any other type. It is published, not enforced by this endpoint.',
+            type: 'boolean',
+            example: true,
+            nullable: true
+        )]
+        private ?bool $defaultVariant = null,
+        #[Property(
+            description: 'Label of the default variant of a key of type `multiValue`; null where it declares none'
+                . ' and for a key of any other type.',
+            type: 'string',
+            example: 'Standard',
+            nullable: true
+        )]
+        private ?string $defaultVariantLabel = null,
     ) {
     }
 
@@ -139,5 +153,15 @@ final readonly class KeyLayout
     public function getMaximum(): ?int
     {
         return $this->maximum;
+    }
+
+    public function getDefaultVariant(): ?bool
+    {
+        return $this->defaultVariant;
+    }
+
+    public function getDefaultVariantLabel(): ?string
+    {
+        return $this->defaultVariantLabel;
     }
 }

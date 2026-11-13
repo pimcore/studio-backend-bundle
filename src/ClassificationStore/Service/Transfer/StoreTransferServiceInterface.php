@@ -75,6 +75,18 @@ interface StoreTransferServiceInterface
     public function importStore(int $storeId, string $json): ImportReport;
 
     /**
+     * Applies the artifact to the store it names, taking no store id: the store is created when no
+     * store carries the file's identifier and updated when one does, and nothing is ever deleted.
+     * A dry run reports the same decisions and writes nothing.
+     *
+     * @throws ConflictException when the report has conflicts, naming them
+     * @throws DatabaseException
+     * @throws ElementSavingFailedException
+     * @throws InvalidArgumentException
+     */
+    public function applyConfiguration(string $json, bool $dryRun): ImportReport;
+
+    /**
      * Applies the artifact to the store it names, creating that store when the installation does
      * not carry it yet. Conflicts are reported rather than thrown, so that a dry run can name them
      * all and the caller decides what a refused run exits with.

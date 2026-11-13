@@ -49,6 +49,7 @@ final class ImportReport implements AdditionalAttributesInterface
      * @param string[] $adoptedEntries
      * @param string[] $targetOnlyEntries
      * @param string[] $conflicts
+     * @param string[]|null $skippedEntries
      */
     public function __construct(
         #[Property(description: 'Number of entries the import created', type: 'integer', example: 3)]
@@ -110,6 +111,22 @@ final class ImportReport implements AdditionalAttributesInterface
             example: []
         )]
         private readonly array $conflicts,
+        #[Property(
+            description: 'Number of entries the import skipped because the store holds their name under another '
+                . 'identifier than the file gives them; the stored rows are left as they are',
+            type: 'integer',
+            example: 1,
+            nullable: true
+        )]
+        private readonly ?int $skipped = null,
+        #[Property(
+            description: 'The skipped entries by name and reason, the last element naming how many more there are',
+            type: 'array',
+            items: new Items(type: 'string'),
+            example: ['group "Dimensions": the target holds the name under another identifier than the file gives it'],
+            nullable: true
+        )]
+        private readonly ?array $skippedEntries = null,
     ) {
     }
 
@@ -176,5 +193,18 @@ final class ImportReport implements AdditionalAttributesInterface
     public function getConflicts(): array
     {
         return $this->conflicts;
+    }
+
+    public function getSkipped(): ?int
+    {
+        return $this->skipped;
+    }
+
+    /**
+     * @return string[]|null
+     */
+    public function getSkippedEntries(): ?array
+    {
+        return $this->skippedEntries;
     }
 }

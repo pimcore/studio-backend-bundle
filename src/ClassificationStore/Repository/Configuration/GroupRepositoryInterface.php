@@ -94,14 +94,14 @@ interface GroupRepositoryInterface
     public function holdGroupsOfStore(int $storeId): void;
 
     /**
-     * Whether a group of the store already carries the name, which is the rule
-     * {@see self::create()} refuses a write over - a rename is not checked, because
-     * {@see self::update()} does not check one either. Asked before an artifact is applied, so that
-     * the collision is reported as a conflict of the reconcile rather than written past the rule.
+     * Whether a group of the store - other than the one `$exceptId` names - already carries the
+     * name, which is the rule {@see self::create()} refuses a write over. {@see self::update()} does
+     * not check a rename, but an artifact apply asks about one too, so that a file entry is never
+     * written onto a name another identifier holds.
      *
      * @throws DatabaseException
      */
-    public function isNameTaken(int $storeId, string $name): bool;
+    public function isNameTaken(int $storeId, string $name, ?int $exceptId = null): bool;
 
     /**
      * Writes the artifact's values onto the given configuration, or onto a new one when there is

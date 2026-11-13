@@ -61,4 +61,11 @@ interface KeyQualifierResolverInterface
      * or the key is not of type `multiValue`.
      */
     public function getMaximum(KeyConfig $keyConfig): ?int;
+
+    /**
+     * Whether the `multiValue` key permits a value carrying no variant, and that slot's optional label,
+     * or null where the key is not of type `multiValue`. A key that states nothing permits it, as core
+     * does, and so does a key read against a core that declares no such setting.
+     */
+    public function getDefaultVariant(KeyConfig $keyConfig): ?DefaultVariant;
 }

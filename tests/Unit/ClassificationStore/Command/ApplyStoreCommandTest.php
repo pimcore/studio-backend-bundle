@@ -21,6 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOu
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use function file_put_contents;
+use function preg_replace;
+use function strpos;
 use function sys_get_temp_dir;
 use function tempnam;
 use function unlink;
@@ -36,6 +38,39 @@ final class ApplyStoreCommandTest extends Unit
     private const string ARTIFACT = '{"store":{"identifier":"01STORE","name":"ETIM"}}';
 
     private string $path = '';
+
+    /**
+     * The memory caveat is in the help, in the order an operator should act on it: raise the limit
+     * first, which keeps the apply atomic, and only then apply in parts.
+     */
+    public function testTheHelpStatesTheMemoryCaveatInTheOrderToActOnIt(): void
+    {
+        $help = preg_replace(
+            '/\s+/',
+            ' ',
+            (new ApplyStoreCommand($this->makeEmpty(StoreTransferServiceInterface::class)))->getHelp()
+        );
+
+        $statements = [
+            'peak memory grows with the number of entities',
+            'roughly 222 MB',
+            'under a memory limit of 512M and does not',
+            "PHP's stock 128M",
+            'Raise memory_limit for the run first',
+            'keeps the apply atomic',
+            'applied in parts',
+            'Each part commits separately',
+            'partly applied configuration',
+        ];
+
+        $offset = -1;
+        foreach ($statements as $statement) {
+            $position = strpos($help, $statement);
+            $this->assertNotFalse($position, $statement);
+            $this->assertGreaterThan($offset, $position, $statement);
+            $offset = $position;
+        }
+    }
 
     /**
      * A successful dry run reaches the same branch a successful apply does. Reporting it as applied

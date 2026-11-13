@@ -26,6 +26,7 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use function array_keys;
 use function implode;
 use function in_array;
+use function mb_strtolower;
 use function sprintf;
 
 /**
@@ -44,20 +45,6 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
      */
     private const array OVERRIDABLE_PROPERTIES = ['options', 'defaultUnit', 'validUnits'];
 
-    /**
-     * Whether the level's own write path refuses a name another row of the store already carries on
-     * a rename as well as on a creation. The rule is the entity's, not the artifact's: a sub group
-     * is refused both ({@see SubGroupRepositoryInterface::create()}, ::update()), a collection and
-     * a group a creation only (their ::create() probes the name, their ::update() does not), and a
-     * key neither - key names are not unique per store, and a guard on them was withdrawn in the
-     * requirements register because it would make a call that succeeds today start failing.
-     */
-    private const array NAME_GUARDED_ON_RENAME = [
-        ArtifactSection::SUB_GROUPS->value => true,
-        ArtifactSection::COLLECTIONS->value => false,
-        ArtifactSection::GROUPS->value => false,
-    ];
-
     public function __construct(
         private CollectionRepositoryInterface $collectionRepository,
         private GroupRepositoryInterface $groupRepository,
@@ -74,30 +61,66 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
         ArtifactSection $section,
         ApplyOutcome $outcome,
         string $name,
-        ?int $exceptId,
+        ?MatchedRow $matched,
         string $label,
+        string $identifier,
     ): bool {
+        $exceptId = $matched?->getId();
+        $storedName = $matched?->getName();
+
+        // the run answers for the names it is writing: a file naming one twice is a broken file, and
+        // every entry carrying the name once the apply is done claims it - one the store already
+        // matched as much as one it creates - so the second of two is a conflict whichever of them
+        // is the new one
+        if (!$context->claimName($section, $name, $outcome === ApplyOutcome::MATCHED_UNCHANGED)) {
+            $context->record(
+                ApplyOutcome::CONFLICT,
+                sprintf('%s: the name is already another entry\'s in this store', $label)
+            );
+
+            return true;
+        }
+
         if ($outcome === ApplyOutcome::MATCHED_UNCHANGED) {
             return false;
         }
 
-        if ($outcome !== ApplyOutcome::CREATED && (self::NAME_GUARDED_ON_RENAME[$section->value] ?? false) !== true) {
+        // the store answers for the rows that are there - on a rename and on an adoption as much as on a
+        // creation, whatever the level's own ::update() would let through, because a file entry landing on
+        // a name another identifier holds is the guess this refusal exists to prevent - and a store this
+        // run created has none; a name the run is renaming a row away from is free once that is written,
+        // which a dry run never does
+        if ($context->isStoreCreated()
+            || $context->isNameVacated($section, $name)
+            || !$this->nameIsTaken($section, (int) $context->getStoreId(), $name, $exceptId)) {
+            $this->vacate($context, $section, $name, $storedName);
+
             return false;
         }
 
-        // the store answers for the rows that are there; the run itself for the ones it is writing
-        $claimed = $context->claimName($section, $name);
-
-        if ($claimed && !$this->nameIsTaken($section, (int) $context->getStoreId(), $name, $exceptId)) {
-            return false;
-        }
-
+        // skipped: adopting the stored row or writing a sibling beside it would be a guess
         $context->record(
-            ApplyOutcome::CONFLICT,
-            sprintf('%s: the name is already another entry\'s in this store', $label)
+            ApplyOutcome::SKIPPED,
+            sprintf('%s: the target holds the name under another identifier than the file gives it', $label)
         );
 
+        if ($outcome === ApplyOutcome::UPDATED && $exceptId !== null) {
+            // only the rename was ambiguous: the row is there under the identifier the file gives it
+            $context->register($section, $identifier, $exceptId);
+        } else {
+            // no row carries the identifier - a creation has none, an adoption leaves the stored row
+            // nameless - so what refers to it is skipped with the entry
+            $context->skip($section, $identifier);
+        }
+
         return true;
+    }
+
+    private function vacate(ApplyContext $context, ArtifactSection $section, string $name, ?string $storedName): void
+    {
+        if ($storedName !== null && mb_strtolower($storedName) !== mb_strtolower($name)) {
+            $context->vacateName($section, $storedName);
+        }
     }
 
     /**
@@ -179,8 +202,8 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
     {
         return match ($section) {
             ArtifactSection::SUB_GROUPS => $this->subGroupRepository->isNameTaken($storeId, $name, $exceptId),
-            ArtifactSection::COLLECTIONS => $this->collectionRepository->isNameTaken($storeId, $name),
-            ArtifactSection::GROUPS => $this->groupRepository->isNameTaken($storeId, $name),
+            ArtifactSection::COLLECTIONS => $this->collectionRepository->isNameTaken($storeId, $name, $exceptId),
+            ArtifactSection::GROUPS => $this->groupRepository->isNameTaken($storeId, $name, $exceptId),
             default => false,
         };
     }
