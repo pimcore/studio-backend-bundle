@@ -34,6 +34,12 @@ interface CoauthorServiceInterface
     public function extractFromPayload(array $payload): ?array;
 
     /**
+     * Removes the coauthor keys from a save payload that is stored to be saved later (for example by a worker),
+     * where the MCP call it came from is no longer known. Outside an MCP tool call the payload is returned as is.
+     */
+    public function withoutPayloadCoauthorInMcpCall(array $payload): array;
+
+    /**
      * Runs $callback with $coauthor applied to the version coauthor context, restoring the
      * previous context afterwards. A null $coauthor runs the callback unchanged.
      *

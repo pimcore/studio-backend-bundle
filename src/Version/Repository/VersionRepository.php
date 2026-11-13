@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContextInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter\UpdateVersionParameter;
@@ -27,6 +28,7 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version;
 use Pimcore\Model\Version\Listing as VersionListing;
+use function trigger_deprecation;
 
 /**
  * @internal
@@ -35,7 +37,8 @@ final readonly class VersionRepository implements VersionRepositoryInterface
 {
     public function __construct(
         private SecurityServiceInterface $securityService,
-        private VersionResolverInterface $versionResolver
+        private VersionResolverInterface $versionResolver,
+        private McpCallContextInterface $mcpCallContext,
     ) {
 
     }
@@ -135,13 +138,7 @@ final readonly class VersionRepository implements VersionRepositoryInterface
             $version->setPublic($parameter->isPublic());
         }
 
-        if ($parameter->getCoauthorType() !== null) {
-            $version->setCoauthorType($parameter->getCoauthorType() === '' ? null : $parameter->getCoauthorType());
-        }
-
-        if ($parameter->getCoauthor() !== null) {
-            $version->setCoauthor($parameter->getCoauthor() === '' ? null : $parameter->getCoauthor());
-        }
+        $this->applyCoauthor($version, $parameter);
 
         try {
             $version->save();
@@ -174,6 +171,38 @@ final readonly class VersionRepository implements VersionRepositoryInterface
         }
 
         return $deletedVersions;
+    }
+
+    /**
+     * Deprecated payload coauthor: inside an MCP tool call it is ignored, the MCP server alone stamps it.
+     */
+    private function applyCoauthor(Version $version, UpdateVersionParameter $parameter): void
+    {
+        $coauthorType = $parameter->getCoauthorType();
+        $coauthor = $parameter->getCoauthor();
+
+        if ($coauthorType === null && $coauthor === null) {
+            return;
+        }
+
+        if ($this->mcpCallContext->isInMcpCall()) {
+            return;
+        }
+
+        trigger_deprecation(
+            'pimcore/studio-backend-bundle',
+            '2026.4',
+            'Sending "coauthorType" and "coauthor" when updating a version is deprecated and will be removed in ' .
+            '2027.1 (https://github.com/pimcore/platform-version/issues/814).'
+        );
+
+        if ($coauthorType !== null) {
+            $version->setCoauthorType($coauthorType === '' ? null : $coauthorType);
+        }
+
+        if ($coauthor !== null) {
+            $version->setCoauthor($coauthor === '' ? null : $coauthor);
+        }
     }
 
     private function getElementVersionsListing(

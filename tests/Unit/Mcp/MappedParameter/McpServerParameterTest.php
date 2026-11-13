@@ -15,8 +15,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mcp\MappedParameter;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\MappedParameter\McpServerParameter;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use function str_repeat;
 
 /**
  * The payload is persisted as given, so whatever the request boundary lets through is
@@ -68,6 +70,21 @@ final class McpServerParameterTest extends Unit
 
         $this->assertCount(1, $violations);
         $this->assertSame('sharedRoles[0][canEdit]', $violations[0]->getPropertyPath());
+    }
+
+    public function testASlugLongerThanTheCoauthorColumnIsRejected(): void
+    {
+        $violations = $this->validator()->validate(new McpServerParameter(
+            name: 'Catalogue',
+            urlSlug: str_repeat('a', VersionCoauthor::MAX_COAUTHOR_LENGTH + 1),
+        ));
+
+        $this->assertCount(1, $violations);
+        $this->assertSame('urlSlug', $violations[0]->getPropertyPath());
+        $this->assertCount(0, $this->validator()->validate(new McpServerParameter(
+            name: 'Catalogue',
+            urlSlug: str_repeat('a', VersionCoauthor::MAX_COAUTHOR_LENGTH),
+        )));
     }
 
     public function testAGrantWithoutANameIsRejected(): void

@@ -88,3 +88,4 @@ notifications.type.general.solo_label: 'Alle Benachrichtigungen'
 notifications.type.general.solo_description: 'Alles, was Pimcore Ihnen sendet — Workflow-Schritte, Systemmeldungen, Benachrichtigungen aus anderen Bundles. Diese erscheinen immer in Ihren Benachrichtigungen; wählen Sie, ob sie zusätzlich als Pop-up angezeigt werden.'
 ownership_management_type_grid_configuration: Grid-Konfigurationen
 ownership_management_type_saved_search: Gespeicherte Suchen
+version.coauthor-type.mcp-server: 'MCP-Server'
