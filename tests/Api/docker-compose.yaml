@@ -101,9 +101,8 @@ services:
             OPENSEARCH_HOSTS: '["https://opensearch:9200"]'
 
     mercure:
-        image: dunglas/mercure:latest
+        image: dunglas/mercure:v1
         restart: unless-stopped
-        command: /usr/bin/caddy run --config /etc/caddy/dev.Caddyfile
         environment:
             # Disable HTTPS
             SERVER_NAME: ':80'
@@ -111,6 +110,10 @@ services:
             # Add JWT keys configured
             MERCURE_PUBLISHER_JWT_KEY: 'C5hme0FIly9xIppd1cipBhCL83T5TbqF0lUdMZGqg19ZeGbjeqOc9557uvEi5uT3'
             MERCURE_SUBSCRIBER_JWT_KEY: 'C5hme0FIly9xIppd1cipBhCL83T5TbqF0lUdMZGqg19ZeGbjeqOc9557uvEi5uT3'
+            # The bundle still speaks the Mercure 0.x protocol; playground replaces the removed dev.Caddyfile
+            MERCURE_EXTRA_DIRECTIVES: |-
+                playground
+                protocol_version_compatibility 8
         ports:
             - '6005:80'
         volumes:
