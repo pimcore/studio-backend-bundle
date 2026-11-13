@@ -1,0 +1,33 @@
+name: "Notify Studio UI of schema changes"
+
+# The OpenAPI spec is derived from PHP attributes across src/, so any merge there can
+# change it. This only nudges studio-ui-bundle to look; that workflow decides whether
+# anything actually changed.
+
+on:
+  push:
+    branches:
+      - "2026.3"
+      - "2026.x"
+    paths:
+      - 'src/**'
+      - 'config/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch to studio-ui-bundle
+        env:
+          # Needs write scope on pimcore/studio-ui-bundle to create a dispatch.
+          GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Backend branch name maps 1:1 onto the UI branch name.
+          jq -n --arg b "${GITHUB_REF_NAME}" \
+            '{event_type: "backend-schema-updated", client_payload: {branch: $b}}' \
+            | gh api repos/pimcore/studio-ui-bundle/dispatches --input -
