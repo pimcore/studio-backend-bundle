@@ -7,6 +7,8 @@ on:
             - "[0-9]+.[0-9]+"
             - "[0-9]+.x"
             - "feature-*"
+            # TEMPORARY, REVERT BEFORE MERGING TO 2026.x
+            - "cs-store-improvements"
     pull_request:
         types: [opened, synchronize, reopened]
 
