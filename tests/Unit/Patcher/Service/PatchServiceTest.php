@@ -145,6 +145,55 @@ final class PatchServiceTest extends Unit
         ];
     }
 
+    /**
+     * Regression test for pimcore/service-operations#1285 (PEES-1525): core omits the mandatory
+     * check while an element is unpublished, and a publish flips the published state only while
+     * saving. Without an explicit override before binding, publishing a still unpublished object
+     * would skip the mandatory validation the data adapters (e.g. for block elements) perform.
+     *
+     * @dataProvider mandatoryCheckFlagProvider
+     */
+    public function testPatchResolvesMandatoryCheckFlagBeforeBindingEditableData(
+        array $payload,
+        array $expectedFlags
+    ): void {
+        $flags = [];
+        $element = null;
+        $element = $this->makeEmpty(Concrete::class, [
+            'getId' => 1,
+            'getClass' => (new ClassDefinition())->setId('test'),
+            'setOmitMandatoryCheck' => function (bool $omitMandatoryCheck) use (&$flags, &$element) {
+                $flags[] = $omitMandatoryCheck;
+
+                return $element;
+            },
+        ]);
+        $service = $this->createService(static fn () => null);
+
+        $service->patchElement(
+            $element,
+            ElementTypes::TYPE_OBJECT,
+            $payload + ['editableData' => ['myBlock' => []]],
+            $this->user
+        );
+
+        $this->assertSame($expectedFlags, $flags);
+    }
+
+    public static function mandatoryCheckFlagProvider(): array
+    {
+        return [
+            'publish task enforces the check' => [['task' => ElementSaveTasks::PUBLISH->value], [false]],
+            'published payload flag enforces the check' => [['published' => true], [false]],
+            'version task omits the check' => [['task' => ElementSaveTasks::VERSION->value], [true]],
+            'autoSave task omits the check' => [['task' => ElementSaveTasks::AUTOSAVE->value], [true]],
+            'unpublish task omits the check' => [['task' => ElementSaveTasks::UNPUBLISH->value], [true]],
+            'unpublished payload flag omits the check' => [['published' => false], [true]],
+            'save task keeps the core fallback' => [['task' => ElementSaveTasks::SAVE->value], []],
+            'no task keeps the core fallback' => [[], []],
+        ];
+    }
+
     public function testPatchWithoutCoauthorKeysNeverActivatesContext(): void
     {
         $captured = [];

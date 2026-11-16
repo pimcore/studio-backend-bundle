@@ -268,6 +268,59 @@ final class UpdateServiceTest extends Unit
         ];
     }
 
+    /**
+     * Regression test for pimcore/service-operations#1285 (PEES-1525): core omits the mandatory
+     * check while an element is unpublished, and a publish flips the published state only while
+     * saving. Without an explicit override before binding, publishing a still unpublished object
+     * would skip the mandatory validation the data adapters (e.g. for block elements) perform.
+     *
+     * @dataProvider mandatoryCheckFlagProvider
+     */
+    public function testUpdateResolvesMandatoryCheckFlagBeforeBindingEditableData(
+        array $payload,
+        array $expectedFlags
+    ): void {
+        $flags = [];
+        $flagsWhenBinding = null;
+        $element = null;
+        $element = $this->makeEmpty(Concrete::class, [
+            'setOmitMandatoryCheck' => function (bool $omitMandatoryCheck) use (&$flags, &$element) {
+                $flags[] = $omitMandatoryCheck;
+
+                return $element;
+            },
+        ]);
+        $objectDataService = $this->makeEmpty(DataObjectDataService::class, [
+            'updateEditableData' => static function () use (&$flags, &$flagsWhenBinding): void {
+                $flagsWhenBinding = $flags;
+            },
+        ]);
+        $service = $this->createService(static fn () => null, $objectDataService, $element);
+
+        $service->update(
+            ElementTypes::TYPE_OBJECT,
+            self::ELEMENT_ID,
+            $payload + ['editableData' => ['myBlock' => []]]
+        );
+
+        $this->assertSame($expectedFlags, $flags);
+        $this->assertSame($expectedFlags, $flagsWhenBinding, 'flag must be resolved before data binding');
+    }
+
+    public static function mandatoryCheckFlagProvider(): array
+    {
+        return [
+            'publish task enforces the check' => [['task' => ElementSaveTasks::PUBLISH->value], [false]],
+            'published payload flag enforces the check' => [['published' => true], [false]],
+            'version task omits the check' => [['task' => ElementSaveTasks::VERSION->value], [true]],
+            'autoSave task omits the check' => [['task' => ElementSaveTasks::AUTOSAVE->value], [true]],
+            'unpublish task omits the check' => [['task' => ElementSaveTasks::UNPUBLISH->value], [true]],
+            'unpublished payload flag omits the check' => [['published' => false], [true]],
+            'save task keeps the core fallback' => [['task' => ElementSaveTasks::SAVE->value], []],
+            'no task keeps the core fallback' => [[], []],
+        ];
+    }
+
     private function createService(
         callable $onSave,
         ?DataObjectDataService $objectDataService = null,

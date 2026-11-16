@@ -44,4 +44,33 @@ final class ElementSaveTasksTest extends Unit
             'unknown task' => ['draft', false],
         ];
     }
+
+    /**
+     * During data binding the element still carries its old published state, so core's fallback
+     * (omit the mandatory check while unpublished) must be overridden for requests that publish
+     * or unpublish; null leaves the fallback untouched.
+     *
+     * @dataProvider resolveOmitMandatoryCheckForBindingProvider
+     */
+    public function testResolveOmitMandatoryCheckForBinding(?string $task, mixed $published, ?bool $expected): void
+    {
+        $this->assertSame($expected, ElementSaveTasks::resolveOmitMandatoryCheckForBinding($task, $published));
+    }
+
+    public static function resolveOmitMandatoryCheckForBindingProvider(): array
+    {
+        return [
+            'publish task enforces the check' => [ElementSaveTasks::PUBLISH->value, null, false],
+            'published payload flag enforces the check' => [null, true, false],
+            'unpublished payload flag omits the check' => [null, false, true],
+            'autoSave omits the check' => [ElementSaveTasks::AUTOSAVE->value, null, true],
+            'version omits the check' => [ElementSaveTasks::VERSION->value, null, true],
+            'unpublish task omits the check' => [ElementSaveTasks::UNPUBLISH->value, null, true],
+            'version wins over published payload flag' => [ElementSaveTasks::VERSION->value, true, true],
+            'save keeps the core fallback' => [ElementSaveTasks::SAVE->value, null, null],
+            'no task keeps the core fallback' => [null, null, null],
+            'unknown task keeps the core fallback' => ['draft', null, null],
+            'non-boolean published value keeps the core fallback' => [null, 'true', null],
+        ];
+    }
 }

@@ -167,10 +167,18 @@ final readonly class PatchService implements PatchServiceInterface
         $coauthor = $this->coauthorService->extractFromPayload($elementPatchData);
         $task = $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null;
 
-        if ($element instanceof Concrete && ElementSaveTasks::omitsMandatoryCheck($task)) {
-            // ElementSaveService sets this flag only while saving, which is too late for the
-            // mandatory validation the data adapters perform during binding below.
-            $element->setOmitMandatoryCheck(true);
+        if ($element instanceof Concrete) {
+            // ElementSaveService and the publish adapters apply this flag only while saving,
+            // which is too late for the mandatory validation the data adapters perform during
+            // binding below: core would fall back to omitting the check while the element is
+            // still unpublished, even when this very request publishes it.
+            $omitMandatoryCheck = ElementSaveTasks::resolveOmitMandatoryCheckForBinding(
+                $task,
+                $elementPatchData[ElementSaveServiceInterface::INDEX_PUBLISHED] ?? null
+            );
+            if ($omitMandatoryCheck !== null) {
+                $element->setOmitMandatoryCheck($omitMandatoryCheck);
+            }
         }
 
         try {

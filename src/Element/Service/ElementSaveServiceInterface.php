@@ -26,6 +26,11 @@ interface ElementSaveServiceInterface
 {
     public const string INDEX_TASK = 'task';
 
+    /**
+     * Payload key the publish adapters of the updater/patcher react to.
+     */
+    public const string INDEX_PUBLISHED = 'published';
+
     public const string INDEX_COAUTHOR_TYPE = 'coauthorType';
 
     public const string INDEX_COAUTHOR = 'coauthor';

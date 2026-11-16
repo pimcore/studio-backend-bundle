@@ -55,4 +55,25 @@ enum ElementSaveTasks: string
             true
         );
     }
+
+    /**
+     * The omitMandatoryCheck flag an element needs while the data adapters bind the payload,
+     * or null where core's fallback (omit while the element is unpublished) is already right.
+     * ElementSaveService and the publish adapters change the published state and the flag only
+     * while saving — during binding the element still carries its old published state, so a
+     * request that publishes a still unpublished element would wrongly skip the mandatory
+     * validation without an explicit override. $published is the raw `published` payload value.
+     */
+    public static function resolveOmitMandatoryCheckForBinding(?string $task, mixed $published): ?bool
+    {
+        if (self::omitsMandatoryCheck($task) || $published === false) {
+            return true;
+        }
+
+        if ($task === self::PUBLISH->value || $published === true) {
+            return false;
+        }
+
+        return null;
+    }
 }

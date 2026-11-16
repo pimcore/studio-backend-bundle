@@ -81,10 +81,18 @@ final readonly class UpdateService implements UpdateServiceInterface
             $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
         }
 
-        if ($element instanceof Concrete && ElementSaveTasks::omitsMandatoryCheck($task)) {
-            // ElementSaveService sets this flag only while saving, which is too late for the
-            // mandatory validation the data adapters perform during binding below.
-            $element->setOmitMandatoryCheck(true);
+        if ($element instanceof Concrete) {
+            // ElementSaveService and the publish adapters apply this flag only while saving,
+            // which is too late for the mandatory validation the data adapters perform during
+            // binding below: core would fall back to omitting the check while the element is
+            // still unpublished, even when this very request publishes it.
+            $omitMandatoryCheck = ElementSaveTasks::resolveOmitMandatoryCheckForBinding(
+                $task,
+                $data[ElementSaveServiceInterface::INDEX_PUBLISHED] ?? null
+            );
+            if ($omitMandatoryCheck !== null) {
+                $element->setOmitMandatoryCheck($omitMandatoryCheck);
+            }
         }
 
         if (isset($data[self::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
