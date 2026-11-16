@@ -101,8 +101,7 @@ final class ServiceUser implements AdditionalAttributesInterface
         #[Property(description: 'Timestamp of the last login', type: 'integer', example: 1718757677, nullable: true)]
         private readonly ?int $lastLogin,
         #[Property(
-            description: 'Whether the OAuth client_credentials grant is enabled on this instance. '
-                . 'While false, the client secret authenticates nothing; use an MCP access token.',
+            description: 'Whether the OAuth client_credentials grant is enabled; if false, use an MCP access token',
             type: 'boolean',
             example: false
         )]
