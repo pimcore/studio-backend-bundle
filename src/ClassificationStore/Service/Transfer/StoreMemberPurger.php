@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
@@ -53,6 +54,7 @@ final readonly class StoreMemberPurger implements StoreMemberPurgerInterface
         private GroupRepositoryInterface $groupRepository,
         private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
         private KeyRepositoryInterface $keyRepository,
+        private SearchIndexRemapTriggerInterface $searchIndexRemapTrigger,
         private SubGroupRepositoryInterface $subGroupRepository,
     ) {
     }
@@ -75,6 +77,12 @@ final readonly class StoreMemberPurger implements StoreMemberPurgerInterface
         if ($context->isDryRun()) {
             return;
         }
+
+        // before the deletions and not after them: a delete that fails part way has still taken
+        // rows out, and whether they survive is the enclosing transaction's answer rather than
+        // this one's. Taken here it is inside the window `Reconciler::apply()` marked, so a
+        // rollback it owns takes the note back with the rows and one it does not hands it over.
+        $this->searchIndexRemapTrigger->noteMappingStale($storeId);
 
         $this->removeEntities($storeId);
     }

@@ -39,6 +39,12 @@ interface StoreMemberPurgerInterface
      * levels, which the database takes with their endpoints rather than this deleting them one by
      * one.
      *
+     * A removal is the one change to a key the search index cannot be told about as a flag change -
+     * the key is gone and a definition of null reads as indexed - so the deleting mode notes the
+     * store's mapping as stale instead
+     * ({@see SearchIndexRemapTriggerInterface::noteMappingStale()}). The note follows the
+     * deletions, never the report: a dry run notes nothing.
+     *
      * @throws ConflictException
      * @throws DatabaseException
      * @throws ElementSavingFailedException

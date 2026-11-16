@@ -25,6 +25,10 @@ use function sprintf;
  * remap per affected index over when that unit of work ends. A store is noted once however many of
  * its keys changed, and two stores reaching the same class remap that class once.
  *
+ * A note is about a store and never about a key, which is what lets
+ * {@see noteMappingStale()} answer for a removal the same way: a purged key cannot be described as
+ * a pair of definitions, but the store whose mapping it leaves stale is the same note.
+ *
  * The notes are dropped by {@see flush()}, which the key write surfaces call once per request or
  * per apply, and again at the end of the request when their own call could not hand anything over
  * yet; by {@see discardSince()}, which is what a unit of work that rolled its own key writes back
@@ -128,6 +132,14 @@ final class SearchIndexRemapTrigger implements SearchIndexRemapTriggerInterface,
             return;
         }
 
+        $this->noteMappingStale($storeId);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function noteMappingStale(int $storeId): void
+    {
         // the sequence of the FIRST note of this store, so that a rollback taking back what it
         // noted itself cannot take back an earlier writer's note of the same store
         $this->noted[$storeId] ??= $this->sequence++;

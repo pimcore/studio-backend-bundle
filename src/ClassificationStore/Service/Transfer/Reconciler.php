@@ -45,9 +45,10 @@ use function sprintf;
  * ## Who takes back the search index remap notes
  *
  * The key writes of the sections note the flag changes they make
- * ({@see SearchIndexRemapTriggerInterface}), and a rolled back apply has to take its own notes back
- * with the rows they were about. This class is where that decision belongs, because it is the only
- * one that knows whether a rollback happened at all: it rolls back only the transaction it opened
+ * ({@see SearchIndexRemapTriggerInterface}), the purge of a replace notes the mapping its removals
+ * leave stale, and a rolled back apply has to take its own notes back with the rows they were
+ * about. This class is where that decision belongs, because it is the only one that knows whether
+ * a rollback happened at all: it rolls back only the transaction it opened
  * itself, and an apply that joined a transaction a caller owns leaves both the commit and the
  * rollback to that caller - including after a refusal, where it reports the conflicts and writes
  * nothing further.

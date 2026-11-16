@@ -619,6 +619,7 @@ final class ArtifactRoundTripTest extends Unit
                 $groupRepository,
                 $keyGroupRelationRepository,
                 $keyRepository,
+                $this->makeEmpty(SearchIndexRemapTriggerInterface::class),
                 $subGroupRepository
             ),
             $storeRepository,

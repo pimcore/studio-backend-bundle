@@ -1422,6 +1422,74 @@ final class ReconcilerTest extends Unit
     }
 
     /**
+     * A replace takes the store's keys out of the rows the class mappings were built from, and no
+     * pair of definitions can say so - the keys it writes back are created ones, which change no
+     * mapping. So the purge notes the store's mapping as stale, and the remap it earns is handed
+     * over with the rest of the apply's.
+     */
+    public function testAReplaceNotesTheEmptiedStoresMappingAsStale(): void
+    {
+        $this->createReconciler(
+            groups: [$this->createGroup('01DIFFERENT', self::OTHER_GROUP_NAME)],
+            connection: $this->createConnection(false)
+        )->apply($this->createDocument(), $this->createStore(), false, true);
+
+        $this->assertSame(
+            ['mark', sprintf('noteMappingStale:%d', self::STORE_ID)],
+            $this->noteCalls
+        );
+    }
+
+    /**
+     * And it is taken inside the window the apply marked, so a replace that rolls its own writes
+     * back takes it back with the rows: the keys are still there, and a remap of a store nothing
+     * happened to is a whole class re-indexed for nothing.
+     */
+    public function testAFailingReplaceTakesItsStaleNoteBackWhenItRollsBack(): void
+    {
+        $reconciler = $this->createReconciler(
+            groups: [$this->createGroup('01DIFFERENT', self::OTHER_GROUP_NAME)],
+            connection: $this->createConnection(false),
+            failingSubGroupWrite: true
+        );
+        $document = $this->createDocument([
+            'subGroups' => [
+                ['identifier' => self::SUB_GROUP_IDENTIFIER, 'name' => 'Dimensions', 'description' => null],
+            ],
+        ]);
+
+        try {
+            $reconciler->apply($document, $this->createStore(), false, true);
+            $this->fail('A failing apply cannot answer with a report.');
+        } catch (ElementSavingFailedException) {
+            // the failure is the caller's; what it must not leave behind is the note
+        }
+
+        $this->assertContains('rollBack', $this->steps);
+        $this->assertSame(
+            [
+                'mark',
+                sprintf('noteMappingStale:%d', self::STORE_ID),
+                sprintf('discardSince:%d', self::NOTE_MARK),
+            ],
+            $this->noteCalls
+        );
+    }
+
+    /**
+     * A dry run of a replace deletes none of what it reports, so there is nothing stale to converge
+     * to and nothing is noted.
+     */
+    public function testADryRunOfAReplaceNotesNothing(): void
+    {
+        $this->createReconciler(
+            groups: [$this->createGroup('01DIFFERENT', self::OTHER_GROUP_NAME)]
+        )->apply($this->createDocument(), $this->createStore(), true, true);
+
+        $this->assertSame(['mark'], $this->noteCalls);
+    }
+
+    /**
      * An apply that fails part way through is the same answer: it rolled its own transaction back,
      * so it takes its own notes back with it.
      */
@@ -1792,6 +1860,7 @@ final class ReconcilerTest extends Unit
                 $groupRepository,
                 $keyGroupRelationRepository,
                 $keyRepository,
+                $remapTrigger,
                 $subGroupRepository
             ),
             $storeRepository,
@@ -1811,6 +1880,9 @@ final class ReconcilerTest extends Unit
                 $this->noteCalls[] = 'mark';
 
                 return self::NOTE_MARK;
+            },
+            'noteMappingStale' => function (int $storeId): void {
+                $this->noteCalls[] = sprintf('noteMappingStale:%d', $storeId);
             },
             'discardSince' => function (int $mark): void {
                 $this->noteCalls[] = sprintf('discardSince:%d', $mark);

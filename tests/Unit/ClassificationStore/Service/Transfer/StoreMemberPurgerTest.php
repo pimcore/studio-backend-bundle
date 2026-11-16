@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyContext;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyDiagnostics;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyReport;
@@ -66,6 +67,11 @@ final class StoreMemberPurgerTest extends Unit
      * @var list<string>
      */
     private array $deletes = [];
+
+    /**
+     * @var list<int>
+     */
+    private array $staleNotes = [];
 
     /**
      * The entities before the relations, each level in the words the rest of the apply reports it
@@ -141,6 +147,45 @@ final class StoreMemberPurgerTest extends Unit
 
         $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::REMOVED));
         $this->assertSame([], $this->deletes);
+        $this->assertSame([], $this->staleNotes);
+    }
+
+    /**
+     * The keys the replace takes out were in the class mappings and are not coming back under the
+     * identifiers they had, so the mapping of every index the store reaches is stale and a remap is
+     * owed. Nothing the removal leaves behind can be described as a flag change - the key has no
+     * definition any more - so the store is noted as stale instead.
+     */
+    public function testAPurgeNotesTheStoresMappingAsStale(): void
+    {
+        $this->createPurger()->purge($this->createContext(false));
+
+        $this->assertSame([self::STORE_ID], $this->staleNotes);
+    }
+
+    /**
+     * The note follows the deletion and not the report: a dry run names every row it would take out
+     * and takes out none of them, so there is nothing stale to converge to and a remap of every
+     * class the store reaches would be paid for a warning.
+     */
+    public function testADryRunNotesNothing(): void
+    {
+        $this->createPurger()->purge($this->createContext(true));
+
+        $this->assertSame([], $this->staleNotes);
+        $this->assertSame([], $this->deletes);
+    }
+
+    /**
+     * One note for the purge, not one per row taken out: the note is the store's, and the remap it
+     * earns is one per index however many rows it stands for.
+     */
+    public function testTheStoreIsNotedOnceForTheWholePurge(): void
+    {
+        $this->createPurger()->purge($this->createContext(false));
+
+        $this->assertCount(4, $this->deletes);
+        $this->assertCount(1, $this->staleNotes);
     }
 
     private function createContext(bool $dryRun): ApplyContext
@@ -154,6 +199,7 @@ final class StoreMemberPurgerTest extends Unit
     private function createPurger(): StoreMemberPurger
     {
         $this->deletes = [];
+        $this->staleNotes = [];
 
         return new StoreMemberPurger(
             new ApplyDiagnostics(),
@@ -177,6 +223,11 @@ final class StoreMemberPurgerTest extends Unit
                     ? []
                     : [$this->createKey()],
                 self::DELETE => fn (int $id) => $this->recordDelete('key', $id),
+            ]),
+            $this->makeEmpty(SearchIndexRemapTriggerInterface::class, [
+                'noteMappingStale' => function (int $storeId): void {
+                    $this->staleNotes[] = $storeId;
+                },
             ]),
             $this->makeEmpty(SubGroupRepositoryInterface::class, [
                 self::READ_CHUNK => [$this->createSubGroup()],
