@@ -29,6 +29,7 @@ use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Multiselect;
 use Pimcore\Model\DataObject\ClassDefinition\Data\MultiValue;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
@@ -72,6 +73,8 @@ final class KeyGroupLayoutServiceTest extends Unit
 
     private const string SELECT = 'select';
 
+    private const string MULTISELECT = 'multiselect';
+
     private const string OPTIONS = 'options';
 
     private const string FROM_JSON = 'getFieldDefinitionFromJson';
@@ -84,7 +87,16 @@ final class KeyGroupLayoutServiceTest extends Unit
     /**
      * What every assignment below narrows to.
      */
-    private const array SUBSET_VALUES = ['b', 'd'];
+    private const array SUBSET_VALUES = ['b', self::KEPT_VALUE];
+
+    /**
+     * One value the subset keeps, and two it leaves out.
+     */
+    private const string KEPT_VALUE = 'd';
+
+    private const string EXCLUDED_VALUE = 'e';
+
+    private const string OTHER_EXCLUDED_VALUE = 'a';
 
     public function _before(): void
     {
@@ -318,7 +330,7 @@ final class KeyGroupLayoutServiceTest extends Unit
     public function testADefaultTheSubsetExcludesIsDropped(): void
     {
         ConfigurableOptionsProvider::$options = $this->options();
-        ConfigurableOptionsProvider::$defaultValue = 'e';
+        ConfigurableOptionsProvider::$defaultValue = self::EXCLUDED_VALUE;
 
         $definition = $this->enrichedLayoutDefinition($this->providerBackedSelect());
 
@@ -329,12 +341,61 @@ final class KeyGroupLayoutServiceTest extends Unit
     public function testADefaultTheSubsetKeepsSurvives(): void
     {
         ConfigurableOptionsProvider::$options = $this->options();
-        ConfigurableOptionsProvider::$defaultValue = 'd';
+        ConfigurableOptionsProvider::$defaultValue = self::KEPT_VALUE;
 
         $definition = $this->enrichedLayoutDefinition($this->providerBackedSelect());
 
         $this->assertInstanceOf(Select::class, $definition);
-        $this->assertSame('d', $definition->getDefaultValue());
+        $this->assertSame(self::KEPT_VALUE, $definition->getDefaultValue());
+    }
+
+    /**
+     * The `multiselect` half of the same block: {@see ProvidedOptionNarrower} narrows both types, as
+     * core does, so an assignment's subset reaches a provider-backed multiselect as it does a select.
+     */
+    public function testTheLayoutDefinitionNarrowsTheListTheProviderFilledInForAMultiselect(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+
+        $this->assertSame(
+            self::SUBSET_VALUES,
+            $this->valuesOf($this->enrichedMultiselectDefinition()->getOptions())
+        );
+    }
+
+    /**
+     * A multiselect declares its default as a list, so reconciliation drops the entries the subset
+     * excludes and keeps the rest - it does not discard the whole default over one excluded entry.
+     */
+    public function testAMultiselectDefaultKeepsOnlyTheValuesTheSubsetAllows(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+        ConfigurableOptionsProvider::$defaultValue = [self::KEPT_VALUE, self::EXCLUDED_VALUE];
+
+        $this->assertSame([self::KEPT_VALUE], $this->enrichedMultiselectDefinition()->getDefaultValue());
+    }
+
+    /**
+     * A list the subset keeps whole is handed on unchanged, in the order it was declared in.
+     */
+    public function testAMultiselectDefaultTheSubsetKeepsEntirelySurvives(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+        ConfigurableOptionsProvider::$defaultValue = self::SUBSET_VALUES;
+
+        $this->assertSame(self::SUBSET_VALUES, $this->enrichedMultiselectDefinition()->getDefaultValue());
+    }
+
+    /**
+     * Nothing surviving is reported as no default at all rather than as an empty list, which is what
+     * core's reconciliation hands back and what an editor reads as "unset".
+     */
+    public function testAMultiselectDefaultTheSubsetExcludesEntirelyIsDropped(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+        ConfigurableOptionsProvider::$defaultValue = [self::OTHER_EXCLUDED_VALUE, self::EXCLUDED_VALUE];
+
+        $this->assertNull($this->enrichedMultiselectDefinition()->getDefaultValue());
     }
 
     /**
@@ -478,23 +539,26 @@ final class KeyGroupLayoutServiceTest extends Unit
     /**
      * @param array<string, mixed> $members
      */
-    private function blob(array $members): string
+    private function blob(array $members, string $type = self::SELECT): string
     {
-        return (string)json_encode(['fieldtype' => self::SELECT] + $members);
+        return (string)json_encode(['fieldtype' => $type] + $members);
     }
 
     /**
-     * A `select` assignment of the key, narrowing the list to {@see self::SUBSET_VALUES} unless told
-     * otherwise.
+     * An assignment of the key, of the type named and narrowing the list to {@see self::SUBSET_VALUES}
+     * unless told otherwise.
      *
      * @param string[]|null $subset
      */
-    private function relation(string $definition, ?array $subset = self::SUBSET_VALUES): KeyGroupRelation
-    {
+    private function relation(
+        string $definition,
+        ?array $subset = self::SUBSET_VALUES,
+        string $type = self::SELECT
+    ): KeyGroupRelation {
         $relation = new KeyGroupRelation();
         $relation->setKeyId(self::KEY_ID);
         $relation->setGroupId(self::GROUP_ID);
-        $relation->setType(self::SELECT);
+        $relation->setType($type);
         $relation->setDefinition($definition);
         $relation->setDefinitionOverride(
             $subset === null ? null : [self::OPTIONS => $this->options($subset)]
@@ -516,16 +580,47 @@ final class KeyGroupLayoutServiceTest extends Unit
     }
 
     /**
+     * The multiselect counterpart of {@see self::providerBackedSelect()}.
+     */
+    private function providerBackedMultiselect(): Multiselect
+    {
+        $multiselect = new Multiselect();
+        $multiselect->setName(self::KEY_NAME);
+        $multiselect->setOptionsProviderClass(ConfigurableOptionsProvider::class);
+
+        return $multiselect;
+    }
+
+    /**
+     * What a provider-backed `multiselect` assignment hands the editor, narrowed and typed.
+     */
+    private function enrichedMultiselectDefinition(): Multiselect
+    {
+        $definition = $this->enrichedLayoutDefinition(
+            $this->providerBackedMultiselect(),
+            type: self::MULTISELECT
+        );
+
+        $this->assertInstanceOf(Multiselect::class, $definition);
+
+        return $definition;
+    }
+
+    /**
      * The definition the layout path hands over for a provider-backed key, enrichment included -
      * which is what an object in context buys the caller.
      *
      * @param string[]|null $subset
      */
-    private function enrichedLayoutDefinition(Data $definition, ?array $subset = self::SUBSET_VALUES): Data
-    {
+    private function enrichedLayoutDefinition(
+        Data $definition,
+        ?array $subset = self::SUBSET_VALUES,
+        string $type = self::SELECT
+    ): Data {
         $relation = $this->relation(
-            $this->blob(['optionsProviderClass' => ConfigurableOptionsProvider::class]),
-            $subset
+            $this->blob(['optionsProviderClass' => ConfigurableOptionsProvider::class], $type),
+            $subset,
+            $type
         );
 
         $serviceResolver = $this->createMock(ServiceResolverInterface::class);
