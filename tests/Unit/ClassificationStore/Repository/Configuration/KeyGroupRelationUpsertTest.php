@@ -21,10 +21,12 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Dao as GroupConfigDao;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Dao as KeyGroupRelationDao;
 use function array_unique;
 use function array_values;
+use function sprintf;
 use function str_contains;
 
 /**
@@ -588,19 +590,70 @@ final class KeyGroupRelationUpsertTest extends Unit
 
     /**
      * The group before the relation, which is the order every writer of this family takes these tables
-     * in; reaching them the other way round closes a cycle InnoDB resolves with a deadlock.
+     * in; reaching them the other way round closes a cycle InnoDB resolves with a deadlock. The key
+     * comes last, which is the order core's own disable takes the relations and the key in.
      */
-    public function testTheGroupIsHeldBeforeTheAssignmentRowInsideOneTransaction(): void
+    public function testTheGroupIsHeldBeforeTheAssignmentRowAndTheKeyLastInsideOneTransaction(): void
     {
         $this->stubDatabase([$this->createRow()]);
 
         $this->createRepository()->createOrUpdate($this->createPayload());
 
         $this->assertSame(
-            [GroupConfigDao::TABLE_NAME_GROUPS, KeyGroupRelationDao::TABLE_NAME_RELATIONS],
+            [
+                GroupConfigDao::TABLE_NAME_GROUPS,
+                KeyGroupRelationDao::TABLE_NAME_RELATIONS,
+                KeyConfigDao::TABLE_NAME_KEYS,
+            ],
             $this->getLockedTablesInOrder()
         );
         $this->assertSame(['begin', 'commit'], $this->getTransactionSteps());
+    }
+
+    /**
+     * Core treats a disabled key as invisible and deletes a key's assignments only on the transition
+     * to disabled, so an assignment of a key that is already disabled would leave a row nothing ever
+     * cleans up. Refused as the fault of the request it is, with nothing written.
+     */
+    public function testAnAssignmentOfADisabledKeyIsAnUnprocessableContentThatWritesNothing(): void
+    {
+        $this->stubDatabase([]);
+        $this->letTheKeyBeStored(enabled: false);
+
+        try {
+            $this->createRepository()->createOrUpdate($this->createPayload());
+            $this->fail('Expected the assignment of a disabled key to be refused.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame(422, $e->getStatusCode());
+            $this->assertSame(
+                sprintf('Key %d is disabled and cannot be assigned to a group.', self::KEY_ID),
+                $e->getMessage()
+            );
+        }
+
+        $this->assertNothingWasWritten();
+        $this->assertSame(['begin', 'rollback'], $this->getTransactionSteps());
+    }
+
+    /**
+     * The negative case: an enabled key is assignable exactly as it was, and the probe is read under
+     * a lock rather than from a snapshot the write could be racing.
+     */
+    public function testAnAssignmentOfAnEnabledKeyIsWrittenAsBefore(): void
+    {
+        $this->stubDatabase([]);
+        $this->letTheKeyBeStored(enabled: true);
+        $this->letTheKeyExistForNewAssignments($this->createKeyColumns());
+
+        $relation = $this->createRepository()->createOrUpdate($this->createPayload());
+
+        $this->assertSame(self::KEY_ID, $relation->getKeyId());
+        $this->assertSame(self::GROUP_ID, $relation->getGroupId());
+        $this->assertSame(['begin', 'commit'], $this->getTransactionSteps());
+        $this->assertStringContainsString(
+            ' FOR UPDATE',
+            $this->getLockingReadOf(KeyConfigDao::TABLE_NAME_KEYS)
+        );
     }
 
     /**
@@ -655,12 +708,29 @@ final class KeyGroupRelationUpsertTest extends Unit
         foreach ($this->getLockingReads() as $query) {
             $this->assertStringContainsString(' FOR UPDATE', $query, 'Expected a locking read.');
 
-            $tables[] = str_contains($query, GroupConfigDao::TABLE_NAME_GROUPS)
-                ? GroupConfigDao::TABLE_NAME_GROUPS
-                : KeyGroupRelationDao::TABLE_NAME_RELATIONS;
+            $tables[] = match (true) {
+                str_contains($query, GroupConfigDao::TABLE_NAME_GROUPS) => GroupConfigDao::TABLE_NAME_GROUPS,
+                str_contains($query, KeyGroupRelationDao::TABLE_NAME_RELATIONS)
+                    => KeyGroupRelationDao::TABLE_NAME_RELATIONS,
+                default => KeyConfigDao::TABLE_NAME_KEYS,
+            };
         }
 
         return $tables;
+    }
+
+    /**
+     * The one locking read the write path addressed to the given table.
+     */
+    private function getLockingReadOf(string $table): string
+    {
+        foreach ($this->getLockingReads() as $query) {
+            if (str_contains($query, $table)) {
+                return $query;
+            }
+        }
+
+        $this->fail(sprintf('Expected a locking read of "%s".', $table));
     }
 
     /**

@@ -87,6 +87,16 @@ final class ApplyContext
     private array $disabledKeys = [];
 
     /**
+     * The keys the target carries disabled and the file says nothing about, per identifier.
+     *
+     * Kept apart from the keys the file itself disables, because the two are refused with different
+     * words: one is a file contradicting itself, the other a file naming a key the target hides.
+     *
+     * @var array<string, bool>
+     */
+    private array $targetDisabledKeys = [];
+
+    /**
      * The identifiers of the entries this run skipped, per level: an entry naming one of them is
      * skipped with it rather than refused for an endpoint that does not exist.
      *
@@ -240,5 +250,15 @@ final class ApplyContext
     public function isKeyDisabled(string $identifier): bool
     {
         return $this->disabledKeys[$identifier] ?? false;
+    }
+
+    public function markKeyDisabledInTarget(string $identifier): void
+    {
+        $this->targetDisabledKeys[$identifier] = true;
+    }
+
+    public function isKeyDisabledInTarget(string $identifier): bool
+    {
+        return $this->targetDisabledKeys[$identifier] ?? false;
     }
 }

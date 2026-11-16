@@ -95,6 +95,8 @@ final class ReconcilerTest extends Unit
 
     private const string GROUP_WRITE = 'group:%s:%s';
 
+    private const string ASSIGNMENT_WRITE = 'assignment:%s:%s';
+
     private const string INDEXED_MEMBER = 'indexed';
 
     private const string KEY_DEFINITION = '{"fieldtype":"input","title":"Weight"}';
@@ -556,6 +558,68 @@ final class ReconcilerTest extends Unit
         );
         $this->assertNotContains(
             sprintf('key:%s:%s', self::KEY_IDENTIFIER, self::KEY_NAME),
+            $this->writes
+        );
+    }
+
+    /**
+     * The realistic trigger: a file that assigns a key it does not describe, applied to a target
+     * where that key is soft deleted. The target row stays resolvable so the relation can name it,
+     * and naming it is exactly what is refused - core's disable fires on the transition only, so
+     * the row this would write is one nothing cleans up again.
+     */
+    public function testAnAssignmentNamingAKeyTheTargetCarriesDisabledIsRefused(): void
+    {
+        $document = $this->createDocument(['keys' => []]);
+
+        $report = $this->createReconciler(
+            disabledKeys: [$this->createKey(self::KEY_IDENTIFIER, self::KEY_NAME, enabled: false)]
+        )->apply($document, $this->createStore(), false);
+
+        $this->assertTrue($report->hasConflicts());
+        $this->assertStringContainsString(
+            'disabled in the target and the file does not enable it',
+            implode(' ', $report->getNamed(ApplyOutcome::CONFLICT))
+        );
+        $this->assertNotContains(
+            sprintf(self::ASSIGNMENT_WRITE, self::GROUP_IDENTIFIER, self::KEY_IDENTIFIER),
+            $this->writes
+        );
+    }
+
+    /**
+     * The negative case: the same file against a target whose key is enabled applies the assignment
+     * as it always did, key section or no key section.
+     */
+    public function testAnAssignmentNamingAnEnabledKeyTheFileOmitsIsStillApplied(): void
+    {
+        $document = $this->createDocument(['keys' => []]);
+
+        $report = $this->createReconciler(
+            enabledKeys: [$this->createKey(self::KEY_IDENTIFIER, self::KEY_NAME, enabled: true)]
+        )->apply($document, $this->createStore(), false);
+
+        $this->assertFalse($report->hasConflicts());
+        $this->assertContains(
+            sprintf(self::ASSIGNMENT_WRITE, self::GROUP_IDENTIFIER, self::KEY_IDENTIFIER),
+            $this->writes
+        );
+    }
+
+    /**
+     * A key the target carries disabled and the file enables is written enabled before the
+     * assignment section is reached, so the assignment is not refused for the state the apply is
+     * about to leave behind.
+     */
+    public function testAnAssignmentOfAKeyTheFileReEnablesIsApplied(): void
+    {
+        $report = $this->createReconciler(
+            disabledKeys: [$this->createKey(self::KEY_IDENTIFIER, self::KEY_NAME, enabled: false)]
+        )->apply($this->createDocument(), $this->createStore(), false);
+
+        $this->assertFalse($report->hasConflicts());
+        $this->assertContains(
+            sprintf(self::ASSIGNMENT_WRITE, self::GROUP_IDENTIFIER, self::KEY_IDENTIFIER),
             $this->writes
         );
     }
@@ -1513,7 +1577,7 @@ final class ReconcilerTest extends Unit
             function (ArtifactAssignmentEntry $entry, int $keyId, int $groupId): KeyGroupRelation {
                 $this->recordWrite(
                     sprintf(
-                        'assignment:%s:%s',
+                        self::ASSIGNMENT_WRITE,
                         $entry->getGroupIdentifier(),
                         $entry->getKeyIdentifier()
                     )

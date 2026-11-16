@@ -408,6 +408,58 @@ final class ApplyRefusalsTest extends Unit
     }
 
     /**
+     * The same hazard from the other side: the key is disabled in the target and no entry of the
+     * file enables it, so the assignment would write a relation core treats as invisible and its own
+     * disable - which fires on the transition only - will never clean up.
+     */
+    public function testAnAssignmentOfAKeyTheTargetDisablesIsRefused(): void
+    {
+        $context = $this->createContext();
+        $context->markKeyDisabledInTarget('K1');
+        $refusals = $this->createRefusals();
+
+        $refused = $refusals->refuseAssignment($context, $this->createAssignment(), 'key assignment "G1 -> K1"');
+
+        $this->assertTrue($refused);
+        $this->assertSame(
+            ['key assignment "G1 -> K1": key "K1" is disabled in the target and the file does not enable it'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
+    /**
+     * A key the file disables and the target carries disabled is named once, by the file: both
+     * refusals describe the same relation and reporting it twice would read as two faults.
+     */
+    public function testAKeyDisabledOnBothSidesIsNamedOnceByTheFile(): void
+    {
+        $context = $this->createContext();
+        $context->markKeyDisabled('K1');
+        $context->markKeyDisabledInTarget('K1');
+        $refusals = $this->createRefusals();
+
+        $this->assertTrue(
+            $refusals->refuseAssignment($context, $this->createAssignment(), 'label')
+        );
+        $this->assertSame(
+            ['label: key "K1" is disabled by the file and assigned by it as well'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
+    /**
+     * The negative case: a key neither side disables is assignable, which is every ordinary entry.
+     */
+    public function testAnAssignmentOfAnEnabledKeyIsNotRefused(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals();
+
+        $this->assertFalse($refusals->refuseAssignment($context, $this->createAssignment(), 'label'));
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+    }
+
+    /**
      * Every property outside the closed list is named, rather than only the first one the model
      * would have thrown on.
      */

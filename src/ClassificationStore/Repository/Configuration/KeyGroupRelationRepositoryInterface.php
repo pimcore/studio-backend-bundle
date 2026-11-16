@@ -85,6 +85,10 @@ interface KeyGroupRelationRepositoryInterface
     ): KeyGroupRelation;
 
     /**
+     * A disabled key is refused with an unprocessable content: core treats such a key as invisible
+     * and deletes its assignments only on the transition to disabled, so a relation written for one
+     * that is already disabled is a row nothing cleans up again.
+     *
      * @throws ElementSavingFailedException
      * @throws InvalidArgumentException
      * @throws NotFoundException
