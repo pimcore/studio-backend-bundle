@@ -48,8 +48,6 @@ final class KeyQualifierResolverTest extends Unit
 
                 $multiValue = new MultiValue();
                 $multiValue->setVariants($definition['variants'] ?? []);
-                $multiValue->setMultiValue($definition['multiValue'] ?? false);
-                $multiValue->setMaximum($definition['maximum'] ?? null);
 
                 return $multiValue;
             }
@@ -62,21 +60,19 @@ final class KeyQualifierResolverTest extends Unit
     {
         $keyConfig = $this->createKeyConfig(
             self::OTHER_TYPE,
-            ['variants' => ['metric', 'imperial'], 'multiValue' => true]
+            ['variants' => ['metric', 'imperial']]
         );
 
         $this->assertFalse($this->resolver->declaresQualifiers($keyConfig));
         $this->assertNull($this->resolver->getVariants($keyConfig));
         $this->assertNull($this->resolver->getVariantDeclarations($keyConfig));
-        $this->assertNull($this->resolver->isMultiValue($keyConfig));
-        $this->assertNull($this->resolver->getMaximum($keyConfig));
     }
 
     public function testAMultiValueKeyDeclaresAndReadsItsVariantsInDeclaredOrder(): void
     {
         $keyConfig = $this->createKeyConfig(
             self::MULTI_VALUE_TYPE,
-            ['variants' => [['name' => 'metric', 'label' => 'Metric'], 'imperial'], 'multiValue' => true, 'maximum' => 3]
+            ['variants' => [['name' => 'metric', 'label' => 'Metric'], 'imperial']]
         );
 
         $this->assertTrue($this->resolver->declaresQualifiers($keyConfig));
@@ -85,8 +81,6 @@ final class KeyQualifierResolverTest extends Unit
             [['name' => 'metric', 'label' => 'Metric'], ['name' => 'imperial']],
             $this->resolver->getVariantDeclarations($keyConfig)
         );
-        $this->assertTrue($this->resolver->isMultiValue($keyConfig));
-        $this->assertSame(3, $this->resolver->getMaximum($keyConfig));
     }
 
     public function testAMultiValueKeyWithAnEmptyVariantsListStillDeclares(): void
@@ -95,8 +89,6 @@ final class KeyQualifierResolverTest extends Unit
 
         $this->assertTrue($this->resolver->declaresQualifiers($keyConfig));
         $this->assertSame([], $this->resolver->getVariants($keyConfig));
-        $this->assertFalse($this->resolver->isMultiValue($keyConfig));
-        $this->assertNull($this->resolver->getMaximum($keyConfig));
     }
 
     /**
@@ -125,7 +117,7 @@ final class KeyQualifierResolverTest extends Unit
 
         $this->assertFalse($this->resolver->declaresQualifiers($keyConfig));
         $this->assertNull($this->resolver->getVariants($keyConfig));
-        $this->assertNull($this->resolver->getMaximum($keyConfig));
+        $this->assertNull($this->resolver->getDefaultVariant($keyConfig));
     }
 
     /**
@@ -143,7 +135,7 @@ final class KeyQualifierResolverTest extends Unit
 
     /**
      * The declaration is rebuilt from the blob once per (type, blob) and served from memory
-     * afterwards: one group layout asks three times per key and the object data path asks again per
+     * afterwards: one group layout asks twice per key and the object data path asks again per
      * key and language, and rebuilding a whole core field definition each time is what that costs.
      */
     public function testTheDeclarationIsResolvedOncePerKey(): void
@@ -163,13 +155,12 @@ final class KeyQualifierResolverTest extends Unit
         $resolver->declaresQualifiers($keyConfig);
         $resolver->getVariants($keyConfig);
         $resolver->getVariantDeclarations($keyConfig);
-        $resolver->isMultiValue($keyConfig);
-        $resolver->getMaximum($keyConfig);
+        $resolver->getDefaultVariant($keyConfig);
 
         $this->assertSame(1, $resolved);
 
         // another blob is another declaration, which is why nothing has to invalidate the memo
-        $resolver->declaresQualifiers($this->createKeyConfig(self::MULTI_VALUE_TYPE, ['multiValue' => true]));
+        $resolver->declaresQualifiers($this->createKeyConfig(self::MULTI_VALUE_TYPE, ['variants' => ['imperial']]));
 
         $this->assertSame(2, $resolved);
     }

@@ -109,7 +109,7 @@ final class RequiredMembersUnchangedTest extends Unit
         $this->assertSame(
             [
                 'id', 'name', 'description', 'definition', 'title', 'subGroup', 'localized',
-                'variants', 'multiValue', 'maximum', 'defaultVariant', 'defaultVariantLabel',
+                'variants', 'defaultVariant', 'defaultVariantLabel',
             ],
             $this->getConstructorParameterNames(KeyLayout::class)
         );

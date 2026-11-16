@@ -39,13 +39,13 @@ use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
+use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_flip;
 use function array_intersect_key;
 use function array_map;
 use function json_encode;
 use function sprintf;
-use Psr\Log\NullLogger;
 
 /**
  * A group is laid out the same whether it was already assigned when the object opened - the object
@@ -81,8 +81,6 @@ final class GroupLayoutPathAgreementTest extends Unit
     private const array KEY_MEMBERS = [
         'subGroup',
         'variants',
-        'multiValue',
-        'maximum',
         'defaultVariant',
         'defaultVariantLabel',
     ];
@@ -90,8 +88,6 @@ final class GroupLayoutPathAgreementTest extends Unit
     private const array MULTI_VALUE_DEFINITION = [
         'fieldtype' => MultiValueServiceResolver::MULTI_VALUE_TYPE,
         'variants' => [['name' => 'metric', 'label' => 'Metric'], 'imperial'],
-        'multiValue' => true,
-        'maximum' => 3,
         'unqualifiedValue' => false,
         'unqualifiedValueLabel' => 'Standard',
     ];
@@ -124,7 +120,7 @@ final class GroupLayoutPathAgreementTest extends Unit
 
         // the fixture declares something on every member, so an empty answer cannot pass this
         $this->assertSame(self::SUB_GROUP_A, $published[0]['subGroup']);
-        $this->assertSame(3, $published[0]['maximum']);
+        $this->assertFalse($published[0]['defaultVariant']);
         $this->assertNotEmpty($published[0]['variants']);
         $this->assertSame('Standard', $published[0]['defaultVariantLabel']);
 
@@ -421,8 +417,6 @@ final class GroupLayoutPathAgreementTest extends Unit
             static fn (KeyLayout $key): array => [
                 'subGroup' => $key->getSubGroup(),
                 'variants' => $key->getVariants(),
-                'multiValue' => $key->getMultiValue(),
-                'maximum' => $key->getMaximum(),
                 'defaultVariant' => $key->getDefaultVariant(),
                 'defaultVariantLabel' => $key->getDefaultVariantLabel(),
             ],

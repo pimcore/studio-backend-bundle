@@ -109,7 +109,7 @@ final readonly class ActiveGroupTitleEnricher implements ActiveGroupTitleEnriche
      */
     private function fillKey(array $key, ?KeyGroupRelation $relation, string $language): array
     {
-        // one read of the key configuration for the label and the five qualifier members alike
+        // one read of the key configuration for the label and the three qualifier members alike
         $keyConfig = $this->resolveKeyConfig($key);
         $qualifiers = $keyConfig instanceof KeyConfig
             ? $this->keyGroupLayoutService->getKeyQualifiers($keyConfig)
@@ -119,8 +119,6 @@ final readonly class ActiveGroupTitleEnricher implements ActiveGroupTitleEnriche
         // the sub group belongs to the assignment rather than to the key, so it is read off the relation
         $key['subGroup'] = $relation?->getSubGroup();
         $key['variants'] = $qualifiers?->getVariants();
-        $key['multiValue'] = $qualifiers?->getMultiValue();
-        $key['maximum'] = $qualifiers?->getMaximum();
         $key['defaultVariant'] = $qualifiers?->getDefaultVariant();
         $key['defaultVariantLabel'] = $qualifiers?->getDefaultVariantLabel();
 

@@ -65,7 +65,7 @@ interface KeyGroupLayoutServiceInterface
     public function getKeyLocalized(int $keyId): ?bool;
 
     /**
-     * The five members a key layout publishes about its qualified values, resolved off a key
+     * The three members a key layout publishes about its qualified values, resolved off a key
      * configuration the caller already holds, so that a caller enriching a whole group pays no key
      * configuration read at all. The one place the keyId accessors below answer from.
      */
@@ -79,18 +79,6 @@ interface KeyGroupLayoutServiceInterface
      * @return VariantLayout[]|null
      */
     public function getKeyVariants(int $keyId): ?array;
-
-    /**
-     * The key's own `multiValue` setting, taken off the same key configuration, and null for a key
-     * that is not of type `multiValue` or cannot be loaded at all.
-     */
-    public function getKeyMultiValue(int $keyId): ?bool;
-
-    /**
-     * The most values one slot of a `multiValue` key may hold, taken off the same key configuration,
-     * and null where it declares no limit, for a key of any other type, or one that cannot be loaded.
-     */
-    public function getKeyMaximum(int $keyId): ?int;
 
     /**
      * Whether a `multiValue` key permits a value carrying no variant, taken off the same key

@@ -53,8 +53,8 @@ final class KeyQualifierResolver implements KeyQualifierResolverInterface, Reset
      * `definition` blob - the two the resolution reads and nothing else.
      *
      * Rebuilding a whole core field definition from the blob is what every read here costs, and the
-     * same key is asked repeatedly: one group layout asks three times per key (its variants, its
-     * `multiValue` flag, its maximum) and the object data path asks again per key and language, on
+     * same key is asked repeatedly: one group layout asks twice per key (its variants, its default
+     * variant) and the object data path asks again per key and language, on
      * the read and on the write.
      *
      * Keyed by what it is resolved FROM rather than by the key's id, so nothing has to invalidate
@@ -92,16 +92,6 @@ final class KeyQualifierResolver implements KeyQualifierResolverInterface, Reset
     public function getVariantDeclarations(KeyConfig $keyConfig): ?array
     {
         return $this->getDeclaration($keyConfig)?->getVariants();
-    }
-
-    public function isMultiValue(KeyConfig $keyConfig): ?bool
-    {
-        return $this->getDeclaration($keyConfig)?->isMultiValue();
-    }
-
-    public function getMaximum(KeyConfig $keyConfig): ?int
-    {
-        return $this->getDeclaration($keyConfig)?->getMaximum();
     }
 
     public function getDefaultVariant(KeyConfig $keyConfig): ?DefaultVariant

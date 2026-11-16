@@ -22,9 +22,9 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
  * Reads and writes the qualified values of one (group, key, language) of a `multiValue` key.
  *
  * An ordered list of entries carries them in the object data payload, each holding the value under
- * `v` plus only the qualifiers it has: `var` for a variant other than the default and `p` for a
- * position other than 0. An absent `var` means the default variant and an absent `p` means position
- * 0, so an entry that carries neither addresses the slot core's single-value path addresses.
+ * `v` plus `var` for a variant other than the default. An absent `var` means the default variant,
+ * so an entry that carries none addresses the slot core's single-value path addresses. A variant
+ * holds one value.
  *
  * **The declaration is the key's type.** Only a key of type `multiValue` declares qualifiers
  * ({@see KeyQualifierResolverInterface}); `variants` or `multiValue` in the blob of a key of any
@@ -47,10 +47,6 @@ interface QualifiedValueSerializerInterface
     public const string VALUE_MEMBER = 'v';
 
     public const string VARIANT_MEMBER = 'var';
-
-    public const string POSITION_MEMBER = 'p';
-
-    public const int DEFAULT_POSITION = 0;
 
     /**
      * The entries a write supplies, validated - {@see QualifiedValueParserInterface::parseEntries()},
@@ -80,8 +76,8 @@ interface QualifiedValueSerializerInterface
 
     /**
      * The values the store holds for the key in one language - the default variant first, then each
-     * declared variant in the order the key declares it, each slot's values in position order - read
-     * through core's `getKeyValues()`. A variant the store's engine cannot address holds nothing.
+     * declared variant in the order the key declares it, one value per variant - read through core's
+     * `getKeyValues()`. A variant the store's engine cannot address holds nothing.
      *
      * @return QualifiedValue[]
      *
@@ -97,7 +93,7 @@ interface QualifiedValueSerializerInterface
 
     /**
      * The one value a consumer holding a single cell shows for a payload list of entries: the entry
-     * of the default variant at the first position, or the first entry where there is none, and null
+     * of the default variant, or the first entry where there is none, and null
      * where the list is empty or is no list.
      *
      * Reading the stored values through {@see self::readStoredEntries()} and {@see self::toPayload()}
@@ -106,7 +102,7 @@ interface QualifiedValueSerializerInterface
     public function getDefaultSlotValue(mixed $payload): mixed;
 
     /**
-     * The values a payload list of entries holds at one variant, in position order. A null variant is the
+     * The values a payload list of entries holds at one variant, in list order. A null variant is the
      * default variant alone: an entry of a named variant is never read as the default slot's.
      *
      * @return mixed[]
@@ -114,9 +110,8 @@ interface QualifiedValueSerializerInterface
     public function getVariantValues(mixed $payload, ?string $variant): array;
 
     /**
-     * The stored entries with the supplied ones written over them, matched by (variant, position)
-     * and never by position in the list, so a write addressing one slot leaves the rest of the
-     * key's list intact. The stored order is kept and an entry the write adds is appended.
+     * The stored entries with the supplied ones written over them, matched by variant and never by
+     * position in the list, so a write addressing one slot leaves the rest of the key's list intact. The stored order is kept and an entry the write adds is appended.
      *
      * @param QualifiedValue[] $stored
      * @param QualifiedValue[] $supplied

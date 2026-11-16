@@ -148,15 +148,16 @@ final class ClassificationStoreResolverTest extends Unit
     public static function cellValueProvider(): array
     {
         $multiValue = MultiValueServiceResolver::MULTI_VALUE_TYPE;
-        $declaring = ['variants' => ['metric', 'imperial'], 'multiValue' => true];
+        $declaring = ['variants' => ['metric', 'imperial']];
         $plain = ['fieldtype' => 'input'];
 
         return [
+            // one plain value per variant column, never an entry list
             'a list of qualified entries' => [
                 $multiValue,
                 $declaring,
                 [['v' => '176', 'var' => 'imperial'], ['v' => '80']],
-                [['v' => '80', 'p' => 0]],
+                '80',
             ],
             'an empty qualified slot' => [$multiValue, $declaring, null, null],
             // every key that is not of type `multiValue` keeps reaching the cell untouched
@@ -174,8 +175,8 @@ final class ClassificationStoreResolverTest extends Unit
     }
 
     /**
-     * The cell and the export of one `multiValue` default column show the same value: the default variant
-     * at position 0, and nothing where the key holds nothing or holds named variants alone. The cell is handed what the object data endpoint published for the row, and the
+     * The cell and the export of one `multiValue` default column show the same value: the default variant's
+     * one value, and nothing where the key holds nothing or holds named variants alone. The cell is handed what the object data endpoint published for the row, and the
      * export is handed the one value it injects for the same store.
      *
      * @dataProvider slotHoldingEntriesProvider
@@ -190,7 +191,7 @@ final class ClassificationStoreResolverTest extends Unit
         mixed $expected
     ): void {
         $this->primeKeyConfig(
-            ['variants' => ['metric', 'imperial'], 'multiValue' => true],
+            ['variants' => ['metric', 'imperial']],
             MultiValueServiceResolver::MULTI_VALUE_TYPE
         );
 
@@ -206,8 +207,8 @@ final class ClassificationStoreResolverTest extends Unit
         $cell = $resolver->resolveForCoreElement($this->createKeyColumn(), $element);
         $resolver->resolveForExport($this->createKeyColumn(), $element, $this->makeEmpty(UserInterface::class));
 
-        // a repeating key's cell is the entry list the write path reads, the export formats the same value
-        $this->assertSame($expected === null ? null : [['v' => $expected, 'p' => 0]], $cell->getValue());
+        // the cell is the plain value, and the export formats the same one
+        $this->assertSame($expected, $cell->getValue());
         $this->assertSame($expected, $injected);
     }
 
@@ -252,7 +253,7 @@ final class ClassificationStoreResolverTest extends Unit
     public function testAValueShapedLikeAnEntryListReachesTheCellWhole(): void
     {
         $table = [['v' => '80'], ['v' => '81']];
-        $this->primeKeyConfig(['fieldtype' => 'table', 'variants' => ['metric'], 'multiValue' => true]);
+        $this->primeKeyConfig(['fieldtype' => 'table', 'variants' => ['metric']]);
 
         $injected = 'untouched';
         $reached = false;
@@ -309,7 +310,7 @@ final class ClassificationStoreResolverTest extends Unit
      */
     public function testAColumnNamingAFieldTheClassNoLongerHasExportsAnEmptyCell(): void
     {
-        $this->primeKeyConfig(['variants' => ['metric'], 'multiValue' => true], MultiValueServiceResolver::MULTI_VALUE_TYPE);
+        $this->primeKeyConfig(['variants' => ['metric']], MultiValueServiceResolver::MULTI_VALUE_TYPE);
 
         $injected = 'untouched';
         $reached = false;
@@ -382,19 +383,18 @@ final class ClassificationStoreResolverTest extends Unit
     public function testAColumnShowsAndExportsTheVariantItAddresses(
         array $config,
         array $stored,
-        bool $repeating,
         mixed $expectedCell,
         mixed $expectedExport
     ): void {
         $this->primeKeyConfig(
-            ['variants' => ['Metric', 'Imperial'], 'multiValue' => $repeating],
+            ['variants' => ['Metric', 'Imperial']],
             MultiValueServiceResolver::MULTI_VALUE_TYPE
         );
         $published = [];
         foreach ($stored as $variant => $values) {
-            foreach ($values as $position => $value) {
+            foreach ($values as $value) {
                 $published[] = array_filter(
-                    ['v' => $value, 'var' => $variant === 'default' ? null : $variant, 'p' => $position ?: null],
+                    ['v' => $value, 'var' => $variant === 'default' ? null : $variant],
                     static fn (mixed $member): bool => $member !== null
                 );
             }
@@ -418,7 +418,7 @@ final class ClassificationStoreResolverTest extends Unit
     }
 
     /**
-     * @return array<string, array{0: array<string, mixed>, 1: array<string, array<int, mixed>>, 2: bool, 3: mixed, 4: mixed}>
+     * @return array<string, array{0: array<string, mixed>, 1: array<string, array<int, mixed>>, 2: mixed, 3: mixed}>
      */
     public static function variantColumnProvider(): array
     {
@@ -427,16 +427,17 @@ final class ClassificationStoreResolverTest extends Unit
 
         return [
             'a column naming a variant reads that slot alone' => [
-                [...$base, 'variant' => 'Metric'], $named, false, '50', '50',
+                [...$base, 'variant' => 'Metric'], $named, '50', '50',
             ],
             'the same config without a variant reads the default slot, empty here' => [
-                $base, $named, false, null, '',
+                $base, $named, null, '',
             ],
             'values under named variants only leave the other variant carrying its own' => [
-                [...$base, 'variant' => 'Imperial'], $named, false, '25', '25',
+                [...$base, 'variant' => 'Imperial'], $named, '25', '25',
             ],
-            'a repeating key exports a bare JSON array and shows its entries as the list the write path reads' => [
-                [...$base, 'variant' => 'Metric'], ['Metric' => [0 => '50', 1 => '55']], true, [['v' => '50', 'var' => 'Metric', 'p' => 0], ['v' => '55', 'var' => 'Metric', 'p' => 1]], '["50","55"]',
+            // never a JSON array: a row still holding two values there shows and exports its first
+            'a variant holding two stored values is one plain value' => [
+                [...$base, 'variant' => 'Metric'], ['Metric' => [0 => '50', 1 => '55']], '50', '50',
             ],
         ];
     }

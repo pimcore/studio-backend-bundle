@@ -37,7 +37,7 @@ interface EngineCapabilityGuardInterface
      * where they are reported rather than acted on.
      *
      * Either way only a write that actually needs a capability is refused: one entry carrying no
-     * variant at position 0 needs neither and goes through against any answer.
+     * variant needs none and goes through against any answer.
      *
      * @param QualifiedValue[] $values
      * @param string[]|null $capabilities

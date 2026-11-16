@@ -34,9 +34,8 @@ use function is_array;
 trait QualifiedEntryShapeTrait
 {
     /**
-     * One entry object: an array carrying the value member. The qualifiers are both optional - an
-     * absent variant is the default one and an absent position is the first - so carrying the value
-     * is the whole of what makes an entry.
+     * One entry object: an array carrying the value member. The variant is optional - an absent one
+     * is the default variant - so carrying the value is the whole of what makes an entry.
      */
     private function isEntry(mixed $entry): bool
     {
