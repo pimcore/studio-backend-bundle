@@ -64,7 +64,7 @@ final class ClassificationStoreFilterValueResolverTest extends Unit
         $this->assertSame([7, 8], [$value->getGroupId(), $value->getKeyId()]);
     }
 
-    public function testAVariantIsCarriedAndNamesTheSiblingIndexField(): void
+    public function testAVariantIsCarried(): void
     {
         $value = $this->getValue(
             ['groupId' => 7, 'keyId' => 8, 'value' => 'needle', 'variant' => 'Metric'],
@@ -73,15 +73,13 @@ final class ClassificationStoreFilterValueResolverTest extends Unit
         );
 
         $this->assertSame('Metric', $value->getVariant());
-        $this->assertSame('weight_Metric', $value->getIndexFieldName('weight'));
     }
 
-    public function testNoVariantAddressesTheKeysOwnField(): void
+    public function testNoVariantAddressesTheKeysOwnSlot(): void
     {
         $value = $this->getValue(['groupId' => 7, 'keyId' => 8, 'value' => 'needle'], $this->createParameter(), null);
 
         $this->assertNull($value->getVariant());
-        $this->assertSame('weight', $value->getIndexFieldName('weight'));
     }
 
     public function testAnEmptyVariantIsRefused(): void

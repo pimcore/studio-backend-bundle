@@ -38,10 +38,25 @@ final class DateFilterTest extends Unit
 
         $this->assertCount(1, $calls);
         $this->assertSame(self::FIELD_NAME, $calls[0]['fieldName']);
-        $this->assertSame(self::GROUP_NAME, $calls[0]['group']);
+        $this->assertSame(self::GROUP_SEGMENT, $calls[0]['group']);
+        $this->assertSame(self::NON_LOCALIZED_NODE, $calls[0]['locale']);
         $filter = $calls[0]['filter'];
         $this->assertInstanceOf(GDIDateFilter::class, $filter);
-        $this->assertSame(self::KEY_NAME, $filter->getField());
+        $this->assertSame(self::KEY_SEGMENT, $filter->getField());
         $this->assertTrue($filter->isRoundToDay());
+    }
+
+    public function testALocalizedKeyIsFilteredUnderTheColumnLanguage(): void
+    {
+        $calls = $this->applyFilter(
+            DateFilter::class,
+            ColumnType::CLASSIFICATION_STORE_DATE->value,
+            ['on' => '2026-01-01T00:00:00+00:00'],
+            columnLocale: self::COLUMN_LANGUAGE,
+            keyLocalized: true
+        );
+
+        $this->assertCount(1, $calls);
+        $this->assertSame(self::COLUMN_LANGUAGE, $calls[0]['locale']);
     }
 }

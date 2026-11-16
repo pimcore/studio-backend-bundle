@@ -37,17 +37,18 @@ final class RGBAFilterTest extends Unit
         $fields = [];
         foreach ($calls as $call) {
             $this->assertSame(self::FIELD_NAME, $call['fieldName']);
-            $this->assertSame(self::GROUP_NAME, $call['group']);
+            $this->assertSame(self::GROUP_SEGMENT, $call['group']);
+            $this->assertSame(self::NON_LOCALIZED_NODE, $call['locale']);
             $this->assertInstanceOf(IntegerFilter::class, $call['filter']);
             $fields[$call['filter']->getFieldName()] = $call['filter']->getSearchTerm();
         }
 
         $this->assertSame(
             [
-                self::KEY_NAME . '.r' => 1,
-                self::KEY_NAME . '.g' => 2,
-                self::KEY_NAME . '.b' => 3,
-                self::KEY_NAME . '.a' => 127,
+                self::KEY_SEGMENT . '.r' => 1,
+                self::KEY_SEGMENT . '.g' => 2,
+                self::KEY_SEGMENT . '.b' => 3,
+                self::KEY_SEGMENT . '.a' => 127,
             ],
             $fields
         );
@@ -63,5 +64,21 @@ final class RGBAFilterTest extends Unit
     private function applyRGBAFilter(array $value): array
     {
         return $this->applyFilter(RGBAFilter::class, ColumnType::CLASSIFICATION_STORE_RGBA->value, $value);
+    }
+
+    public function testEveryChannelOfALocalizedKeyIsFilteredUnderTheColumnLanguage(): void
+    {
+        $calls = $this->applyFilter(
+            RGBAFilter::class,
+            ColumnType::CLASSIFICATION_STORE_RGBA->value,
+            ['r' => 1, 'g' => 2, 'b' => 3, 'a' => 0.5],
+            columnLocale: self::COLUMN_LANGUAGE,
+            keyLocalized: true
+        );
+
+        $this->assertCount(4, $calls);
+        foreach ($calls as $call) {
+            $this->assertSame(self::COLUMN_LANGUAGE, $call['locale']);
+        }
     }
 }

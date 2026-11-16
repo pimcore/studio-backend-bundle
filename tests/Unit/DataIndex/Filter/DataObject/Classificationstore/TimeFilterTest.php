@@ -38,11 +38,26 @@ final class TimeFilterTest extends Unit
 
         $this->assertCount(1, $calls);
         $this->assertSame(self::FIELD_NAME, $calls[0]['fieldName']);
-        $this->assertSame(self::GROUP_NAME, $calls[0]['group']);
+        $this->assertSame(self::GROUP_SEGMENT, $calls[0]['group']);
+        $this->assertSame(self::NON_LOCALIZED_NODE, $calls[0]['locale']);
         $filter = $calls[0]['filter'];
         $this->assertInstanceOf(GDITimeFilter::class, $filter);
-        $this->assertSame(self::KEY_NAME, $filter->getField());
+        $this->assertSame(self::KEY_SEGMENT, $filter->getField());
         $this->assertSame('08:15', $filter->getStartTime());
         $this->assertSame('17:45', $filter->getEndTime());
+    }
+
+    public function testALocalizedKeyIsFilteredUnderTheColumnLanguage(): void
+    {
+        $calls = $this->applyFilter(
+            TimeFilter::class,
+            ColumnType::CLASSIFICATION_STORE_TIME->value,
+            ['on' => '08:15'],
+            columnLocale: self::COLUMN_LANGUAGE,
+            keyLocalized: true
+        );
+
+        $this->assertCount(1, $calls);
+        $this->assertSame(self::COLUMN_LANGUAGE, $calls[0]['locale']);
     }
 }

@@ -39,18 +39,13 @@ final readonly class ClassificationStoreFilterValue
 
     /**
      * The variant of a `multiValue` key the filter addresses, null for the key's own (default) slot.
+     * The sibling field it names is resolved by
+     * {@see \Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreSegmentResolverInterface},
+     * because the search index names it from the key's identifier and not from the key's name.
      */
     public function getVariant(): ?string
     {
         return $this->variant;
-    }
-
-    /**
-     * The name of the index field the filter searches: the key's own, or its `<key>_<variant>` sibling.
-     */
-    public function getIndexFieldName(string $keyName): string
-    {
-        return $this->variant === null ? $keyName : $keyName . '_' . $this->variant;
     }
 
     public function getValue(): string|array

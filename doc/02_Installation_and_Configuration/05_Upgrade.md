@@ -50,6 +50,12 @@ The following steps are necessary during updating to newer versions.
   options and its unit vocabulary, so a configuration screen no longer needs the object editor to learn them.
 - [Classification Store] Added: a saved grid column that shows a classification store attribute now also records the
   stable identifier of its group and key, and configurations saved earlier keep working as they are.
+- [Classification Store] Changed: a classification store column filter addresses the search index by the group's and
+  the key's identifier, as the index now writes them, instead of by their names; it needs the mandatory
+  `generic-data-index:deployment:reindex` and finds nothing on an index built before it.
+- [Classification Store] Fixed: a classification store column filter searches the language the key itself is kept in -
+  the grid column's language only for a key that is localized - instead of the column's language for every key, which
+  returned no row for a key that is not localized.
 - [Classification Store] Changed: a classification store filter the grid cannot apply is now refused with a `422`
   naming the key, instead of returning every row.
 - [Classification Store] Added: collections, groups, sub groups and keys carry free-form custom metadata that can be

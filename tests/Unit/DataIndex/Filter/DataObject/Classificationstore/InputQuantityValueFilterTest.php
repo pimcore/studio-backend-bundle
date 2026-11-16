@@ -36,13 +36,14 @@ final class InputQuantityValueFilterTest extends Unit
         $this->assertCount(2, $calls);
         foreach ($calls as $call) {
             $this->assertSame(self::FIELD_NAME, $call['fieldName']);
-            $this->assertSame(self::GROUP_NAME, $call['group']);
+            $this->assertSame(self::GROUP_SEGMENT, $call['group']);
+            $this->assertSame(self::NON_LOCALIZED_NODE, $call['locale']);
             $this->assertInstanceOf(WildcardSearch::class, $call['filter']);
         }
 
-        $this->assertSame(self::KEY_NAME . '.value', $calls[0]['filter']->getFieldName());
+        $this->assertSame(self::KEY_SEGMENT . '.value', $calls[0]['filter']->getFieldName());
         $this->assertSame('5', $calls[0]['filter']->getSearchTerm());
-        $this->assertSame(self::KEY_NAME . '.unitId', $calls[1]['filter']->getFieldName());
+        $this->assertSame(self::KEY_SEGMENT . '.unitId', $calls[1]['filter']->getFieldName());
         $this->assertSame('kg', $calls[1]['filter']->getSearchTerm());
     }
 

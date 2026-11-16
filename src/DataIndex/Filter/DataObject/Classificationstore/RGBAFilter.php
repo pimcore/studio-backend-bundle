@@ -14,12 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreFilterValueResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreSegmentResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
@@ -31,9 +30,8 @@ use function is_float;
 final class RGBAFilter implements FilterInterface
 {
     public function __construct(
-        private readonly GroupConfigRepositoryInterface $groupConfigRepository,
-        private readonly KeyRelationResolverInterface $keyRelationResolver,
-        private readonly ClassificationStoreFilterValueResolverInterface $filterValueResolver
+        private readonly ClassificationStoreFilterValueResolverInterface $filterValueResolver,
+        private readonly ClassificationStoreSegmentResolverInterface $segmentResolver
     ) {
 
     }
@@ -56,11 +54,9 @@ final class RGBAFilter implements FilterInterface
                 $column->getKeyWithOutLocale()
             );
 
-            $key = $this->keyRelationResolver->getByGroupAndKey(
-                $filterValue->getGroupId(),
-                $filterValue->getKeyId()
-            );
-            $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
+            $group = $this->segmentResolver->resolveGroupSegment($filterValue);
+            $fieldName = $this->segmentResolver->resolveFieldName($filterValue);
+            $locale = $this->segmentResolver->resolveLocale($filterValue, $column, $parameters);
             $value = $filterValue->getValue();
 
             if (!isset($value['r'], $value['g'], $value['b'], $value['a'])) {
@@ -73,34 +69,34 @@ final class RGBAFilter implements FilterInterface
 
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
-                new IntegerFilter($filterValue->getIndexFieldName($key->getName()). '.r', $value['r'], true),
-                null
+                $group,
+                new IntegerFilter($fieldName . '.r', $value['r'], true),
+                $locale
             );
 
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
-                new IntegerFilter($filterValue->getIndexFieldName($key->getName()). '.g', $value['g'], true),
-                null
+                $group,
+                new IntegerFilter($fieldName . '.g', $value['g'], true),
+                $locale
             );
 
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
-                new IntegerFilter($filterValue->getIndexFieldName($key->getName()). '.b', $value['b'], true),
-                null
+                $group,
+                new IntegerFilter($fieldName . '.b', $value['b'], true),
+                $locale
             );
 
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
+                $group,
                 new IntegerFilter(
-                    $filterValue->getIndexFieldName($key->getName()) . '.a',
+                    $fieldName . '.a',
                     (int)($value['a'] * 255),
                     true
                 ),
-                null
+                $locale
             );
         }
 
