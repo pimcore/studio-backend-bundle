@@ -99,14 +99,14 @@ final readonly class UpdateUser
         #[Property(description: 'Theme of the User', type: 'string', example: 'default')]
         private string $theme = 'default',
         #[Property(
-            description: 'Path of the main navigation entry opened as welcome screen. '
-                . 'Omitted or null keeps the stored path, an empty string clears it',
+            description: 'ID of the dashboard opened as welcome screen. '
+                . 'Omitted or null keeps the stored dashboard, an empty string clears it',
             type: 'string',
-            maxLength: UserWelcomeScreen::MAX_PATH_LENGTH,
-            example: 'Reporting/Dashboards/Dashboards',
+            maxLength: UserWelcomeScreen::MAX_DASHBOARD_ID_LENGTH,
+            example: '019c7555_49f6_712b_af5f_bd0c22b3d1f7',
             nullable: true
         )]
-        private ?string $welcomeScreenPath = null,
+        private ?string $welcomeScreenDashboardId = null,
     ) {
     }
 
@@ -255,8 +255,8 @@ final readonly class UpdateUser
         return $this->perspectives;
     }
 
-    public function getWelcomeScreenPath(): ?string
+    public function getWelcomeScreenDashboardId(): ?string
     {
-        return $this->welcomeScreenPath;
+        return $this->welcomeScreenDashboardId;
     }
 }

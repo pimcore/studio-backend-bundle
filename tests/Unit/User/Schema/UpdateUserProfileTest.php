@@ -22,7 +22,7 @@ use function str_repeat;
 
 /**
  * The profile payload is mapped straight onto this schema, so it carries the length limit of
- * the welcome screen path column itself.
+ * the welcome screen dashboard ID column itself.
  *
  * @internal
  */
@@ -37,31 +37,31 @@ final class UpdateUserProfileTest extends Unit
             ->getValidator();
     }
 
-    public function testWelcomeScreenPathDefaultsToNull(): void
+    public function testWelcomeScreenDashboardIdDefaultsToNull(): void
     {
-        $this->assertNull($this->createProfile()->getWelcomeScreenPath());
+        $this->assertNull($this->createProfile()->getWelcomeScreenDashboardId());
     }
 
-    public function testWelcomeScreenPathAtTheLengthLimitIsAccepted(): void
+    public function testWelcomeScreenDashboardIdAtTheLengthLimitIsAccepted(): void
     {
-        $path = str_repeat('a', UserWelcomeScreen::MAX_PATH_LENGTH);
-        $profile = $this->createProfile($path);
+        $dashboardId = str_repeat('a', UserWelcomeScreen::MAX_DASHBOARD_ID_LENGTH);
+        $profile = $this->createProfile($dashboardId);
 
         $this->assertCount(0, $this->validator->validate($profile));
-        $this->assertSame($path, $profile->getWelcomeScreenPath());
+        $this->assertSame($dashboardId, $profile->getWelcomeScreenDashboardId());
     }
 
-    public function testOverlongWelcomeScreenPathIsRejected(): void
+    public function testOverlongWelcomeScreenDashboardIdIsRejected(): void
     {
         $violations = $this->validator->validate(
-            $this->createProfile(str_repeat('a', UserWelcomeScreen::MAX_PATH_LENGTH + 1))
+            $this->createProfile(str_repeat('a', UserWelcomeScreen::MAX_DASHBOARD_ID_LENGTH + 1))
         );
 
         $this->assertCount(1, $violations);
-        $this->assertSame('welcomeScreenPath', $violations->get(0)->getPropertyPath());
+        $this->assertSame('welcomeScreenDashboardId', $violations->get(0)->getPropertyPath());
     }
 
-    private function createProfile(?string $welcomeScreenPath = null): UpdateUserProfile
+    private function createProfile(?string $welcomeScreenDashboardId = null): UpdateUserProfile
     {
         return new UpdateUserProfile(
             firstname: null,
@@ -73,7 +73,7 @@ final class UpdateUserProfileTest extends Unit
             memorizeTabs: false,
             contentLanguages: [],
             keyBindings: [],
-            welcomeScreenPath: $welcomeScreenPath,
+            welcomeScreenDashboardId: $welcomeScreenDashboardId,
         );
     }
 }

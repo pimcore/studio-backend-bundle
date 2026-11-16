@@ -44,7 +44,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class UserUpdateServiceTest extends Unit
 {
-    private const string WELCOME_SCREEN_PATH = 'Reporting/Dashboards/Dashboards';
+    private const string WELCOME_SCREEN_DASHBOARD_ID = '019c7555_49f6_712b_af5f_bd0c22b3d1f7';
 
     public function testNonAdminCannotUpdateAdminUser(): void
     {
@@ -179,19 +179,19 @@ final class UserUpdateServiceTest extends Unit
         );
     }
 
-    public function testUpdateUserStoresTheWelcomeScreenPath(): void
+    public function testUpdateUserStoresTheWelcomeScreenDashboardId(): void
     {
         $targetUser = $this->createTargetUser(isAdmin: false);
         $service = $this->createService(
             targetUser: $targetUser,
             currentUser: $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
-            userSettingsService: $this->createUserSettingsService(self::WELCOME_SCREEN_PATH, $targetUser)
+            userSettingsService: $this->createUserSettingsService(self::WELCOME_SCREEN_DASHBOARD_ID, $targetUser)
         );
 
-        $service->updateUserById($this->createUpdateParams(welcomeScreenPath: self::WELCOME_SCREEN_PATH), 42);
+        $service->updateUserById($this->createUpdateParams(welcomeScreenDashboardId: self::WELCOME_SCREEN_DASHBOARD_ID), 42);
     }
 
-    public function testUpdateUserPassesAnEmptyWelcomeScreenPathOnToClearIt(): void
+    public function testUpdateUserPassesAnEmptyWelcomeScreenDashboardIdOnToClearIt(): void
     {
         $targetUser = $this->createTargetUser(isAdmin: false);
         $service = $this->createService(
@@ -200,10 +200,10 @@ final class UserUpdateServiceTest extends Unit
             userSettingsService: $this->createUserSettingsService('', $targetUser)
         );
 
-        $service->updateUserById($this->createUpdateParams(welcomeScreenPath: ''), 42);
+        $service->updateUserById($this->createUpdateParams(welcomeScreenDashboardId: ''), 42);
     }
 
-    public function testUpdateUserWithoutWelcomeScreenPathKeepsTheStoredPath(): void
+    public function testUpdateUserWithoutWelcomeScreenDashboardIdKeepsTheStoredDashboard(): void
     {
         $targetUser = $this->createTargetUser(isAdmin: false);
         $service = $this->createService(
@@ -215,19 +215,19 @@ final class UserUpdateServiceTest extends Unit
         $service->updateUserById($this->createUpdateParams(), 42);
     }
 
-    public function testUpdateProfileStoresTheWelcomeScreenPath(): void
+    public function testUpdateProfileStoresTheWelcomeScreenDashboardId(): void
     {
         $user = $this->createTargetUser(isAdmin: false);
         $service = $this->createService(
             targetUser: $user,
             currentUser: $user,
-            userSettingsService: $this->createUserSettingsService(self::WELCOME_SCREEN_PATH, $user)
+            userSettingsService: $this->createUserSettingsService(self::WELCOME_SCREEN_DASHBOARD_ID, $user)
         );
 
-        $service->updateUserProfile($user, $this->createProfileParams(self::WELCOME_SCREEN_PATH));
+        $service->updateUserProfile($user, $this->createProfileParams(self::WELCOME_SCREEN_DASHBOARD_ID));
     }
 
-    public function testUpdateProfileWithoutWelcomeScreenPathKeepsTheStoredPath(): void
+    public function testUpdateProfileWithoutWelcomeScreenDashboardIdKeepsTheStoredDashboard(): void
     {
         $user = $this->createTargetUser(isAdmin: false);
         $service = $this->createService(
@@ -421,7 +421,7 @@ final class UserUpdateServiceTest extends Unit
     private function createUpdateParams(
         bool $admin = false,
         string $email = 'test@example.com',
-        ?string $welcomeScreenPath = null
+        ?string $welcomeScreenDashboardId = null
     ): UpdateUserParameter {
         return new UpdateUserParameter(
             email: $email,
@@ -448,25 +448,25 @@ final class UserUpdateServiceTest extends Unit
             assetWorkspaces: [],
             dataObjectWorkspaces: [],
             documentWorkspaces: [],
-            welcomeScreenPath: $welcomeScreenPath,
+            welcomeScreenDashboardId: $welcomeScreenDashboardId,
         );
     }
 
-    private function createUserSettingsService(?string $expectedPath, User $expectedUser): UserSettingsServiceInterface
+    private function createUserSettingsService(?string $expectedDashboardId, User $expectedUser): UserSettingsServiceInterface
     {
-        $update = $expectedPath === null
+        $update = $expectedDashboardId === null
             ? Expected::never()
-            : Expected::once(function (?string $path, UserInterface $user) use ($expectedPath, $expectedUser): void {
-                $this->assertSame($expectedPath, $path);
+            : Expected::once(function (?string $dashboardId, UserInterface $user) use ($expectedDashboardId, $expectedUser): void {
+                $this->assertSame($expectedDashboardId, $dashboardId);
                 $this->assertSame($expectedUser, $user);
             });
 
         return $this->makeEmpty(UserSettingsServiceInterface::class, [
-            'updateWelcomeScreenPath' => $update,
+            'updateWelcomeScreenDashboardId' => $update,
         ]);
     }
 
-    private function createProfileParams(?string $welcomeScreenPath = null): UpdateUserProfile
+    private function createProfileParams(?string $welcomeScreenDashboardId = null): UpdateUserProfile
     {
         return new UpdateUserProfile(
             firstname: 'Test',
@@ -478,7 +478,7 @@ final class UserUpdateServiceTest extends Unit
             memorizeTabs: false,
             contentLanguages: [],
             keyBindings: [],
-            welcomeScreenPath: $welcomeScreenPath,
+            welcomeScreenDashboardId: $welcomeScreenDashboardId,
         );
     }
 

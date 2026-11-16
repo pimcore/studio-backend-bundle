@@ -66,15 +66,15 @@ final readonly class UpdateUserProfile
         #[Property(description: 'Theme of the User', type: 'string', example: 'default')]
         private string $theme = 'default',
         #[Property(
-            description: 'Path of the main navigation entry opened as welcome screen. '
-                . 'Omitted or null keeps the stored path, an empty string clears it',
+            description: 'ID of the dashboard opened as welcome screen. '
+                . 'Omitted or null keeps the stored dashboard, an empty string clears it',
             type: 'string',
-            maxLength: UserWelcomeScreen::MAX_PATH_LENGTH,
-            example: 'Reporting/Dashboards/Dashboards',
+            maxLength: UserWelcomeScreen::MAX_DASHBOARD_ID_LENGTH,
+            example: '019c7555_49f6_712b_af5f_bd0c22b3d1f7',
             nullable: true
         )]
-        #[Length(max: UserWelcomeScreen::MAX_PATH_LENGTH)]
-        private ?string $welcomeScreenPath = null,
+        #[Length(max: UserWelcomeScreen::MAX_DASHBOARD_ID_LENGTH)]
+        private ?string $welcomeScreenDashboardId = null,
     ) {
     }
 
@@ -131,8 +131,8 @@ final readonly class UpdateUserProfile
         return $this->keyBindings;
     }
 
-    public function getWelcomeScreenPath(): ?string
+    public function getWelcomeScreenDashboardId(): ?string
     {
-        return $this->welcomeScreenPath;
+        return $this->welcomeScreenDashboardId;
     }
 }

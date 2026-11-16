@@ -20,10 +20,10 @@ use Pimcore\Model\UserInterface;
  */
 interface UserSettingsServiceInterface
 {
-    public function getWelcomeScreenPath(UserInterface $user): ?string;
+    public function getWelcomeScreenDashboardId(UserInterface $user): ?string;
 
     /**
      * Null or an empty string clears the stored path.
      */
-    public function updateWelcomeScreenPath(?string $welcomeScreenPath, UserInterface $user): void;
+    public function updateWelcomeScreenDashboardId(?string $welcomeScreenDashboardId, UserInterface $user): void;
 }

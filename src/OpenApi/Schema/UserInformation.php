@@ -128,12 +128,12 @@ final class UserInformation implements AdditionalAttributesInterface
         ]
         private readonly array $perspectives = [],
         #[Property(
-            description: 'Path of the main navigation entry opened as welcome screen',
+            description: 'ID of the dashboard opened as welcome screen',
             type: 'string',
-            example: 'Reporting/Dashboards/Dashboards',
+            example: '019c7555_49f6_712b_af5f_bd0c22b3d1f7',
             nullable: true
         )]
-        private readonly ?string $welcomeScreenPath = null,
+        private readonly ?string $welcomeScreenDashboardId = null,
     ) {
     }
 
@@ -261,8 +261,8 @@ final class UserInformation implements AdditionalAttributesInterface
         return $this->allowedLanguagesForViewingWebsiteTranslations;
     }
 
-    public function getWelcomeScreenPath(): ?string
+    public function getWelcomeScreenDashboardId(): ?string
     {
-        return $this->welcomeScreenPath;
+        return $this->welcomeScreenDashboardId;
     }
 }

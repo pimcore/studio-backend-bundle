@@ -14,11 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
 
 /**
- * Column width of `bundle_studio_user_settings`.`welcomeScreenPath`, also enforced at the API boundary.
+ * Column width of `bundle_studio_user_settings`.`welcomeScreenDashboardId`, also enforced at the API boundary.
  *
  * @internal
  */
 final class UserWelcomeScreen
 {
-    public const int MAX_PATH_LENGTH = 255;
+    public const int MAX_DASHBOARD_ID_LENGTH = 255;
 }

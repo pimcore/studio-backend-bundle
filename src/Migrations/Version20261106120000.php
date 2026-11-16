@@ -18,7 +18,7 @@ use Doctrine\Migrations\AbstractMigration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\User\UserSettings;
 
 /**
- * Creates the per-user Studio settings table (welcome screen path) for existing installations.
+ * Creates the per-user Studio settings table (welcome screen dashboard) for existing installations.
  * Fresh installations get it from the Installer instead.
  *
  * @internal
@@ -44,7 +44,7 @@ final class Version20261106120000 extends AbstractMigration
         $table = $schema->createTable(UserSettings::TABLE_NAME);
 
         $table->addColumn('user', 'integer', ['notnull' => true, 'unsigned' => true]);
-        $table->addColumn('welcomeScreenPath', 'string', ['notnull' => false, 'length' => 255]);
+        $table->addColumn('welcomeScreenDashboardId', 'string', ['notnull' => false, 'length' => 255]);
 
         $table->addForeignKeyConstraint(
             'users',

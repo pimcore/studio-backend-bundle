@@ -27,15 +27,15 @@ final readonly class UserSettingsService implements UserSettingsServiceInterface
     ) {
     }
 
-    public function getWelcomeScreenPath(UserInterface $user): ?string
+    public function getWelcomeScreenDashboardId(UserInterface $user): ?string
     {
-        return $this->repository->getByUser($user->getId())?->getWelcomeScreenPath();
+        return $this->repository->getByUser($user->getId())?->getWelcomeScreenDashboardId();
     }
 
-    public function updateWelcomeScreenPath(?string $welcomeScreenPath, UserInterface $user): void
+    public function updateWelcomeScreenDashboardId(?string $welcomeScreenDashboardId, UserInterface $user): void
     {
         $userSettings = $this->getUserSettings($user);
-        $userSettings->setWelcomeScreenPath($welcomeScreenPath === '' ? null : $welcomeScreenPath);
+        $userSettings->setWelcomeScreenDashboardId($welcomeScreenDashboardId === '' ? null : $welcomeScreenDashboardId);
         $this->repository->update($userSettings);
     }
 

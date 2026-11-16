@@ -488,7 +488,7 @@ final class Installer extends SettingsStoreAwareInstaller
             ['notnull' => true, 'unsigned' => true]
         );
 
-        $table->addColumn('welcomeScreenPath', 'string', [
+        $table->addColumn('welcomeScreenDashboardId', 'string', [
             'notnull' => false,
             'length' => 255,
         ]);

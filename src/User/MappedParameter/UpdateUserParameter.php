@@ -57,8 +57,8 @@ final readonly class UpdateUserParameter
         private array $documentWorkspaces,
         private array $perspectives = [],
         private string $theme = 'default',
-        #[Length(max: UserWelcomeScreen::MAX_PATH_LENGTH)]
-        private ?string $welcomeScreenPath = null,
+        #[Length(max: UserWelcomeScreen::MAX_DASHBOARD_ID_LENGTH)]
+        private ?string $welcomeScreenDashboardId = null,
     ) {
     }
 
@@ -207,8 +207,8 @@ final readonly class UpdateUserParameter
         return $this->perspectives;
     }
 
-    public function getWelcomeScreenPath(): ?string
+    public function getWelcomeScreenDashboardId(): ?string
     {
-        return $this->welcomeScreenPath;
+        return $this->welcomeScreenDashboardId;
     }
 }

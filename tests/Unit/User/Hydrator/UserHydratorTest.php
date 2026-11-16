@@ -32,20 +32,20 @@ use Pimcore\Model\UserInterface;
  */
 final class UserHydratorTest extends Unit
 {
-    public function testHydrateMapsTheWelcomeScreenPath(): void
+    public function testHydrateMapsTheWelcomeScreenDashboardId(): void
     {
         $user = $this->createUser();
-        $hydrator = $this->createHydrator($user, 'Reporting/Dashboards/Dashboards');
+        $hydrator = $this->createHydrator($user, '019c7555_49f6_712b_af5f_bd0c22b3d1f7');
 
-        $this->assertSame('Reporting/Dashboards/Dashboards', $hydrator->hydrate($user)->getWelcomeScreenPath());
+        $this->assertSame('019c7555_49f6_712b_af5f_bd0c22b3d1f7', $hydrator->hydrate($user)->getWelcomeScreenDashboardId());
     }
 
-    public function testHydrateMapsAMissingWelcomeScreenPathToNull(): void
+    public function testHydrateMapsAMissingWelcomeScreenDashboardIdToNull(): void
     {
         $user = $this->createUser();
         $hydrator = $this->createHydrator($user, null);
 
-        $this->assertNull($hydrator->hydrate($user)->getWelcomeScreenPath());
+        $this->assertNull($hydrator->hydrate($user)->getWelcomeScreenDashboardId());
     }
 
     private function createUser(): UserInterface
@@ -63,7 +63,7 @@ final class UserHydratorTest extends Unit
         ]);
     }
 
-    private function createHydrator(UserInterface $expectedUser, ?string $welcomeScreenPath): UserHydrator
+    private function createHydrator(UserInterface $expectedUser, ?string $welcomeScreenDashboardId): UserHydrator
     {
         return new UserHydrator(
             $this->makeEmpty(ContentLanguagesHydratorInterface::class, ['hydrate' => []]),
@@ -82,13 +82,13 @@ final class UserHydratorTest extends Unit
             $this->makeEmpty(UserPerspectiveServiceInterface::class, ['getConfigPerspectives' => []]),
             $this->makeEmpty(PermissionRepositoryInterface::class, ['getAvailablePermissions' => []]),
             $this->makeEmpty(UserSettingsServiceInterface::class, [
-                'getWelcomeScreenPath' => function (UserInterface $user) use (
+                'getWelcomeScreenDashboardId' => function (UserInterface $user) use (
                     $expectedUser,
-                    $welcomeScreenPath
+                    $welcomeScreenDashboardId
                 ): ?string {
                     $this->assertSame($expectedUser, $user);
 
-                    return $welcomeScreenPath;
+                    return $welcomeScreenDashboardId;
                 },
             ]),
         );

@@ -64,7 +64,7 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
             twoFactorAuthentication: $this->twoFactorAuthHydrator->hydrate($user),
             activePerspective: $this->userPerspectiveService->getActivePerspective($user),
             perspectives: $this->userPerspectiveService->getAllowedPerspectives($user),
-            welcomeScreenPath: $this->userSettingsService->getWelcomeScreenPath($user)
+            welcomeScreenDashboardId: $this->userSettingsService->getWelcomeScreenDashboardId($user)
         );
     }
 }

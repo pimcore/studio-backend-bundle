@@ -31,8 +31,8 @@ class UserSettings
     #[ORM\Id]
     private int $user;
 
-    #[ORM\Column(type: 'string', nullable: true, length: UserWelcomeScreen::MAX_PATH_LENGTH)]
-    private ?string $welcomeScreenPath = null;
+    #[ORM\Column(type: 'string', nullable: true, length: UserWelcomeScreen::MAX_DASHBOARD_ID_LENGTH)]
+    private ?string $welcomeScreenDashboardId = null;
 
     public function getUser(): int
     {
@@ -44,13 +44,13 @@ class UserSettings
         $this->user = $user;
     }
 
-    public function getWelcomeScreenPath(): ?string
+    public function getWelcomeScreenDashboardId(): ?string
     {
-        return $this->welcomeScreenPath;
+        return $this->welcomeScreenDashboardId;
     }
 
-    public function setWelcomeScreenPath(?string $welcomeScreenPath): void
+    public function setWelcomeScreenDashboardId(?string $welcomeScreenDashboardId): void
     {
-        $this->welcomeScreenPath = $welcomeScreenPath;
+        $this->welcomeScreenDashboardId = $welcomeScreenDashboardId;
     }
 }

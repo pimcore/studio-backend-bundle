@@ -94,7 +94,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
             $user->setTheme($updateUserParameter->getTheme());
         }
 
-        $this->updateWelcomeScreenPath($updateUserParameter->getWelcomeScreenPath(), $user);
+        $this->updateWelcomeScreenDashboardId($updateUserParameter->getWelcomeScreenDashboardId(), $user);
 
         $user = $this->updateService->updatePermissions($updateUserParameter->getPermissions(), $user);
         $user = $this->updateService->updateRoles($updateUserParameter->getRoles(), $user);
@@ -130,7 +130,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         $user->setKeyBindings(
             $this->getKeyBindingsString($params->getKeyBindings())
         );
-        $this->updateWelcomeScreenPath($params->getWelcomeScreenPath(), $user);
+        $this->updateWelcomeScreenDashboardId($params->getWelcomeScreenDashboardId(), $user);
 
         $this->userRepository->updateUser($user);
     }
@@ -185,14 +185,14 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         $this->userPerspectiveService->updateActivePerspective($perspectiveId, $user);
     }
 
-    private function updateWelcomeScreenPath(?string $welcomeScreenPath, UserInterface $user): void
+    private function updateWelcomeScreenDashboardId(?string $welcomeScreenDashboardId, UserInterface $user): void
     {
         // null (field omitted) keeps the stored path, an empty string clears it
-        if ($welcomeScreenPath === null) {
+        if ($welcomeScreenDashboardId === null) {
             return;
         }
 
-        $this->userSettingsService->updateWelcomeScreenPath($welcomeScreenPath, $user);
+        $this->userSettingsService->updateWelcomeScreenDashboardId($welcomeScreenDashboardId, $user);
     }
 
     /**

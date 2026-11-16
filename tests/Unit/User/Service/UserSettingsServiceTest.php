@@ -25,31 +25,31 @@ use Pimcore\Model\UserInterface;
  */
 final class UserSettingsServiceTest extends Unit
 {
-    private const string PATH = 'Reporting/Dashboards/Dashboards';
+    private const string DASHBOARD_ID = '019c7555_49f6_712b_af5f_bd0c22b3d1f7';
 
-    public function testGetWelcomeScreenPathReturnsNullWithoutStoredSettings(): void
+    public function testGetWelcomeScreenDashboardIdReturnsNullWithoutStoredSettings(): void
     {
         $service = new UserSettingsService($this->makeEmpty(UserSettingsRepositoryInterface::class, [
             'getByUser' => null,
         ]));
 
-        $this->assertNull($service->getWelcomeScreenPath($this->createUser()));
+        $this->assertNull($service->getWelcomeScreenDashboardId($this->createUser()));
     }
 
-    public function testGetWelcomeScreenPathReturnsTheStoredPath(): void
+    public function testGetWelcomeScreenDashboardIdReturnsTheStoredId(): void
     {
         $service = new UserSettingsService($this->makeEmpty(UserSettingsRepositoryInterface::class, [
             'getByUser' => Expected::once(function (int $user): UserSettings {
                 $this->assertSame(7, $user);
 
-                return $this->createSettings(self::PATH);
+                return $this->createSettings(self::DASHBOARD_ID);
             }),
         ]));
 
-        $this->assertSame(self::PATH, $service->getWelcomeScreenPath($this->createUser()));
+        $this->assertSame(self::DASHBOARD_ID, $service->getWelcomeScreenDashboardId($this->createUser()));
     }
 
-    public function testUpdateWelcomeScreenPathCreatesTheRowOnFirstWrite(): void
+    public function testUpdateWelcomeScreenDashboardIdCreatesTheRowOnFirstWrite(): void
     {
         $stored = null;
         $service = new UserSettingsService($this->makeEmpty(UserSettingsRepositoryInterface::class, [
@@ -61,16 +61,16 @@ final class UserSettingsServiceTest extends Unit
             }),
         ]));
 
-        $service->updateWelcomeScreenPath(self::PATH, $this->createUser());
+        $service->updateWelcomeScreenDashboardId(self::DASHBOARD_ID, $this->createUser());
 
         $this->assertInstanceOf(UserSettings::class, $stored);
         $this->assertSame(7, $stored->getUser());
-        $this->assertSame(self::PATH, $stored->getWelcomeScreenPath());
+        $this->assertSame(self::DASHBOARD_ID, $stored->getWelcomeScreenDashboardId());
     }
 
-    public function testUpdateWelcomeScreenPathChangesTheExistingRow(): void
+    public function testUpdateWelcomeScreenDashboardIdChangesTheExistingRow(): void
     {
-        $existing = $this->createSettings('Old/Path');
+        $existing = $this->createSettings('old_dashboard_id');
         $service = new UserSettingsService($this->makeEmpty(UserSettingsRepositoryInterface::class, [
             'getByUser' => $existing,
             'update' => Expected::once(function (UserSettings $settings) use ($existing): UserSettings {
@@ -80,22 +80,22 @@ final class UserSettingsServiceTest extends Unit
             }),
         ]));
 
-        $service->updateWelcomeScreenPath(self::PATH, $this->createUser());
+        $service->updateWelcomeScreenDashboardId(self::DASHBOARD_ID, $this->createUser());
 
-        $this->assertSame(self::PATH, $existing->getWelcomeScreenPath());
+        $this->assertSame(self::DASHBOARD_ID, $existing->getWelcomeScreenDashboardId());
     }
 
-    public function testUpdateWelcomeScreenPathWithEmptyStringClearsThePath(): void
+    public function testUpdateWelcomeScreenDashboardIdWithEmptyStringClearsTheId(): void
     {
-        $existing = $this->createSettings(self::PATH);
+        $existing = $this->createSettings(self::DASHBOARD_ID);
         $service = new UserSettingsService($this->makeEmpty(UserSettingsRepositoryInterface::class, [
             'getByUser' => $existing,
             'update' => Expected::once($existing),
         ]));
 
-        $service->updateWelcomeScreenPath('', $this->createUser());
+        $service->updateWelcomeScreenDashboardId('', $this->createUser());
 
-        $this->assertNull($existing->getWelcomeScreenPath());
+        $this->assertNull($existing->getWelcomeScreenDashboardId());
     }
 
     private function createUser(): UserInterface
@@ -103,11 +103,11 @@ final class UserSettingsServiceTest extends Unit
         return $this->makeEmpty(UserInterface::class, ['getId' => 7]);
     }
 
-    private function createSettings(?string $welcomeScreenPath): UserSettings
+    private function createSettings(?string $welcomeScreenDashboardId): UserSettings
     {
         $settings = new UserSettings();
         $settings->setUser(7);
-        $settings->setWelcomeScreenPath($welcomeScreenPath);
+        $settings->setWelcomeScreenDashboardId($welcomeScreenDashboardId);
 
         return $settings;
     }
