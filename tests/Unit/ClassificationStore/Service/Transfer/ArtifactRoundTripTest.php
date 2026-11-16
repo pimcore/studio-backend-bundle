@@ -589,7 +589,6 @@ final class ArtifactRoundTripTest extends Unit
         );
 
         return new Reconciler(
-            $parser,
             $matcher,
             new ArtifactEntryWriter(
                 $parser,
@@ -609,10 +608,8 @@ final class ArtifactRoundTripTest extends Unit
             ),
             $diagnostics,
             $collectionRepository,
-            $collectionRelationRepository,
             $this->makeEmpty(Connection::class),
             $groupRepository,
-            $keyGroupRelationRepository,
             $keyRepository,
             $this->makeEmpty(SearchIndexRemapTriggerInterface::class),
             new StoreMemberPurger(

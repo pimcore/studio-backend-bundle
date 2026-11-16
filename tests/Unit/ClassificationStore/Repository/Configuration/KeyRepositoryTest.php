@@ -71,6 +71,10 @@ final class KeyRepositoryTest extends Unit
 
     private const string COMMIT = 'commit';
 
+    private const string DAO_DELETE = 'delete';
+
+    private const string DAO_SAVE = 'save';
+
     private const string HOLD_KEY_QUERY =
         'SELECT `definition` FROM `classificationstore_keys` WHERE `id` = ? FOR UPDATE';
 
@@ -99,6 +103,41 @@ final class KeyRepositoryTest extends Unit
         // The suite is shuffled and Pimcore::setKernel() does not take null, so put the previous
         // kernel back the only way there is.
         (new ReflectionProperty(Pimcore::class, 'kernel'))->setValue(null, $this->kernelBeforeStub);
+    }
+
+    /**
+     * The replacing apply empties the target through this call ({@see StoreMemberPurgerInterface}),
+     * so it has to take the row itself: a key left disabled would keep holding its name and its
+     * identifier, and the file's own entry for either would then be refused.
+     *
+     * @throws Exception
+     */
+    public function testDeletingAKeyTakesTheRowRatherThanDisablingIt(): void
+    {
+        $calls = [];
+        $config = $this->createDeletableKeyConfig($calls);
+
+        $this->createRepository($config)->delete(self::KEY_ID);
+
+        $this->assertSame([self::DAO_DELETE], $calls);
+        // not a soft delete: the flag is untouched and no save was made over it
+        $this->assertTrue($config->getEnabled());
+    }
+
+    /**
+     * The counterpart, so that the two paths cannot quietly become the same write.
+     *
+     * @throws Exception
+     */
+    public function testSoftDeletingAKeyDisablesTheRowAndTakesNothing(): void
+    {
+        $calls = [];
+        $config = $this->createDeletableKeyConfig($calls);
+
+        $this->createRepository($config)->softDelete(self::KEY_ID);
+
+        $this->assertSame([self::DAO_SAVE], $calls);
+        $this->assertFalse($config->getEnabled());
     }
 
     /**
@@ -785,6 +824,30 @@ final class KeyRepositoryTest extends Unit
 
         $config = $this->createStoredKeyConfig();
         $config->setDao($this->makeEmpty(KeyConfigDao::class));
+
+        return $config;
+    }
+
+    /**
+     * A key whose dao records the two writes that tell a hard delete from a soft one apart, so that
+     * the one the repository performs is asserted rather than assumed.
+     *
+     * @param list<string> $calls
+     *
+     * @throws Exception
+     */
+    private function createDeletableKeyConfig(array &$calls): KeyConfig
+    {
+        $config = $this->createSavableKeyConfig();
+        $config->setEnabled(true);
+        $config->setDao($this->makeEmpty(KeyConfigDao::class, [
+            'delete' => static function () use (&$calls): void {
+                $calls[] = self::DAO_DELETE;
+            },
+            'save' => static function () use (&$calls): void {
+                $calls[] = self::DAO_SAVE;
+            },
+        ]));
 
         return $config;
     }

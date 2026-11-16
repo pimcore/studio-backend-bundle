@@ -1762,7 +1762,6 @@ final class ReconcilerTest extends Unit
         $remapTrigger = $this->createRemapTrigger();
 
         return new Reconciler(
-            $parser,
             $matcher,
             new ArtifactEntryWriter(
                 $parser,
@@ -1782,10 +1781,8 @@ final class ReconcilerTest extends Unit
             ),
             $diagnostics,
             $collectionRepository,
-            $collectionRelationRepository,
             $connection ?? $this->makeEmpty(Connection::class),
             $groupRepository,
-            $keyGroupRelationRepository,
             $keyRepository,
             $remapTrigger,
             new StoreMemberPurger(
