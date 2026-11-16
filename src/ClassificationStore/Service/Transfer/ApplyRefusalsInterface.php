@@ -62,6 +62,18 @@ interface ApplyRefusalsInterface
     public function refuseDisablingAnAssignedKey(ApplyContext $context, KeyConfig $target, string $name): bool;
 
     /**
+     * A key whose field type the storage engine of the store the apply writes into cannot hold,
+     * which is the refusal core's own key save raises for it and would otherwise surface as a failed
+     * save. Asked only of an entry the apply would write: a key the store already carries as the
+     * file describes it is left alone, as core leaves a row it is not writing alone.
+     */
+    public function refuseKeyTypeTheEngineCannotHold(
+        ApplyContext $context,
+        ArtifactKeyEntry $keyEntry,
+        string $label,
+    ): bool;
+
+    /**
      * The refusals one key assignment carries on its own: a key the same file disables, a key the
      * target carries disabled and the file does not enable, an override outside the closed list the
      * model enforces, and a sub group neither the file nor the store carries.

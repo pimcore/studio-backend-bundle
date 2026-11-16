@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyTypeEngineFitResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyDiagnostics;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusals;
@@ -46,6 +47,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Stor
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreTransferService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactField;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
@@ -522,6 +524,79 @@ final class ReconcilerTest extends Unit
         $this->assertSame([self::OTHER_GROUP_LABEL], $report->getRemovedEntries());
         $this->assertContains(self::GROUP_ENTRY_LABEL, $report->getCreatedEntries());
         $this->assertSame([], $this->writes);
+    }
+
+    /**
+     * A key whose type the engine cannot hold is refused as a reported conflict, so the apply
+     * answers 409 and never reaches the key save that would raise it as a failed save - a real run
+     * rolls its transaction back, and a dry run answers the same.
+     */
+    public function testAKeyTypeTheEngineCannotHoldIsRefusedAsAConflictInBothModes(): void
+    {
+        foreach ([false, true] as $dryRun) {
+            $this->writes = [];
+            $connection = $this->createMock(Connection::class);
+            $connection->method('isTransactionActive')->willReturn(false);
+            $connection->expects($dryRun ? $this->never() : $this->once())->method('rollBack');
+            $connection->expects($this->never())->method('commit');
+
+            $entry = $this->createKeyEntry(enabled: true);
+            $entry['type'] = 'geopoint';
+            $entry['definition'] = ['fieldtype' => 'geopoint'];
+            $json = json_encode($this->createArtifact(['keys' => [$entry]]), JSON_THROW_ON_ERROR);
+            $service = $this->createTransferService(
+                $this->createReconciler(connection: $connection, keyTypeEngineFit: $this->createEngineFit('eav')),
+                $this->createStore()
+            );
+
+            try {
+                $service->importStore(self::STORE_ID, $json, $dryRun);
+                $this->fail('A key the engine cannot hold must be refused.');
+            } catch (ConflictException $e) {
+                $this->assertSame(409, $e->getStatusCode());
+                $this->assertStringContainsString('key "weight"', $e->getMessage());
+                $this->assertStringContainsString('geopoint', $e->getMessage());
+                $this->assertStringContainsString('eav', $e->getMessage());
+            }
+
+            // the sections before the keys were written inside the transaction the rollback took back
+            $this->assertNotContains(sprintf('key:%s:%s', self::KEY_IDENTIFIER, self::KEY_NAME), $this->writes);
+        }
+    }
+
+    /**
+     * What the operator is shown before the import is what the import then does: the dry run and the
+     * real apply of one file into one store answer the same four statements about a replace.
+     */
+    public function testADryRunAndARealReplaceAnswerTheSameStatementsAboutTheRemoval(): void
+    {
+        $json = json_encode($this->createArtifact(), JSON_THROW_ON_ERROR);
+        $reports = [];
+
+        foreach ([true, false] as $dryRun) {
+            $service = $this->createTransferService(
+                $this->createReconciler(groups: [$this->createGroup('01DIFFERENT', self::OTHER_GROUP_NAME)]),
+                $this->createStore(self::FOREIGN_STORE_IDENTIFIER)
+            );
+            $reports[] = $service->importStore(self::STORE_ID, $json, $dryRun);
+        }
+
+        [$dry, $real] = $reports;
+        $this->assertSame($real->isReplaced(), $dry->isReplaced());
+        $this->assertSame($real->getRemoved(), $dry->getRemoved());
+        $this->assertSame($real->getRemovedEntries(), $dry->getRemovedEntries());
+        $this->assertSame($real->isStoredValuesRemoved(), $dry->isStoredValuesRemoved());
+        $this->assertTrue($real->isStoredValuesRemoved());
+    }
+
+    /**
+     * The engine answers for the one type of the fixture and for no other.
+     */
+    private function createEngineFit(string $engine): KeyTypeEngineFitResolverInterface
+    {
+        return $this->makeEmpty(KeyTypeEngineFitResolverInterface::class, [
+            'findRefusingEngine' => static fn (string $type): ?string => $type === 'geopoint' ? $engine : null,
+        ]);
     }
 
     /**
@@ -1644,6 +1719,7 @@ final class ReconcilerTest extends Unit
         bool $storeNameIsTaken = false,
         bool $subGroupNameIsTaken = false,
         bool $failingSubGroupWrite = false,
+        ?KeyTypeEngineFitResolverInterface $keyTypeEngineFit = null,
     ): Reconciler {
         $storeRepository = $this->createMock(StoreRepositoryInterface::class);
         $storeRepository->method('isNameTaken')->willReturn($storeNameIsTaken);
@@ -1823,6 +1899,7 @@ final class ReconcilerTest extends Unit
             $collectionRepository,
             $groupRepository,
             $keyGroupRelationRepository,
+            $keyTypeEngineFit ?? $this->makeEmpty(KeyTypeEngineFitResolverInterface::class),
             $subGroupRepository
         );
 

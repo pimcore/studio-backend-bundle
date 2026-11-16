@@ -39,13 +39,13 @@ use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
+use Psr\Log\NullLogger;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_flip;
 use function array_intersect_key;
 use function array_map;
 use function json_encode;
 use function sprintf;
-use Psr\Log\NullLogger;
 
 /**
  * A group is laid out the same whether it was already assigned when the object opened - the object

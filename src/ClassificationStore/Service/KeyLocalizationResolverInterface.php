@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 
 /**
@@ -55,4 +56,17 @@ interface KeyLocalizationResolverInterface
      * same as not writing at all.
      */
     public function setLocalized(KeyConfig $keyConfig, ?bool $localized): void;
+
+    /**
+     * Whether the key is kept per language in the class field: its own flag, and the field's for a
+     * key that states none. A core that cannot answer for the key answers with the field's flag,
+     * which is what the whole store did before the flag existed.
+     */
+    public function isKeyLocalized(int $keyId, Classificationstore $definition): bool;
+
+    /**
+     * Whether any key of the field can hold a language: the field's own flag, or a key of its store
+     * flagged localized. A core that cannot answer answers with the field's flag.
+     */
+    public function hasLocalizedKey(Classificationstore $definition): bool;
 }

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Grid\Column\Resolver\DataObject;
 
+use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\Classificationstore;
 use Pimcore\Model\DataObject\Concrete;
 
@@ -30,6 +31,11 @@ use Pimcore\Model\DataObject\Concrete;
 final class StoreFieldAwareObject extends Concrete
 {
     public ?Classificationstore $classificationStore = null;
+
+    public function getClass(): ClassDefinition
+    {
+        return new ClassDefinition();
+    }
 
     public function getCs(): ?Classificationstore
     {

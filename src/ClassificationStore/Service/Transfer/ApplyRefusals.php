@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyTypeEngineFitResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
@@ -26,6 +27,7 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use function array_keys;
 use function implode;
 use function in_array;
+use function is_string;
 use function mb_strtolower;
 use function sprintf;
 
@@ -49,6 +51,7 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
         private CollectionRepositoryInterface $collectionRepository,
         private GroupRepositoryInterface $groupRepository,
         private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
+        private KeyTypeEngineFitResolverInterface $keyTypeEngineFitResolver,
         private SubGroupRepositoryInterface $subGroupRepository,
     ) {
     }
@@ -156,6 +159,41 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
                 implode('", "', $groups)
             )
         );
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function refuseKeyTypeTheEngineCannotHold(
+        ApplyContext $context,
+        ArtifactKeyEntry $keyEntry,
+        string $label,
+    ): bool {
+        $delegateType = $keyEntry->getDefinition()['delegateDatatype'] ?? null;
+        $engine = $this->keyTypeEngineFitResolver->findRefusingEngine(
+            $keyEntry->getType(),
+            is_string($delegateType) && $delegateType !== '' ? $delegateType : null,
+            $context->getStoreId()
+        );
+
+        if ($engine === null) {
+            return false;
+        }
+
+        $context->record(
+            ApplyOutcome::CONFLICT,
+            sprintf(
+                '%s: the field type "%s" cannot be held by the "%s" storage engine of the store',
+                $label,
+                $keyEntry->getType(),
+                $engine
+            )
+        );
+
+        // nothing registers a refused key, so what refers to it is skipped with it, in a dry run as in an apply
+        $context->skip(ArtifactSection::KEYS, $keyEntry->getIdentifier());
 
         return true;
     }

@@ -14,9 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service;
 
 use Codeception\Test\Unit;
+use Doctrine\DBAL\Connection;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use Pimcore\Model\DataObject\Classificationstore\LocalizationResolver;
 use function method_exists;
 
 /**
@@ -162,5 +165,43 @@ final class KeyLocalizationResolverTest extends Unit
         $this->resolver->setLocalized($keyConfig, null);
 
         $this->assertNull($this->resolver->getLocalized($keyConfig));
+    }
+
+    /**
+     * Without the core's resolver, or with one that does not declare the accessors, the key has no
+     * answer of its own and the field's flag decides: the fallback is pinned so that it cannot become
+     * silent by accident.
+     */
+    public function testWithoutTheCoreAccessorsTheFieldFlagDecides(): void
+    {
+        foreach ([true, false] as $fieldFlag) {
+            $definition = new Classificationstore();
+            $definition->setLocalized($fieldFlag);
+
+            self::assertSame($fieldFlag, $this->resolver->isKeyLocalized(1, $definition));
+            self::assertSame($fieldFlag, $this->resolver->hasLocalizedKey($definition));
+        }
+    }
+
+    /**
+     * A core that declares the accessors is asked, and its answer wins over the field's flag.
+     */
+    public function testACoreThatDeclaresTheAccessorsIsAskedAndItsAnswerWins(): void
+    {
+        if (!method_exists(LocalizationResolver::class, 'isKeyLocalized')
+            || !method_exists(LocalizationResolver::class, 'hasLocalizedKey')) {
+            self::markTestSkipped('The resolved core does not declare the localization accessors.');
+        }
+
+        $definition = new Classificationstore();
+        $definition->setLocalized(false);
+        $definition->setStoreId(1);
+        // The core's resolver is final and cannot be doubled: the real one is read through its
+        // connection, which answers that a key of the store is flagged localized.
+        $core = new LocalizationResolver($this->makeEmpty(Connection::class, ['fetchOne' => 1]));
+
+        $resolver = new KeyLocalizationResolver($core);
+
+        self::assertTrue($resolver->hasLocalizedKey($definition));
     }
 }

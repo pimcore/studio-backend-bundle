@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use SplObjectStorage;
+use function in_array;
 
 /**
  * The key's `localized` flag held on the instance it was written to, the way the core accessor the
@@ -35,6 +37,11 @@ final class InMemoryKeyLocalizationResolver implements KeyLocalizationResolverIn
      * @var SplObjectStorage<KeyConfig, ?bool>
      */
     private SplObjectStorage $values;
+
+    /**
+     * @var array<int, bool>
+     */
+    private array $flagsByKeyId = [];
 
     public function __construct(
         private readonly bool $supported = true
@@ -63,5 +70,20 @@ final class InMemoryKeyLocalizationResolver implements KeyLocalizationResolverIn
         }
 
         $this->values[$keyConfig] = $localized;
+    }
+
+    public function flagKeyId(int $keyId, bool $localized): void
+    {
+        $this->flagsByKeyId[$keyId] = $localized;
+    }
+
+    public function isKeyLocalized(int $keyId, Classificationstore $definition): bool
+    {
+        return $this->flagsByKeyId[$keyId] ?? $definition->isLocalized();
+    }
+
+    public function hasLocalizedKey(Classificationstore $definition): bool
+    {
+        return $definition->isLocalized() || in_array(true, $this->flagsByKeyId, true);
     }
 }

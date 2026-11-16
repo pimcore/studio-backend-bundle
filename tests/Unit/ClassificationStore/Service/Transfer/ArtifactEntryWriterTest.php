@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyTypeEngineFitResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyContext;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyDiagnostics;
@@ -34,6 +35,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOu
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use function sprintf;
 
 /**
@@ -144,6 +146,76 @@ final class ArtifactEntryWriterTest extends Unit
         $this->assertSame(1, $context->getReport()->getCount(ApplyOutcome::TARGET_ONLY));
     }
 
+    /**
+     * A key whose type the engine of the store cannot hold is one conflict naming the key, the type
+     * and the engine, and the key repository is never reached: the writer is the refusal's caller.
+     */
+    public function testAKeyTheEngineCannotHoldIsOneConflictNamingKeyTypeAndEngine(): void
+    {
+        $context = $this->createContext();
+
+        $this->createWriter('eav')->writeKey($context, null, $this->createKeyEntry('geopoint'));
+
+        $this->assertSame(
+            ['key "position": the field type "geopoint" cannot be held by the "eav" storage engine of the store'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CREATED));
+    }
+
+    /**
+     * An engine that holds the type, and a type every engine holds, refuse nothing.
+     */
+    public function testAKeyTheEngineHoldsIsNotRefused(): void
+    {
+        $context = new ApplyContext(true, new ApplyReport());
+        $context->setStoreId(self::STORE_ID);
+
+        $this->createWriter(null)->writeKey($context, null, $this->createKeyEntry('geopoint'));
+        $this->createWriter('eav')->writeKey($context, null, $this->createKeyEntry('input'));
+
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+        $this->assertSame(2, $context->getReport()->getCount(ApplyOutcome::CREATED));
+    }
+
+    /**
+     * A key the store already carries exactly as the file describes it is not written, so it is not
+     * refused either, whatever its stored type.
+     */
+    public function testAKeyTheStoreAlreadyCarriesAsDescribedIsLeftAloneWhateverItsType(): void
+    {
+        $context = $this->createContext();
+        $entry = $this->createKeyEntry('geopoint');
+        $target = new KeyConfig();
+        $target->setId(7);
+        $target->setIdentifier('01KEY');
+        $target->setName('position');
+        $target->setType('geopoint');
+        $target->setEnabled(true);
+        $target->setDefinition('{"fieldtype":"geopoint"}');
+
+        $this->createWriter('eav')->writeKey($context, $target, $entry);
+
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+        $this->assertSame(1, $context->getReport()->getCount(ApplyOutcome::MATCHED_UNCHANGED));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function createKeyEntry(string $type): array
+    {
+        return [
+            'identifier' => '01KEY',
+            'name' => $type === 'geopoint' ? 'position' : 'weight',
+            'title' => null,
+            'description' => null,
+            'type' => $type,
+            'definition' => ['fieldtype' => $type],
+            'enabled' => true,
+        ];
+    }
+
     private function recordingWrite(): Closure
     {
         return function (?GroupConfig $target, array $entry): void {
@@ -186,7 +258,7 @@ final class ArtifactEntryWriterTest extends Unit
         return $config;
     }
 
-    private function createWriter(): ArtifactEntryWriter
+    private function createWriter(?string $refusingEngine = null): ArtifactEntryWriter
     {
         $parser = new ArtifactParser();
         $matcher = new ArtifactTargetMatcher(new InMemoryKeyLocalizationResolver());
@@ -195,6 +267,11 @@ final class ArtifactEntryWriterTest extends Unit
             $this->makeEmpty(CollectionRepositoryInterface::class),
             $this->makeEmpty(GroupRepositoryInterface::class),
             $this->makeEmpty(KeyGroupRelationRepositoryInterface::class),
+            $this->makeEmpty(KeyTypeEngineFitResolverInterface::class, [
+                'findRefusingEngine' => static fn (string $type): ?string => $type === 'geopoint'
+                    ? $refusingEngine
+                    : null,
+            ]),
             $this->makeEmpty(SubGroupRepositoryInterface::class)
         );
 

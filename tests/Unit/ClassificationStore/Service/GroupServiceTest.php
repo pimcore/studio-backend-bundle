@@ -45,6 +45,7 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
 use Pimcore\Model\DataObject\Concrete;
+use Psr\Log\NullLogger;
 use ReflectionClass;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_flip;
@@ -53,7 +54,6 @@ use function array_keys;
 use function array_map;
 use function json_encode;
 use function sprintf;
-use Psr\Log\NullLogger;
 
 /**
  * @internal

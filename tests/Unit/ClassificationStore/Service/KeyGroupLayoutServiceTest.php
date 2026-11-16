@@ -35,13 +35,13 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Concrete;
+use Psr\Log\NullLogger;
 use ReflectionClass;
 use function array_column;
 use function array_map;
 use function json_encode;
 use function str_contains;
 use function strtoupper;
-use Psr\Log\NullLogger;
 
 /**
  * The label is resolved through core's resolver, so none of the chain below the title column is

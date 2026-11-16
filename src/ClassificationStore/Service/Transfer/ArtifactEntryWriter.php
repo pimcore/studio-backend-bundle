@@ -194,6 +194,11 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
             return;
         }
 
+        if ($outcome !== ApplyOutcome::MATCHED_UNCHANGED
+            && $this->refusals->refuseKeyTypeTheEngineCannotHold($context, $keyEntry, $label)) {
+            return;
+        }
+
         $context->record($outcome, $label);
 
         $id = $target?->getId();

@@ -199,6 +199,7 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
             replaced: $replaced,
             removed: $report->getCount(ApplyOutcome::REMOVED),
             removedEntries: $report->getNamed(ApplyOutcome::REMOVED),
+            storedValuesRemoved: $report->hasRemovedGroup(),
         );
     }
 }

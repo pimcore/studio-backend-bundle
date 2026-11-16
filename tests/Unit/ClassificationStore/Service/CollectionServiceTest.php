@@ -45,13 +45,13 @@ use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Concrete;
+use Psr\Log\NullLogger;
 use ReflectionClass;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_keys;
 use function array_map;
 use function array_values;
 use function sprintf;
-use Psr\Log\NullLogger;
 
 /**
  * @internal
@@ -309,7 +309,7 @@ final class CollectionServiceTest extends Unit
                 new InMemoryKeyLocalizationResolver(),
                 new KeyQualifierResolver($serviceResolver),
                 new ProvidedOptionNarrower(),
-            new NullLogger()
+                new NullLogger()
             ),
             new GroupLayoutHydrator(),
             $this->createMock(ClassDefinitionResolverInterface::class),

@@ -45,6 +45,14 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolver
+    arguments:
+      $localizationResolver: '@?Pimcore\Model\DataObject\Classificationstore\LocalizationResolver'
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyTypeEngineFitResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyTypeEngineFitResolver
+    arguments:
+      $keyTypeSupport: '@?Pimcore\Model\DataObject\Classificationstore\KeyTypeSupport'
+      $engineResolver: '@?Pimcore\Model\DataObject\Classificationstore\Engine\EngineResolver'
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyOptionsResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyOptionsResolver

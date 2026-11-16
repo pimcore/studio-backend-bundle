@@ -46,6 +46,8 @@ final class ApplyReport
      */
     private array $named = [];
 
+    private bool $groupRemoved = false;
+
     public function record(ApplyOutcome $outcome, string $entry): void
     {
         $key = $outcome->value;
@@ -90,6 +92,20 @@ final class ApplyReport
         }
 
         return $entries;
+    }
+
+    /**
+     * Notes that the apply removes, or on a dry run would remove, a group of the store, which takes
+     * every stored value under it with it.
+     */
+    public function markGroupRemoved(): void
+    {
+        $this->groupRemoved = true;
+    }
+
+    public function hasRemovedGroup(): bool
+    {
+        return $this->groupRemoved;
     }
 
     public function hasConflicts(): bool

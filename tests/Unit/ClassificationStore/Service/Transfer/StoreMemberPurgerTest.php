@@ -188,6 +188,31 @@ final class StoreMemberPurgerTest extends Unit
         $this->assertCount(1, $this->staleNotes);
     }
 
+    /**
+     * Removing a group takes the stored values under it, so the report says so in a dry run exactly
+     * as in the real run - and says nothing of the kind for a store without a group.
+     */
+    public function testARemovedGroupIsMarkedInADryRunAndInARealRunAlike(): void
+    {
+        foreach ([true, false] as $dryRun) {
+            $context = $this->createContext($dryRun);
+
+            $this->createPurger()->purge($context);
+
+            $this->assertTrue($context->getReport()->hasRemovedGroup(), $dryRun ? 'dry run' : 'real run');
+        }
+    }
+
+    public function testAStoreWithoutAGroupMarksNoStoredValuesRemoved(): void
+    {
+        $context = $this->createContext(false);
+
+        $this->createPurger(holdsGroup: false)->purge($context);
+
+        $this->assertFalse($context->getReport()->hasRemovedGroup());
+        $this->assertNotSame([], $this->deletes);
+    }
+
     private function createContext(bool $dryRun): ApplyContext
     {
         $context = new ApplyContext($dryRun, new ApplyReport());
@@ -196,7 +221,7 @@ final class StoreMemberPurgerTest extends Unit
         return $context;
     }
 
-    private function createPurger(): StoreMemberPurger
+    private function createPurger(bool $holdsGroup = true): StoreMemberPurger
     {
         $this->deletes = [];
         $this->staleNotes = [];
@@ -211,7 +236,7 @@ final class StoreMemberPurgerTest extends Unit
                 'getChunkAfter' => [$this->createCollectionRelation()],
             ]),
             $this->makeEmpty(GroupRepositoryInterface::class, [
-                self::READ_CHUNK => [$this->createGroup()],
+                self::READ_CHUNK => $holdsGroup ? [$this->createGroup()] : [],
                 self::DELETE => fn (int $id) => $this->recordDelete('group', $id),
             ]),
             $this->makeEmpty(KeyGroupRelationRepositoryInterface::class, [

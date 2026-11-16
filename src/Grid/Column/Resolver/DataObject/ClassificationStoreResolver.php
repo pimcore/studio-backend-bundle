@@ -14,10 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject;
 
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\SearchIndexAdapter\MappingProperty;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
@@ -25,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\DeniedColumnDataResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
@@ -34,6 +37,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ClassificationStoreConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
@@ -49,6 +53,7 @@ use function sprintf;
 final class ClassificationStoreResolver implements
     ColumnResolverInterface,
     CoreElementColumnResolverInterface,
+    DeniedColumnDataResolverInterface,
     ExportResolverInterface
 {
     use ColumnDataTrait;
@@ -63,6 +68,7 @@ final class ClassificationStoreResolver implements
         private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
         private readonly ColumnReferenceServiceInterface $columnReferenceService,
         private readonly QualifiedColumnValueResolverInterface $qualifiedColumnValueResolver,
+        private readonly KeyLocalizationResolverInterface $keyLocalizationResolver,
     ) {
     }
 
@@ -76,6 +82,32 @@ final class ClassificationStoreResolver implements
     protected function getDefaultLanguage(): ?string
     {
         return $this->toolResolver->getDefaultLanguage();
+    }
+
+    public function resolveDeniedForCoreElement(Column $column, ElementInterface $element): ?ColumnData
+    {
+        if (!$this->hasKeyConfig($column->getConfig())) {
+            return null;
+        }
+
+        try {
+            $config = $this->getReference($column, $element);
+            $keyGroupRelation = $this->findKeyGroupRelation($config->getGroupId(), $config->getKeyId());
+        } catch (Exception) {
+            return null;
+        }
+
+        $denied = new ColumnData(
+            key: $column->getKey() . '.' . $keyGroupRelation->getName() . $this->getVariantSuffix($config),
+            locale: $column->getLocale(),
+            value: null,
+            fieldType: $keyGroupRelation->getType(),
+        );
+
+        $denied->addAdditionalAttribute('groupId', $config->getGroupId());
+        $denied->addAdditionalAttribute('keyId', $config->getKeyId());
+
+        return $denied;
     }
 
     /**
@@ -99,10 +131,7 @@ final class ClassificationStoreResolver implements
 
         $normalizedData = $baseResolver->resolveForCoreElement($column, $element);
 
-        $locale = 'default';
-        if ($column->getLocale()) {
-            $locale = $column->getLocale();
-        }
+        $locale = $this->resolveLanguage($column, $element, $config);
 
         try {
             $value = $normalizedData->getValue()[$config->getGroupId()][$locale][$config->getKeyId()];
@@ -159,10 +188,7 @@ final class ClassificationStoreResolver implements
             $relation->getType()
         );
 
-        $locale = 'default';
-        if ($column->getLocale()) {
-            $locale = $column->getLocale();
-        }
+        $locale = $this->resolveLanguage($column, $element, $config);
 
         $legacyParameters = ['context' => [
             'containerType' => 'classificationstore',
@@ -193,6 +219,38 @@ final class ClassificationStoreResolver implements
         );
 
         return $this->getColumnData($column, $value, $fieldDefinition->getFieldType());
+    }
+
+    /**
+     * The bucket language the key decides, the rule the filter path takes: a key that is not
+     * localized is read from the language independent bucket whatever the column carries, a
+     * localized one from the column's locale or, without one, the implicit read locale.
+     */
+    private function resolveLanguage(
+        Column $column,
+        ElementInterface $element,
+        ClassificationStoreConfig $config,
+    ): string {
+        $definition = $element instanceof Concrete
+            ? $element->getClass()->getFieldDefinition($column->getKey())
+            : null;
+        $columnLocale = $column->getLocale();
+
+        if (!$definition instanceof Classificationstore) {
+            return $columnLocale !== null && $columnLocale !== ''
+                ? $columnLocale
+                : MappingProperty::NOT_LOCALIZED_KEY;
+        }
+
+        if (!$this->keyLocalizationResolver->isKeyLocalized($config->getKeyId(), $definition)) {
+            return MappingProperty::NOT_LOCALIZED_KEY;
+        }
+
+        if ($columnLocale !== null && $columnLocale !== '') {
+            return $columnLocale;
+        }
+
+        return $this->gridService->getImplicitReadLocale() ?? MappingProperty::NOT_LOCALIZED_KEY;
     }
 
     public function findKeyGroupRelation(int $groupId, int $keyId): KeyGroupRelation
