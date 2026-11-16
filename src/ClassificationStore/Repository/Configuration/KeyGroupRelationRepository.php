@@ -217,7 +217,9 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
      * refused sub group or definition override from arriving as the 500 a failed save is.
      *
      * The key has no say in the assignment's `metadata`: the column is free-form and reserves no
-     * member, so neither a creation nor an update reads the key's `definition` for it.
+     * member, so neither a creation nor an update reads the key's `definition` for it. Its
+     * `enabled` flag is the one thing it does answer for, and a disabled key is refused
+     * ({@see self::assertKeyIsEnabled()}).
      */
     public function createOrUpdate(KeyGroupRelationCreate $parameters): KeyGroupRelation
     {
@@ -233,6 +235,7 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
         try {
             $this->holdGroup($groupId);
             $stored = $this->holdRelation($keyId, $groupId);
+            $this->assertKeyIsEnabled($keyId);
 
             $this->applyAndSave($keyId, $groupId, $parameters, $stored);
 
@@ -327,6 +330,40 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
         $this->connection->fetchFirstColumn(
             sprintf('SELECT `id` FROM `%s` WHERE `id` = ? FOR UPDATE', GroupConfigDao::TABLE_NAME_GROUPS),
             [$groupId]
+        );
+    }
+
+    /**
+     * Refuses an assignment of a key that is disabled, which is a key core treats as invisible: it
+     * builds no active group definition from such a relation, and it deletes a key's assignments
+     * only on the transition to disabled ({@see KeyConfigDao::update()}), so a relation written for
+     * an already disabled key is one nothing cleans up again.
+     *
+     * The key row is held, after the group and the assignment this write already holds, which is the
+     * order core's own disable takes these tables in: it reads the relations of the key and then the
+     * key itself. A disable that committed first is therefore read here, and one that arrives later
+     * waits for this write and then deletes what it created.
+     *
+     * A key id no key row carries is left to the foreign key on `keyId`, which is what refuses it
+     * today; this answers only for a row that is there and disabled - NULL in the column included,
+     * which is the disabled state a row written before the column had a default carries.
+     *
+     * @throws DBALException
+     * @throws InvalidArgumentException
+     */
+    private function assertKeyIsEnabled(int $keyId): void
+    {
+        $rows = $this->connection->fetchFirstColumn(
+            sprintf('SELECT `enabled` FROM `%s` WHERE `id` = ? FOR UPDATE', KeyConfigDao::TABLE_NAME_KEYS),
+            [$keyId]
+        );
+
+        if ($rows === [] || (bool) $rows[0]) {
+            return;
+        }
+
+        throw new InvalidArgumentException(
+            sprintf('Key %d is disabled and cannot be assigned to a group.', $keyId)
         );
     }
 

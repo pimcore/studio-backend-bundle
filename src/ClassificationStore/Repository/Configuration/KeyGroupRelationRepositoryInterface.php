@@ -76,6 +76,10 @@ interface KeyGroupRelationRepositoryInterface
      * created or updated assignment supplies. A column the entry leaves out is not set, so the
      * stored value stays.
      *
+     * No key enabled probe here, unlike createOrUpdate(): the apply refuses a disabled key
+     * earlier, from its own scan, and rolls the whole run back. A disable committing between
+     * that scan and this write is therefore still possible and leaves an orphaned relation.
+     *
      * @throws ElementSavingFailedException
      */
     public function createOrUpdateFromArtifact(
@@ -85,6 +89,10 @@ interface KeyGroupRelationRepositoryInterface
     ): KeyGroupRelation;
 
     /**
+     * A disabled key is refused with an unprocessable content: core treats such a key as invisible
+     * and deletes its assignments only on the transition to disabled, so a relation written for one
+     * that is already disabled is a row nothing cleans up again.
+     *
      * @throws ElementSavingFailedException
      * @throws InvalidArgumentException
      * @throws NotFoundException

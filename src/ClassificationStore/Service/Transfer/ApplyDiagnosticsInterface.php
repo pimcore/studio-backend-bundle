@@ -54,6 +54,10 @@ interface ApplyDiagnosticsInterface
      * A target row the file does not answer for. It is left in place and reported as target only,
      * whatever its name: a row whose name the file reuses under another identifier is not refused
      * here, the entry is reported as skipped where it is decided ({@see ApplyRefusalsInterface}).
+     *
+     * It stays resolvable under the identifier it carries, so a relation of the file may still name
+     * it - and a key row left disabled is noted as such, because no entry of the file will enable
+     * it and an assignment naming it is refused ({@see ApplyRefusalsInterface::refuseAssignment()}).
      */
     public function recordUnmatchedTarget(
         ApplyContext $context,

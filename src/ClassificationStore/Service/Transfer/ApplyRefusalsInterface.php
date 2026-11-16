@@ -62,9 +62,17 @@ interface ApplyRefusalsInterface
     public function refuseDisablingAnAssignedKey(ApplyContext $context, KeyConfig $target, string $name): bool;
 
     /**
-     * The refusals one key assignment carries on its own: a key the same file disables, an override
-     * outside the closed list the model enforces, and a sub group neither the file nor the store
-     * carries.
+     * The refusals one key assignment carries on its own: a key the same file disables, a key the
+     * target carries disabled and the file does not enable, an override outside the closed list the
+     * model enforces, and a sub group neither the file nor the store carries.
+     *
+     * A disabled key is a conflict rather than a skip, whichever side holds the disabled state.
+     * Core builds no active group definition from such a relation and deletes a key's assignments
+     * only on the transition to disabled, so the row this would write is one nothing cleans up
+     * again - and the file-disables-it case next to it is already a conflict, so the same end state
+     * cannot be allowed to report differently for naming the key in one section fewer. A skip is
+     * what an apply records where applying the entry would have meant guessing; this entry is not
+     * ambiguous, it is one the target hides.
      */
     public function refuseAssignment(
         ApplyContext $context,

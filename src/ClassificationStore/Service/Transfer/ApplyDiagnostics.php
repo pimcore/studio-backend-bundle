@@ -89,9 +89,16 @@ final readonly class ApplyDiagnostics implements ApplyDiagnosticsInterface
         // is the one reported as skipped ({@see ApplyRefusals::refuseTakenName()})
         $context->record(ApplyOutcome::TARGET_ONLY, $this->label($section, $target->getName()));
 
-        if ($identifier !== null && $target->getId() !== null) {
-            // a relation of the file may still name it, so it stays resolvable
-            $context->register($section, $identifier, $target->getId());
+        if ($identifier === null || $target->getId() === null) {
+            return;
+        }
+
+        // a relation of the file may still name it, so it stays resolvable
+        $context->register($section, $identifier, $target->getId());
+
+        // nothing in the file enables it, so an assignment naming it is refused rather than written
+        if ($target instanceof KeyConfig && !$target->getEnabled()) {
+            $context->markKeyDisabledInTarget($identifier);
         }
     }
 

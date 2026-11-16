@@ -175,6 +175,11 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
                 'key "%s" is disabled by the file and assigned by it as well',
                 $assignment->getKeyIdentifier()
             );
+        } elseif ($context->isKeyDisabledInTarget($assignment->getKeyIdentifier())) {
+            $refusals[] = sprintf(
+                'key "%s" is disabled in the target and the file does not enable it',
+                $assignment->getKeyIdentifier()
+            );
         }
 
         foreach (array_keys($assignment->getDefinitionOverride() ?? []) as $property) {

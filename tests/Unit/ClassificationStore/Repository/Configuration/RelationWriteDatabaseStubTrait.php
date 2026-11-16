@@ -17,6 +17,7 @@ use Doctrine\DBAL\Connection;
 use Pimcore;
 use Pimcore\Cache\RuntimeCache;
 use Pimcore\Model\Dao\AbstractDao;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Dao;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelationCache;
 use ReflectionProperty;
@@ -107,6 +108,13 @@ trait RelationWriteDatabaseStubTrait
      */
     private ?array $keyColumnsForNewAssignments = null;
 
+    /**
+     * The `enabled` column of the key the payload names, null for a key id with no row at all -
+     * which is the default, so a test that says nothing about the key reads as it did before the
+     * probe existed.
+     */
+    private ?bool $storedKeyEnabled = null;
+
     private ?Connection $stubbedConnection = null;
 
     private ?KernelInterface $kernelBeforeStub = null;
@@ -128,13 +136,14 @@ trait RelationWriteDatabaseStubTrait
             'fetchOne' => static function () use (&$singleValues): mixed {
                 return array_shift($singleValues);
             },
-            // the group lock the repository fronts its write with; the value is never used, so
-            // standing in for the lock is all this has to do - besides recording that it was taken
+            // the group lock the repository fronts its write with, and the held read of the key's
+            // `enabled` flag; the group lock's value is never used, so standing in for the lock is
+            // all this has to do there - besides recording that it was taken
             'fetchFirstColumn' => function (string $query): array {
                 $this->lockingReads[] = $query;
                 $this->letACompetingWriterLand($query);
 
-                return [];
+                return $this->answerTheKeyEnabledProbe($query);
             },
             // the assignment lock, which also answers with the two columns the write re-supplies
             'fetchAssociative' => function (string $query, array $params = []): array|false {
@@ -289,6 +298,28 @@ trait RelationWriteDatabaseStubTrait
             && (int) ($row['groupId'] ?? 0) === (int) ($other['groupId'] ?? 0);
     }
 
+    /**
+     * Gives the key the payload names a row, with the `enabled` column it carries.
+     */
+    private function letTheKeyBeStored(bool $enabled): void
+    {
+        $this->storedKeyEnabled = $enabled;
+    }
+
+    /**
+     * The held read of the key's `enabled` flag, answered only for the statement that asks for it.
+     *
+     * @return list<mixed>
+     */
+    private function answerTheKeyEnabledProbe(string $query): array
+    {
+        if ($this->storedKeyEnabled === null || !str_contains($query, KeyConfigDao::TABLE_NAME_KEYS)) {
+            return [];
+        }
+
+        return [(int) $this->storedKeyEnabled];
+    }
+
     private function letACompetingWriterLand(string $query): void
     {
         $competingWrite = $this->competingWriteOnRelationLock;
@@ -363,6 +394,7 @@ trait RelationWriteDatabaseStubTrait
         $this->inTransaction = false;
         $this->competingWriteOnRelationLock = null;
         $this->keyColumnsForNewAssignments = null;
+        $this->storedKeyEnabled = null;
         $this->stubbedConnection = null;
 
         if (!$this->kernelStubbed) {
