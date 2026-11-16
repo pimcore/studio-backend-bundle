@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository\ServiceUserRepository;
 use Pimcore\Model\User;
+use ReflectionProperty;
 
 /**
  * The repository is the gate of every service-user endpoint that takes an id: a person's id must not pass,
@@ -54,17 +55,21 @@ final class ServiceUserRepositoryTest extends Unit
 
     public function testSaveRefusedByCoreValidationIsUnprocessable(): void
     {
-        // Core throws InvalidServiceUserException before it touches the database: only a service user
-        // may have responsibles.
-        $user = new User();
-        $user->setResponsibleUsers([3]);
+        // User is final and its save() dispatches events once it reaches the database, so the test takes
+        // core's first save-time check: a service user with administrator rights set around the setter guard.
+        $user = User::newServiceUser();
+        $admin = new ReflectionProperty(User::class, 'admin');
+        $admin->setValue($user, true);
 
         try {
             $this->repository(null)->saveServiceUser($user);
             $this->fail('UnprocessableContentException expected');
         } catch (UnprocessableContentException $exception) {
             $this->assertSame(422, $exception->getStatusCode());
-            $this->assertSame('Only a service user can have responsible users or roles.', $exception->getMessage());
+            $this->assertSame(
+                'A service user cannot have administrator rights or two-factor authentication.',
+                $exception->getMessage()
+            );
         }
     }
 
