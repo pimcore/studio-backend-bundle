@@ -18,7 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntryParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Email\MappedParameter\EmailLogParameters;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Mail;
 use Pimcore\Model\Tool\Email\Log;
@@ -28,7 +28,7 @@ use Pimcore\Model\Tool\Email\Log;
  */
 interface EmailLogServiceInterface
 {
-    public function listEntries(CollectionParameters $parameters): Collection;
+    public function listEntries(EmailLogParameters $parameters): Collection;
 
     /**
      * @throws NotFoundException

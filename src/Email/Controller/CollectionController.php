@@ -15,9 +15,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Email\MappedParameter\EmailLogParameters;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntry;
 use Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailLogServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\IntParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageSizeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
@@ -58,6 +59,12 @@ final class CollectionController extends AbstractApiController
     )]
     #[PageParameter]
     #[PageSizeParameter]
+    #[IntParameter(
+        name: 'documentId',
+        description: 'Filter the email log by the ID of the email document that sent the emails',
+        required: false,
+        example: 1
+    )]
     #[SuccessResponse(
         description: 'email_log_get_collection_success_response',
         content: new CollectionJson(new GenericCollection(EmailLogEntry::class))
@@ -67,7 +74,7 @@ final class CollectionController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function getEmailLogEntries(
-        #[MapQueryString] CollectionParameters $parameters
+        #[MapQueryString] EmailLogParameters $parameters
     ): JsonResponse {
         $this->denyAccessUnlessGranted(
             'HasOneOf',
