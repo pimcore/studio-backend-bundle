@@ -101,7 +101,9 @@ final readonly class PublishAdapter implements UpdateAdapterInterface
             $user,
             ElementPermissions::UNPUBLISH_PERMISSION
         );
-        $element->setOmitMandatoryCheck(true);
+        if ($element instanceof Concrete) {
+            $element->setOmitMandatoryCheck(true);
+        }
         $element->setPublished(false);
     }
 }
