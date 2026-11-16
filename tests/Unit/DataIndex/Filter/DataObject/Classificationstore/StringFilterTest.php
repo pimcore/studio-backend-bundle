@@ -39,10 +39,11 @@ final class StringFilterTest extends Unit
 
         $this->assertCount(1, $calls);
         $this->assertSame(self::FIELD_NAME, $calls[0]['fieldName']);
-        $this->assertSame(self::GROUP_NAME, $calls[0]['group']);
+        $this->assertSame(self::GROUP_SEGMENT, $calls[0]['group']);
+        $this->assertSame(self::NON_LOCALIZED_NODE, $calls[0]['locale']);
         $filter = $calls[0]['filter'];
         $this->assertInstanceOf(WildcardSearch::class, $filter);
-        $this->assertSame(self::KEY_NAME, $filter->getFieldName());
+        $this->assertSame(self::KEY_SEGMENT, $filter->getFieldName());
         $this->assertSame('needle', $filter->getSearchTerm());
     }
 
@@ -56,7 +57,7 @@ final class StringFilterTest extends Unit
         );
 
         $this->assertCount(1, $calls);
-        $this->assertSame(self::KEY_NAME . '_Metric', $calls[0]['filter']->getFieldName());
+        $this->assertSame(self::KEY_SEGMENT . '_Metric', $calls[0]['filter']->getFieldName());
     }
 
     public function testNonStringValueThrows(): void
@@ -64,5 +65,30 @@ final class StringFilterTest extends Unit
         $this->expectException(InvalidArgumentException::class);
 
         $this->applyFilter(StringFilter::class, ColumnType::CLASSIFICATION_STORE_STRING->value, ['needle']);
+    }
+
+    public function testALocalizedKeyIsFilteredUnderTheColumnLanguage(): void
+    {
+        $calls = $this->applyFilter(
+            StringFilter::class,
+            ColumnType::CLASSIFICATION_STORE_STRING->value,
+            'needle',
+            columnLocale: self::COLUMN_LANGUAGE,
+            keyLocalized: true
+        );
+
+        $this->assertSame(self::COLUMN_LANGUAGE, $calls[0]['locale']);
+    }
+
+    public function testANonLocalizedKeyIsFilteredUnderTheDefaultNodeDespiteTheColumnLanguage(): void
+    {
+        $calls = $this->applyFilter(
+            StringFilter::class,
+            ColumnType::CLASSIFICATION_STORE_STRING->value,
+            'needle',
+            columnLocale: self::COLUMN_LANGUAGE
+        );
+
+        $this->assertSame(self::NON_LOCALIZED_NODE, $calls[0]['locale']);
     }
 }

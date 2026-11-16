@@ -14,12 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\BooleanMultiSelectFilter;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreFilterValueResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreSegmentResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
@@ -31,9 +30,8 @@ use function is_array;
 final class BooleanFilter implements FilterInterface
 {
     public function __construct(
-        private readonly GroupConfigRepositoryInterface $groupConfigRepository,
-        private readonly KeyRelationResolverInterface $keyRelationResolver,
-        private readonly ClassificationStoreFilterValueResolverInterface $filterValueResolver
+        private readonly ClassificationStoreFilterValueResolverInterface $filterValueResolver,
+        private readonly ClassificationStoreSegmentResolverInterface $segmentResolver
     ) {
 
     }
@@ -56,11 +54,9 @@ final class BooleanFilter implements FilterInterface
                 $column->getKeyWithOutLocale()
             );
 
-            $key = $this->keyRelationResolver->getByGroupAndKey(
-                $filterValue->getGroupId(),
-                $filterValue->getKeyId()
-            );
-            $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
+            $group = $this->segmentResolver->resolveGroupSegment($filterValue);
+            $fieldName = $this->segmentResolver->resolveFieldName($filterValue);
+            $locale = $this->segmentResolver->resolveLocale($filterValue, $column, $parameters);
 
             if (!is_array($filterValue->getValue())) {
                 throw new InvalidArgumentException('Filter value for this filter must be a array');
@@ -68,13 +64,13 @@ final class BooleanFilter implements FilterInterface
 
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
+                $group,
                 new BooleanMultiSelectFilter(
-                    $filterValue->getIndexFieldName($key->getName()),
+                    $fieldName,
                     $filterValue->getValue(),
                     true
                 ),
-                $column->getLocale()
+                $locale
             );
         }
 

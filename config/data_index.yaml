@@ -57,6 +57,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreFilterValueResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreFilterValueResolver
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreSegmentResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreSegmentResolver
+
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ElementSearchServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ElementSearchService
 

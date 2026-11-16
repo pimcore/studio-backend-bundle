@@ -16,13 +16,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classif
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\NumberFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\NumberRangeFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\WildcardSearch;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterModes;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreFilterValueResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreSegmentResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
@@ -40,9 +39,8 @@ final class QuantityValueFilter implements FilterInterface
     private const UNIT_FIELD_SUFFIX = '.unitId';
 
     public function __construct(
-        private readonly GroupConfigRepositoryInterface $groupConfigRepository,
-        private readonly KeyRelationResolverInterface $keyRelationResolver,
-        private readonly ClassificationStoreFilterValueResolverInterface $filterValueResolver
+        private readonly ClassificationStoreFilterValueResolverInterface $filterValueResolver,
+        private readonly ClassificationStoreSegmentResolverInterface $segmentResolver
     ) {
 
     }
@@ -67,11 +65,9 @@ final class QuantityValueFilter implements FilterInterface
                 $column->getKeyWithOutLocale()
             );
 
-            $key = $this->keyRelationResolver->getByGroupAndKey(
-                $filterValue->getGroupId(),
-                $filterValue->getKeyId()
-            );
-            $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
+            $group = $this->segmentResolver->resolveGroupSegment($filterValue);
+            $fieldName = $this->segmentResolver->resolveFieldName($filterValue);
+            $locale = $this->segmentResolver->resolveLocale($filterValue, $column, $parameters);
             $value = $filterValue->getValue();
 
             if (!isset($value['unitId'])) {
@@ -82,24 +78,24 @@ final class QuantityValueFilter implements FilterInterface
 
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
+                $group,
                 $this->createValueFilter(
                     $mode,
-                    $filterValue->getIndexFieldName($key->getName()) . self::VALUE_FIELD_SUFFIX,
+                    $fieldName . self::VALUE_FIELD_SUFFIX,
                     $value
                 ),
-                null
+                $locale
             );
 
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
+                $group,
                 new WildcardSearch(
-                    $filterValue->getIndexFieldName($key->getName()) . self::UNIT_FIELD_SUFFIX,
+                    $fieldName . self::UNIT_FIELD_SUFFIX,
                     $value['unitId'],
                     true
                 ),
-                null
+                $locale
             );
         }
 

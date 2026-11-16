@@ -15,20 +15,16 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classif
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\NumberRangeFilter;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterModes;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreFilterValueResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\ClassificationStoreFilterValue;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreSegmentResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
-use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
-use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use function in_array;
 
 /**
@@ -37,9 +33,8 @@ use function in_array;
 final class NumberFilter implements FilterInterface
 {
     public function __construct(
-        private readonly GroupConfigRepositoryInterface $groupConfigRepository,
-        private readonly KeyRelationResolverInterface $keyRelationResolver,
-        private readonly ClassificationStoreFilterValueResolverInterface $filterValueResolver
+        private readonly ClassificationStoreFilterValueResolverInterface $filterValueResolver,
+        private readonly ClassificationStoreSegmentResolverInterface $segmentResolver
     ) {
 
     }
@@ -73,12 +68,9 @@ final class NumberFilter implements FilterInterface
             $this->addFilterToQuery(
                 $query,
                 $column,
-                $this->keyRelationResolver->getByGroupAndKey(
-                    $filterValue->getGroupId(),
-                    $filterValue->getKeyId()
-                ),
-                $this->groupConfigRepository->getById($filterValue->getGroupId()),
-                $filterValue,
+                $this->segmentResolver->resolveGroupSegment($filterValue),
+                $this->segmentResolver->resolveFieldName($filterValue),
+                $this->segmentResolver->resolveLocale($filterValue, $column, $parameters),
                 $mode,
                 $isValue,
                 $fromValue,
@@ -115,9 +107,9 @@ final class NumberFilter implements FilterInterface
     private function addFilterToQuery(
         DataObjectQueryInterface $query,
         ColumnFilter $column,
-        KeyGroupRelation $key,
-        GroupConfig $group,
-        ClassificationStoreFilterValue $filterValue,
+        string $group,
+        string $fieldName,
+        string $locale,
         string $mode,
         int|float|null $isValue,
         int|float|null $fromValue,
@@ -127,52 +119,52 @@ final class NumberFilter implements FilterInterface
             FilterModes::IS->value =>
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
+                $group,
                 new IntegerFilter(
-                    $filterValue->getIndexFieldName($key->getName()),
+                    $fieldName,
                     $isValue,
                     true
                 ),
-                null
+                $locale
             ),
 
             FilterModes::BETWEEN->value =>
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
+                $group,
                 new NumberRangeFilter(
-                    $filterValue->getIndexFieldName($key->getName()),
+                    $fieldName,
                     $fromValue,
                     $toValue,
                     true
                 ),
-                null
+                $locale
             ),
 
             FilterModes::LESS->value =>
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
+                $group,
                 new NumberRangeFilter(
-                    $filterValue->getIndexFieldName($key->getName()),
+                    $fieldName,
                     null,
                     $toValue,
                     true
                 ),
-                null
+                $locale
             ),
 
             FilterModes::MORE->value =>
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
+                $group,
                 new NumberRangeFilter(
-                    $filterValue->getIndexFieldName($key->getName()),
+                    $fieldName,
                     $fromValue,
                     null,
                     true
                 ),
-                null
+                $locale
             ),
 
             default => throw new InvalidArgumentException(

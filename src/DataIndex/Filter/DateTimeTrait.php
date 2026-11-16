@@ -21,8 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\ClassificationStoreFilterValue;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
-use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
-use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use function is_array;
 use function sprintf;
 
@@ -133,8 +131,9 @@ trait DateTimeTrait
     private function applyClassificationStoreDateFilter(
         ColumnFilter $column,
         DataObjectQueryInterface $query,
-        KeyGroupRelation $key,
-        GroupConfig $group,
+        string $group,
+        string $fieldName,
+        string $locale,
         ClassificationStoreFilterValue $filterValue,
         bool $roundToDay
     ): QueryInterface {
@@ -144,15 +143,15 @@ trait DateTimeTrait
 
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
+                $group,
                 $this->buildDateFilterModifier(
-                    $filterValue->getIndexFieldName($key->getName()),
+                    $fieldName,
                     $this->getFromAsCarbon(),
                     $this->getToAsCarbon(),
                     null,
                     $roundToDay
                 ),
-                $column->getLocale()
+                $locale
             );
 
             return $query;
@@ -161,45 +160,45 @@ trait DateTimeTrait
         if (isset($this->filterValue['on'])) {
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
+                $group,
                 $this->buildDateFilterModifier(
-                    $filterValue->getIndexFieldName($key->getName()),
+                    $fieldName,
                     null,
                     null,
                     $this->getOnAsCarbon(),
                     $roundToDay
                 ),
-                $column->getLocale()
+                $locale
             );
         }
 
         if (isset($this->filterValue['to'])) {
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
+                $group,
                 $this->buildDateFilterModifier(
-                    $filterValue->getIndexFieldName($key->getName()),
+                    $fieldName,
                     null,
                     $this->getToAsCarbon(),
                     null,
                     $roundToDay
                 ),
-                $column->getLocale()
+                $locale
             );
         }
 
         if (isset($this->filterValue['from'])) {
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
+                $group,
                 $this->buildDateFilterModifier(
-                    $filterValue->getIndexFieldName($key->getName()),
+                    $fieldName,
                     $this->getFromAsCarbon(),
                     null,
                     null,
                     $roundToDay
                 ),
-                $column->getLocale()
+                $locale
             );
         }
 
