@@ -53,6 +53,7 @@ interface DataObjectServiceInterface
     /**
      * @throws ForbiddenException|InvalidFilterServiceTypeException|InvalidQueryTypeException
      * @throws InvalidFilterTypeException|NotFoundException|SearchException|UserNotFoundException
+     * @throws DatabaseException
      */
     public function getDataObjects(DataObjectParameters $parameters): Collection;
 

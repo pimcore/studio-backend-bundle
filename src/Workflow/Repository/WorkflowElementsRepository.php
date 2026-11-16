@@ -89,7 +89,6 @@ final readonly class WorkflowElementsRepository implements WorkflowElementsRepos
                 ->andWhere('ews.cid IN (:elementIds)')
                 ->setParameter('ctype', $this->getStoredElementType($elementType))
                 ->setParameter('elementIds', $elementIds, ArrayParameterType::INTEGER)
-                ->orderBy('ews.workflow', 'ASC')
                 ->fetchAllAssociative();
         } catch (Exception $e) {
             throw new DatabaseException($e->getMessage(), $e);

@@ -72,9 +72,19 @@ final class WorkflowElementsRepositoryTest extends Unit
     public function testFetchPlacesByElementIdsFiltersByStoredTypeAndIds(): void
     {
         $parameters = [];
+        $conditions = [];
         $queryBuilder = $this->createMock(QueryBuilder::class);
-        foreach (['select', 'from', 'where', 'andWhere', 'orderBy'] as $method) {
+        foreach (['select', 'from'] as $method) {
             $queryBuilder->method($method)->willReturnSelf();
+        }
+        foreach (['where', 'andWhere'] as $method) {
+            $queryBuilder->method($method)->willReturnCallback(
+                function (string $condition) use (&$conditions, $queryBuilder) {
+                    $conditions[] = $condition;
+
+                    return $queryBuilder;
+                }
+            );
         }
         $queryBuilder->method('setParameter')->willReturnCallback(
             function (string $key, mixed $value) use (&$parameters, $queryBuilder) {
@@ -92,6 +102,7 @@ final class WorkflowElementsRepositoryTest extends Unit
         $this->assertSame($rows, $this->repository->fetchPlacesByElementIds('data-object', [7, 9]));
         // data objects are stored as "object"; the type is required because ids overlap between types
         $this->assertSame(['ctype' => 'object', 'elementIds' => [7, 9]], $parameters);
+        $this->assertSame(['ews.ctype = :ctype', 'ews.cid IN (:elementIds)'], $conditions);
     }
 
     public function testFetchPlacesByElementIdsSkipsTheQueryWithoutIds(): void

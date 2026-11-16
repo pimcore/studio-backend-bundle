@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowDetails;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowStatus;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowGraphServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Util\Trait\WorkflowLayoutTrait;
@@ -36,6 +35,7 @@ final readonly class WorkflowDetailsHydrator implements WorkflowDetailsHydratorI
         private Manager $workflowManager,
         private WorkflowActionServiceInterface $workflowActionService,
         private WorkflowGraphServiceInterface $workflowGraphService,
+        private WorkflowStatusHydratorInterface $workflowStatusHydrator,
     ) {
     }
 
@@ -88,14 +88,7 @@ final readonly class WorkflowDetailsHydrator implements WorkflowDetailsHydratorI
                 $layoutId = $status->getObjectLayout($workflow, $element);
             }
 
-            $statusInfos[] = new WorkflowStatus(
-                $status->getColor(),
-                $status->getColorInverted(),
-                $status->getPlace(),
-                $status->getLabel(),
-                $layoutId,
-                $status->isVisibleInHeader(),
-            );
+            $statusInfos[] = $this->workflowStatusHydrator->hydrate($status, $layoutId);
         }
 
         return $statusInfos;

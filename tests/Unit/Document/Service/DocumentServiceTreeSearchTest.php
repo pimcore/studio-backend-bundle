@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Document\Service;
 
+use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
@@ -27,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentService;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateServiceInterface;
 use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -73,11 +75,16 @@ final class DocumentServiceTreeSearchTest extends Unit
             ]),
             $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => $user]),
             $this->makeEmpty(ServiceResolverInterface::class),
-            $this->makeEmpty(WorkflowStateServiceInterface::class),
+            $this->makeEmpty(WorkflowStateServiceInterface::class, [
+                'applyVisibleStates' => Expected::once(function (iterable $items, string $elementType) use (&$events) {
+                    $this->assertSame(ElementTypes::TYPE_DOCUMENT, $elementType);
+                    $events[] = 'applyVisibleStates';
+                }),
+            ]),
         );
 
         $service->getDocuments(new ElementParameters(parentId: 1));
 
-        $this->assertSame(['setUser', 'applyFilters'], $events);
+        $this->assertSame(['setUser', 'applyFilters', 'applyVisibleStates'], $events);
     }
 }

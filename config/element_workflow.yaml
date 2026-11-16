@@ -50,6 +50,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowElementsHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowElementsHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowStatusHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowStatusHydrator
+
   # Submitters
   Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\TransitionActionSubmitterInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\TransitionActionSubmitter

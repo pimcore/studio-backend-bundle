@@ -15,12 +15,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowStatesAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowStatusHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Repository\WorkflowElementsRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowStatus;
 use Pimcore\Workflow\Manager;
-use function array_filter;
 use function array_keys;
-use function array_map;
 use function explode;
 use function in_array;
 
@@ -32,6 +31,7 @@ final readonly class WorkflowStateService implements WorkflowStateServiceInterfa
     public function __construct(
         private Manager $workflowManager,
         private WorkflowElementsRepositoryInterface $elementsRepository,
+        private WorkflowStatusHydratorInterface $workflowStatusHydrator,
     ) {
     }
 
@@ -39,7 +39,11 @@ final readonly class WorkflowStateService implements WorkflowStateServiceInterfa
     {
         $elementsById = [];
         foreach ($elements as $element) {
-            if ($element instanceof WorkflowStatesAwareInterface && !$this->isAssetFolder($element, $elementType)) {
+            if (!$element instanceof WorkflowStatesAwareInterface) {
+                continue;
+            }
+
+            if ($this->showsWorkflowStates($element, $elementType)) {
                 $elementsById[$element->getId()] = $element;
             }
         }
@@ -48,52 +52,48 @@ final readonly class WorkflowStateService implements WorkflowStateServiceInterfa
             return;
         }
 
-        $statesById = [];
-        $rows = $this->elementsRepository->fetchPlacesByElementIds($elementType, array_keys($elementsById));
-        foreach ($rows as $row) {
-            $elementId = (int) $row['cid'];
-            if (!isset($elementsById[$elementId])) {
-                continue;
-            }
-
-            foreach ($this->getVisibleStates((string) $row['workflow'], (string) $row['place']) as $state) {
-                $statesById[$elementId][] = $state;
-            }
+        $placesByElement = [];
+        foreach ($this->elementsRepository->fetchPlacesByElementIds($elementType, array_keys($elementsById)) as $row) {
+            $placesByElement[(int) $row['cid']][$row['workflow']] = (string) $row['place'];
         }
 
-        foreach ($statesById as $elementId => $states) {
-            $elementsById[$elementId]->setWorkflowStates($states);
+        $workflowNames = $this->workflowManager->getAllWorkflows();
+        foreach ($elementsById as $elementId => $element) {
+            $element->setWorkflowStates($this->getVisibleStates($workflowNames, $placesByElement[$elementId] ?? []));
         }
     }
 
-    // the editor never shows workflows on asset folders, although their places are stored
-    private function isAssetFolder(WorkflowStatesAwareInterface $element, string $elementType): bool
+    // like the editor: workflow details need the view permission, and asset folders never show workflows
+    private function showsWorkflowStates(WorkflowStatesAwareInterface $element, string $elementType): bool
     {
-        return $elementType === ElementTypes::TYPE_ASSET && $element->getType() === ElementTypes::TYPE_FOLDER;
+        if (!$element->getPermissions()->isView()) {
+            return false;
+        }
+
+        return $elementType !== ElementTypes::TYPE_ASSET || $element->getType() !== ElementTypes::TYPE_FOLDER;
     }
 
     /**
+     * @param string[] $workflowNames
+     * @param array<string, string> $placesByWorkflow
+     *
      * @return WorkflowStatus[]
      */
-    private function getVisibleStates(string $workflowName, string $storedPlaces): array
+    private function getVisibleStates(array $workflowNames, array $placesByWorkflow): array
     {
-        $places = array_filter(array_map('trim', explode(',', $storedPlaces)));
         $states = [];
-
-        // iterating the config keeps the order of the workflow definition, like the detail view
-        foreach ($this->workflowManager->getPlaceConfigsByWorkflowName($workflowName) as $placeConfig) {
-            if (!$placeConfig->isVisibleInHeader() || !in_array($placeConfig->getPlace(), $places, true)) {
+        // workflows by priority and places in configuration order, like the detail view
+        foreach ($workflowNames as $workflowName) {
+            if (!isset($placesByWorkflow[$workflowName])) {
                 continue;
             }
 
-            $states[] = new WorkflowStatus(
-                $placeConfig->getColor(),
-                $placeConfig->getColorInverted(),
-                $placeConfig->getPlace(),
-                $placeConfig->getLabel(),
-                null,
-                true,
-            );
+            $places = explode(',', $placesByWorkflow[$workflowName]);
+            foreach ($this->workflowManager->getPlaceConfigsByWorkflowName($workflowName) as $placeConfig) {
+                if ($placeConfig->isVisibleInHeader() && in_array($placeConfig->getPlace(), $places, true)) {
+                    $states[] = $this->workflowStatusHydrator->hydrate($placeConfig);
+                }
+            }
         }
 
         return $states;

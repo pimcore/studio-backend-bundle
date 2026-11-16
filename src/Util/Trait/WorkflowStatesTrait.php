@@ -23,16 +23,18 @@ use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowStatus;
 trait WorkflowStatesTrait
 {
     #[Property(
-        description: 'Workflow states visible in the header, only set in tree listings',
+        description: 'Workflow states visible in the header; '
+            . 'null outside tree listings and for elements the user may not view',
         type: 'array',
-        items: new Items(ref: WorkflowStatus::class)
+        items: new Items(ref: WorkflowStatus::class),
+        nullable: true
     )]
-    private array $workflowStates = [];
+    private ?array $workflowStates = null;
 
     /**
-     * @return WorkflowStatus[]
+     * @return WorkflowStatus[]|null
      */
-    public function getWorkflowStates(): array
+    public function getWorkflowStates(): ?array
     {
         return $this->workflowStates;
     }

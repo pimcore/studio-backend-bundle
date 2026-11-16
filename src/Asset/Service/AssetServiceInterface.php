@@ -42,6 +42,7 @@ interface AssetServiceInterface
 {
     /**
      * @throws InvalidFilterServiceTypeException|SearchException|InvalidQueryTypeException|InvalidFilterTypeException
+     * @throws DatabaseException
      */
     public function getAssets(ElementParameters $parameters): Collection;
 

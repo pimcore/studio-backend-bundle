@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Response\Property\AnyOfAs
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
@@ -60,6 +61,7 @@ final class TreeController extends AbstractApiController
 
     /**
      * @throws InvalidFilterServiceTypeException|SearchException|InvalidQueryTypeException|InvalidFilterTypeException
+     * @throws DatabaseException
      */
     #[Route('/assets/tree', name: 'pimcore_studio_api_assets_tree', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
@@ -92,6 +94,7 @@ final class TreeController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
