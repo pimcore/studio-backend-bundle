@@ -76,6 +76,12 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolver
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ProvidedOptionNarrowerInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ProvidedOptionNarrower
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SubGroupLayoutResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SubGroupLayoutResolver
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperService
 

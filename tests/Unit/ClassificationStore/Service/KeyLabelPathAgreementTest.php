@@ -20,11 +20,16 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\Ke
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricher;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifiers;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ProvidedOptionNarrower;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SubGroupLayoutResolver;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
@@ -105,7 +110,7 @@ final class KeyLabelPathAgreementTest extends Unit
     public function testEnrichingTheSamePayloadTwiceKeepsTheLabel(): void
     {
         $labels = [self::KEY_ID => [self::LANGUAGE => self::LABEL]];
-        $enricher = new ActiveGroupTitleEnricher(
+        $enricher = $this->createEnricher(
             $this->createLabelResolver($labels),
             $this->createDefinitionCacheResolver(self::COLUMN_TITLE),
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE)
@@ -133,7 +138,7 @@ final class KeyLabelPathAgreementTest extends Unit
         $labelLanguageResolver = $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE);
 
         $fieldDefinition = $this->createFieldDefinition();
-        (new ActiveGroupTitleEnricher($labelResolver, $definitionCacheResolver, $labelLanguageResolver))
+        $this->createEnricher($labelResolver, $definitionCacheResolver, $labelLanguageResolver)
             ->enrich($fieldDefinition);
 
         $keyLayout = $this
@@ -141,6 +146,32 @@ final class KeyLabelPathAgreementTest extends Unit
             ->getKeyLayout(new LayoutParameter('classificationStore'), self::KEY_ID, self::GROUP_ID);
 
         return [$this->keyTitle($fieldDefinition), $keyLayout->getTitle()];
+    }
+
+    /**
+     * The label is what this test is about, so the members the enricher fills beside it answer from
+     * doubles; GroupLayoutPathAgreementTest is where those are held against the layout endpoint.
+     *
+     * @throws Exception
+     */
+    private function createEnricher(
+        LabelResolverInterface $labelResolver,
+        DefinitionCacheResolverInterface $definitionCacheResolver,
+        LabelLanguageResolverInterface $labelLanguageResolver
+    ): ActiveGroupTitleEnricher {
+        $keyGroupLayoutService = $this->createMock(KeyGroupLayoutServiceInterface::class);
+        $keyGroupLayoutService
+            ->method('getKeyQualifiers')
+            ->willReturn(new KeyQualifiers(null, null, null, null, null));
+
+        return new ActiveGroupTitleEnricher(
+            $labelResolver,
+            $definitionCacheResolver,
+            $labelLanguageResolver,
+            $this->createMock(KeyRelationResolverInterface::class),
+            $keyGroupLayoutService,
+            new SubGroupLayoutResolver($this->createMock(SubGroupRepositoryInterface::class))
+        );
     }
 
     private function createKeyConfigResolver(string $titleColumn): KeyConfigResolverInterface
@@ -209,7 +240,8 @@ final class KeyLabelPathAgreementTest extends Unit
             $labelResolver,
             $labelLanguageResolver,
             new InMemoryKeyLocalizationResolver(),
-            new KeyQualifierResolver($serviceResolver)
+            new KeyQualifierResolver($serviceResolver),
+            new ProvidedOptionNarrower()
         );
     }
 

@@ -37,6 +37,8 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupServiceI
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ProvidedOptionNarrower;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SubGroupLayoutResolver;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
@@ -304,11 +306,12 @@ final class CollectionServiceTest extends Unit
                 $this->createLabelResolver(),
                 $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
                 new InMemoryKeyLocalizationResolver(),
-                new KeyQualifierResolver($serviceResolver)
+                new KeyQualifierResolver($serviceResolver),
+                new ProvidedOptionNarrower()
             ),
             new GroupLayoutHydrator(),
             $this->createMock(ClassDefinitionResolverInterface::class),
-            $this->createMock(SubGroupRepositoryInterface::class),
+            new SubGroupLayoutResolver($this->createMock(SubGroupRepositoryInterface::class)),
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
         );
     }

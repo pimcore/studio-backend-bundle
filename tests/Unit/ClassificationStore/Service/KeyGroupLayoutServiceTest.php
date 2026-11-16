@@ -24,10 +24,16 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\VariantLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ProvidedOptionNarrower;
+use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\MultiValue;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use Pimcore\Model\DataObject\Concrete;
 use ReflectionClass;
 use function array_column;
 use function array_map;
@@ -61,6 +67,29 @@ final class KeyGroupLayoutServiceTest extends Unit
     private const string COLUMN_TITLE = 'classificationstore.key.weight';
 
     private const string SUB_GROUP = '01JBQ8X9Z0ABCDEFGHJKMNPQRS';
+
+    private const string FIELD_NAME = 'classificationStore';
+
+    private const string SELECT = 'select';
+
+    private const string OPTIONS = 'options';
+
+    private const string FROM_JSON = 'getFieldDefinitionFromJson';
+
+    /**
+     * The vocabulary a key holds, or a provider hands over, in the order it is handed over.
+     */
+    private const array OPTION_VALUES = ['a', 'b', 'c', 'd', 'e'];
+
+    /**
+     * What every assignment below narrows to.
+     */
+    private const array SUBSET_VALUES = ['b', 'd'];
+
+    public function _before(): void
+    {
+        ConfigurableOptionsProvider::reset();
+    }
 
     /**
      * @throws Exception
@@ -248,41 +277,110 @@ final class KeyGroupLayoutServiceTest extends Unit
 
     public function testTheLayoutDefinitionIsBuiltFromTheOptionsTheAssignmentNarrowedTo(): void
     {
-        $options = array_map(
-            static fn (string $value): array => ['key' => strtoupper($value), 'value' => $value],
-            ['a', 'b', 'c', 'd', 'e']
-        );
-        $relation = new KeyGroupRelation();
-        $relation->setKeyId(self::KEY_ID);
-        $relation->setGroupId(self::GROUP_ID);
-        $relation->setType('select');
-        $relation->setDefinition(json_encode(['fieldtype' => 'select', 'options' => $options]));
-        $relation->setDefinitionOverride(['options' => [$options[1], $options[3]]]);
+        $relation = $this->relation($this->blob([self::OPTIONS => $this->options()]));
 
         $received = null;
         $serviceResolver = $this->createMock(ServiceResolverInterface::class);
         $serviceResolver
-            ->method('getFieldDefinitionFromJson')
+            ->method(self::FROM_JSON)
             ->willReturnCallback(static function (array $definition) use (&$received): Input {
                 $received = $definition;
 
                 return new Input();
             });
 
-        $service = new KeyGroupLayoutService(
-            $serviceResolver,
-            $this->createMock(KeyRelationResolverInterface::class),
-            new ConcreteObjectResolver(),
-            $this->createMock(KeyConfigResolverInterface::class),
-            $this->createLabelResolver([]),
-            $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
-            new InMemoryKeyLocalizationResolver(),
-            new KeyQualifierResolver($serviceResolver)
-        );
+        $this->createLayoutService($serviceResolver)->getLayoutDefinition($relation, self::FIELD_NAME);
 
-        $service->getLayoutDefinition($relation, 'classificationStore');
+        $this->assertSame(self::SUBSET_VALUES, $this->valuesOf($received[self::OPTIONS]));
+    }
 
-        $this->assertSame(['b', 'd'], array_column($received['options'], 'value'));
+    /**
+     * The regression this covers: the shared helper strips the subset off a definition whose list a
+     * provider fills, because the provider replaces the list wholesale a moment later. Core
+     * re-applies the subset to what the provider handed over
+     * ({@see \Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore::enrichLayoutDefinition()});
+     * this path did not, and offered the editor every option the configuration excludes.
+     */
+    public function testTheLayoutDefinitionNarrowsTheListTheProviderFilledIn(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+
+        $definition = $this->enrichedLayoutDefinition($this->providerBackedSelect());
+
+        $this->assertInstanceOf(Select::class, $definition);
+        $this->assertSame(self::SUBSET_VALUES, $this->valuesOf($definition->getOptions()));
+    }
+
+    /**
+     * The provider's default is reconciled against the narrowed list, so a group never offers a
+     * default its own subset excludes.
+     */
+    public function testADefaultTheSubsetExcludesIsDropped(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+        ConfigurableOptionsProvider::$defaultValue = 'e';
+
+        $definition = $this->enrichedLayoutDefinition($this->providerBackedSelect());
+
+        $this->assertInstanceOf(Select::class, $definition);
+        $this->assertNull($definition->getDefaultValue());
+    }
+
+    public function testADefaultTheSubsetKeepsSurvives(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+        ConfigurableOptionsProvider::$defaultValue = 'd';
+
+        $definition = $this->enrichedLayoutDefinition($this->providerBackedSelect());
+
+        $this->assertInstanceOf(Select::class, $definition);
+        $this->assertSame('d', $definition->getDefaultValue());
+    }
+
+    /**
+     * A provider reporting that its list is not static is re-resolved per edit and carries no
+     * subset, so core leaves it whole. Narrowing it here would differ from the group the editor
+     * renders through core.
+     */
+    public function testAListTheProviderReportsAsDynamicIsLeftWhole(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+        ConfigurableOptionsProvider::$staticOptions = false;
+
+        $definition = $this->enrichedLayoutDefinition($this->providerBackedSelect());
+
+        $this->assertInstanceOf(Select::class, $definition);
+        $this->assertSame(self::OPTION_VALUES, $this->valuesOf($definition->getOptions()));
+    }
+
+    /**
+     * An `encryptedField` forwards the enrichment to the type it wraps, which is where the provider
+     * ran and where the subset belongs.
+     */
+    public function testTheSubsetReachesTheTypeAWrapperDelegatesTo(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+
+        $delegate = $this->providerBackedSelect();
+        $wrapper = new EncryptedField();
+        $wrapper->setDelegate($delegate);
+
+        $this->enrichedLayoutDefinition($wrapper);
+
+        $this->assertSame(self::SUBSET_VALUES, $this->valuesOf($delegate->getOptions()));
+    }
+
+    /**
+     * An assignment that narrows nothing leaves the provider's list exactly as it was handed over.
+     */
+    public function testAnAssignmentWithoutASubsetLeavesTheProvidersListAlone(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+
+        $definition = $this->enrichedLayoutDefinition($this->providerBackedSelect(), null);
+
+        $this->assertInstanceOf(Select::class, $definition);
+        $this->assertSame(self::OPTION_VALUES, $this->valuesOf($definition->getOptions()));
     }
 
     /**
@@ -348,7 +446,114 @@ final class KeyGroupLayoutServiceTest extends Unit
     ): KeyLayout {
         return $this
             ->createService($keyConfig, $labels, $userLanguage, $subGroup, $localized)
-            ->getKeyLayout(new LayoutParameter('classificationStore'), self::KEY_ID, self::GROUP_ID);
+            ->getKeyLayout(new LayoutParameter(self::FIELD_NAME), self::KEY_ID, self::GROUP_ID);
+    }
+
+    /**
+     * The options of {@see self::OPTION_VALUES}, or of the values named, each labelled by its own
+     * value in upper case.
+     *
+     * @param string[] $values
+     *
+     * @return array<int, array<string, string>>
+     */
+    private function options(array $values = self::OPTION_VALUES): array
+    {
+        return array_map(
+            static fn (string $value): array => ['key' => strtoupper($value), 'value' => $value],
+            $values
+        );
+    }
+
+    /**
+     * @param array<int, array<string, mixed>>|null $options
+     *
+     * @return string[]
+     */
+    private function valuesOf(?array $options): array
+    {
+        return array_column($options ?? [], 'value');
+    }
+
+    /**
+     * @param array<string, mixed> $members
+     */
+    private function blob(array $members): string
+    {
+        return (string)json_encode(['fieldtype' => self::SELECT] + $members);
+    }
+
+    /**
+     * A `select` assignment of the key, narrowing the list to {@see self::SUBSET_VALUES} unless told
+     * otherwise.
+     *
+     * @param string[]|null $subset
+     */
+    private function relation(string $definition, ?array $subset = self::SUBSET_VALUES): KeyGroupRelation
+    {
+        $relation = new KeyGroupRelation();
+        $relation->setKeyId(self::KEY_ID);
+        $relation->setGroupId(self::GROUP_ID);
+        $relation->setType(self::SELECT);
+        $relation->setDefinition($definition);
+        $relation->setDefinitionOverride(
+            $subset === null ? null : [self::OPTIONS => $this->options($subset)]
+        );
+
+        return $relation;
+    }
+
+    /**
+     * A select that holds no list of its own and leaves it to {@see ConfigurableOptionsProvider}.
+     */
+    private function providerBackedSelect(): Select
+    {
+        $select = new Select();
+        $select->setName(self::KEY_NAME);
+        $select->setOptionsProviderClass(ConfigurableOptionsProvider::class);
+
+        return $select;
+    }
+
+    /**
+     * The definition the layout path hands over for a provider-backed key, enrichment included -
+     * which is what an object in context buys the caller.
+     *
+     * @param string[]|null $subset
+     */
+    private function enrichedLayoutDefinition(Data $definition, ?array $subset = self::SUBSET_VALUES): Data
+    {
+        $relation = $this->relation(
+            $this->blob(['optionsProviderClass' => ConfigurableOptionsProvider::class]),
+            $subset
+        );
+
+        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
+        $serviceResolver->method(self::FROM_JSON)->willReturn($definition);
+
+        $object = $this->createMock(Concrete::class);
+        $object->method('getClass')->willReturn(new ClassDefinition());
+
+        return $this->createLayoutService($serviceResolver)->getLayoutDefinition(
+            $relation,
+            self::FIELD_NAME,
+            $object
+        );
+    }
+
+    private function createLayoutService(ServiceResolverInterface $serviceResolver): KeyGroupLayoutService
+    {
+        return new KeyGroupLayoutService(
+            $serviceResolver,
+            $this->createMock(KeyRelationResolverInterface::class),
+            new ConcreteObjectResolver(),
+            $this->createMock(KeyConfigResolverInterface::class),
+            $this->createLabelResolver([]),
+            $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
+            new InMemoryKeyLocalizationResolver(),
+            new KeyQualifierResolver($serviceResolver),
+            new ProvidedOptionNarrower()
+        );
     }
 
     /**
@@ -380,7 +585,7 @@ final class KeyGroupLayoutServiceTest extends Unit
 
         $serviceResolver = $this->createMock(ServiceResolverInterface::class);
         $serviceResolver
-            ->method('getFieldDefinitionFromJson')
+            ->method(self::FROM_JSON)
             ->willReturnCallback(static function (array $definition, string $type): Input|MultiValue {
                 if ($type !== 'multiValue') {
                     return new Input();
@@ -414,7 +619,8 @@ final class KeyGroupLayoutServiceTest extends Unit
             $this->createLabelResolver($labels),
             $this->createLabelLanguageResolver($userLanguage, self::DEFAULT_LANGUAGE),
             $keyLocalizationResolver,
-            new KeyQualifierResolver($serviceResolver)
+            new KeyQualifierResolver($serviceResolver),
+            new ProvidedOptionNarrower()
         );
     }
 }

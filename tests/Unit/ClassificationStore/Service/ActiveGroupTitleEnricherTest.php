@@ -15,14 +15,28 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Serv
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\DefinitionCacheResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\SubGroupLayout;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\VariantLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricher;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifiers;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SubGroupLayoutResolver;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface;
+use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
 use function array_column;
+use function array_flip;
+use function array_intersect_key;
 use function array_keys;
+use function array_map;
 
 /**
  * Guards the slots this bundle writes into the activeGroupDefinitions payload core owns: a change to
@@ -58,6 +72,25 @@ final class ActiveGroupTitleEnricherTest extends Unit
     private const string COLUMN_TITLE = 'Column title';
 
     private const string DEFINITION_TITLE = 'Definition title';
+
+    private const int STORE_ID = 7;
+
+    private const string SUB_GROUP_A = '01JBQ8X9Z0ABCDEFGHJKMNPQRS';
+
+    private const string SUB_GROUP_B = '01JBQ8X9Z0ABCDEFGHJKMNPQRT';
+
+    private const string NAME_DIMENSIONS = 'Dimensions';
+
+    private const string NAME_APPEARANCE = 'Appearance';
+
+    /** The members a key publishes about its qualified values, beside its sub group. */
+    private const array QUALIFIER_MEMBERS = [
+        'variants',
+        'multiValue',
+        'maximum',
+        'defaultVariant',
+        'defaultVariantLabel',
+    ];
 
     public function testEveryKeyOfAnActiveGroupCarriesATitle(): void
     {
@@ -211,7 +244,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
             self::GROUP_ID => $this->createGroupWithKeys([$this->createKey(self::KEY_ID)]),
         ]);
 
-        $enricher = new ActiveGroupTitleEnricher(
+        $enricher = $this->newEnricher(
             $this->createLabelResolver([self::KEY_ID => [self::LANGUAGE => self::COLUMN_TITLE]]),
             $this->createDefinitionCacheResolver([]),
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE)
@@ -235,7 +268,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
             ]),
         ]);
 
-        $enricher = new ActiveGroupTitleEnricher(
+        $enricher = $this->newEnricher(
             $this->createLabelResolver([self::KEY_ID => [self::LANGUAGE => 'Gewicht']]),
             $this->createDefinitionCacheResolver([
                 $this->createKeyConfig(self::KEY_ID, self::KEY_NAME, self::COLUMN_TITLE),
@@ -261,7 +294,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
             ]),
         ]);
 
-        $enricher = new ActiveGroupTitleEnricher(
+        $enricher = $this->newEnricher(
             $this->createLabelResolver(),
             $this->createDefinitionCacheResolver([
                 $this->createKeyConfig(self::KEY_ID, self::KEY_NAME, self::COLUMN_TITLE),
@@ -289,7 +322,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
             self::GROUP_ID => $this->createGroupWithKeys([$this->createKey(self::KEY_ID)]),
         ]);
 
-        $enricher = new ActiveGroupTitleEnricher(
+        $enricher = $this->newEnricher(
             $this->createLabelResolver([self::KEY_ID => [self::DEFAULT_LANGUAGE => self::COLUMN_TITLE]]),
             $this->createDefinitionCacheResolver([$this->createKeyConfig(self::KEY_ID, self::KEY_NAME)]),
             $this->createLabelLanguageResolver(null, self::DEFAULT_LANGUAGE)
@@ -305,10 +338,184 @@ final class ActiveGroupTitleEnricherTest extends Unit
     }
 
     /**
+     * The five members a key declares about its qualified values are published beside the title, off
+     * the key configuration the layout has already loaded, so an already assigned group renders the
+     * variant editors the group layout endpoint renders for a freshly added one.
+     */
+    public function testEveryKeyCarriesWhatItsConfigurationDeclaresAboutItsQualifiedValues(): void
+    {
+        $qualifiers = new KeyQualifiers(
+            variants: [new VariantLayout('metric', 'Metric'), new VariantLayout('imperial')],
+            multiValue: true,
+            maximum: 3,
+            defaultVariant: false,
+            defaultVariantLabel: 'Standard',
+        );
+
+        $fieldDefinition = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroupWithKeys([$this->createKey(self::KEY_ID)]),
+        ]);
+
+        $this->createEnricher(self::LABELS, null, $this->createKeyGroupLayoutService($qualifiers))
+            ->enrich($fieldDefinition);
+
+        $key = $this->keys($fieldDefinition, self::GROUP_ID)[0];
+
+        $this->assertEquals($qualifiers->getVariants(), $key['variants']);
+        $this->assertTrue($key['multiValue']);
+        $this->assertSame(3, $key['maximum']);
+        $this->assertFalse($key['defaultVariant']);
+        $this->assertSame('Standard', $key['defaultVariantLabel']);
+    }
+
+    /**
+     * A key whose configuration the layout never cached reports null on all five, rather than the
+     * empty list and false a client would read as a key that permits no variant.
+     */
+    public function testAKeyWithoutAConfigurationReportsNullOnEveryQualifierMember(): void
+    {
+        $fieldDefinition = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroupWithKeys([$this->createKey(self::KEY_ID)]),
+        ]);
+
+        $this->newEnricher(
+            $this->createLabelResolver(),
+            $this->createDefinitionCacheResolver([]),
+            $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE)
+        )->enrich($fieldDefinition);
+
+        $key = $this->keys($fieldDefinition, self::GROUP_ID)[0];
+
+        foreach (self::QUALIFIER_MEMBERS as $member) {
+            $this->assertArrayHasKey($member, $key);
+            $this->assertNull($key[$member]);
+        }
+    }
+
+    /**
+     * The sub group a key sits in belongs to the assignment rather than to the key, so it is read off
+     * the relation; the payload core builds carries no trace of it.
+     */
+    public function testEveryKeyCarriesTheSubGroupOfItsRelation(): void
+    {
+        $fieldDefinition = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroupWithKeys([
+                $this->createKey(self::KEY_ID),
+                $this->createKey(12),
+            ]),
+        ]);
+
+        $this->createEnricherWithRelations([
+            self::KEY_ID => $this->createRelation(self::KEY_ID, self::SUB_GROUP_A),
+            12 => $this->createRelation(12),
+        ])->enrich($fieldDefinition);
+
+        $this->assertSame([self::SUB_GROUP_A, null], $this->keySubGroups($fieldDefinition));
+    }
+
+    /**
+     * A key the group no longer relates to keeps every other slot and reports no sub group, instead
+     * of taking the one of whichever relation sits in its position.
+     */
+    public function testAKeyWithoutARelationReportsNoSubGroup(): void
+    {
+        $fieldDefinition = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroupWithKeys([$this->createKey(self::KEY_ID)]),
+        ]);
+
+        $this->createEnricherWithRelations([12 => $this->createRelation(12, self::SUB_GROUP_A)])
+            ->enrich($fieldDefinition);
+
+        $this->assertSame([null], $this->keySubGroups($fieldDefinition));
+        $this->assertNoSlotIsEmpty($fieldDefinition);
+    }
+
+    /**
+     * The group carries the sub groups its relations name, resolved from the vocabulary of the store
+     * the field is bound to and ordered by the first key carrying each, which is the order the editor
+     * renders its sections in.
+     */
+    public function testTheGroupCarriesTheSubGroupsOfItsRelations(): void
+    {
+        $fieldDefinition = $this->createFieldDefinition([self::GROUP_ID => $this->createGroup()]);
+
+        // the relations arrive in sorter then id order, and B's first key comes before A's
+        $this->createEnricherWithRelations([
+            13 => $this->createRelation(13, self::SUB_GROUP_B),
+            11 => $this->createRelation(11, self::SUB_GROUP_A),
+            12 => $this->createRelation(12),
+        ])->enrich($fieldDefinition);
+
+        $this->assertSame(
+            [self::NAME_DIMENSIONS, self::NAME_APPEARANCE],
+            array_map(
+                static fn (SubGroupLayout $subGroup): string => $subGroup->getName(),
+                $this->subGroups($fieldDefinition)
+            )
+        );
+    }
+
+    public function testAGroupWhoseRelationsNameNoSubGroupCarriesAnEmptyList(): void
+    {
+        $fieldDefinition = $this->createFieldDefinition([self::GROUP_ID => $this->createGroup()]);
+
+        $this->createEnricherWithRelations([11 => $this->createRelation(11)])->enrich($fieldDefinition);
+
+        $this->assertSame([], $this->subGroups($fieldDefinition));
+    }
+
+    /**
+     * The relations of every active group are read with one statement, the way the labels are: a
+     * layout with several active groups costs one relation query, not one per group.
+     */
+    public function testTheRelationsOfEveryGroupAreReadWithOneStatement(): void
+    {
+        $fieldDefinition = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroup(),
+            self::SECOND_GROUP_ID => $this->createGroupWithKeys(
+                [$this->createKey(21)],
+                self::SECOND_GROUP_ID
+            ),
+        ]);
+
+        $keyRelationResolver = $this->createMock(KeyRelationResolverInterface::class);
+        $keyRelationResolver
+            ->expects($this->once())
+            ->method('getByGroups')
+            ->with([self::GROUP_ID, self::SECOND_GROUP_ID])
+            ->willReturn([]);
+        $keyRelationResolver
+            ->expects($this->never())
+            ->method('getByGroup');
+
+        $this->createEnricher(self::LABELS, $keyRelationResolver)->enrich($fieldDefinition);
+
+        $this->assertNoSlotIsEmpty($fieldDefinition);
+    }
+
+    /**
+     * A field definition with no active group reads nothing at all: neither the relations nor the
+     * store of a layout that renders no classification store group.
+     */
+    public function testAFieldWithoutActiveGroupsReadsNoRelations(): void
+    {
+        $keyRelationResolver = $this->createMock(KeyRelationResolverInterface::class);
+        $keyRelationResolver
+            ->expects($this->never())
+            ->method('getByGroups');
+
+        $this->createEnricher(self::LABELS, $keyRelationResolver)->enrich($this->createFieldDefinition([]));
+    }
+
+    /**
      * @param array<int, string> $labels key id => label stored for the user's language
      */
-    private function createEnricher(array $labels = self::LABELS): ActiveGroupTitleEnricher
-    {
+    private function createEnricher(
+        array $labels = self::LABELS,
+        ?KeyRelationResolverInterface $keyRelationResolver = null,
+        ?KeyGroupLayoutServiceInterface $keyGroupLayoutService = null,
+        ?SubGroupRepositoryInterface $subGroupRepository = null,
+    ): ActiveGroupTitleEnricher {
         $labelsByKeyId = [];
         $keyConfigs = [];
 
@@ -320,11 +527,113 @@ final class ActiveGroupTitleEnricherTest extends Unit
             }
         }
 
-        return new ActiveGroupTitleEnricher(
+        return $this->newEnricher(
             $this->createLabelResolver($labelsByKeyId),
             $this->createDefinitionCacheResolver($keyConfigs),
-            $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE)
+            $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
+            $keyRelationResolver,
+            $keyGroupLayoutService,
+            $subGroupRepository
         );
+    }
+
+    /**
+     * An enricher whose group answers with the given relations, over the vocabulary of the store the
+     * field definition is bound to.
+     *
+     * @param KeyGroupRelation[] $relations keyed by key id, in relation order
+     */
+    private function createEnricherWithRelations(array $relations): ActiveGroupTitleEnricher
+    {
+        $keyRelationResolver = $this->createMock(KeyRelationResolverInterface::class);
+        $keyRelationResolver
+            ->method('getByGroups')
+            ->willReturn([self::GROUP_ID => $relations]);
+
+        return $this->createEnricher(
+            self::LABELS,
+            $keyRelationResolver,
+            null,
+            $this->createSubGroupRepository()
+        );
+    }
+
+    private function newEnricher(
+        LabelResolverInterface $labelResolver,
+        DefinitionCacheResolverInterface $definitionCacheResolver,
+        LabelLanguageResolverInterface $labelLanguageResolver,
+        ?KeyRelationResolverInterface $keyRelationResolver = null,
+        ?KeyGroupLayoutServiceInterface $keyGroupLayoutService = null,
+        ?SubGroupRepositoryInterface $subGroupRepository = null,
+    ): ActiveGroupTitleEnricher {
+        return new ActiveGroupTitleEnricher(
+            $labelResolver,
+            $definitionCacheResolver,
+            $labelLanguageResolver,
+            $keyRelationResolver ?? $this->createMock(KeyRelationResolverInterface::class),
+            $keyGroupLayoutService ?? $this->createKeyGroupLayoutService(),
+            new SubGroupLayoutResolver(
+                $subGroupRepository ?? $this->createMock(SubGroupRepositoryInterface::class)
+            )
+        );
+    }
+
+    /**
+     * KeyQualifiers is final, so the qualifiers a key reports are stubbed rather than auto-doubled.
+     */
+    private function createKeyGroupLayoutService(?KeyQualifiers $qualifiers = null): KeyGroupLayoutServiceInterface
+    {
+        $keyGroupLayoutService = $this->createMock(KeyGroupLayoutServiceInterface::class);
+        $keyGroupLayoutService
+            ->method('getKeyQualifiers')
+            ->willReturn($qualifiers ?? new KeyQualifiers(null, null, null, null, null));
+
+        return $keyGroupLayoutService;
+    }
+
+    /**
+     * The vocabulary is read for the store the field definition names, never for another.
+     */
+    private function createSubGroupRepository(): SubGroupRepositoryInterface
+    {
+        $vocabulary = [
+            self::SUB_GROUP_A => $this->createSubGroupConfig(self::SUB_GROUP_A, self::NAME_APPEARANCE),
+            self::SUB_GROUP_B => $this->createSubGroupConfig(self::SUB_GROUP_B, self::NAME_DIMENSIONS),
+        ];
+
+        $subGroupRepository = $this->createMock(SubGroupRepositoryInterface::class);
+        $subGroupRepository
+            ->method('getByIdentifiers')
+            ->with(self::STORE_ID, $this->anything())
+            ->willReturnCallback(
+                static fn (int $storeId, array $identifiers): array => array_intersect_key(
+                    $vocabulary,
+                    array_flip($identifiers)
+                )
+            );
+
+        return $subGroupRepository;
+    }
+
+    private function createSubGroupConfig(string $identifier, string $name): SubGroupConfig
+    {
+        $config = new SubGroupConfig();
+        $config->setIdentifier($identifier);
+        $config->setName($name);
+        $config->setDescription('Description of ' . $name);
+
+        return $config;
+    }
+
+    private function createRelation(int $keyId, ?string $subGroup = null): KeyGroupRelation
+    {
+        $relation = new KeyGroupRelation();
+        $relation->setKeyId($keyId);
+        $relation->setGroupId(self::GROUP_ID);
+        $relation->setName(self::KEY_NAMES[$keyId]);
+        $relation->setSubGroup($subGroup);
+
+        return $relation;
     }
 
     /**
@@ -366,6 +675,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
     {
         $fieldDefinition = new Classificationstore();
         $fieldDefinition->setName('classificationStore');
+        $fieldDefinition->setStoreId(self::STORE_ID);
         $fieldDefinition->activeGroupDefinitions = $activeGroupDefinitions;
 
         return $fieldDefinition;
@@ -388,11 +698,11 @@ final class ActiveGroupTitleEnricherTest extends Unit
      *
      * @return array<string, mixed>
      */
-    private function createGroupWithKeys(array $keys): array
+    private function createGroupWithKeys(array $keys, int $groupId = self::GROUP_ID): array
     {
         return [
             'name' => self::GROUP_NAME,
-            'id' => self::GROUP_ID,
+            'id' => $groupId,
             'description' => 'Technical attributes',
             'keys' => $keys,
         ];
@@ -428,7 +738,34 @@ final class ActiveGroupTitleEnricherTest extends Unit
      */
     private function keyTitles(Classificationstore $fieldDefinition, int|string $groupIndex): array
     {
-        return array_column($fieldDefinition->activeGroupDefinitions[$groupIndex]['keys'], 'title');
+        return array_column($this->keys($fieldDefinition, $groupIndex), 'title');
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function keys(Classificationstore $fieldDefinition, int|string $groupIndex): array
+    {
+        return $fieldDefinition->activeGroupDefinitions[$groupIndex]['keys'];
+    }
+
+    /**
+     * @return array<int, ?string> the sub group identifier of every key of the first group
+     */
+    private function keySubGroups(Classificationstore $fieldDefinition): array
+    {
+        return array_map(
+            static fn (array $key): ?string => $key['subGroup'],
+            $this->keys($fieldDefinition, self::GROUP_ID)
+        );
+    }
+
+    /**
+     * @return SubGroupLayout[]
+     */
+    private function subGroups(Classificationstore $fieldDefinition): array
+    {
+        return $fieldDefinition->activeGroupDefinitions[self::GROUP_ID]['subGroups'];
     }
 
     private function assertNoSlotIsEmpty(Classificationstore $fieldDefinition): void
