@@ -415,6 +415,123 @@ final class KeyGroupLayoutServiceTest extends Unit
     }
 
     /**
+     * The regression this covers: the grid's field-filter panel asks for a layout with no object in
+     * context, and neither the enrichment nor the subset was reached, so the dropdown was handed an
+     * empty list and offered "Empty" alone. The stored blob is no fallback - the shared helper
+     * strips the option member off a definition whose list a provider fills.
+     */
+    public function testTheLayoutDefinitionNarrowsTheProvidersListWithNoObjectInContext(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+
+        $this->assertSame(
+            self::SUBSET_VALUES,
+            $this->valuesOf($this->enrichedSelectDefinition(withObject: false)->getOptions())
+        );
+    }
+
+    /**
+     * The two paths answer with the same list, which is the whole point of enriching without an
+     * object: one endpoint may not offer the editor one vocabulary and the filter panel another.
+     */
+    public function testTheObjectLessPathAnswersTheSameListAsTheObjectPath(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+        $withObject = $this->valuesOf($this->enrichedSelectDefinition()->getOptions());
+
+        ConfigurableOptionsProvider::$options = $this->options();
+        $withoutObject = $this->valuesOf($this->enrichedSelectDefinition(withObject: false)->getOptions());
+
+        $this->assertSame($withObject, $withoutObject);
+        $this->assertSame(self::SUBSET_VALUES, $withoutObject);
+    }
+
+    /**
+     * The provider's default is reconciled against the narrowed list without an object too.
+     */
+    public function testADefaultTheSubsetExcludesIsDroppedWithoutAnObject(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+        ConfigurableOptionsProvider::$defaultValue = self::EXCLUDED_VALUE;
+
+        $this->assertNull($this->enrichedSelectDefinition(withObject: false)->getDefaultValue());
+    }
+
+    /**
+     * The `multiselect` half of the object-less path, as {@see ProvidedOptionNarrower} narrows both.
+     */
+    public function testTheLayoutDefinitionNarrowsAMultiselectWithNoObjectInContext(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+
+        $this->assertSame(
+            self::SUBSET_VALUES,
+            $this->valuesOf($this->enrichedMultiselectDefinition(withObject: false)->getOptions())
+        );
+    }
+
+    /**
+     * A provider reporting that its list is not static is re-resolved per edit and carries no subset,
+     * so core leaves it whole - object or no object. Narrowing it here would make this endpoint
+     * disagree with the group the editor renders through core, which is what this fix is about.
+     */
+    public function testAListTheProviderReportsAsDynamicIsLeftWholeWithoutAnObject(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+        ConfigurableOptionsProvider::$staticOptions = false;
+
+        $this->assertSame(
+            self::OPTION_VALUES,
+            $this->valuesOf($this->enrichedSelectDefinition(withObject: false)->getOptions())
+        );
+    }
+
+    /**
+     * The dynamic list is the same whichever path asked for it.
+     */
+    public function testADynamicListIsLeftWholeOnBothPaths(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+        ConfigurableOptionsProvider::$staticOptions = false;
+
+        $this->assertSame(
+            $this->valuesOf($this->enrichedSelectDefinition()->getOptions()),
+            $this->valuesOf($this->enrichedSelectDefinition(withObject: false)->getOptions())
+        );
+    }
+
+    /**
+     * A provider that cannot answer leaves the layout as it stands rather than failing the request,
+     * the tolerance {@see \Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyOptionsResolver}
+     * already publishes an unresolved key with.
+     */
+    public function testAProviderThatRaisesLeavesTheLayoutStandingWithoutAnObject(): void
+    {
+        $definition = $this->enrichedLayoutDefinition(
+            $this->providerBackedSelect(RaisingOptionsProvider::class),
+            withObject: false
+        );
+
+        $this->assertInstanceOf(Select::class, $definition);
+        $this->assertSame([], $this->valuesOf($definition->getOptions()));
+    }
+
+    /**
+     * A key that names no provider at all is handed over as it was stored, and asks nothing.
+     */
+    public function testAKeyWithoutAProviderIsHandedOverUnchangedWithoutAnObject(): void
+    {
+        $select = new Select();
+        $select->setName(self::KEY_NAME);
+        $select->setOptions($this->options(self::SUBSET_VALUES));
+
+        $definition = $this->enrichedLayoutDefinition($select, withObject: false);
+
+        $this->assertInstanceOf(Select::class, $definition);
+        $this->assertSame(self::SUBSET_VALUES, $this->valuesOf($definition->getOptions()));
+    }
+
+    /**
      * An `encryptedField` forwards the enrichment to the type it wraps, which is where the provider
      * ran and where the subset belongs.
      */
@@ -432,6 +549,23 @@ final class KeyGroupLayoutServiceTest extends Unit
     }
 
     /**
+     * The wrapper delegates without an object too: core's object-less entry point is implemented by
+     * the type that answers for the value, not by the `encryptedField` around it.
+     */
+    public function testTheSubsetReachesTheDelegateOfAWrapperWithoutAnObject(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+
+        $delegate = $this->providerBackedSelect();
+        $wrapper = new EncryptedField();
+        $wrapper->setDelegate($delegate);
+
+        $this->enrichedLayoutDefinition($wrapper, withObject: false);
+
+        $this->assertSame(self::SUBSET_VALUES, $this->valuesOf($delegate->getOptions()));
+    }
+
+    /**
      * An assignment that narrows nothing leaves the provider's list exactly as it was handed over.
      */
     public function testAnAssignmentWithoutASubsetLeavesTheProvidersListAlone(): void
@@ -439,6 +573,20 @@ final class KeyGroupLayoutServiceTest extends Unit
         ConfigurableOptionsProvider::$options = $this->options();
 
         $definition = $this->enrichedLayoutDefinition($this->providerBackedSelect(), null);
+
+        $this->assertInstanceOf(Select::class, $definition);
+        $this->assertSame(self::OPTION_VALUES, $this->valuesOf($definition->getOptions()));
+    }
+
+    /**
+     * An assignment that narrows nothing still has the provider asked for its list without an
+     * object: the enrichment is what fills the list, and the subset is a second, separate step.
+     */
+    public function testAnAssignmentWithoutASubsetStillGetsTheProvidersListWithoutAnObject(): void
+    {
+        ConfigurableOptionsProvider::$options = $this->options();
+
+        $definition = $this->enrichedLayoutDefinition($this->providerBackedSelect(), null, withObject: false);
 
         $this->assertInstanceOf(Select::class, $definition);
         $this->assertSame(self::OPTION_VALUES, $this->valuesOf($definition->getOptions()));
@@ -570,11 +718,11 @@ final class KeyGroupLayoutServiceTest extends Unit
     /**
      * A select that holds no list of its own and leaves it to {@see ConfigurableOptionsProvider}.
      */
-    private function providerBackedSelect(): Select
+    private function providerBackedSelect(string $providerClass = ConfigurableOptionsProvider::class): Select
     {
         $select = new Select();
         $select->setName(self::KEY_NAME);
-        $select->setOptionsProviderClass(ConfigurableOptionsProvider::class);
+        $select->setOptionsProviderClass($providerClass);
 
         return $select;
     }
@@ -594,11 +742,12 @@ final class KeyGroupLayoutServiceTest extends Unit
     /**
      * What a provider-backed `multiselect` assignment hands the editor, narrowed and typed.
      */
-    private function enrichedMultiselectDefinition(): Multiselect
+    private function enrichedMultiselectDefinition(bool $withObject = true): Multiselect
     {
         $definition = $this->enrichedLayoutDefinition(
             $this->providerBackedMultiselect(),
-            type: self::MULTISELECT
+            type: self::MULTISELECT,
+            withObject: $withObject
         );
 
         $this->assertInstanceOf(Multiselect::class, $definition);
@@ -607,15 +756,28 @@ final class KeyGroupLayoutServiceTest extends Unit
     }
 
     /**
+     * The `select` counterpart of {@see self::enrichedMultiselectDefinition()}.
+     */
+    private function enrichedSelectDefinition(bool $withObject = true): Select
+    {
+        $definition = $this->enrichedLayoutDefinition($this->providerBackedSelect(), withObject: $withObject);
+
+        $this->assertInstanceOf(Select::class, $definition);
+
+        return $definition;
+    }
+
+    /**
      * The definition the layout path hands over for a provider-backed key, enrichment included -
-     * which is what an object in context buys the caller.
+     * with an object in context or, as the grid's field-filter panel asks for it, without one.
      *
      * @param string[]|null $subset
      */
     private function enrichedLayoutDefinition(
         Data $definition,
         ?array $subset = self::SUBSET_VALUES,
-        string $type = self::SELECT
+        string $type = self::SELECT,
+        bool $withObject = true
     ): Data {
         $relation = $this->relation(
             $this->blob(['optionsProviderClass' => ConfigurableOptionsProvider::class], $type),
@@ -626,8 +788,12 @@ final class KeyGroupLayoutServiceTest extends Unit
         $serviceResolver = $this->createMock(ServiceResolverInterface::class);
         $serviceResolver->method(self::FROM_JSON)->willReturn($definition);
 
-        $object = $this->createMock(Concrete::class);
-        $object->method('getClass')->willReturn(new ClassDefinition());
+        $object = null;
+
+        if ($withObject) {
+            $object = $this->createMock(Concrete::class);
+            $object->method('getClass')->willReturn(new ClassDefinition());
+        }
 
         return $this->createLayoutService($serviceResolver)->getLayoutDefinition(
             $relation,
