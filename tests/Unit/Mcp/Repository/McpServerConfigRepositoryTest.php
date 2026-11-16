@@ -76,7 +76,7 @@ final class McpServerConfigRepositoryTest extends Unit
                 return [null, null];
             }
 
-            public function fetchAllKeys(): array
+            public function fetchAllKeys(bool $loadEntries = true): array
             {
                 return array_values(array_unique([...array_keys($this->data), ...array_keys($this->otherLocation)]));
             }
