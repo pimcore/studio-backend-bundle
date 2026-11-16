@@ -102,6 +102,25 @@ interface ArtifactEntryWriterInterface
     public function writeKey(ApplyContext $context, ?KeyConfig $target, array $entry): void;
 
     /**
+     * The collection to group section, whole: walked, matched and written
+     * ({@see ArtifactRelationWriterInterface::reconcileCollectionRelations()}).
+     *
+     * @throws ElementSavingFailedException
+     * @throws InvalidArgumentException
+     */
+    public function reconcileCollectionRelations(ApplyContext $context, ArtifactDocument $document): void;
+
+    /**
+     * The key assignment section, whole
+     * ({@see ArtifactRelationWriterInterface::reconcileKeyAssignments()}).
+     *
+     * @throws ElementSavingFailedException
+     * @throws InvalidArgumentException
+     * @throws NotFoundException
+     */
+    public function reconcileKeyAssignments(ApplyContext $context, ArtifactDocument $document): void;
+
+    /**
      * One collection to group relation the target does not carry.
      *
      * @param array<string, mixed> $entry

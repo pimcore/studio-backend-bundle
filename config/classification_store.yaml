@@ -249,6 +249,15 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParserInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\IdentifierGeneratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\IdentifierGenerator
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDuplicatorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDuplicator
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreMemberPurgerInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreMemberPurger
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcherInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcher
 

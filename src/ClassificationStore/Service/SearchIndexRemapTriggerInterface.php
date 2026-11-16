@@ -30,6 +30,19 @@ interface SearchIndexRemapTriggerInterface
     public function noteFlagChange(int $storeId, ?string $definitionBefore, ?string $definitionAfter): void;
 
     /**
+     * Notes this store's mapping as stale for a reason no pair of definitions describes - a key
+     * that is GONE rather than one whose flag moved. Hands nothing over either, and the note it
+     * takes is the same note: one per store, however many of its keys earned it.
+     *
+     * {@see self::noteFlagChange()} cannot be asked for a removal and may not be. A key that is
+     * gone has no definition left, and a definition of null reads as indexed
+     * ({@see SearchIndexFlagResolverInterface::isIndexed()}), so the pair of a removed INDEXED key
+     * compares equal and notes nothing - which is exactly the removal the remap exists for - while
+     * the pair of a removed excluded one notes a change that never happened.
+     */
+    public function noteMappingStale(int $storeId): void;
+
+    /**
      * Hands one remap to the queue per search index the noted stores reach, skipping an index a
      * remap is already queued and unprocessed for, and forgets the notes. A unit of work that noted
      * nothing hands over nothing.

@@ -225,6 +225,22 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
     /**
      * {@inheritdoc}
      */
+    public function reconcileCollectionRelations(ApplyContext $context, ArtifactDocument $document): void
+    {
+        $this->relationWriter->reconcileCollectionRelations($context, $document);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function reconcileKeyAssignments(ApplyContext $context, ArtifactDocument $document): void
+    {
+        $this->relationWriter->reconcileKeyAssignments($context, $document);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function createCollectionRelation(ApplyContext $context, string $entryKey, array $entry): void
     {
         $this->relationWriter->createCollectionRelation($context, $entryKey, $entry);

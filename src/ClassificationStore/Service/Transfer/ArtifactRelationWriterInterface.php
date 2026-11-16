@@ -31,6 +31,28 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 interface ArtifactRelationWriterInterface
 {
     /**
+     * The collection to group section: the store's relation rows are walked, each matched against
+     * the entry its resolved pair of endpoint identifiers names, and every entry the walk did not
+     * reach is created ({@see self::createCollectionRelation()}). A row naming no entry is target
+     * only; one whose sorter already agrees is unchanged.
+     *
+     * @throws ElementSavingFailedException
+     * @throws InvalidArgumentException
+     */
+    public function reconcileCollectionRelations(ApplyContext $context, ArtifactDocument $document): void;
+
+    /**
+     * The key assignment section, walked and matched the way
+     * {@see self::reconcileCollectionRelations()} is. Both the matched rows and the entries no row
+     * claimed are written by {@see self::writeKeyAssignment()}, which decides the outcome of each.
+     *
+     * @throws ElementSavingFailedException
+     * @throws InvalidArgumentException
+     * @throws NotFoundException
+     */
+    public function reconcileKeyAssignments(ApplyContext $context, ArtifactDocument $document): void;
+
+    /**
      * One collection to group relation the target does not carry.
      *
      * @param array<string, mixed> $entry

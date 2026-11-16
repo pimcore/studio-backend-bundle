@@ -20,14 +20,20 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationRe
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyReport;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilderInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDocument;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDuplicator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\IdentifierGeneratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ReconcilerInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreTransferService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactField;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
+use function array_keys;
 use function json_encode;
 
 /**
@@ -47,6 +53,24 @@ final class StoreTransferServiceTest extends Unit
     private const string BACKFILL_COMMAND = 'pimcore:classificationstore:backfill-identifiers';
 
     private const string GROUP_ENTRY = 'group "Measurements"';
+
+    private const string GENERATED_IDENTIFIER = '01GENERATED';
+
+    private const string FOREIGN_STORE_IDENTIFIER = '01ELSEWHERE';
+
+    private const string GROUP_IDENTIFIER = '01GROUP';
+
+    private const string GROUP_NAME = 'Measurements';
+
+    private const string FIRST_REFUSAL = 'first refusal';
+
+    /**
+     * The document the reconciler was handed, and whether it was told to replace: the service's two
+     * decisions, which nothing else in the report distinguishes.
+     */
+    private ?ArtifactDocument $applied = null;
+
+    private bool $replaced = false;
 
     public function testExportingAStoreIdNoStoreCarriesIsNotFound(): void
     {
@@ -94,7 +118,12 @@ final class StoreTransferServiceTest extends Unit
         $this->createService($storeRepository)->importStore(self::STORE_ID, '{"store": ');
     }
 
-    public function testImportingAFileWhoseStoreIdentifierNamesAnotherStoreIsRefused(): void
+    /**
+     * The store of the route carries no identifier, but the file's belongs to another store, so the
+     * row in front of the operator is not the one the file is about: it is imported as a duplicate
+     * rather than adopted onto an identity that is taken.
+     */
+    public function testImportingAFileWhoseStoreIdentifierNamesAnotherStoreIsADuplicate(): void
     {
         $storeRepository = $this->createMock(StoreRepositoryInterface::class);
         $storeRepository->method('getById')->willReturn($this->createStore(self::STORE_ID, identifier: null));
@@ -102,66 +131,84 @@ final class StoreTransferServiceTest extends Unit
             ->method('getByIdentifier')
             ->willReturn($this->createStore(self::OTHER_STORE_ID));
 
-        $this->expectException(ConflictException::class);
+        $report = $this->createService($storeRepository)->importStore(
+            self::STORE_ID,
+            $this->createArtifactJson()
+        );
 
-        $this->createService($storeRepository)->importStore(self::STORE_ID, $this->createArtifactJson());
+        $this->assertTrue($this->replaced);
+        $this->assertTrue($report->isReplaced());
     }
 
     /**
      * The store of the route carries an identifier of its own, so a file describing a different one
-     * is a configuration of somewhere else even when no store carries that identifier yet.
+     * is a configuration of somewhere else even when no store carries that identifier yet - and it
+     * is imported as a duplicate, with every member identifier regenerated.
      */
-    public function testImportingAFileIntoAStoreThatCarriesAnotherIdentifierIsRefused(): void
+    public function testImportingAFileIntoAStoreThatCarriesAnotherIdentifierIsADuplicate(): void
     {
         $storeRepository = $this->createMock(StoreRepositoryInterface::class);
-        $storeRepository->method('getById')->willReturn($this->createStore(self::STORE_ID, '01ELSEWHERE'));
+        $storeRepository
+            ->method('getById')
+            ->willReturn($this->createStore(self::STORE_ID, self::FOREIGN_STORE_IDENTIFIER));
         $storeRepository->method('getByIdentifier')->willReturn(null);
 
-        $this->expectException(ConflictException::class);
-        $this->expectExceptionMessage(
-            'The file describes the store "01STORE", which is not the store it was sent to.'
+        $report = $this->createService($storeRepository)->importStore(
+            self::STORE_ID,
+            $this->createArtifactJson(true)
         );
 
-        $this->createService($storeRepository)->importStore(self::STORE_ID, $this->createArtifactJson());
+        $this->assertTrue($report->isReplaced());
+        $this->assertTrue($this->replaced);
+        $this->assertSame(
+            [self::GENERATED_IDENTIFIER],
+            array_keys($this->applied?->getEntries(ArtifactSection::GROUPS) ?? [])
+        );
     }
 
     /**
-     * The store independent apply creates or updates the store the file names, so nothing in it
-     * asserts a store identity: the same file the store-scoped import refuses is applied.
+     * A file describing the store it was sent to is restored into it, unchanged: no duplicate, no
+     * removal, and the identifiers the file carries are the ones that are written.
      */
-    public function testApplyingAnsweringWithTheReportNamingWhatWasSkipped(): void
+    public function testImportingAFileDescribingItsOwnStoreIsNotADuplicate(): void
+    {
+        $storeRepository = $this->createMock(StoreRepositoryInterface::class);
+        $storeRepository->method('getById')->willReturn($this->createStore(self::STORE_ID));
+        $storeRepository->method('getByIdentifier')->willReturn($this->createStore(self::STORE_ID));
+
+        $report = $this->createService($storeRepository)->importStore(
+            self::STORE_ID,
+            $this->createArtifactJson(true)
+        );
+
+        $this->assertFalse($report->isReplaced());
+        $this->assertFalse($this->replaced);
+        $this->assertSame(
+            [self::GROUP_IDENTIFIER],
+            array_keys($this->applied?->getEntries(ArtifactSection::GROUPS) ?? [])
+        );
+    }
+
+    /**
+     * The console apply names its target by the file's own store identifier and reports rather than
+     * throws, so that the command decides what a refused run exits with.
+     */
+    public function testTheConsoleApplyAnswersWithTheReportItWasGiven(): void
     {
         $storeRepository = $this->createMock(StoreRepositoryInterface::class);
         $storeRepository->method('getByIdentifier')->willReturn(null);
 
         $applyReport = new ApplyReport();
         $applyReport->record(ApplyOutcome::CREATED, self::GROUP_ENTRY);
-        $applyReport->record(ApplyOutcome::SKIPPED, 'group "Dimensions": the target holds the name');
+        $applyReport->record(ApplyOutcome::CONFLICT, self::FIRST_REFUSAL);
 
         $report = $this
             ->createService($storeRepository, $applyReport)
-            ->applyConfiguration($this->createArtifactJson(), false);
+            ->applyArtifact($this->createArtifactJson(), false);
 
-        $this->assertSame(1, $report->getCreated());
-        $this->assertSame(1, $report->getSkipped());
-        $this->assertSame(['group "Dimensions": the target holds the name'], $report->getSkippedEntries());
-        $this->assertSame([], $report->getConflicts());
-    }
-
-    /**
-     * A conflict answers 409 naming every one, as the store-scoped import does.
-     */
-    public function testApplyingARefusedConfigurationAnswersWithEveryConflict(): void
-    {
-        $storeRepository = $this->createMock(StoreRepositoryInterface::class);
-        $applyReport = new ApplyReport();
-        $applyReport->record(ApplyOutcome::CONFLICT, 'first refusal');
-        $applyReport->record(ApplyOutcome::CONFLICT, 'second refusal');
-
-        $this->expectException(ConflictException::class);
-        $this->expectExceptionMessage('The configuration was not applied: first refusal; second refusal');
-
-        $this->createService($storeRepository, $applyReport)->applyConfiguration($this->createArtifactJson(), true);
+        $this->assertFalse($this->replaced);
+        $this->assertSame(1, $report->getCount(ApplyOutcome::CREATED));
+        $this->assertSame([self::FIRST_REFUSAL], $report->getNamed(ApplyOutcome::CONFLICT));
     }
 
     public function testImportingAnsweringWithTheReportOfWhatWasDecided(): void
@@ -196,7 +243,7 @@ final class StoreTransferServiceTest extends Unit
         $storeRepository->method('getByIdentifier')->willReturn($this->createStore(self::STORE_ID));
 
         $applyReport = new ApplyReport();
-        $applyReport->record(ApplyOutcome::CONFLICT, 'first refusal');
+        $applyReport->record(ApplyOutcome::CONFLICT, self::FIRST_REFUSAL);
         $applyReport->record(ApplyOutcome::CONFLICT, 'second refusal');
 
         try {
@@ -205,7 +252,7 @@ final class StoreTransferServiceTest extends Unit
                 ->importStore(self::STORE_ID, $this->createArtifactJson());
             $this->fail('A refused configuration cannot answer with a report.');
         } catch (ConflictException $e) {
-            $this->assertStringContainsString('first refusal', $e->getMessage());
+            $this->assertStringContainsString(self::FIRST_REFUSAL, $e->getMessage());
             $this->assertStringContainsString('second refusal', $e->getMessage());
         }
     }
@@ -276,10 +323,25 @@ final class StoreTransferServiceTest extends Unit
         ?ApplyReport $applyReport = null,
     ): StoreTransferService {
         $reconciler = $this->createMock(ReconcilerInterface::class);
-        $reconciler->method('apply')->willReturn($applyReport ?? new ApplyReport());
+        $reconciler->method('apply')->willReturnCallback(
+            function (
+                ArtifactDocument $document,
+                ?StoreConfig $store,
+                bool $dryRun,
+                bool $replace = false
+            ) use ($applyReport): ApplyReport {
+                $this->applied = $document;
+                $this->replaced = $replace;
+
+                return $applyReport ?? new ApplyReport();
+            }
+        );
 
         return new StoreTransferService(
             $this->makeEmpty(ArtifactBuilderInterface::class, ['stream' => []]),
+            new ArtifactDuplicator(
+                $this->makeEmpty(IdentifierGeneratorInterface::class, ['generate' => self::GENERATED_IDENTIFIER])
+            ),
             new ArtifactParser(),
             $this->makeEmpty(KeyRelationResolverInterface::class),
             $reconciler,
@@ -301,13 +363,25 @@ final class StoreTransferServiceTest extends Unit
         return $store;
     }
 
-    private function createArtifactJson(): string
+    /**
+     * @return array<string, mixed>
+     */
+    private function createEntry(string $identifier, string $name): array
+    {
+        return [
+            ArtifactField::IDENTIFIER->value => $identifier,
+            ArtifactField::NAME->value => $name,
+            ArtifactField::DESCRIPTION->value => null,
+        ];
+    }
+
+    private function createArtifactJson(bool $withGroup = false): string
     {
         return json_encode([
-            'store' => ['identifier' => self::STORE_IDENTIFIER, 'name' => 'ETIM', 'description' => null],
+            'store' => $this->createEntry(self::STORE_IDENTIFIER, 'ETIM'),
             'subGroups' => [],
             'collections' => [],
-            'groups' => [],
+            'groups' => $withGroup ? [$this->createEntry(self::GROUP_IDENTIFIER, self::GROUP_NAME)] : [],
             'keys' => [],
             'collectionGroupRelations' => [],
             'keyGroupRelations' => [],

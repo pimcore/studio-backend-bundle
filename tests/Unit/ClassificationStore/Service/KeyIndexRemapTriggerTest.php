@@ -47,6 +47,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Appl
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyReport;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilderInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDocument;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDuplicatorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryWriter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser;
@@ -1294,6 +1295,63 @@ final class KeyIndexRemapTriggerTest extends Unit
     }
 
     /**
+     * A key that is REMOVED is the one change no pair of definitions describes: the key is gone, so
+     * what the pair would carry after it is null - and null reads as indexed, which is what the key
+     * already was. Asked as a flag change, the removal of an indexed key compares equal and notes
+     * nothing, which is the mapping left holding a field for a key that no longer exists. Noted as
+     * a stale mapping it hands the remap over like any other note.
+     */
+    public function testAStoreWhoseMappingIsStaleIsRemappedThoughNoFlagChanged(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NO_MEMBER);
+        $trigger->flush();
+        $this->assertSame([], $this->getRemappedClassIds());
+
+        $trigger->noteMappingStale(self::STORE_ID);
+        $trigger->flush();
+
+        $this->assertSame([self::CLASS_ID], $this->getRemappedClassIds());
+    }
+
+    /**
+     * And it is a note like any other, so the unit of work that rolled its own writes back takes it
+     * back to its mark the way it takes back a flag change: the rows the mapping is stale against
+     * are still there.
+     */
+    public function testARolledBackStaleNoteIsTakenBackToTheMark(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $mark = $trigger->mark();
+        $trigger->noteMappingStale(self::STORE_ID);
+        $trigger->discardSince($mark);
+        $trigger->flush();
+
+        $this->assertSame([], $this->getRemappedClassIds());
+        $this->assertSame(0, $this->targetLookups);
+    }
+
+    /**
+     * The note of a writer that came first is not the roller-back's to take, and a stale note is
+     * the same note: the earlier key write is committed and its remap is still owed, however the
+     * replace that noted the same store on top of it ended.
+     */
+    public function testAStaleNoteDoesNotLetARollbackTakeAnEarlierWritersNoteBack(): void
+    {
+        $trigger = $this->createTrigger([self::STORE_ID => [self::CLASS_ID]]);
+
+        $trigger->noteFlagChange(self::STORE_ID, self::INDEXED, self::NOT_INDEXED);
+        $mark = $trigger->mark();
+        $trigger->noteMappingStale(self::STORE_ID);
+        $trigger->discardSince($mark);
+        $trigger->flush();
+
+        $this->assertSame([self::CLASS_ID], $this->getRemappedClassIds());
+    }
+
+    /**
      * And it does not even ask which indices the store reaches, which is a read of every class
      * definition there is.
      *
@@ -1616,6 +1674,7 @@ final class KeyIndexRemapTriggerTest extends Unit
 
         return new StoreTransferService(
             $this->makeEmpty(ArtifactBuilderInterface::class, ['stream' => []]),
+            $this->makeEmpty(ArtifactDuplicatorInterface::class),
             new ArtifactParser(),
             $this->makeEmpty(KeyRelationResolverInterface::class),
             $this->makeEmpty(ReconcilerInterface::class, [

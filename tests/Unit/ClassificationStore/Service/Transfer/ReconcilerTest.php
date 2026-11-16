@@ -31,15 +31,18 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Appl
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactAssignmentEntry;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilderInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDocument;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDuplicator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryMapper;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryWriter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactRelationWriter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcher;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\IdentifierGeneratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Reconciler;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedCollectionRelation;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreMemberPurger;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreTransferService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactField;
@@ -90,6 +93,22 @@ final class ReconcilerTest extends Unit
     private const string COLLECTION_IDENTIFIER = '01COLLECTION';
 
     private const string GROUP_NAME = 'Measurements';
+
+    private const string GROUP_ENTRY_LABEL = 'group "Measurements"';
+
+    /**
+     * The identifier of a store that is not the one the fixture file describes, which is what makes
+     * an import of that file into it a duplicate.
+     */
+    private const string FOREIGN_STORE_IDENTIFIER = '01ELSEWHERE';
+
+    private const string GENERATED_IDENTIFIER = '01GENERATED%d';
+
+    private const string OTHER_GROUP_NAME = 'Logistics';
+
+    private const string OTHER_GROUP_LABEL = 'group "Logistics"';
+
+    private const string DELETE = 'delete';
 
     private const string KEY_NAME = 'weight';
 
@@ -214,7 +233,7 @@ final class ReconcilerTest extends Unit
      */
     public function testWhatTheStoreCarriesAndTheFileDoesNotIsNamedAndLeftInPlace(): void
     {
-        $extraGroup = $this->createGroup('01OTHERGROUP', 'Logistics', id: 42);
+        $extraGroup = $this->createGroup('01OTHERGROUP', self::OTHER_GROUP_NAME, id: 42);
         $extraAssignment = $this->createAssignment('01OTHERGROUP', '01OTHERKEY', groupId: 42, keyId: 52);
 
         $reconciler = $this->createReconciler(
@@ -226,7 +245,7 @@ final class ReconcilerTest extends Unit
 
         $this->assertSame(2, $report->getCount(ApplyOutcome::TARGET_ONLY));
         $this->assertSame(
-            ['group "Logistics"', 'key assignment "01OTHERGROUP -> 01OTHERKEY"'],
+            [self::OTHER_GROUP_LABEL, 'key assignment "01OTHERGROUP -> 01OTHERKEY"'],
             $report->getNamed(ApplyOutcome::TARGET_ONLY)
         );
         $this->assertNotContains('group:01OTHERGROUP:Logistics', $this->writes);
@@ -268,7 +287,7 @@ final class ReconcilerTest extends Unit
     public function testAnEntryWhoseIdentifierIsAbsentFromTheTargetIsCreated(): void
     {
         $report = $this->createReconciler(
-            groups: [$this->createGroup('01UNRELATED', 'Logistics')],
+            groups: [$this->createGroup('01UNRELATED', self::OTHER_GROUP_NAME)],
             subGroups: [$this->createSubGroup('01UNRELATEDSUB', 'Other')],
             collections: [$this->createCollection('01UNRELATEDCOLLECTION', 'Elsewhere')]
         )->apply(
@@ -381,14 +400,14 @@ final class ReconcilerTest extends Unit
     }
 
     /**
-     * One rule, both doors: the store-scoped import and the store independent apply reach the one
-     * reconciler, whose signature carries no mode, so one document over one target state is decided
-     * identically through both.
+     * One rule, both doors: the store-scoped import of a file describing its own store and the
+     * console apply reach the one reconciler, and the one mode its signature carries is off for
+     * both, so one document over one target state is decided identically through them.
      */
-    public function testBothDoorsTakeTheSameDecisionsAndTheReconcilerTakesNoMode(): void
+    public function testBothDoorsTakeTheSameDecisionsWithTheOneModeOff(): void
     {
         $this->assertSame(
-            ['document', 'store', 'dryRun', 'onDecision'],
+            ['document', 'store', 'dryRun', 'replace', 'onDecision'],
             array_map(
                 static fn (ReflectionParameter $parameter): string => $parameter->getName(),
                 (new ReflectionMethod(Reconciler::class, 'apply'))->getParameters()
@@ -399,26 +418,130 @@ final class ReconcilerTest extends Unit
         $counts = [];
         foreach ([true, false] as $storeScoped) {
             $this->writes = [];
-            $reconciler = $this->createReconciler(groups: [$this->createGroup('01DIFFERENT', self::GROUP_NAME)]);
-            $storeRepository = $this->createMock(StoreRepositoryInterface::class);
-            $storeRepository->method('getById')->willReturn($this->createStore());
-            $storeRepository->method('getByIdentifier')->willReturn($this->createStore());
-            $service = new StoreTransferService(
-                $this->makeEmpty(ArtifactBuilderInterface::class),
-                new ArtifactParser(),
-                $this->makeEmpty(KeyRelationResolverInterface::class),
-                $reconciler,
-                $this->makeEmpty(SearchIndexRemapTriggerInterface::class),
-                $storeRepository
+            $service = $this->createTransferService(
+                $this->createReconciler(groups: [$this->createGroup('01DIFFERENT', self::GROUP_NAME)])
             );
-            $report = $storeScoped
-                ? $service->importStore(self::STORE_ID, $json)
-                : $service->applyConfiguration($json, false);
-            $counts[] = [$report->getCreated(), $report->getSkipped(), $report->getSkippedEntries()];
+
+            if ($storeScoped) {
+                $report = $service->importStore(self::STORE_ID, $json);
+                $counts[] = [
+                    $report->getCreated(),
+                    $report->getSkipped(),
+                    $report->getSkippedEntries(),
+                    $report->isReplaced(),
+                ];
+
+                continue;
+            }
+
+            $report = $service->applyArtifact($json, false);
+            $counts[] = [
+                $report->getCount(ApplyOutcome::CREATED),
+                $report->getCount(ApplyOutcome::SKIPPED),
+                $report->getNamed(ApplyOutcome::SKIPPED),
+                false,
+            ];
         }
 
         $this->assertSame($counts[0], $counts[1]);
         $this->assertSame(2, $counts[0][1]);
+    }
+
+    /**
+     * A file describing another store is imported as a duplicate: the target is emptied, every
+     * member is created under an identifier this installation handed out, and the file's own
+     * identifiers appear nowhere in what was written.
+     */
+    public function testAFileFromAnotherStoreIsDuplicatedIntoTheTargetAndReplacesIt(): void
+    {
+        $json = json_encode($this->createArtifact(), JSON_THROW_ON_ERROR);
+        $service = $this->createTransferService(
+            $this->createReconciler(groups: [$this->createGroup('01DIFFERENT', self::OTHER_GROUP_NAME)]),
+            $this->createStore(self::FOREIGN_STORE_IDENTIFIER)
+        );
+
+        $report = $service->importStore(self::STORE_ID, $json);
+
+        $this->assertTrue($report->isReplaced());
+        $this->assertSame(1, $report->getRemoved());
+        $this->assertSame([self::OTHER_GROUP_LABEL], $report->getRemovedEntries());
+        // the replaced row is removed, not left in place, so nothing is target only any more
+        $this->assertSame([], $report->getTargetOnlyEntries());
+        $this->assertContains(self::GROUP_ENTRY_LABEL, $report->getCreatedEntries());
+        $this->assertContains(sprintf('groupDelete:%d', self::GROUP_ID), $this->writes);
+        $this->assertNotContains(
+            sprintf(self::GROUP_WRITE, self::GROUP_IDENTIFIER, self::GROUP_NAME),
+            $this->writes
+        );
+        $this->assertContains(
+            sprintf(self::GROUP_WRITE, sprintf(self::GENERATED_IDENTIFIER, 1), self::GROUP_NAME),
+            $this->writes
+        );
+    }
+
+    /**
+     * The same file applied twice gives the same store: the second run takes out what the first one
+     * wrote and writes it again, rather than leaving two copies of every entry.
+     */
+    public function testImportingTheSameForeignFileTwiceGivesTheSameStore(): void
+    {
+        $json = json_encode($this->createArtifact(), JSON_THROW_ON_ERROR);
+        $reports = [];
+
+        foreach ([[], [$this->createGroup('01FIRSTRUN', self::GROUP_NAME)]] as $groups) {
+            $this->writes = [];
+            $service = $this->createTransferService(
+                $this->createReconciler(groups: $groups),
+                $this->createStore(self::FOREIGN_STORE_IDENTIFIER)
+            );
+            $reports[] = $service->importStore(self::STORE_ID, $json);
+        }
+
+        $this->assertSame($reports[0]->getCreatedEntries(), $reports[1]->getCreatedEntries());
+        $this->assertSame(0, $reports[0]->getRemoved());
+        $this->assertSame(1, $reports[1]->getRemoved());
+        $this->assertSame(0, $reports[1]->getSkipped());
+    }
+
+    /**
+     * A dry run of a replace reports every row it would take out and writes none of it, which is
+     * what the warning in front of the operator is built from.
+     */
+    public function testADryRunOfAReplaceReportsWhatWouldBeRemovedAndWritesNothing(): void
+    {
+        $json = json_encode($this->createArtifact(), JSON_THROW_ON_ERROR);
+        $service = $this->createTransferService(
+            $this->createReconciler(groups: [$this->createGroup('01DIFFERENT', self::OTHER_GROUP_NAME)]),
+            $this->createStore(self::FOREIGN_STORE_IDENTIFIER)
+        );
+
+        $report = $service->importStore(self::STORE_ID, $json, true);
+
+        $this->assertTrue($report->isReplaced());
+        $this->assertSame(1, $report->getRemoved());
+        $this->assertSame([self::OTHER_GROUP_LABEL], $report->getRemovedEntries());
+        $this->assertContains(self::GROUP_ENTRY_LABEL, $report->getCreatedEntries());
+        $this->assertSame([], $this->writes);
+    }
+
+    /**
+     * The file's store entry is advisory in a duplicate: the target keeps its name, so a file whose
+     * store is called something else renames nothing.
+     */
+    public function testAForeignFilesStoreNameDoesNotRenameTheTarget(): void
+    {
+        $artifact = $this->createArtifact();
+        $artifact['store']['name'] = 'Something Else';
+        $service = $this->createTransferService(
+            $this->createReconciler(),
+            $this->createStore(self::FOREIGN_STORE_IDENTIFIER)
+        );
+
+        $service->importStore(self::STORE_ID, (string) json_encode($artifact, JSON_THROW_ON_ERROR));
+
+        foreach ($this->writes as $write) {
+            $this->assertStringStartsNotWith('store:', $write);
+        }
     }
 
     /**
@@ -434,7 +557,7 @@ final class ReconcilerTest extends Unit
                 $this->createDocument(),
                 $this->createStore(),
                 $dryRun,
-                static function (string $line) use (&$lines): void {
+                onDecision: static function (string $line) use (&$lines): void {
                     $lines[] = $line;
                 }
             );
@@ -1299,6 +1422,74 @@ final class ReconcilerTest extends Unit
     }
 
     /**
+     * A replace takes the store's keys out of the rows the class mappings were built from, and no
+     * pair of definitions can say so - the keys it writes back are created ones, which change no
+     * mapping. So the purge notes the store's mapping as stale, and the remap it earns is handed
+     * over with the rest of the apply's.
+     */
+    public function testAReplaceNotesTheEmptiedStoresMappingAsStale(): void
+    {
+        $this->createReconciler(
+            groups: [$this->createGroup('01DIFFERENT', self::OTHER_GROUP_NAME)],
+            connection: $this->createConnection(false)
+        )->apply($this->createDocument(), $this->createStore(), false, true);
+
+        $this->assertSame(
+            ['mark', sprintf('noteMappingStale:%d', self::STORE_ID)],
+            $this->noteCalls
+        );
+    }
+
+    /**
+     * And it is taken inside the window the apply marked, so a replace that rolls its own writes
+     * back takes it back with the rows: the keys are still there, and a remap of a store nothing
+     * happened to is a whole class re-indexed for nothing.
+     */
+    public function testAFailingReplaceTakesItsStaleNoteBackWhenItRollsBack(): void
+    {
+        $reconciler = $this->createReconciler(
+            groups: [$this->createGroup('01DIFFERENT', self::OTHER_GROUP_NAME)],
+            connection: $this->createConnection(false),
+            failingSubGroupWrite: true
+        );
+        $document = $this->createDocument([
+            'subGroups' => [
+                ['identifier' => self::SUB_GROUP_IDENTIFIER, 'name' => 'Dimensions', 'description' => null],
+            ],
+        ]);
+
+        try {
+            $reconciler->apply($document, $this->createStore(), false, true);
+            $this->fail('A failing apply cannot answer with a report.');
+        } catch (ElementSavingFailedException) {
+            // the failure is the caller's; what it must not leave behind is the note
+        }
+
+        $this->assertContains('rollBack', $this->steps);
+        $this->assertSame(
+            [
+                'mark',
+                sprintf('noteMappingStale:%d', self::STORE_ID),
+                sprintf('discardSince:%d', self::NOTE_MARK),
+            ],
+            $this->noteCalls
+        );
+    }
+
+    /**
+     * A dry run of a replace deletes none of what it reports, so there is nothing stale to converge
+     * to and nothing is noted.
+     */
+    public function testADryRunOfAReplaceNotesNothing(): void
+    {
+        $this->createReconciler(
+            groups: [$this->createGroup('01DIFFERENT', self::OTHER_GROUP_NAME)]
+        )->apply($this->createDocument(), $this->createStore(), true, true);
+
+        $this->assertSame(['mark'], $this->noteCalls);
+    }
+
+    /**
      * An apply that fails part way through is the same answer: it rolled its own transaction back,
      * so it takes its own notes back with it.
      */
@@ -1472,12 +1663,17 @@ final class ReconcilerTest extends Unit
 
         $subGroupRepository = $this->createMock(SubGroupRepositoryInterface::class);
         $subGroupRepository->method('getChunkAfterId')->willReturnCallback(
-            static fn (int $storeId, int $afterId, int $limit, ?bool $withIdentifier): array
+            static fn (int $storeId, int $afterId, int $limit, ?bool $withIdentifier = null): array
                 => self::inIdentifierPhase($subGroups, $withIdentifier)
         );
         $subGroupRepository->method('isNameTaken')->willReturnCallback(
             static fn (int $storeId, string $name, ?int $exceptId = null): bool => $subGroupNameIsTaken
                 || self::rowsCarryName($subGroups, $name, $exceptId)
+        );
+        $subGroupRepository->method(self::DELETE)->willReturnCallback(
+            function (int $id): void {
+                $this->recordWrite(sprintf('subGroupDelete:%d', $id));
+            }
         );
         $subGroupRepository->method('saveFromArtifact')->willReturnCallback(
             function (
@@ -1498,12 +1694,17 @@ final class ReconcilerTest extends Unit
 
         $collectionRepository = $this->createMock(CollectionRepositoryInterface::class);
         $collectionRepository->method('getChunkAfterId')->willReturnCallback(
-            static fn (int $storeId, int $afterId, int $limit, ?bool $withIdentifier): array
+            static fn (int $storeId, int $afterId, int $limit, ?bool $withIdentifier = null): array
                 => self::inIdentifierPhase($collections, $withIdentifier)
         );
         $collectionRepository->method('isNameTaken')->willReturnCallback(
             static fn (int $storeId, string $name, ?int $exceptId = null): bool
                 => self::rowsCarryName($collections, $name, $exceptId)
+        );
+        $collectionRepository->method(self::DELETE)->willReturnCallback(
+            function (int $id): void {
+                $this->recordWrite(sprintf('collectionDelete:%d', $id));
+            }
         );
         $collectionRepository->method('saveFromArtifact')->willReturnCallback(
             function (?CollectionConfig $config, int $storeId, string $identifier, string $name): CollectionConfig {
@@ -1523,12 +1724,17 @@ final class ReconcilerTest extends Unit
             }
         );
         $groupRepository->method('getChunkAfterId')->willReturnCallback(
-            static fn (int $storeId, int $afterId, int $limit, ?bool $withIdentifier): array
+            static fn (int $storeId, int $afterId, int $limit, ?bool $withIdentifier = null): array
                 => self::inIdentifierPhase($groups, $withIdentifier)
         );
         $groupRepository->method('isNameTaken')->willReturnCallback(
             static fn (int $storeId, string $name, ?int $exceptId = null): bool
                 => self::rowsCarryName($groups, $name, $exceptId)
+        );
+        $groupRepository->method(self::DELETE)->willReturnCallback(
+            function (int $id): void {
+                $this->recordWrite(sprintf('groupDelete:%d', $id));
+            }
         );
         $groupRepository->method('saveFromArtifact')->willReturnCallback(
             function (?GroupConfig $config, int $storeId, string $identifier, string $name): GroupConfig {
@@ -1547,8 +1753,13 @@ final class ReconcilerTest extends Unit
                 bool $disabledOnly,
                 int $afterId,
                 int $limit,
-                ?bool $withIdentifier
+                ?bool $withIdentifier = null
             ): array => self::inIdentifierPhase($disabledOnly ? $disabledKeys : $enabledKeys, $withIdentifier)
+        );
+        $keyRepository->method(self::DELETE)->willReturnCallback(
+            function (int $id): void {
+                $this->recordWrite(sprintf('keyDelete:%d', $id));
+            }
         );
         $keyRepository->method('saveFromArtifact')->willReturnCallback(
             function (?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyWriteResult {
@@ -1619,7 +1830,6 @@ final class ReconcilerTest extends Unit
         $remapTrigger = $this->createRemapTrigger();
 
         return new Reconciler(
-            $parser,
             $matcher,
             new ArtifactEntryWriter(
                 $parser,
@@ -1639,12 +1849,20 @@ final class ReconcilerTest extends Unit
             ),
             $diagnostics,
             $collectionRepository,
-            $collectionRelationRepository,
             $connection ?? $this->makeEmpty(Connection::class),
             $groupRepository,
-            $keyGroupRelationRepository,
             $keyRepository,
             $remapTrigger,
+            new StoreMemberPurger(
+                $diagnostics,
+                $collectionRepository,
+                $collectionRelationRepository,
+                $groupRepository,
+                $keyGroupRelationRepository,
+                $keyRepository,
+                $remapTrigger,
+                $subGroupRepository
+            ),
             $storeRepository,
             $subGroupRepository
         );
@@ -1662,6 +1880,9 @@ final class ReconcilerTest extends Unit
                 $this->noteCalls[] = 'mark';
 
                 return self::NOTE_MARK;
+            },
+            'noteMappingStale' => function (int $storeId): void {
+                $this->noteCalls[] = sprintf('noteMappingStale:%d', $storeId);
             },
             'discardSince' => function (int $mark): void {
                 $this->noteCalls[] = sprintf('discardSince:%d', $mark);
@@ -1738,11 +1959,53 @@ final class ReconcilerTest extends Unit
         return false;
     }
 
-    private function createStore(): StoreConfig
+    /**
+     * The service in front of the real reconciler, with the store of the route behind it. The
+     * identifier that store carries is what decides whether an import of the fixture file is a
+     * restore or a duplicate, and nothing else about the service is stubbed.
+     */
+    private function createTransferService(
+        Reconciler $reconciler,
+        ?StoreConfig $store = null,
+    ): StoreTransferService {
+        $store ??= $this->createStore();
+        $storeRepository = $this->createMock(StoreRepositoryInterface::class);
+        $storeRepository->method('getById')->willReturn($store);
+        $storeRepository->method('getByIdentifier')->willReturn($this->createStore());
+
+        return new StoreTransferService(
+            $this->makeEmpty(ArtifactBuilderInterface::class),
+            new ArtifactDuplicator($this->createIdentifierGenerator()),
+            new ArtifactParser(),
+            $this->makeEmpty(KeyRelationResolverInterface::class),
+            $reconciler,
+            $this->makeEmpty(SearchIndexRemapTriggerInterface::class),
+            $storeRepository
+        );
+    }
+
+    /**
+     * Identifiers that are this installation's to hand out, counted rather than random so that a
+     * test can name the one an entry was written under.
+     */
+    private function createIdentifierGenerator(): IdentifierGeneratorInterface
+    {
+        $handed = 0;
+
+        return $this->makeEmpty(IdentifierGeneratorInterface::class, [
+            'generate' => static function () use (&$handed): string {
+                ++$handed;
+
+                return sprintf(self::GENERATED_IDENTIFIER, $handed);
+            },
+        ]);
+    }
+
+    private function createStore(string $identifier = self::STORE_IDENTIFIER): StoreConfig
     {
         $store = new StoreConfig();
         $store->setId(self::STORE_ID);
-        $store->setIdentifier(self::STORE_IDENTIFIER);
+        $store->setIdentifier($identifier);
         $store->setName('ETIM');
         $store->setDescription('The ETIM classification');
 

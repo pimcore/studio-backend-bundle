@@ -16,9 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfe
 use Closure;
 use Doctrine\DBAL\Connection;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollectionRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
@@ -35,16 +33,22 @@ use function sprintf;
 
 /**
  * Drives one apply: the seven sections in the order each needs the ones before it resolved, inside
- * one transaction. What an entry describes is the matcher's ({@see ArtifactTargetMatcherInterface}),
- * what one entry becomes is the writer's ({@see ArtifactEntryWriterInterface}), and how a refusal
- * reads is the diagnostics' ({@see ApplyDiagnosticsInterface}).
+ * one transaction. A replacing apply has one step more - everything the target holds is removed
+ * first ({@see StoreMemberPurgerInterface}), inside the same transaction, and the sections then
+ * read the store as the empty one it has become in both modes
+ * ({@see ApplyContext::isTargetCleared()}).
+ *
+ * What an entry describes is the matcher's ({@see ArtifactTargetMatcherInterface}), what one entry
+ * becomes is the writer's ({@see ArtifactEntryWriterInterface}), and how a refusal reads is the
+ * diagnostics' ({@see ApplyDiagnosticsInterface}).
  *
  * ## Who takes back the search index remap notes
  *
  * The key writes of the sections note the flag changes they make
- * ({@see SearchIndexRemapTriggerInterface}), and a rolled back apply has to take its own notes back
- * with the rows they were about. This class is where that decision belongs, because it is the only
- * one that knows whether a rollback happened at all: it rolls back only the transaction it opened
+ * ({@see SearchIndexRemapTriggerInterface}), the purge of a replace notes the mapping its removals
+ * leave stale, and a rolled back apply has to take its own notes back with the rows they were
+ * about. This class is where that decision belongs, because it is the only one that knows whether
+ * a rollback happened at all: it rolls back only the transaction it opened
  * itself, and an apply that joined a transaction a caller owns leaves both the commit and the
  * rollback to that caller - including after a refusal, where it reports the conflicts and writes
  * nothing further.
@@ -59,17 +63,15 @@ use function sprintf;
 final readonly class Reconciler implements ReconcilerInterface
 {
     public function __construct(
-        private ArtifactParserInterface $artifactParser,
         private ArtifactTargetMatcherInterface $matcher,
         private ArtifactEntryWriterInterface $writer,
         private ApplyDiagnosticsInterface $diagnostics,
         private CollectionRepositoryInterface $collectionRepository,
-        private CollRelationRepositoryInterface $collectionRelationRepository,
         private Connection $connection,
         private GroupRepositoryInterface $groupRepository,
-        private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
         private KeyRepositoryInterface $keyRepository,
         private SearchIndexRemapTriggerInterface $searchIndexRemapTrigger,
+        private StoreMemberPurgerInterface $storeMemberPurger,
         private StoreRepositoryInterface $storeRepository,
         private SubGroupRepositoryInterface $subGroupRepository,
     ) {
@@ -82,6 +84,7 @@ final readonly class Reconciler implements ReconcilerInterface
         ArtifactDocument $document,
         ?StoreConfig $store,
         bool $dryRun,
+        bool $replace = false,
         ?Closure $onDecision = null,
     ): ApplyReport {
         $context = new ApplyContext($dryRun, new ApplyReport(), $onDecision);
@@ -97,7 +100,7 @@ final readonly class Reconciler implements ReconcilerInterface
         $mark = $this->searchIndexRemapTrigger->mark();
 
         try {
-            $this->applyStore($context, $document, $store);
+            $this->applyStore($context, $document, $store, $replace);
 
             // a store step that conflicted left no store to write the sections into: they would read
             // as all new against store 0 and insert rows there
@@ -106,12 +109,22 @@ final readonly class Reconciler implements ReconcilerInterface
             }
 
             $this->holdTheGroupsOfTheStore($context);
+
+            // after the hold, so the removals take the group rows in the order every writer here does.
+            // The hold covers only the group rows that exist when it is taken: a member another
+            // transaction commits after the purge walk read its level survives the replacement. Left
+            // open rather than closed by a store-wide lock - the cost of that race is a stray row.
+            if ($replace) {
+                $this->storeMemberPurger->purge($context);
+                $context->setTargetCleared(true);
+            }
+
             $this->applySubGroups($context, $document);
             $this->applyCollections($context, $document);
             $this->applyGroups($context, $document);
             $this->applyKeys($context, $document);
-            $this->applyCollectionRelations($context, $document);
-            $this->applyKeyAssignments($context, $document);
+            $this->writer->reconcileCollectionRelations($context, $document);
+            $this->writer->reconcileKeyAssignments($context, $document);
         } catch (Throwable $e) {
             // Throwable, not Exception: an Error has to leave the store as it was just the same
             if ($ownTransaction && $this->connection->isTransactionActive()) {
@@ -170,8 +183,24 @@ final readonly class Reconciler implements ReconcilerInterface
         $this->groupRepository->holdGroupsOfStore($storeId);
     }
 
-    private function applyStore(ApplyContext $context, ArtifactDocument $document, ?StoreConfig $store): void
-    {
+    private function applyStore(
+        ApplyContext $context,
+        ArtifactDocument $document,
+        ?StoreConfig $store,
+        bool $replace,
+    ): void {
+        if ($replace && $store !== null) {
+            // the file's store entry is advisory here: its identifier is another installation row's
+            // and is globally unique, and its name is not this store's to take
+            $context->setStoreId($store->getId());
+            $context->record(
+                ApplyOutcome::MATCHED_UNCHANGED,
+                $this->diagnostics->label(ArtifactSection::STORE, (string) $store->getName())
+            );
+
+            return;
+        }
+
         $identifier = $document->getStoreIdentifier();
         $name = $document->getStoreName();
         $description = $document->getStoreDescription();
@@ -376,136 +405,4 @@ final readonly class Reconciler implements ReconcilerInterface
         return $walks;
     }
 
-    /**
-     * The identifier one endpoint of a target relation is named by: the one this run has resolved
-     * for the endpoint's row, and only failing that the one the row itself carries.
-     *
-     * Adoption is why the row alone is not enough. Stamping the file's identifier onto a row that
-     * carried none is a write, and a dry run decides it without performing it - so the row still
-     * reads NULL while the run has already settled what its identifier is. Keying the relation off
-     * the row would then report an assignment the store already carries as target only, and the
-     * file's own entry for it as a creation, which is neither the update nor the match it is.
-     */
-    private function endpointIdentifier(
-        ApplyContext $context,
-        ArtifactSection $section,
-        ?int $id,
-        string $carried,
-    ): string {
-        if ($id === null) {
-            return $carried;
-        }
-
-        return $context->identifierOf($section, $id) ?? $carried;
-    }
-
-    private function applyCollectionRelations(ApplyContext $context, ArtifactDocument $document): void
-    {
-        $section = ArtifactSection::COLLECTION_GROUP_RELATIONS;
-        $storeId = (int) $context->getStoreId();
-        $entries = $document->getEntries($section);
-        $matched = [];
-
-        $walk = fn (?ScopedCollectionRelation $after, int $limit): array => $this->collectionRelationRepository
-            ->getChunkAfter($storeId, $after, $limit);
-
-        foreach ($this->matcher->walkTargetByRowCursor($context, $walk) as $scoped) {
-            $relation = $scoped->getRelation();
-            $entryKey = $this->endpointIdentifier(
-                $context,
-                ArtifactSection::COLLECTIONS,
-                $relation->getColId(),
-                $scoped->getCollectionIdentifier()
-            )
-                . ArtifactParserInterface::ENTRY_KEY_SEPARATOR
-                . $this->endpointIdentifier(
-                    $context,
-                    ArtifactSection::GROUPS,
-                    $relation->getGroupId(),
-                    $scoped->getGroupIdentifier()
-                );
-            $label = $this->diagnostics->relationLabel($section, $entryKey);
-
-            if (!isset($entries[$entryKey])) {
-                $context->record(ApplyOutcome::TARGET_ONLY, $label);
-
-                continue;
-            }
-
-            $matched[$entryKey] = true;
-            $sorter = $this->artifactParser->readSorter($entries[$entryKey], $section);
-
-            if ($relation->getSorter() === $sorter) {
-                $context->record(ApplyOutcome::MATCHED_UNCHANGED, $label);
-
-                continue;
-            }
-
-            $context->record(ApplyOutcome::UPDATED, $label);
-
-            if (!$context->isDryRun()) {
-                $this->collectionRelationRepository->createOrUpdate(
-                    $relation->getColId(),
-                    $relation->getGroupId(),
-                    $sorter
-                );
-            }
-        }
-
-        foreach ($entries as $entryKey => $entry) {
-            if (isset($matched[$entryKey])) {
-                continue;
-            }
-
-            $this->writer->createCollectionRelation($context, $entryKey, $entry);
-        }
-    }
-
-    private function applyKeyAssignments(ApplyContext $context, ArtifactDocument $document): void
-    {
-        $section = ArtifactSection::KEY_GROUP_RELATIONS;
-        $storeId = (int) $context->getStoreId();
-        $entries = $document->getEntries($section);
-        $matched = [];
-
-        $walk = fn (?ScopedKeyAssignment $after, int $limit): array => $this->keyGroupRelationRepository
-            ->getChunkAfter($storeId, $after, $limit);
-
-        foreach ($this->matcher->walkTargetByRowCursor($context, $walk) as $scoped) {
-            $relation = $scoped->getRelation();
-            $entryKey = $this->endpointIdentifier(
-                $context,
-                ArtifactSection::GROUPS,
-                $relation->getGroupId(),
-                $scoped->getGroupIdentifier()
-            )
-                . ArtifactParserInterface::ENTRY_KEY_SEPARATOR
-                . $this->endpointIdentifier(
-                    $context,
-                    ArtifactSection::KEYS,
-                    $relation->getKeyId(),
-                    $scoped->getKeyIdentifier()
-                );
-
-            if (!isset($entries[$entryKey])) {
-                $context->record(
-                    ApplyOutcome::TARGET_ONLY,
-                    $this->diagnostics->relationLabel($section, $entryKey)
-                );
-
-                continue;
-            }
-
-            $matched[$entryKey] = true;
-            $this->writer->writeKeyAssignment($context, $relation, $entries[$entryKey], $entryKey);
-        }
-
-        foreach ($entries as $entryKey => $entry) {
-            if (isset($matched[$entryKey])) {
-                continue;
-            }
-
-            $this->writer->writeKeyAssignment($context, null, $entry, $entryKey);
-        }
-    }
 }

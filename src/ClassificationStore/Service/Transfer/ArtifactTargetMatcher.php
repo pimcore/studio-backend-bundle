@@ -77,7 +77,7 @@ final readonly class ArtifactTargetMatcher implements ArtifactTargetMatcherInter
      */
     public function walkTargetByIdCursor(ApplyContext $context, Closure $walk): Generator
     {
-        if ($context->getStoreId() === null) {
+        if ($context->getStoreId() === null || $context->isTargetCleared()) {
             return;
         }
 
@@ -99,7 +99,7 @@ final readonly class ArtifactTargetMatcher implements ArtifactTargetMatcherInter
      */
     public function walkTargetByRowCursor(ApplyContext $context, Closure $walk): Generator
     {
-        if ($context->getStoreId() === null) {
+        if ($context->getStoreId() === null || $context->isTargetCleared()) {
             return;
         }
 

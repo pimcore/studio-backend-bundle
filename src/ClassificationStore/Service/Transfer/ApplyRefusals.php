@@ -88,9 +88,9 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
         // the store answers for the rows that are there - on a rename and on an adoption as much as on a
         // creation, whatever the level's own ::update() would let through, because a file entry landing on
         // a name another identifier holds is the guess this refusal exists to prevent - and a store this
-        // run created has none; a name the run is renaming a row away from is free once that is written,
-        // which a dry run never does
-        if ($context->isStoreCreated()
+        // run created or emptied has none; a name the run is renaming a row away from is free once that
+        // is written, which a dry run never does
+        if ($context->holdsNoPriorRows()
             || $context->isNameVacated($section, $name)
             || !$this->nameIsTaken($section, (int) $context->getStoreId(), $name, $exceptId)) {
             $this->vacate($context, $section, $name, $storedName);

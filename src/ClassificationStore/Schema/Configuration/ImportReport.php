@@ -50,6 +50,7 @@ final class ImportReport implements AdditionalAttributesInterface
      * @param string[] $targetOnlyEntries
      * @param string[] $conflicts
      * @param string[]|null $skippedEntries
+     * @param string[]|null $removedEntries
      */
     public function __construct(
         #[Property(description: 'Number of entries the import created', type: 'integer', example: 3)]
@@ -127,6 +128,31 @@ final class ImportReport implements AdditionalAttributesInterface
             nullable: true
         )]
         private readonly ?array $skippedEntries = null,
+        #[Property(
+            description: 'Whether the file describes another store and was imported as a duplicate: every member '
+                . 'identifier was regenerated and the configuration the store held was replaced by the file\'s',
+            type: 'boolean',
+            example: false,
+            nullable: true
+        )]
+        private readonly ?bool $replaced = null,
+        #[Property(
+            description: 'Number of entries the import removed from the store before writing the file into it; '
+                . 'zero unless the import replaced the configuration',
+            type: 'integer',
+            example: 0,
+            nullable: true
+        )]
+        private readonly ?int $removed = null,
+        #[Property(
+            description: 'The removed entries by name, the entities before the relations, the last element naming '
+                . 'how many more there are',
+            type: 'array',
+            items: new Items(type: 'string'),
+            example: ['group "Dimensions"', 'key "weight"'],
+            nullable: true
+        )]
+        private readonly ?array $removedEntries = null,
     ) {
     }
 
@@ -206,5 +232,23 @@ final class ImportReport implements AdditionalAttributesInterface
     public function getSkippedEntries(): ?array
     {
         return $this->skippedEntries;
+    }
+
+    public function isReplaced(): ?bool
+    {
+        return $this->replaced;
+    }
+
+    public function getRemoved(): ?int
+    {
+        return $this->removed;
+    }
+
+    /**
+     * @return string[]|null
+     */
+    public function getRemovedEntries(): ?array
+    {
+        return $this->removedEntries;
     }
 }

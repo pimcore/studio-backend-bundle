@@ -64,7 +64,21 @@ interface StoreTransferServiceInterface
 
     /**
      * Applies the artifact to the store of the route, which this never creates - the route already
-     * resolved one.
+     * resolved one. The file decides which of the two imports it is, and the report says which one
+     * happened ({@see ImportReport::isReplaced()}).
+     *
+     * A file describing this store is restored into it: entries are matched by identifier, created
+     * and updated, and nothing is deleted. This is the round trip and the cross installation
+     * restore, and it is unchanged.
+     *
+     * A file describing another store is imported as a duplicate. Every member identifier is
+     * regenerated for this store ({@see ArtifactDuplicatorInterface}), the store keeps its own
+     * identity and name, and what it held is removed before the file is written in its place
+     * ({@see StoreMemberPurgerInterface}) - which is what makes applying the same file twice give
+     * the same store rather than a second copy of everything in it.
+     *
+     * A dry run decides all of that and writes nothing, so the caller can show what a replace would
+     * remove before it happens.
      *
      * @throws ConflictException
      * @throws DatabaseException
@@ -72,24 +86,18 @@ interface StoreTransferServiceInterface
      * @throws InvalidArgumentException
      * @throws NotFoundException
      */
-    public function importStore(int $storeId, string $json): ImportReport;
+    public function importStore(int $storeId, string $json, bool $dryRun = false): ImportReport;
 
     /**
-     * Applies the artifact to the store it names, taking no store id: the store is created when no
-     * store carries the file's identifier and updated when one does, and nothing is ever deleted.
-     * A dry run reports the same decisions and writes nothing.
+     * Applies the artifact to the store the file itself names, creating that store when the
+     * installation does not carry it yet. Conflicts are reported rather than thrown, so that a dry
+     * run can name them all and the caller decides what a refused run exits with.
      *
-     * @throws ConflictException when the report has conflicts, naming them
-     * @throws DatabaseException
-     * @throws ElementSavingFailedException
-     * @throws InvalidArgumentException
-     */
-    public function applyConfiguration(string $json, bool $dryRun): ImportReport;
-
-    /**
-     * Applies the artifact to the store it names, creating that store when the installation does
-     * not carry it yet. Conflicts are reported rather than thrown, so that a dry run can name them
-     * all and the caller decides what a refused run exits with.
+     * The target is the file's own store identifier and nothing else, so this is reachable from the
+     * console alone ({@see \Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Command\ApplyStoreCommand}):
+     * deploying a configuration onto an instance that does not carry it yet has no store to be
+     * given. Nothing here ever duplicates or replaces - an operator who wants a configuration in a
+     * store of their choosing imports it into that store.
      *
      * @param Closure(string): void|null $onDecision
      *

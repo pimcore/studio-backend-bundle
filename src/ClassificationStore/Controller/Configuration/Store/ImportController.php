@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -77,6 +78,12 @@ final class ImportController extends AbstractApiController
                 type: 'string',
                 format: 'binary'
             ),
+            new Property(
+                property: 'dryRun',
+                description: 'Report what would be decided - what a replace would remove included - and write nothing',
+                type: 'boolean',
+                default: false
+            ),
         ],
         ['file']
     )]
@@ -89,10 +96,18 @@ final class ImportController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::CONFLICT,
     ])]
-    public function importStore(int $id, #[MapUploadedFile] UploadedFile $file): JsonResponse
-    {
+    public function importStore(
+        int $id,
+        Request $request,
+        #[MapUploadedFile] UploadedFile $file,
+    ): JsonResponse {
+        // read off the form bag by hand: a multipart body is not a payload the mapper can bind
         return $this->jsonResponse(
-            $this->storeTransferService->importStore($id, $file->getContent())
+            $this->storeTransferService->importStore(
+                $id,
+                $file->getContent(),
+                $request->request->getBoolean('dryRun')
+            )
         );
     }
 }

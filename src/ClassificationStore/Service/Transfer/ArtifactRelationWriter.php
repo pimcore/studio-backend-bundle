@@ -149,6 +149,145 @@ final readonly class ArtifactRelationWriter implements ArtifactRelationWriterInt
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function reconcileCollectionRelations(ApplyContext $context, ArtifactDocument $document): void
+    {
+        $section = ArtifactSection::COLLECTION_GROUP_RELATIONS;
+        $storeId = (int) $context->getStoreId();
+        $entries = $document->getEntries($section);
+        $matched = [];
+
+        $walk = fn (?ScopedCollectionRelation $after, int $limit): array => $this->collectionRelationRepository
+            ->getChunkAfter($storeId, $after, $limit);
+
+        foreach ($this->matcher->walkTargetByRowCursor($context, $walk) as $scoped) {
+            $relation = $scoped->getRelation();
+            $entryKey = $this->endpointIdentifier(
+                $context,
+                ArtifactSection::COLLECTIONS,
+                $relation->getColId(),
+                $scoped->getCollectionIdentifier()
+            )
+                . ArtifactParserInterface::ENTRY_KEY_SEPARATOR
+                . $this->endpointIdentifier(
+                    $context,
+                    ArtifactSection::GROUPS,
+                    $relation->getGroupId(),
+                    $scoped->getGroupIdentifier()
+                );
+            $label = $this->diagnostics->relationLabel($section, $entryKey);
+
+            if (!isset($entries[$entryKey])) {
+                $context->record(ApplyOutcome::TARGET_ONLY, $label);
+
+                continue;
+            }
+
+            $matched[$entryKey] = true;
+            $sorter = $this->artifactParser->readSorter($entries[$entryKey], $section);
+
+            if ($relation->getSorter() === $sorter) {
+                $context->record(ApplyOutcome::MATCHED_UNCHANGED, $label);
+
+                continue;
+            }
+
+            $context->record(ApplyOutcome::UPDATED, $label);
+
+            if (!$context->isDryRun()) {
+                $this->collectionRelationRepository->createOrUpdate(
+                    $relation->getColId(),
+                    $relation->getGroupId(),
+                    $sorter
+                );
+            }
+        }
+
+        foreach ($entries as $entryKey => $entry) {
+            if (isset($matched[$entryKey])) {
+                continue;
+            }
+
+            $this->createCollectionRelation($context, $entryKey, $entry);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function reconcileKeyAssignments(ApplyContext $context, ArtifactDocument $document): void
+    {
+        $section = ArtifactSection::KEY_GROUP_RELATIONS;
+        $storeId = (int) $context->getStoreId();
+        $entries = $document->getEntries($section);
+        $matched = [];
+
+        $walk = fn (?ScopedKeyAssignment $after, int $limit): array => $this->keyGroupRelationRepository
+            ->getChunkAfter($storeId, $after, $limit);
+
+        foreach ($this->matcher->walkTargetByRowCursor($context, $walk) as $scoped) {
+            $relation = $scoped->getRelation();
+            $entryKey = $this->endpointIdentifier(
+                $context,
+                ArtifactSection::GROUPS,
+                $relation->getGroupId(),
+                $scoped->getGroupIdentifier()
+            )
+                . ArtifactParserInterface::ENTRY_KEY_SEPARATOR
+                . $this->endpointIdentifier(
+                    $context,
+                    ArtifactSection::KEYS,
+                    $relation->getKeyId(),
+                    $scoped->getKeyIdentifier()
+                );
+
+            if (!isset($entries[$entryKey])) {
+                $context->record(
+                    ApplyOutcome::TARGET_ONLY,
+                    $this->diagnostics->relationLabel($section, $entryKey)
+                );
+
+                continue;
+            }
+
+            $matched[$entryKey] = true;
+            $this->writeKeyAssignment($context, $relation, $entries[$entryKey], $entryKey);
+        }
+
+        foreach ($entries as $entryKey => $entry) {
+            if (isset($matched[$entryKey])) {
+                continue;
+            }
+
+            $this->writeKeyAssignment($context, null, $entry, $entryKey);
+        }
+    }
+
+    /**
+     * The identifier one endpoint of a target relation is named by: the one this run has resolved
+     * for the endpoint's row, and only failing that the one the row itself carries.
+     *
+     * Adoption is why the row alone is not enough. Stamping the file's identifier onto a row that
+     * carried none is a write, and a dry run decides it without performing it - so the row still
+     * reads NULL while the run has already settled what its identifier is. Keying the relation off
+     * the row would then report an assignment the store already carries as target only, and the
+     * file's own entry for it as a creation, which is neither the update nor the match it is.
+     */
+    private function endpointIdentifier(
+        ApplyContext $context,
+        ArtifactSection $section,
+        ?int $id,
+        string $carried,
+    ): string {
+        if ($id === null) {
+            return $carried;
+        }
+
+        return $context->identifierOf($section, $id) ?? $carried;
+    }
+
+    /**
      * The endpoints of a relation this run skipped, named the way the file names them.
      *
      * @param list<array{0: ArtifactSection, 1: ?string}> $endpoints
