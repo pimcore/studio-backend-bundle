@@ -34,6 +34,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface;
+use Psr\Log\NullLogger;
 
 /**
  * A key is labelled the same whether its group was already active when the object opened - the
@@ -241,7 +242,8 @@ final class KeyLabelPathAgreementTest extends Unit
             $labelLanguageResolver,
             new InMemoryKeyLocalizationResolver(),
             new KeyQualifierResolver($serviceResolver),
-            new ProvidedOptionNarrower()
+            new ProvidedOptionNarrower(),
+            new NullLogger()
         );
     }
 

@@ -41,6 +41,7 @@ use function array_map;
 use function json_encode;
 use function str_contains;
 use function strtoupper;
+use Psr\Log\NullLogger;
 
 /**
  * The label is resolved through core's resolver, so none of the chain below the title column is
@@ -813,7 +814,8 @@ final class KeyGroupLayoutServiceTest extends Unit
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
             new InMemoryKeyLocalizationResolver(),
             new KeyQualifierResolver($serviceResolver),
-            new ProvidedOptionNarrower()
+            new ProvidedOptionNarrower(),
+            new NullLogger()
         );
     }
 
@@ -881,7 +883,8 @@ final class KeyGroupLayoutServiceTest extends Unit
             $this->createLabelLanguageResolver($userLanguage, self::DEFAULT_LANGUAGE),
             $keyLocalizationResolver,
             new KeyQualifierResolver($serviceResolver),
-            new ProvidedOptionNarrower()
+            new ProvidedOptionNarrower(),
+            new NullLogger()
         );
     }
 }

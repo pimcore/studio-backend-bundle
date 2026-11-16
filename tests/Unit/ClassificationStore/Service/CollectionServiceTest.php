@@ -51,6 +51,7 @@ use function array_keys;
 use function array_map;
 use function array_values;
 use function sprintf;
+use Psr\Log\NullLogger;
 
 /**
  * @internal
@@ -307,7 +308,8 @@ final class CollectionServiceTest extends Unit
                 $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
                 new InMemoryKeyLocalizationResolver(),
                 new KeyQualifierResolver($serviceResolver),
-                new ProvidedOptionNarrower()
+                new ProvidedOptionNarrower(),
+            new NullLogger()
             ),
             new GroupLayoutHydrator(),
             $this->createMock(ClassDefinitionResolverInterface::class),

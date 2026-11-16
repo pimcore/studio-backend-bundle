@@ -31,8 +31,10 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelationCache;
 use Pimcore\Model\DataObject\Classificationstore\LabelEntityType;
 use Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface;
 use Pimcore\Model\DataObject\Concrete;
+use Psr\Log\LoggerInterface;
 use Throwable;
 use function array_map;
+use function sprintf;
 
 /**
  * @internal
@@ -49,6 +51,7 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
         private KeyLocalizationResolverInterface $keyLocalizationResolver,
         private KeyQualifierResolverInterface $keyQualifierResolver,
         private ProvidedOptionNarrowerInterface $providedOptionNarrower,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -118,9 +121,14 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
 
             try {
                 $answering->enrichFieldDefinition($context);
-            } catch (Throwable) {
+            } catch (Throwable $e) {
                 // a provider that cannot answer leaves the list as it stands rather than failing the
-                // request, the tolerance {@see KeyOptionsResolver} publishes an unresolved key with
+                // request; logged because a swallowed Error is a bug, not an unresolvable key
+                $this->logger->warning(sprintf(
+                    'Classification store key %d could not enrich its options without an object: %s',
+                    $keyGroupRelation->getKeyId(),
+                    $e->getMessage()
+                ));
             }
         }
 
