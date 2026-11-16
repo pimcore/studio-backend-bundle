@@ -25,6 +25,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Block;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\BlockElement;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -91,6 +92,22 @@ final class BlockAdapterTest extends Unit
         $this->assertSame('text', $blockElement->getName());
         $this->assertSame('input', $blockElement->getType());
         $this->assertSame('hello world', $blockElement->getData());
+    }
+
+    /**
+     * Regression test: core does not run mandatory checks on single block elements, so the
+     * adapter must reject an empty value for a mandatory field inside a block instead of
+     * silently storing a BlockElement with null data.
+     *
+     * @see https://github.com/pimcore/service-operations/issues/1285 (PEES-1525)
+     *
+     * @throws Exception
+     */
+    public function testGetDataForSetterRejectsEmptyMandatoryBlockElement(): void
+    {
+        $this->expectException(ValidationException::class);
+
+        $this->callAdapter(['myBlock' => [['text' => null]]], mandatoryText: true);
     }
 
     /**
@@ -164,7 +181,7 @@ final class BlockAdapterTest extends Unit
     /**
      * @throws Exception
      */
-    private function callAdapter(array $data): ?array
+    private function callAdapter(array $data, bool $mandatoryText = false): ?array
     {
         $elementAdapter = $this->makeEmpty(SetterDataInterface::class, [
             'getDataForSetter' => static fn (
@@ -184,6 +201,7 @@ final class BlockAdapterTest extends Unit
 
         $textDefinition = new Input();
         $textDefinition->setName('text');
+        $textDefinition->setMandatory($mandatoryText);
 
         $blockDefinition = $this->makeEmpty(Block::class, [
             'getName' => 'myBlock',

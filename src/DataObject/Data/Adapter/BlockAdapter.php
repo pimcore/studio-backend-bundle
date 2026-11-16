@@ -28,10 +28,12 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Block;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\BlockElement;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function get_class;
 use function is_array;
+use function sprintf;
 
 /**
  * @internal
@@ -225,6 +227,19 @@ final readonly class BlockAdapter implements
             $fieldContextData,
             $isPatch
         );
+
+        // Core never validates the single elements of a block, so an empty mandatory
+        // element has to be rejected here before it is silently persisted.
+        if (
+            !$element->getOmitMandatoryCheck()
+            && $fieldDefinition->getMandatory()
+            && $fieldDefinition->isEmpty($data)
+        ) {
+            throw new ValidationException(
+                sprintf('Empty mandatory block element [ %s ]', $elementName)
+            );
+        }
+
         if (!$this->validateEncryptedField($fieldDefinition, $data)) {
             return null;
         }
