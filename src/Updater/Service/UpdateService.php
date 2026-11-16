@@ -82,17 +82,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         }
 
         if ($element instanceof Concrete) {
-            // ElementSaveService and the publish adapters apply this flag only while saving,
-            // which is too late for the mandatory validation the data adapters perform during
-            // binding below: core would fall back to omitting the check while the element is
-            // still unpublished, even when this very request publishes it.
-            $omitMandatoryCheck = ElementSaveTasks::resolveOmitMandatoryCheckForBinding(
-                $task,
-                $data[ElementSaveServiceInterface::INDEX_PUBLISHED] ?? null
-            );
-            if ($omitMandatoryCheck !== null) {
-                $element->setOmitMandatoryCheck($omitMandatoryCheck);
-            }
+            $this->resolveMandatoryCheckForBinding($element, $task, $data);
         }
 
         if (isset($data[self::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
@@ -138,6 +128,23 @@ final readonly class UpdateService implements UpdateServiceInterface
             throw $e;
         } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage());
+        }
+    }
+
+    /**
+     * ElementSaveService and the publish adapters apply the omitMandatoryCheck flag only while saving,
+     * which is too late for the mandatory validation the data adapters perform during binding:
+     * core would fall back to omitting the check while the element is still unpublished,
+     * even when this very request publishes it.
+     */
+    private function resolveMandatoryCheckForBinding(Concrete $element, ?string $task, array $data): void
+    {
+        $omitMandatoryCheck = ElementSaveTasks::resolveOmitMandatoryCheckForBinding(
+            $task,
+            $data[ElementSaveServiceInterface::INDEX_PUBLISHED] ?? null
+        );
+        if ($omitMandatoryCheck !== null) {
+            $element->setOmitMandatoryCheck($omitMandatoryCheck);
         }
     }
 

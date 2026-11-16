@@ -66,7 +66,7 @@ enum ElementSaveTasks: string
      */
     public static function resolveOmitMandatoryCheckForBinding(?string $task, mixed $published): ?bool
     {
-        if (self::omitsMandatoryCheck($task) || $published === false) {
+        if (static::omitsMandatoryCheck($task) || $published === false) {
             return true;
         }
 
