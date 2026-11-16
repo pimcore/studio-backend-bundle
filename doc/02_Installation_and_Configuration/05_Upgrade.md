@@ -142,15 +142,19 @@ The following steps are necessary during updating to newer versions.
   qualified API, with its `variants` published as objects carrying a `name` and an optional `label`, and a `maximum`.
   `variants` or `multiValue` written into the definition of a key of any other type are ignored, not migrated: such a
   key keeps holding one value of its own type, and a value already stored for it is left as it is.
-- [Classification Store] Added: a store's whole configuration can be exported and applied again as one file, from the
-  store editor, from an API endpoint that takes the file without a store id, and from the console commands
-  `studio-backend-bundle:classificationstore:export` and `studio-backend-bundle:classificationstore:apply`. Applying
-  creates and updates but never deletes, so un-assigning a key from a group stays a manual step in the Studio UI, and it
-  writes the file's store name and description onto the store it is applied to. An entry whose identifier is absent from
-  the store is created, while an entry whose name already belongs to another identifier is skipped and named in the
-  report, on both the store-scoped import and the new endpoint; such a file used to be refused with a conflict and is now
-  applied partly. The report naming what was created, updated, adopted, skipped and left in place is the command's and
-  the API response's; the editor's import action only reports that the file was applied.
+- [Classification Store] Added: a store's whole configuration can be exported and imported again as one file, from the
+  store editor, from the store-scoped import endpoint and from the console commands
+  `studio-backend-bundle:classificationstore:export` and `studio-backend-bundle:classificationstore:apply` (the command
+  targets the store the file itself names, creating it when the installation does not carry it yet, which is the
+  deployment case). Importing a file that describes the store it is sent to creates and updates but never deletes, so
+  un-assigning a key from a group stays a manual step in the Studio UI; an entry whose identifier is absent is created,
+  an entry whose name already belongs to another identifier is skipped and named in the report. Importing a file that
+  describes a *different* store duplicates it instead: every sub group, collection, group and key gets a freshly
+  generated identifier, the store keeps its own identifier and name, and the configuration it held is removed and
+  replaced by the file's, so importing the same file twice gives the same store rather than a second copy. Send
+  `dryRun` with the import to get the report - what would be removed included - without writing anything. The report
+  naming what was created, updated, adopted, skipped, removed and left in place is the command's and the API
+  response's.
 - [Classification Store] Changed: a key's own `localized` flag is now honoured by the object data endpoints, where the
   class field's flag alone used to decide, so a key localized inside a non-localized field is read and written per
   language.

@@ -33,7 +33,8 @@ use function sprintf;
  */
 #[AsCommand(
     name: 'studio-backend-bundle:classificationstore:apply',
-    description: 'Apply a classification store configuration file, creating and updating but never deleting.'
+    description: 'Apply a classification store configuration file to the store it names, creating and updating '
+        . 'but never deleting.'
 )]
 final class ApplyStoreCommand extends Command
 {
@@ -42,6 +43,12 @@ final class ApplyStoreCommand extends Command
     private const string OPTION_DRY_RUN = 'dry-run';
 
     private const string HELP = <<<'HELP'
+        The target is the store the file itself names, by the identifier in its "store" entry: the store that
+        carries it is updated, and one is created when no store on this installation does. That is what a
+        deployment needs - restoring a configuration onto a fresh instance has no store to be given - and it is
+        the only thing this command does. It never regenerates identifiers and never replaces a configuration;
+        importing a file into a store of your choosing is the import endpoint's job.
+
         Apply reads the whole file, so its peak memory grows with the number of entities the file holds.
 
         A store of ETIM shape needs roughly 222 MB: it completes under a memory limit of 512M and does not

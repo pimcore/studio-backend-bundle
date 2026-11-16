@@ -122,6 +122,18 @@ interface KeyRepositoryInterface
     public function softDelete(int $id): void;
 
     /**
+     * Deletes the key row itself, with the assignments the database takes with it. The product's own
+     * delete is {@see self::softDelete()}, which keeps the row and only disables it; this is for the
+     * one caller that has to leave nothing behind - a replacing apply
+     * ({@see \Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreMemberPurgerInterface}),
+     * where a disabled row would still hold the name and be a second copy of the entry on the next
+     * apply of the same file.
+     *
+     * @throws NotFoundException
+     */
+    public function delete(int $id): void;
+
+    /**
      * Writes the key's `enabled` flag true and nothing else; a key that is already enabled is answered
      * as it is, without a write.
      *

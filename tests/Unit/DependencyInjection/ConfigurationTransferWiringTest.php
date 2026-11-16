@@ -17,17 +17,22 @@ use Codeception\Test\Unit;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Command\ApplyStoreCommand;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Command\ExportStoreCommand;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Controller\Configuration\Store\ApplyController;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Controller\Configuration\Store\ExportController;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Controller\Configuration\Store\ImportController;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilder;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilderInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDuplicator;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDuplicatorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryMapper;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryMapperInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParserInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\IdentifierGenerator;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\IdentifierGeneratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Reconciler;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ReconcilerInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreMemberPurger;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreMemberPurgerInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreTransferService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreTransferServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
@@ -48,6 +53,10 @@ use function sprintf;
  * a whole store's configuration has to be guarded. Neither fails in a way the services' own tests
  * would notice.
  *
+ * The console apply is the one door that takes no store: it is how a configuration reaches an
+ * instance that does not carry it yet. Over HTTP there is no such door, so no request can land a
+ * configuration in a store the caller did not name.
+ *
  * @internal
  */
 final class ConfigurationTransferWiringTest extends Unit
@@ -64,6 +73,9 @@ final class ConfigurationTransferWiringTest extends Unit
             ArtifactEntryMapperInterface::class => ArtifactEntryMapper::class,
             ArtifactBuilderInterface::class => ArtifactBuilder::class,
             ArtifactParserInterface::class => ArtifactParser::class,
+            IdentifierGeneratorInterface::class => IdentifierGenerator::class,
+            ArtifactDuplicatorInterface::class => ArtifactDuplicator::class,
+            StoreMemberPurgerInterface::class => StoreMemberPurger::class,
             ReconcilerInterface::class => Reconciler::class,
             StoreTransferServiceInterface::class => StoreTransferService::class,
         ];
@@ -113,7 +125,7 @@ final class ConfigurationTransferWiringTest extends Unit
         }
     }
 
-    public function testTheTwoRoutesAreDeclared(): void
+    public function testBothRoutesAreDeclared(): void
     {
         $expected = [
             ExportController::class => [
@@ -124,11 +136,6 @@ final class ConfigurationTransferWiringTest extends Unit
             ImportController::class => [
                 'pimcore_studio_api_cs_configuration_store_import',
                 '/classification-store/configuration/stores/{id}/import',
-                'POST',
-            ],
-            ApplyController::class => [
-                'pimcore_studio_api_cs_configuration_store_apply',
-                '/classification-store/configuration/stores/apply',
                 'POST',
             ],
         ];
@@ -148,7 +155,7 @@ final class ConfigurationTransferWiringTest extends Unit
      */
     public function testBothEndpointsAreGuardedByTheClassificationStorePermission(): void
     {
-        foreach ([ExportController::class, ImportController::class, ApplyController::class] as $controller) {
+        foreach ([ExportController::class, ImportController::class] as $controller) {
             $arguments = $this->getAttributeArguments($controller, IsGranted::class);
 
             $this->assertSame(UserPermissions::CLASSIFICATION_STORE->value, $arguments[0]);
@@ -156,21 +163,23 @@ final class ConfigurationTransferWiringTest extends Unit
     }
 
     /**
-     * The operation id is what the generated OpenAPI document carries the route under.
+     * The operation id is what the generated OpenAPI document carries the route under. There is one
+     * import route and no store-less apply beside it: a configuration is always written into a
+     * store the caller named.
      */
-    public function testTheApplyRouteIsDocumentedUnderItsOperationId(): void
+    public function testTheImportRouteIsDocumentedUnderItsOperationId(): void
     {
-        $arguments = $this->getAttributeArguments(ApplyController::class, Post::class);
+        $arguments = $this->getAttributeArguments(ImportController::class, Post::class);
 
-        $this->assertSame(self::OPERATION_PREFIX . 'apply', $arguments['operationId']);
-        $this->assertStringEndsWith('/classification-store/configuration/stores/apply', $arguments['path']);
+        $this->assertSame(self::OPERATION_PREFIX . 'import', $arguments['operationId']);
+        $this->assertStringEndsWith('/classification-store/configuration/stores/{id}/import', $arguments['path']);
     }
 
     public function testEveryOperationHasItsApiDocTranslations(): void
     {
         $catalogue = Yaml::parseFile(dirname(__DIR__, 3) . '/translations/studio_api_docs.en.yaml');
 
-        foreach (['export', 'import', 'apply'] as $operation) {
+        foreach (['export', 'import'] as $operation) {
             foreach (['_description', '_summary', '_success_response'] as $suffix) {
                 $key = self::OPERATION_PREFIX . $operation . $suffix;
 

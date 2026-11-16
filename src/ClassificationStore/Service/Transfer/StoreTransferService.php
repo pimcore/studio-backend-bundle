@@ -41,6 +41,7 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
 
     public function __construct(
         private ArtifactBuilderInterface $artifactBuilder,
+        private ArtifactDuplicatorInterface $artifactDuplicator,
         private ArtifactParserInterface $artifactParser,
         private KeyRelationResolverInterface $keyRelationResolver,
         private ReconcilerInterface $reconciler,
@@ -85,15 +86,18 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
     /**
      * {@inheritdoc}
      */
-    public function importStore(int $storeId, string $json): ImportReport
+    public function importStore(int $storeId, string $json, bool $dryRun = false): ImportReport
     {
         $store = $this->storeRepository->getById($storeId);
         $document = $this->artifactParser->parse($json);
+        $replace = $this->describesAnotherStore($store, $document);
 
-        $this->assertFileDescribesStore($store, $document);
+        if ($replace) {
+            $document = $this->artifactDuplicator->duplicate($document);
+        }
 
         try {
-            $report = $this->reconciler->apply($document, $store, false);
+            $report = $this->reconciler->apply($document, $store, $dryRun, $replace);
         } finally {
             $this->keyRelationResolver->clear();
         }
@@ -110,23 +114,7 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
         // one remap for the whole apply, handed over only now its transaction has committed
         $this->searchIndexRemapTrigger->flush();
 
-        return $this->buildImportReport($report);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function applyConfiguration(string $json, bool $dryRun): ImportReport
-    {
-        $report = $this->applyArtifact($json, $dryRun);
-
-        if ($report->hasConflicts()) {
-            throw new ConflictException(
-                'The configuration was not applied: ' . implode('; ', $report->getNamed(ApplyOutcome::CONFLICT))
-            );
-        }
-
-        return $this->buildImportReport($report);
+        return $this->buildImportReport($report, $replace);
     }
 
     /**
@@ -138,7 +126,7 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
         $store = $this->storeRepository->getByIdentifier($document->getStoreIdentifier());
 
         try {
-            $report = $this->reconciler->apply($document, $store, $dryRun, $onDecision);
+            $report = $this->reconciler->apply($document, $store, $dryRun, false, $onDecision);
         } finally {
             $this->keyRelationResolver->clear();
         }
@@ -156,29 +144,24 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
     }
 
     /**
-     * The file has to describe the store of the route: one that carries another identifier, or one
-     * whose identifier names a different store, is a configuration of somewhere else.
+     * Whether the file is a configuration of somewhere else, which is what makes the import a
+     * duplicate rather than a restore.
      *
-     * @throws ConflictException
+     * A store that carries an identifier answers for itself. A store that carries none can still be
+     * the one the file is about - that is the adoption the apply performs - unless another store
+     * already owns the file's identifier, in which case the row in front of the operator is not it.
      */
-    private function assertFileDescribesStore(StoreConfig $store, ArtifactDocument $document): void
+    private function describesAnotherStore(StoreConfig $store, ArtifactDocument $document): bool
     {
-        $identifier = $document->getStoreIdentifier();
         $carried = $store->getIdentifier();
 
-        if ($carried !== null && $carried !== $identifier) {
-            throw new ConflictException(
-                sprintf('The file describes the store "%s", which is not the store it was sent to.', $identifier)
-            );
+        if ($carried !== null) {
+            return $carried !== $document->getStoreIdentifier();
         }
 
-        $named = $this->storeRepository->getByIdentifier($identifier);
+        $named = $this->storeRepository->getByIdentifier($document->getStoreIdentifier());
 
-        if ($named !== null && $named->getId() !== $store->getId()) {
-            throw new ConflictException(
-                sprintf('The store "%s" the file describes already exists as another store.', $identifier)
-            );
-        }
+        return $named !== null && $named->getId() !== $store->getId();
     }
 
     /**
@@ -198,7 +181,7 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
         );
     }
 
-    private function buildImportReport(ApplyReport $report): ImportReport
+    private function buildImportReport(ApplyReport $report, bool $replaced): ImportReport
     {
         return new ImportReport(
             created: $report->getCount(ApplyOutcome::CREATED),
@@ -213,6 +196,9 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
             conflicts: $report->getNamed(ApplyOutcome::CONFLICT),
             skipped: $report->getCount(ApplyOutcome::SKIPPED),
             skippedEntries: $report->getNamed(ApplyOutcome::SKIPPED),
+            replaced: $replaced,
+            removed: $report->getCount(ApplyOutcome::REMOVED),
+            removedEntries: $report->getNamed(ApplyOutcome::REMOVED),
         );
     }
 }

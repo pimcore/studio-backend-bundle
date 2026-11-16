@@ -39,6 +39,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Arti
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Reconciler;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedCollectionRelation;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreMemberPurger;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
@@ -614,6 +615,15 @@ final class ArtifactRoundTripTest extends Unit
             $keyGroupRelationRepository,
             $keyRepository,
             $this->makeEmpty(SearchIndexRemapTriggerInterface::class),
+            new StoreMemberPurger(
+                $diagnostics,
+                $collectionRepository,
+                $collectionRelationRepository,
+                $groupRepository,
+                $keyGroupRelationRepository,
+                $keyRepository,
+                $subGroupRepository
+            ),
             $storeRepository,
             $subGroupRepository
         );

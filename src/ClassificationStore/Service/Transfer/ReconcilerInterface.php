@@ -29,6 +29,14 @@ interface ReconcilerInterface
      * Writes the artifact into the store, creating and updating but never deleting: what the store
      * carries and the file does not is left in place and named in the report.
      *
+     * `$replace` is the one exception, and it is the whole of what a cross store import is: the
+     * store keeps its own identity and name - the file's store entry is read by nothing - and
+     * everything it holds is removed before the file is written in its place
+     * ({@see StoreMemberPurgerInterface}). It is only ever passed with a document whose member
+     * identifiers were regenerated for this store ({@see ArtifactDuplicatorInterface}), because
+     * without that the removal would take out exactly the rows the file is about to recreate under
+     * the identifiers they already had.
+     *
      * The seven sections are applied as one transaction, in the order the store, the sub groups,
      * the collections, the groups, the keys, the collection relations and the key assignments -
      * every one of them needs the ones before it resolved. A conflict does not stop the run: the
@@ -59,6 +67,7 @@ interface ReconcilerInterface
         ArtifactDocument $document,
         ?StoreConfig $store,
         bool $dryRun,
+        bool $replace = false,
         ?Closure $onDecision = null,
     ): ApplyReport;
 }

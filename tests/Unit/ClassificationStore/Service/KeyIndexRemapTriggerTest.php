@@ -47,6 +47,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Appl
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyReport;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilderInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDocument;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDuplicatorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryWriter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser;
@@ -1616,6 +1617,7 @@ final class KeyIndexRemapTriggerTest extends Unit
 
         return new StoreTransferService(
             $this->makeEmpty(ArtifactBuilderInterface::class, ['stream' => []]),
+            $this->makeEmpty(ArtifactDuplicatorInterface::class),
             new ArtifactParser(),
             $this->makeEmpty(KeyRelationResolverInterface::class),
             $this->makeEmpty(ReconcilerInterface::class, [

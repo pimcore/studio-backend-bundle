@@ -106,6 +106,8 @@ final class ApplyContext
 
     private bool $storeCreated = false;
 
+    private bool $targetCleared = false;
+
     private ?int $storeId = null;
 
     public function __construct(
@@ -147,6 +149,34 @@ final class ApplyContext
     public function setStoreCreated(bool $storeCreated): void
     {
         $this->storeCreated = $storeCreated;
+    }
+
+    /**
+     * Whether this apply took everything the target held out before writing the file into it
+     * ({@see StoreMemberPurgerInterface}).
+     *
+     * A dry run removes nothing, so the rows are still there to be read - and reading them would
+     * make the two modes disagree about the one thing the dry run is asked for. What is walked is
+     * what is matched ({@see ArtifactTargetMatcherInterface::walkTargetByIdCursor()}), so the flag
+     * is what closes the walks instead, and both modes then decide the file against an empty store.
+     */
+    public function isTargetCleared(): bool
+    {
+        return $this->targetCleared;
+    }
+
+    public function setTargetCleared(bool $targetCleared): void
+    {
+        $this->targetCleared = $targetCleared;
+    }
+
+    /**
+     * Whether no row of the store predates this run: it created the store, or it removed everything
+     * the store held. Nothing is then skipped for sharing a name with a row that is not there.
+     */
+    public function holdsNoPriorRows(): bool
+    {
+        return $this->storeCreated || $this->targetCleared;
     }
 
     /**

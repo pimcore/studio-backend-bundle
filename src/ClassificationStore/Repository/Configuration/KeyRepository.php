@@ -360,6 +360,14 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     /**
      * {@inheritdoc}
      */
+    public function delete(int $id): void
+    {
+        $this->getById($id)->delete();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function restore(int $id): KeyConfig
     {
         return $this->writeHoldingTheRow($id, fn (): KeyConfig => $this->writeRestore($id))->getConfig();

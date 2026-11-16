@@ -35,9 +35,14 @@ use function sprintf;
 
 /**
  * Drives one apply: the seven sections in the order each needs the ones before it resolved, inside
- * one transaction. What an entry describes is the matcher's ({@see ArtifactTargetMatcherInterface}),
- * what one entry becomes is the writer's ({@see ArtifactEntryWriterInterface}), and how a refusal
- * reads is the diagnostics' ({@see ApplyDiagnosticsInterface}).
+ * one transaction. A replacing apply has one step more - everything the target holds is removed
+ * first ({@see StoreMemberPurgerInterface}), inside the same transaction, and the sections then
+ * read the store as the empty one it has become in both modes
+ * ({@see ApplyContext::isTargetCleared()}).
+ *
+ * What an entry describes is the matcher's ({@see ArtifactTargetMatcherInterface}), what one entry
+ * becomes is the writer's ({@see ArtifactEntryWriterInterface}), and how a refusal reads is the
+ * diagnostics' ({@see ApplyDiagnosticsInterface}).
  *
  * ## Who takes back the search index remap notes
  *
@@ -70,6 +75,7 @@ final readonly class Reconciler implements ReconcilerInterface
         private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
         private KeyRepositoryInterface $keyRepository,
         private SearchIndexRemapTriggerInterface $searchIndexRemapTrigger,
+        private StoreMemberPurgerInterface $storeMemberPurger,
         private StoreRepositoryInterface $storeRepository,
         private SubGroupRepositoryInterface $subGroupRepository,
     ) {
@@ -82,6 +88,7 @@ final readonly class Reconciler implements ReconcilerInterface
         ArtifactDocument $document,
         ?StoreConfig $store,
         bool $dryRun,
+        bool $replace = false,
         ?Closure $onDecision = null,
     ): ApplyReport {
         $context = new ApplyContext($dryRun, new ApplyReport(), $onDecision);
@@ -97,7 +104,7 @@ final readonly class Reconciler implements ReconcilerInterface
         $mark = $this->searchIndexRemapTrigger->mark();
 
         try {
-            $this->applyStore($context, $document, $store);
+            $this->applyStore($context, $document, $store, $replace);
 
             // a store step that conflicted left no store to write the sections into: they would read
             // as all new against store 0 and insert rows there
@@ -106,6 +113,13 @@ final readonly class Reconciler implements ReconcilerInterface
             }
 
             $this->holdTheGroupsOfTheStore($context);
+
+            // after the hold, so the removals take the group rows in the order every writer here does
+            if ($replace) {
+                $this->storeMemberPurger->purge($context);
+                $context->setTargetCleared(true);
+            }
+
             $this->applySubGroups($context, $document);
             $this->applyCollections($context, $document);
             $this->applyGroups($context, $document);
@@ -170,8 +184,24 @@ final readonly class Reconciler implements ReconcilerInterface
         $this->groupRepository->holdGroupsOfStore($storeId);
     }
 
-    private function applyStore(ApplyContext $context, ArtifactDocument $document, ?StoreConfig $store): void
-    {
+    private function applyStore(
+        ApplyContext $context,
+        ArtifactDocument $document,
+        ?StoreConfig $store,
+        bool $replace,
+    ): void {
+        if ($replace && $store !== null) {
+            // the file's store entry is advisory here: its identifier is another installation row's
+            // and is globally unique, and its name is not this store's to take
+            $context->setStoreId($store->getId());
+            $context->record(
+                ApplyOutcome::MATCHED_UNCHANGED,
+                $this->diagnostics->label(ArtifactSection::STORE, (string) $store->getName())
+            );
+
+            return;
+        }
+
         $identifier = $document->getStoreIdentifier();
         $name = $document->getStoreName();
         $description = $document->getStoreDescription();
