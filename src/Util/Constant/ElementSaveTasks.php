@@ -41,4 +41,18 @@ enum ElementSaveTasks: string
             true
         );
     }
+
+    /**
+     * Draft saves (version/autosave) and unpublishing persist without mandatory checks
+     * (see ElementSaveService). Field-level validation that runs earlier, while the data
+     * adapters bind the payload, has to honour the same tasks.
+     */
+    public static function omitsMandatoryCheck(?string $task): bool
+    {
+        return in_array(
+            $task,
+            [self::AUTOSAVE->value, self::VERSION->value, self::UNPUBLISH->value],
+            true
+        );
+    }
 }

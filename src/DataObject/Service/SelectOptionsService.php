@@ -74,7 +74,10 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
         $changedData = $this->getApplicableChangedData($selectOptionsParameter, $object);
         if ($changedData !== []) {
             // changedData arrives in the Studio data format (e.g. localizedfields as attribute -> language),
-            // so it has to be applied through the same data adapters as a regular save.
+            // so it has to be applied through the same data adapters as a regular save. It is only applied
+            // in memory to resolve the options, never persisted, so the adapters' mandatory validation
+            // must not reject still-incomplete editor input here.
+            $object->setOmitMandatoryCheck(true);
             $this->dataService->updateEditableData($object, $changedData, $user);
         }
 

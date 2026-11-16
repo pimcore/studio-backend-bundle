@@ -111,6 +111,26 @@ final class BlockAdapterTest extends Unit
     }
 
     /**
+     * Draft saves (version/autosave) and unpublishing set omitMandatoryCheck on the element,
+     * so incomplete mandatory block elements must be accepted there like everywhere else.
+     *
+     * @throws Exception
+     */
+    public function testGetDataForSetterAcceptsEmptyMandatoryBlockElementWhenMandatoryCheckIsOmitted(): void
+    {
+        $result = $this->callAdapter(
+            ['myBlock' => [['text' => null]]],
+            mandatoryText: true,
+            omitMandatoryCheck: true
+        );
+
+        $this->assertIsArray($result);
+        $this->assertCount(1, $result);
+        $this->assertInstanceOf(BlockElement::class, $result[0]['text']);
+        $this->assertNull($result[0]['text']->getData());
+    }
+
+    /**
      * Regression test: a block inside localized fields must hand its child adapters the stored items
      * of the language being saved, not the ones of the current/default locale.
      *
@@ -181,8 +201,11 @@ final class BlockAdapterTest extends Unit
     /**
      * @throws Exception
      */
-    private function callAdapter(array $data, bool $mandatoryText = false): ?array
-    {
+    private function callAdapter(
+        array $data,
+        bool $mandatoryText = false,
+        bool $omitMandatoryCheck = false
+    ): ?array {
         $elementAdapter = $this->makeEmpty(SetterDataInterface::class, [
             'getDataForSetter' => static fn (
                 Concrete $element,
@@ -209,7 +232,10 @@ final class BlockAdapterTest extends Unit
         ]);
 
         return $adapter->getDataForSetter(
-            $this->makeEmpty(Concrete::class, ['getClassId' => 'test-class']),
+            $this->makeEmpty(Concrete::class, [
+                'getClassId' => 'test-class',
+                'getOmitMandatoryCheck' => $omitMandatoryCheck,
+            ]),
             $blockDefinition,
             'myBlock',
             $data,

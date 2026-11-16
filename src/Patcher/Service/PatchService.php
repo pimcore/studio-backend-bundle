@@ -165,6 +165,13 @@ final readonly class PatchService implements PatchServiceInterface
         }
 
         $coauthor = $this->coauthorService->extractFromPayload($elementPatchData);
+        $task = $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null;
+
+        if ($element instanceof Concrete && ElementSaveTasks::omitsMandatoryCheck($task)) {
+            // ElementSaveService sets this flag only while saving, which is too late for the
+            // mandatory validation the data adapters perform during binding below.
+            $element->setOmitMandatoryCheck(true);
+        }
 
         try {
             if (isset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
@@ -172,9 +179,7 @@ final readonly class PatchService implements PatchServiceInterface
                     $element,
                     $elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY],
                     $user,
-                    ElementSaveTasks::appliesRemoteChanges(
-                        $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null
-                    )
+                    ElementSaveTasks::appliesRemoteChanges($task)
                 );
 
                 unset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]);
@@ -185,11 +190,11 @@ final readonly class PatchService implements PatchServiceInterface
                 $adapter->patch($element, $elementPatchData, $user);
             }
 
-            $save = function () use ($element, $user, $elementPatchData): void {
+            $save = function () use ($element, $user, $task, $elementPatchData): void {
                 $this->elementSaveService->save(
                     $element,
                     $user,
-                    $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null
+                    $task
                 );
 
                 if (isset($elementPatchData['index'])) {
