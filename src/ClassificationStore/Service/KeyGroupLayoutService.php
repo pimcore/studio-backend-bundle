@@ -23,13 +23,18 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\VariantLayout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
+use Pimcore\Model\DataObject\ClassDefinition\Data\FieldDefinitionEnrichmentInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\LayoutDefinitionEnrichmentInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelationCache;
 use Pimcore\Model\DataObject\Classificationstore\LabelEntityType;
 use Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface;
 use Pimcore\Model\DataObject\Concrete;
+use Psr\Log\LoggerInterface;
+use Throwable;
 use function array_map;
+use function sprintf;
 
 /**
  * @internal
@@ -46,6 +51,7 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
         private KeyLocalizationResolverInterface $keyLocalizationResolver,
         private KeyQualifierResolverInterface $keyQualifierResolver,
         private ProvidedOptionNarrowerInterface $providedOptionNarrower,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -79,9 +85,54 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
 
             // the provider has just replaced the list wholesale, so the subset is applied to what it handed over
             $this->providedOptionNarrower->narrow($definition, $keyGroupRelation);
+        } elseif ($definition instanceof LayoutDefinitionEnrichmentInterface) {
+            // the grid's field-filter panel asks without an object, and the stored blob carries no list
+            $this->enrichWithoutObject($definition, $fieldName, $keyGroupRelation);
         }
 
         return $definition;
+    }
+
+    /**
+     * Core's object-less entry point, {@see FieldDefinitionEnrichmentInterface::enrichFieldDefinition()},
+     * followed by the same subset the object branch applies - so an endpoint called without an object
+     * offers the editor the list it offers with one.
+     *
+     * It is the type that answers for the value which implements it: a wrapper forwards the layout
+     * enrichment to its delegate and has no object-less counterpart of its own.
+     */
+    private function enrichWithoutObject(
+        Data $definition,
+        string $fieldName,
+        KeyGroupRelation $keyGroupRelation,
+    ): void {
+        $answering = KeyGroupRelationCache::getAnsweringDefinition($definition);
+
+        if ($answering instanceof FieldDefinitionEnrichmentInterface) {
+            $context = [
+                'ownerType' => 'classificationstore',
+                'ownerName' => $fieldName,
+                // the purpose the object branch hands the provider, so the two ask the same question
+                'purpose' => 'layout',
+                'keyId' => $keyGroupRelation->getKeyId(),
+                'groupId' => $keyGroupRelation->getGroupId(),
+                'keyDefinition' => $definition,
+            ];
+
+            try {
+                $answering->enrichFieldDefinition($context);
+            } catch (Throwable $e) {
+                // a provider that cannot answer leaves the list as it stands rather than failing the
+                // request; logged because a swallowed Error is a bug, not an unresolvable key
+                $this->logger->warning(sprintf(
+                    'Classification store key %d could not enrich its options without an object: %s',
+                    $keyGroupRelation->getKeyId(),
+                    $e->getMessage()
+                ));
+            }
+        }
+
+        $this->providedOptionNarrower->narrow($definition, $keyGroupRelation);
     }
 
     /**

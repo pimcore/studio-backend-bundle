@@ -53,6 +53,7 @@ use function array_keys;
 use function array_map;
 use function json_encode;
 use function sprintf;
+use Psr\Log\NullLogger;
 
 /**
  * @internal
@@ -283,7 +284,8 @@ final class GroupServiceTest extends Unit
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
             new InMemoryKeyLocalizationResolver(),
             new KeyQualifierResolver($serviceResolver),
-            new ProvidedOptionNarrower()
+            new ProvidedOptionNarrower(),
+            new NullLogger()
         );
 
         return $this->createService($keyRelationResolver, $keyGroupLayoutService);
@@ -433,7 +435,8 @@ final class GroupServiceTest extends Unit
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
             new InMemoryKeyLocalizationResolver(),
             new KeyQualifierResolver($serviceResolver),
-            new ProvidedOptionNarrower()
+            new ProvidedOptionNarrower(),
+            new NullLogger()
         );
 
         return $this->createService($keyRelationResolver, $keyGroupLayoutService);

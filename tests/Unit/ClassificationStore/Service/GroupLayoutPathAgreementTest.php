@@ -45,6 +45,7 @@ use function array_intersect_key;
 use function array_map;
 use function json_encode;
 use function sprintf;
+use Psr\Log\NullLogger;
 
 /**
  * A group is laid out the same whether it was already assigned when the object opened - the object
@@ -290,7 +291,8 @@ final class GroupLayoutPathAgreementTest extends Unit
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
             new InMemoryKeyLocalizationResolver(),
             new KeyQualifierResolver($serviceResolver),
-            new ProvidedOptionNarrower()
+            new ProvidedOptionNarrower(),
+            new NullLogger()
         );
     }
 
