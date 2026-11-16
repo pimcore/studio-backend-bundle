@@ -253,11 +253,10 @@ final readonly class RedirectsService implements RedirectsServiceInterface
             return;
         }
 
-        // a client that sends no type cannot say which tree it meant, so the type is detected;
-        // one that does restricts the lookup, which is how an ambiguous path is disambiguated
-        $resolved = $targetType !== null
-            ? $this->targetResolver->resolveElement($target, $targetType)
-            : $this->targetResolver->detectElement($target);
+        // a client that sends no type gets what targets always meant: a document path. Another
+        // tree is only searched when the client names it, so a plain path is never silently
+        // turned into an asset or object reference.
+        $resolved = $this->targetResolver->resolveElement($target, $targetType ?? ElementType::Document);
 
         if ($resolved === null && $targetType !== null) {
             throw new InvalidArgumentException(
