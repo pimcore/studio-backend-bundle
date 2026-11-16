@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
 use Pimcore\Model\User;
 
 /**
@@ -35,6 +36,10 @@ interface ServiceUserRepositoryInterface
 
     /**
      * @throws ElementExistsException when a user or service user already has the name
+     * @throws UnprocessableContentException when core refuses the service user on save, for example a service
+     *                                       user set as responsible or a responsible user or role id that was
+     *                                       deleted before the save, or administrator rights, two-factor
+     *                                       authentication or a type change on a service user
      * @throws DatabaseException
      */
     public function saveServiceUser(User $serviceUser): void;
