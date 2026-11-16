@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SubGroupLayoutResolver;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
@@ -216,7 +217,7 @@ final class SubGroupServiceTest extends Unit
             $keyGroupLayoutService,
             new GroupLayoutHydrator(),
             $this->createMock(ClassDefinitionResolverInterface::class),
-            $subGroupRepository,
+            new SubGroupLayoutResolver($subGroupRepository),
             $this->createMock(LabelLanguageResolverInterface::class),
         );
     }

@@ -45,6 +45,7 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
         private LabelLanguageResolverInterface $labelLanguageResolver,
         private KeyLocalizationResolverInterface $keyLocalizationResolver,
         private KeyQualifierResolverInterface $keyQualifierResolver,
+        private ProvidedOptionNarrowerInterface $providedOptionNarrower,
     ) {
     }
 
@@ -75,6 +76,9 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             $context['keyDefinition'] = $definition;
 
             $definition = $definition->enrichLayoutDefinition($object, $context);
+
+            // the provider has just replaced the list wholesale, so the subset is applied to what it handed over
+            $this->providedOptionNarrower->narrow($definition, $keyGroupRelation);
         }
 
         return $definition;
@@ -158,7 +162,60 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
     /**
      * {@inheritdoc}
      */
+    public function getKeyQualifiers(KeyConfig $keyConfig): KeyQualifiers
+    {
+        $defaultVariant = $this->keyQualifierResolver->getDefaultVariant($keyConfig);
+
+        return new KeyQualifiers(
+            variants: $this->resolveVariants($keyConfig),
+            multiValue: $this->keyQualifierResolver->isMultiValue($keyConfig),
+            maximum: $this->keyQualifierResolver->getMaximum($keyConfig),
+            defaultVariant: $defaultVariant?->isPermitted(),
+            defaultVariantLabel: $defaultVariant?->getLabel(),
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getKeyVariants(int $keyId): ?array
+    {
+        return $this->resolveKeyQualifiers($keyId)?->getVariants();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getKeyMultiValue(int $keyId): ?bool
+    {
+        return $this->resolveKeyQualifiers($keyId)?->getMultiValue();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getKeyMaximum(int $keyId): ?int
+    {
+        return $this->resolveKeyQualifiers($keyId)?->getMaximum();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getKeyDefaultVariant(int $keyId): ?bool
+    {
+        return $this->resolveKeyQualifiers($keyId)?->getDefaultVariant();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getKeyDefaultVariantLabel(int $keyId): ?string
+    {
+        return $this->resolveKeyQualifiers($keyId)?->getDefaultVariantLabel();
+    }
+
+    private function resolveKeyQualifiers(int $keyId): ?KeyQualifiers
     {
         $keyConfig = $this->keyConfigResolver->getById($keyId);
 
@@ -166,6 +223,14 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             return null;
         }
 
+        return $this->getKeyQualifiers($keyConfig);
+    }
+
+    /**
+     * @return VariantLayout[]|null
+     */
+    private function resolveVariants(KeyConfig $keyConfig): ?array
+    {
         $variants = $this->keyQualifierResolver->getVariantDeclarations($keyConfig);
 
         if ($variants === null) {
@@ -176,61 +241,5 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             static fn (array $variant): VariantLayout => new VariantLayout($variant['name'], $variant['label'] ?? null),
             $variants
         );
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getKeyMultiValue(int $keyId): ?bool
-    {
-        $keyConfig = $this->keyConfigResolver->getById($keyId);
-
-        if (!$keyConfig instanceof KeyConfig) {
-            return null;
-        }
-
-        return $this->keyQualifierResolver->isMultiValue($keyConfig);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getKeyMaximum(int $keyId): ?int
-    {
-        $keyConfig = $this->keyConfigResolver->getById($keyId);
-
-        if (!$keyConfig instanceof KeyConfig) {
-            return null;
-        }
-
-        return $this->keyQualifierResolver->getMaximum($keyConfig);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getKeyDefaultVariant(int $keyId): ?bool
-    {
-        $keyConfig = $this->keyConfigResolver->getById($keyId);
-
-        if (!$keyConfig instanceof KeyConfig) {
-            return null;
-        }
-
-        return $this->keyQualifierResolver->getDefaultVariant($keyConfig)?->isPermitted();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getKeyDefaultVariantLabel(int $keyId): ?string
-    {
-        $keyConfig = $this->keyConfigResolver->getById($keyId);
-
-        if (!$keyConfig instanceof KeyConfig) {
-            return null;
-        }
-
-        return $this->keyQualifierResolver->getDefaultVariant($keyConfig)?->getLabel();
     }
 }

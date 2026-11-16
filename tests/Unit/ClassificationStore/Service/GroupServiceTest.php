@@ -35,6 +35,8 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayou
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ProvidedOptionNarrower;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SubGroupLayoutResolver;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\MultiValue;
@@ -280,7 +282,8 @@ final class GroupServiceTest extends Unit
             $this->createLabelResolver([]),
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
             new InMemoryKeyLocalizationResolver(),
-            new KeyQualifierResolver($serviceResolver)
+            new KeyQualifierResolver($serviceResolver),
+            new ProvidedOptionNarrower()
         );
 
         return $this->createService($keyRelationResolver, $keyGroupLayoutService);
@@ -429,7 +432,8 @@ final class GroupServiceTest extends Unit
             $this->createLabelResolver($labels),
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
             new InMemoryKeyLocalizationResolver(),
-            new KeyQualifierResolver($serviceResolver)
+            new KeyQualifierResolver($serviceResolver),
+            new ProvidedOptionNarrower()
         );
 
         return $this->createService($keyRelationResolver, $keyGroupLayoutService);
@@ -654,7 +658,7 @@ final class GroupServiceTest extends Unit
             $keyGroupLayoutService,
             new GroupLayoutHydrator(),
             $this->createMock(ClassDefinitionResolverInterface::class),
-            $subGroupRepository ?? $this->createMock(SubGroupRepositoryInterface::class),
+            new SubGroupLayoutResolver($subGroupRepository ?? $this->createMock(SubGroupRepositoryInterface::class)),
             $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
         );
     }

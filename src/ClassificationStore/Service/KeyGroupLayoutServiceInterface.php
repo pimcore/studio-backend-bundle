@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\VariantLayout;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Concrete;
 
@@ -62,6 +63,13 @@ interface KeyGroupLayoutServiceInterface
      * and null for a key that states none or cannot be loaded at all.
      */
     public function getKeyLocalized(int $keyId): ?bool;
+
+    /**
+     * The five members a key layout publishes about its qualified values, resolved off a key
+     * configuration the caller already holds, so that a caller enriching a whole group pays no key
+     * configuration read at all. The one place the keyId accessors below answer from.
+     */
+    public function getKeyQualifiers(KeyConfig $keyConfig): KeyQualifiers;
 
     /**
      * The variants a `multiValue` key declares, in the order it declares them, taken off the same key
