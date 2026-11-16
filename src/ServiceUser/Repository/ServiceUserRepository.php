@@ -67,7 +67,7 @@ final readonly class ServiceUserRepository implements ServiceUserRepositoryInter
             );
         } catch (InvalidServiceUserException $exception) {
             // Core re-validates the responsible users and roles on save; one deleted in the meantime is a client error
-            throw new UnprocessableContentException($exception->getMessage());
+            throw new UnprocessableContentException($exception->getMessage(), $exception);
         } catch (Exception $exception) {
             throw new DatabaseException('The service user could not be saved.', $exception);
         }

@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository\ServiceUserRepository;
 use Pimcore\Model\User;
+use Pimcore\Model\User\Exception\InvalidServiceUserException;
 use ReflectionProperty;
 
 /**
@@ -70,6 +71,7 @@ final class ServiceUserRepositoryTest extends Unit
                 'A service user cannot have administrator rights or two-factor authentication.',
                 $exception->getMessage()
             );
+            $this->assertInstanceOf(InvalidServiceUserException::class, $exception->getPrevious());
         }
     }
 
