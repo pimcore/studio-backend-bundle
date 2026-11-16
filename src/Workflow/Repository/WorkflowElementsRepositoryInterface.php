@@ -37,4 +37,16 @@ interface WorkflowElementsRepositoryInterface
         ?int $page = null,
         ?int $pageSize = null,
     ): array;
+
+    /**
+     * Fetch the stored workflow places of the given elements of one element type.
+     * Each row carries cid, workflow and place (comma separated place names).
+     *
+     * @param int[] $elementIds
+     *
+     * @throws DatabaseException
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function fetchPlacesByElementIds(string $elementType, array $elementIds): array;
 }

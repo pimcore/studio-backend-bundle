@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInter
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateServiceInterface;
 use Pimcore\Model\Asset\Folder as CoreFolder;
 use Pimcore\Model\User;
 use ReflectionClass;
@@ -119,6 +120,7 @@ final class AssetServiceViewPermissionTest extends Unit
             $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => $this->user]),
             $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => $coreElement]),
             $this->makeEmpty(WorkflowDetailsServiceInterface::class, ['hasElementWorkflowsById' => Expected::never()]),
+            $this->makeEmpty(WorkflowStateServiceInterface::class),
         );
     }
 }

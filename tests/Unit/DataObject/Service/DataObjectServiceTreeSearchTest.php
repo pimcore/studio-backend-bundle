@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMergerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateServiceInterface;
 use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -77,6 +78,7 @@ final class DataObjectServiceTreeSearchTest extends Unit
             $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => null]),
             $this->makeEmpty(ElementSaveServiceInterface::class),
             $this->makeEmpty(WorkflowPermissionMergerInterface::class),
+            $this->makeEmpty(WorkflowStateServiceInterface::class),
         );
 
         try {

@@ -48,6 +48,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateServiceInterface;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject as DataObjectModel;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -87,7 +88,8 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
         private ElementSaveServiceInterface $elementSaveService,
-        private WorkflowPermissionMergerInterface $workflowPermissionMerger
+        private WorkflowPermissionMergerInterface $workflowPermissionMerger,
+        private WorkflowStateServiceInterface $workflowStateService,
     ) {
     }
 
@@ -144,6 +146,8 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         $this->addVariantsQuery($parent, $query, $parameters->getPathIncludeDescendants());
         $result = $this->dataObjectSearchService->searchDataObjects($query);
         $items = $result->getItems();
+
+        $this->workflowStateService->applyVisibleStates($items, ElementTypes::TYPE_DATA_OBJECT);
 
         foreach ($items as $item) {
             $this->dispatchTreeEvent($item);

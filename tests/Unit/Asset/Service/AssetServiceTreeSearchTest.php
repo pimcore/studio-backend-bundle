@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInter
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateServiceInterface;
 use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -70,6 +71,7 @@ final class AssetServiceTreeSearchTest extends Unit
             $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => $user]),
             $this->makeEmpty(ServiceResolverInterface::class),
             $this->makeEmpty(WorkflowDetailsServiceInterface::class),
+            $this->makeEmpty(WorkflowStateServiceInterface::class),
         );
 
         $service->getAssets(new ElementParameters(parentId: 1));

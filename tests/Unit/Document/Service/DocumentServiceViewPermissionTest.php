@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateServiceInterface;
 use Pimcore\Model\Document\Folder as CoreFolder;
 use Pimcore\Model\User;
 use ReflectionClass;
@@ -121,6 +122,7 @@ final class DocumentServiceViewPermissionTest extends Unit
             $this->makeEmpty(FilterServiceProviderInterface::class),
             $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => $this->user]),
             $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => $coreElement]),
+            $this->makeEmpty(WorkflowStateServiceInterface::class),
         );
     }
 }

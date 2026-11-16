@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentService;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateServiceInterface;
 use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -72,6 +73,7 @@ final class DocumentServiceTreeSearchTest extends Unit
             ]),
             $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => $user]),
             $this->makeEmpty(ServiceResolverInterface::class),
+            $this->makeEmpty(WorkflowStateServiceInterface::class),
         );
 
         $service->getDocuments(new ElementParameters(parentId: 1));
