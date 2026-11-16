@@ -176,8 +176,9 @@ final class ClassificationStoreResolverTest extends Unit
 
     /**
      * The cell and the export of one `multiValue` default column show the same value: the default variant's
-     * one value, and nothing where the key holds nothing or holds named variants alone. The cell is handed what the object data endpoint published for the row, and the
-     * export is handed the one value it injects for the same store.
+     * one value, and nothing where the key holds nothing or holds named variants alone. The cell is
+     * handed what the object data endpoint published for the row, and the export is handed the one
+     * value it injects for the same store.
      *
      * @dataProvider slotHoldingEntriesProvider
      *

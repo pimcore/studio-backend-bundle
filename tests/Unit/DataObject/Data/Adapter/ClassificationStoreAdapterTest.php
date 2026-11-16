@@ -794,7 +794,11 @@ final class ClassificationStoreAdapterTest extends Unit
         $this->assertSame([], $written, 'no list is written as the one value of the default slot');
         $this->assertCount(1, $writtenEntries);
         $this->assertSame(
-            [['78', self::LANGUAGE, null], ['80', self::LANGUAGE, self::METRIC], ['176', self::LANGUAGE, self::IMPERIAL]],
+            [
+                ['78', self::LANGUAGE, null],
+                ['80', self::LANGUAGE, self::METRIC],
+                ['176', self::LANGUAGE, self::IMPERIAL],
+            ],
             $this->describeCoreEntries($writtenEntries[0])
         );
         $this->assertSame([0 => '78'], $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY));

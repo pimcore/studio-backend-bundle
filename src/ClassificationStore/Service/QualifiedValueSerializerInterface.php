@@ -110,8 +110,9 @@ interface QualifiedValueSerializerInterface
     public function getVariantValues(mixed $payload, ?string $variant): array;
 
     /**
-     * The stored entries with the supplied ones written over them, matched by variant and never by
-     * position in the list, so a write addressing one slot leaves the rest of the key's list intact. The stored order is kept and an entry the write adds is appended.
+     * The stored entries with the supplied ones written over them, matched by variant, so a write
+     * addressing one variant leaves the key's other variants as they are. The stored order is kept
+     * and an entry the write adds is appended.
      *
      * @param QualifiedValue[] $stored
      * @param QualifiedValue[] $supplied
