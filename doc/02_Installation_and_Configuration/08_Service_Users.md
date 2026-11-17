@@ -42,10 +42,18 @@ Creating a service user from a user copies the user's permissions, roles, class 
 translation language restrictions and workspaces. The user is not changed and admin rights are never copied. Only
 an administrator may create a service user from an administrator.
 
-The update endpoint accepts only `email`, `permissions`, `roles`, `classes`, `docTypes` and the three workspace
-lists. Any other key, such as `name`, `password`, `admin`, `active` or a misspelled field, is refused with `422`,
+The update endpoint accepts only `email`, `permissions`, `roles`, `classes`, `docTypes`, `responsibleUsers`,
+`responsibleRoles` and the three workspace lists. Any other key, such as `name`, `password`, `admin`, `active` or a misspelled field, is refused with `422`,
 whatever its value, so nothing is silently ignored. The name stays fixed because MCP server access is granted by
 name; a service user is deactivated through its deactivate endpoint.
+
+### Responsible users and roles
+
+A service user names the people who answer for it: `responsibleUsers` (user ids) and `responsibleRoles` (role ids)
+are returned by the read endpoints and accepted, as optional lists, by create and update. An update that leaves a
+key out (or sends `null`) keeps the stored list, so a client that does not know the fields cannot wipe them; an
+update with an empty list clears it. An unknown user or role id answers `404`; a service-user id in `responsibleUsers` answers `422`
+("A service user cannot be responsible for a service user").
 
 ## MCP access tokens
 

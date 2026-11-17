@@ -14,6 +14,7 @@ studio_ee_csv_creation_failed: "L'esportazione CSV non è riuscita: %message%"
 studio_ee_xlsx_creation_failed: "L'esportazione XLSX non è riuscita: %message%"
 studio_ee_recycle_bin_delete_failed: "L'elemento con ID %id% non è stato eliminato dal cestino: %message%"
 studio_ee_recycle_bin_restore_failed: "L'elemento dal cestino con ID %id% non è stato ripristinato: %message%"
+studio_ee_recycle_bin_restore_relocated: L'elemento di tipo %type% con ID %id% è stato ripristinato in %path% perché il suo elemento padre non esiste più
 studio_ee_csv_data_collection_failed: "I dati per l'esportazione CSV non sono stati estratti per %id%: %message%"
 studio_ee_element_patch_failed: "L'elemento di tipo %type% con ID %id% non è stato aggiornato: %message%"
 studio_ee_element_rewrite_references_failed: "I riferimenti dell'elemento di tipo %type% con ID %id% non sono stati riscritti: %message%"
