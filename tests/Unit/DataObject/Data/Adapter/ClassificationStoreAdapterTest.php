@@ -92,6 +92,12 @@ final class ClassificationStoreAdapterTest extends Unit
     private const int OTHER_QUALIFIED_KEY = 403;
 
     /**
+     * A key id no store configures, which is what a key deleted from the configuration leaves behind
+     * in a payload the grid built before it was.
+     */
+    private const int UNCONFIGURED_KEY = 499;
+
+    /**
      * An engine reporting both capabilities, which is what a write of a list needs to be judged
      * against at all - the capability gate is fail-closed, so a test about anything else has to
      * state that the engine is able to hold what it writes.
@@ -1026,6 +1032,51 @@ final class ClassificationStoreAdapterTest extends Unit
         }
 
         $this->assertSame([], $written);
+    }
+
+    /**
+     * A cell address naming a key the store no longer configures is refused the way the address that
+     * names no key at all is, and is not fatal: resolving the key off the field definition reaches a
+     * getter that cannot answer `null`, so the cache failing to resolve it raised a `TypeError` and
+     * took the save of every other key and field of the object with it.
+     *
+     * The sibling half is the same address on a key the store does configure, which still writes.
+     *
+     * @throws Exception
+     */
+    public function testAVariantCellAddressOfAKeyTheStoreNoLongerConfiguresIsRefused(): void
+    {
+        $written = [];
+
+        try {
+            $this->writeAndRecord(
+                $this->qualifiedKeyConfigs(),
+                [self::UNCONFIGURED_KEY . '#' . self::METRIC => '60'],
+                isPatch: true,
+                capabilities: self::BOTH_CAPABILITIES,
+                written: $written
+            );
+            $this->fail('Expected the write to be refused.');
+        } catch (AbstractApiException $exception) {
+            $this->assertSame(HttpResponseErrorKeys::UNDECLARED_VARIANT->value, $exception->getErrorKey());
+            $this->assertSame(self::UNPROCESSABLE, $exception->getStatusCode());
+        }
+
+        $this->assertSame([], $written);
+
+        $writtenEntries = [];
+        $this->writeAndRecord(
+            $this->qualifiedKeyConfigs(),
+            [self::QUALIFIED_KEY . '#' . self::METRIC => '60'],
+            isPatch: true,
+            capabilities: self::BOTH_CAPABILITIES,
+            writtenEntries: $writtenEntries
+        );
+
+        $this->assertSame(
+            [['60', self::LANGUAGE, self::METRIC]],
+            $this->describeCoreEntries($writtenEntries[0])
+        );
     }
 
     /**
