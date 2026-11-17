@@ -423,9 +423,9 @@ final readonly class ClassificationStoreAdapter implements
         array $supplied
     ): array {
         foreach ($keys as $keyId => $value) {
-            $keyConfig = $definition->getKeyConfiguration((int) $keyId);
+            $keyConfig = $this->definitionCacheResolver->get((int) $keyId);
 
-            if (!$this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
+            if ($keyConfig === null || !$this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
                 continue;
             }
 
@@ -595,7 +595,14 @@ final readonly class ClassificationStoreAdapter implements
         $relations = $this->getClassificationStoreKeysFromGroup($groupId);
         $isWritten = false;
         foreach ($keys as $keyId => $value) {
-            $keyConfig = $definition->getKeyConfiguration($keyId);
+            // A key the payload names but the store no longer configures is skipped rather than
+            // fatal: the non-nullable getter throws on a definition the cache cannot resolve, and
+            // one malformed bucket would take the whole save with it.
+            $keyConfig = $this->definitionCacheResolver->get((int) $keyId);
+            if ($keyConfig === null) {
+                continue;
+            }
+
             if (!in_array($language, $keyLanguages($keyConfig), true)) {
                 continue;
             }

@@ -2517,6 +2517,11 @@ final class ClassificationStoreAdapterTest extends Unit
                     'getDataForSetter' => 'new-value',
                 ]),
             ]),
+            // the write path resolves the key configuration through the cache, not off the
+            // definition, so that a key the store no longer configures is skipped and not fatal
+            definitionCacheResolver: $this->makeEmpty(DefinitionCacheResolverInterface::class, [
+                'get' => new KeyConfig(),
+            ]),
             languageService: $this->makeEmpty(LanguageServiceInterface::class, [
                 'getUserAllowedLanguagesWithLanguageIndependentValue' => $allowedLanguages,
             ]),
