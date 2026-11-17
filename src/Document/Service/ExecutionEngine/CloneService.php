@@ -188,6 +188,7 @@ final readonly class CloneService implements CloneServiceInterface
             EnvironmentVariables::ORIGINAL_PARENT_ID->value => $originalParent->getId(),
             EnvironmentVariables::PARENT_ID->value => $newParent->getId(),
             EnvironmentVariables::CLONE_DATA->value => $cloneData,
+            EnvironmentVariables::REWRITE_CONFIGURATION->value => [$originalParent->getId() => $newParent->getId()],
         ];
     }
 }
