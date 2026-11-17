@@ -32,6 +32,16 @@ The following steps are necessary during updating to newer versions.
   `ScoreAwareInterface` (`getScore()`/`setScore()`); subclasses that already declare these methods must match the
   new signatures.
 
+- [Grid] Changed: the data object `available-columns` response
+  (`GET /pimcore-studio/api/data-object/grid/available-columns`) now reports relation (`manyToOneRelation`,
+  `manyToManyRelation`, `manyToManyObjectRelation`, `advancedManyToManyRelation`, `advancedManyToManyObjectRelation`),
+  `image`, `imageGallery`, `geopoint` and `quantityValue` columns as `filterable: true`; they were `false`. These
+  fields can now be added in the listing's filter panel. Relations and quantity values show a value filter that
+  already existed but was never reachable; image, image gallery and geo point fields can only be searched for "no
+  value" or "any value" with the new `operator` of a column filter (see `doc/01_Architecture_Overview/01_Grid.md`).
+  This is additive and intended, but an API client that treated `filterable: false` as "never filterable" will see a
+  difference for these fields.
+
 - [OpenAPI] Improved: `zircote/swagger-php` 6.x is now supported (`^5.0 || ^6.0`); the previous `>=5.6` conflict was removed. The generated Studio OpenAPI document is unchanged.
 
 > **Note:** since swagger-php 5.6 an explicit `type:` or `ref:` on a `#[Property]` attribute no longer inherits the nullability of the PHP parameter it annotates. A property such as `#[Property(type: 'string')] private ?string $title` is emitted as `"type": "string"` instead of `"type": ["string", "null"]` once an installation resolves swagger-php >= 5.6. All Studio schemas now declare `nullable: true` explicitly. Bundles that register their own `open_api_scan_paths` must do the same for every PHP-nullable (or `mixed`) parameter whose attribute sets `type:` or `ref:`, otherwise their schemas silently lose `null` in the generated document and in clients generated from it. Properties without an explicit `type:` are not affected. The static `OpenApi\Generator::scan()` was removed in swagger-php 6.0; `OpenApiService` now uses `(new Generator())->generate()`.
