@@ -18,6 +18,7 @@ use OpenApi\Attributes\Put;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -51,7 +52,7 @@ final class UpdateRoleController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|DatabaseException
+     * @throws ForbiddenException|NotFoundException|DatabaseException
      */
     #[Route('/role/{id}', name: 'pimcore_studio_api_role_update', methods: ['PUT'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
@@ -70,6 +71,7 @@ final class UpdateRoleController extends AbstractApiController
         content: new JsonContent(ref: UpdateRole::class)
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]

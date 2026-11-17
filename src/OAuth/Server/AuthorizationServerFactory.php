@@ -16,10 +16,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server;
 use DateInterval;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\CryptKey;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\IdentityResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\MissingKeyMaterialException;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Grant\LoopbackAuthCodeGrant;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Grant\ResourceRefreshTokenGrant;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Grant\ServiceUserClientCredentialsGrant;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AuthCodeRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository;
@@ -53,6 +55,9 @@ final class AuthorizationServerFactory implements AuthorizationServerFactoryInte
         private readonly bool $allowLocalhostLoopback,
         private readonly ResourceRegistryInterface $resourceRegistry,
         private readonly TokenRecordStoreInterface $tokenRecordStore,
+        private readonly IdentityResolverInterface $identityResolver,
+        private readonly bool $clientCredentialsEnabled,
+        private readonly int $clientCredentialsAccessTokenTtl,
     ) {
     }
 
@@ -97,6 +102,16 @@ final class AuthorizationServerFactory implements AuthorizationServerFactoryInte
         $refreshTokenGrant = new ResourceRefreshTokenGrant($this->refreshTokenRepository, $this->tokenRecordStore);
         $refreshTokenGrant->setRefreshTokenTTL($refreshTokenTtl);
         $server->enableGrantType($refreshTokenGrant, $accessTokenTtl);
+
+        // Behind its own switch: while it is off the grant does not exist, and league
+        // answers a client_credentials request with unsupported_grant_type. Only clients
+        // bound to a service user can use it (ClientRepository, ClientEntity).
+        if ($this->clientCredentialsEnabled) {
+            $server->enableGrantType(
+                new ServiceUserClientCredentialsGrant($this->resourceRegistry, $this->identityResolver),
+                $this->secondsInterval($this->clientCredentialsAccessTokenTtl),
+            );
+        }
 
         return $server;
     }

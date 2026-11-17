@@ -7,6 +7,45 @@
 	},
 	"item": [
 		{
+			"name": "Session",
+			"item": [
+				{
+					"name": "Session 200 without session",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", function(){",
+									" pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Session is not authenticated\", function(){",
+									" pm.expect(pm.response.json().authenticated).to.eql(false);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/session",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"session"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Auth",
 			"item": [
 				{
@@ -302,6 +341,45 @@
 						}
 					],
 					"id": "b2b21ffc-0b8a-4150-889c-114466c76002"
+				},
+				{
+					"name": "Session with session",
+					"item": [
+						{
+							"name": "Session 200 with session",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status is 200\", function(){",
+											" pm.response.to.have.status(200);",
+											"});",
+											"pm.test(\"Session is authenticated\", function(){",
+											" pm.expect(pm.response.json().authenticated).to.eql(true);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/session",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"session"
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				},
 				{
 					"name": "Logout",

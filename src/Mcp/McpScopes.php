@@ -30,6 +30,12 @@ final class McpScopes
     public const string WRITE = 'mcp:write';
 
     /**
+     * Request attribute the OAuth authenticator sets to the scopes of the access token
+     * it accepted. Absent for every other credential (they carry no scopes).
+     */
+    public const string REQUEST_ATTRIBUTE = '_pimcore_studio_backend_mcp_token_scopes';
+
+    /**
      * The scope a tool requires, derived from its read-only annotation: a
      * read-only tool needs {@see READ}, anything else the fail-safe {@see WRITE}.
      */

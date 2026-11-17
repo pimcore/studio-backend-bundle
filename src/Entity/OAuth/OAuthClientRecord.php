@@ -27,6 +27,7 @@ use function time;
 #[ORM\Entity]
 #[ORM\Table(name: OAuthClientRecord::TABLE_NAME)]
 #[ORM\Index(columns: ['metadata_hash'], name: 'idx_oauth_client_metadata_hash')]
+#[ORM\UniqueConstraint(name: 'uniq_oauth_client_service_user_id', columns: ['service_user_id'])]
 class OAuthClientRecord
 {
     public const string TABLE_NAME = 'bundle_studio_oauth_client';
@@ -77,6 +78,14 @@ class OAuthClientRecord
     private string $createdAt;
 
     /**
+     * The service user a confidential client_credentials client is bound to, one to one.
+     * Null for every other client. Such a client may hold no shared secret at all (a
+     * key-based authentication method can follow), so nothing here assumes one exists.
+     */
+    #[ORM\Column(name: 'service_user_id', type: 'integer', nullable: true, options: ['unsigned' => true])]
+    private ?int $serviceUserId;
+
+    /**
      * @param list<string> $redirectUris
      * @param list<string> $grantTypes
      * @param list<string> $scopes
@@ -97,6 +106,7 @@ class OAuthClientRecord
         $this->scopes = $scopes;
         $this->confidential = $confidential;
         $this->secretHash = $secretHash;
+        $this->serviceUserId = null;
         $this->metadataHash = null;
         // Public clients authenticate via PKCE; confidential ones via their secret.
         $this->tokenEndpointAuthMethod = $confidential ? 'client_secret_basic' : 'none';
@@ -145,6 +155,25 @@ class OAuthClientRecord
     public function getSecretHash(): ?string
     {
         return $this->secretHash;
+    }
+
+    /**
+     * Replaces the stored secret hash, so the previous secret stops validating with the
+     * next token request.
+     */
+    public function setSecretHash(?string $secretHash): void
+    {
+        $this->secretHash = $secretHash;
+    }
+
+    public function bindToServiceUser(int $serviceUserId): void
+    {
+        $this->serviceUserId = $serviceUserId;
+    }
+
+    public function getServiceUserId(): ?int
+    {
+        return $this->serviceUserId;
     }
 
     public function getTokenEndpointAuthMethod(): string

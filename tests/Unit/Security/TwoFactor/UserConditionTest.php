@@ -27,7 +27,7 @@ final class UserConditionTest extends Unit
     /**
      * @dataProvider userProvider
      */
-    public function testAsksForACodeWhenRequiredOrEnabled(bool $required, bool $enabled, bool $expected): void
+    public function testAsksForACodeOnlyWhenRequired(bool $required, bool $enabled, bool $expected): void
     {
         $context = $this->context($this->pimcoreUser($required, $enabled), 'pimcore_studio_api_login');
 
@@ -42,7 +42,7 @@ final class UserConditionTest extends Unit
         return [
             'neither' => [false, false, false],
             'required only' => [true, false, true],
-            'enabled only' => [false, true, true],
+            'enabled only' => [false, true, false],
             'required and enabled' => [true, true, true],
         ];
     }

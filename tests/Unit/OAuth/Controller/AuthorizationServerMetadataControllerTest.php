@@ -32,12 +32,28 @@ final class AuthorizationServerMetadataControllerTest extends Unit
 {
     private const string ISSUER = 'https://issuer.test';
 
-    public function testDoesNotAdvertiseTheRemovedClientCredentialsGrant(): void
+    public function testDoesNotAdvertiseClientCredentialsWhileTheSwitchIsOff(): void
     {
         $metadata = $this->metadata($this->controller());
 
-        // The client_credentials grant was removed; the metadata must not advertise it.
+        // client_credentials exists only behind oauth.client_credentials.enabled, which is off by default.
         $this->assertSame(['authorization_code', 'refresh_token'], $metadata['grant_types_supported']);
+    }
+
+    public function testAdvertisesClientCredentialsOnlyWhileTheSwitchIsOn(): void
+    {
+        $controller = new AuthorizationServerMetadataController(
+            self::ISSUER,
+            new ScopeRegistry(new ConfigProtectedResourceRegistry([])),
+            false,
+            false,
+            true,
+        );
+
+        $this->assertSame(
+            ['authorization_code', 'refresh_token', 'client_credentials'],
+            $this->metadata($controller)['grant_types_supported'],
+        );
     }
 
     public function testAdvertisesTheCoreDiscoveryFields(): void

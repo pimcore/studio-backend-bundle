@@ -129,11 +129,19 @@ final readonly class VersionService implements VersionServiceInterface
             throw new InvalidElementTypeException($class);
         }
 
+        $existingVersion = $this->isPreparedVersion($version, $currentElement) ? $version : null;
         $this->versionPublisherLocator->get($class)->publish(
             $element,
-            $user
+            $user,
+            $existingVersion
         );
 
+        // a prepared version is published in place: no new version is created, the published one is the version itself
+        if ($existingVersion !== null) {
+            return $existingVersion->getId();
+        }
+
+        // any other version is published as a new version
         $lastVersion = $this->repository->getLastVersion(
             $elementId,
             $this->getElementType($element, true),
@@ -148,6 +156,22 @@ final readonly class VersionService implements VersionServiceInterface
         }
 
         return $lastVersion->getId();
+    }
+
+    /**
+     * A version prepared for the element is newer than its persisted state (the draft rule of the core's
+     * getLatestVersion()), it is published in place. An older version (a rollback) is published as a new version, so
+     * the history keeps it as it was, and so is an auto-save version: it is rewritten by the editor of its user at
+     * any time
+     */
+    private function isPreparedVersion(Version $version, ElementInterface $currentElement): bool
+    {
+        if ($version->isAutoSave()) {
+            return false;
+        }
+
+        return $version->getVersionCount() > $currentElement->getVersionCount()
+            || $version->getDate() > (int) $currentElement->getModificationDate();
     }
 
     /**

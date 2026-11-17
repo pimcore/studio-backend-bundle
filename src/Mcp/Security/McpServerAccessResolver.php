@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Security;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\Role\RoleResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccessEntry;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use function in_array;
 
@@ -31,6 +32,8 @@ use function in_array;
  *             nor the owner get Access implicitly; it must be granted explicitly (they
  *             can add themselves to the user list with Access).
  *  - Edit   — admin, the owner, OR a matching entry grants Edit. Public does not grant Edit.
+ *
+ * A service user is never treated as the owner, whatever name the owner field carries.
  *
  * @internal
  */
@@ -59,7 +62,14 @@ final class McpServerAccessResolver implements McpServerAccessResolverInterface
     {
         $access = $server->access;
         $isAdmin = $user->isAdmin();
-        $isOwner = $access->owner !== null && $access->owner !== '' && $user->getName() === $access->owner;
+        // A service user never owns a server at resolve time, even when it carries the owner
+        // name (shipped configuration, or a deleted person's name taken later): its
+        // capabilities come from its entries alone, which the configuration service stores
+        // without Read and Edit.
+        $isOwner = $access->owner !== null
+            && $access->owner !== ''
+            && $user->getName() === $access->owner
+            && !$this->isServiceUser($user);
 
         $entries = $this->matchingEntries($access->sharedUsers, $access->sharedRoles, $user);
 
@@ -108,6 +118,11 @@ final class McpServerAccessResolver implements McpServerAccessResolverInterface
         }
 
         return $matched;
+    }
+
+    private function isServiceUser(UserInterface $user): bool
+    {
+        return $user instanceof User && $user->isServiceUser();
     }
 
     /**

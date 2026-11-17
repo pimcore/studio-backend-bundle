@@ -208,6 +208,11 @@ pimcore_studio_backend:
 The value must be at least 1. A higher limit also raises the PHP memory a single preview request needs, because the
 file is held in memory several times while it is converted to UTF-8; keep `memory_limit` in mind when raising it.
 
+## Publish and Save Permissions
+
+For data objects, the `publish` and `unpublish` permissions include saving the changes sent with the request. See
+[Publish and Save Permissions](./06_Publish_and_Save_Permissions.md) for the details.
+
 ## Changing the prefix of the Studio Backend
 It is possible to change the route where you can reach the API. By default, the route is `/pimcore-studio/api/`.  
 If you want to change the prefix, you can do so by changing the configuration like the following:

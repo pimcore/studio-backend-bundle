@@ -101,6 +101,54 @@ final class AccessTokenEntityTest extends Unit
         );
     }
 
+    /**
+     * A client bound to a service user acts as that user and nobody else: league issues a
+     * client_credentials token without a user identifier, and the subject must still be
+     * the service user rather than the client id the entity used to fall back to.
+     */
+    public function testABoundClientTokenCarriesTheServiceUserAsSubject(): void
+    {
+        [$private, $public] = $this->keyPair();
+
+        $token = new AccessTokenEntity();
+        $token->setClient($this->boundClient());
+        $token->setIdentifier('jti-bound');
+        $token->setExpiryDateTime(new DateTimeImmutable('+15 minutes'));
+        $token->setPrivateKey(new CryptKey($private, null, false));
+
+        $claims = $this->parse($token->toString(), $public)->claims();
+
+        $this->assertSame('77', $claims->get('sub'));
+        $this->assertSame('svc_bound', $claims->get('client_id'));
+    }
+
+    public function testABoundClientTokenIgnoresAnyOtherUserIdentifier(): void
+    {
+        [$private, $public] = $this->keyPair();
+
+        $token = new AccessTokenEntity();
+        $token->setClient($this->boundClient());
+        $token->setIdentifier('jti-bound-other');
+        $token->setExpiryDateTime(new DateTimeImmutable('+15 minutes'));
+        $token->setUserIdentifier('21');
+        $token->setPrivateKey(new CryptKey($private, null, false));
+
+        $this->assertSame('77', $this->parse($token->toString(), $public)->claims()->get('sub'));
+    }
+
+    private function boundClient(): ClientEntity
+    {
+        return new ClientEntity(
+            'svc_bound',
+            'Bound',
+            [],
+            true,
+            grantTypes: ['client_credentials'],
+            scopes: ['mcp:read'],
+            serviceUserId: 77,
+        );
+    }
+
     public function testOmitsTheAudienceClaimWhenNoResourceIsSet(): void
     {
         [$private, $public] = $this->keyPair();

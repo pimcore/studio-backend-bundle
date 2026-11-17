@@ -19,14 +19,19 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyObjectRelation;
+use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ElementMetadata;
@@ -48,7 +53,10 @@ use function sprintf;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class ReverseObjectRelationAdapter implements SetterDataInterface, DataNormalizerInterface
+final readonly class ReverseObjectRelationAdapter implements
+    SetterDataInterface,
+    DataNormalizerInterface,
+    RemoteStorageDataInterface
 {
     public function __construct(
         private ClassDefinitionResolverInterface $classDefinitionResolver,
@@ -91,7 +99,14 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
 
         $ownerFieldName = $fieldDefinition->getOwnerFieldName();
         $relations = $element->getRelationData($ownerFieldName, false, $remoteClass->getId());
-        $this->processRemoteOwnerRelations($element, $relations, $relationData, $ownerFieldName);
+        $this->processRemoteOwnerRelations(
+            $element,
+            $relations,
+            $relationData,
+            $ownerFieldName,
+            $fieldDefinition->getOwnerClassName(),
+            $user
+        );
 
         return null;
     }
@@ -114,7 +129,9 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         Concrete $element,
         array $relations,
         array $newRelations,
-        string $ownerFieldName
+        string $ownerFieldName,
+        string $ownerClassName,
+        UserInterface $user
     ): void {
         $getter = 'get' . ucfirst($ownerFieldName);
         $setter = 'set' . ucfirst($ownerFieldName);
@@ -130,6 +147,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
                 continue;
             }
 
+            $this->assertOwnerAccessible($remoteObject, $ownerClassName, $user);
             $removal = $this->resolveRemoval($remoteObject, $element, $getter);
             $removals[] = [$remoteObject, $removal];
             if ($removal !== null) {
@@ -150,20 +168,73 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
             }
         }
 
+        // Owners to add are checked before the first write too, so a refused owner leaves every owner unchanged.
+        $additions = $this->resolveAdditions(
+            array_diff($dataToProcess['changed'], $dataToProcess['originals']),
+            $ownerClassName,
+            $user
+        );
+
         foreach ($removals as [$remoteObject, $removal]) {
             if ($removal !== null) {
                 $remoteObject->$setter($removal['value']);
             }
-            $this->saveRemoteObject($remoteObject, $element, 'deleted', $ownerFieldName);
+            $this->saveRemoteObject($remoteObject, $element, 'deleted', $ownerFieldName, $user);
         }
 
-        foreach (array_diff($dataToProcess['changed'], $dataToProcess['originals']) as $id) {
+        foreach ($additions as $remoteObject) {
+            $this->handleAddCurrentData($remoteObject, $element, $getter, $setter, $ownerFieldName, $user);
+        }
+    }
+
+    /**
+     * @param array<int, int|string> $ids
+     *
+     * @return Concrete[]
+     *
+     * @throws ForbiddenException|ValidationException
+     */
+    private function resolveAdditions(array $ids, string $ownerClassName, UserInterface $user): array
+    {
+        $additions = [];
+        foreach ($ids as $id) {
             $remoteObject = $this->concreteObjectResolver->getById($id);
             if ($remoteObject === null) {
                 continue;
             }
 
-            $this->handleAddCurrentData($remoteObject, $element, $getter, $setter, $ownerFieldName);
+            $this->assertOwnerAccessible($remoteObject, $ownerClassName, $user);
+            $additions[] = $remoteObject;
+        }
+
+        return $additions;
+    }
+
+    /**
+     * The owner is written on behalf of the given user, so it has to be an object of the owner class and the
+     * user needs the save permission on it, plus the publish permission when the owner is published.
+     *
+     * @throws ForbiddenException|ValidationException
+     */
+    private function assertOwnerAccessible(Concrete $remoteObject, string $ownerClassName, UserInterface $user): void
+    {
+        if ($remoteObject->getClassName() !== $ownerClassName) {
+            throw new ValidationException(
+                sprintf(
+                    'Object [ %d ] is not an object of the owner class [ %s ]',
+                    $remoteObject->getId(),
+                    $ownerClassName
+                )
+            );
+        }
+
+        $this->securityService->hasElementPermission($remoteObject, $user, ElementPermissions::SAVE_PERMISSION);
+        if ($remoteObject->isPublished()) {
+            $this->securityService->hasElementPermission(
+                $remoteObject,
+                $user,
+                ElementPermissions::PUBLISH_PERMISSION
+            );
         }
     }
 
@@ -311,17 +382,45 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         Concrete $element,
         string $getter,
         string $setter,
-        string $ownerFieldName
+        string $ownerFieldName,
+        UserInterface $user
     ): void {
         $currentData = method_exists($remoteObject, $getter) ? $remoteObject->$getter() : null;
+        $newEntry = $this->createOwnerEntry($remoteObject, $element, $ownerFieldName);
         if (is_array($currentData)) {
-            $currentData[] = $element;
+            $currentData[] = $newEntry;
         } else {
-            $currentData = $element;
+            $currentData = $newEntry;
         }
         $remoteObject->$setter($currentData);
 
-        $this->saveRemoteObject($remoteObject, $element, 'added', $ownerFieldName);
+        $this->saveRemoteObject($remoteObject, $element, 'added', $ownerFieldName, $user);
+    }
+
+    /**
+     * Advanced many-to-many owner fields only accept metadata wrappers around their targets, any other
+     * owner field stores the object itself.
+     */
+    private function createOwnerEntry(
+        Concrete $remoteObject,
+        Concrete $element,
+        string $ownerFieldName
+    ): Concrete|ObjectMetadata|ElementMetadata {
+        $ownerFieldDefinition = $remoteObject->getClass()->getFieldDefinition($ownerFieldName);
+
+        return match (true) {
+            $ownerFieldDefinition instanceof AdvancedManyToManyObjectRelation => new ObjectMetadata(
+                $ownerFieldName,
+                $ownerFieldDefinition->getColumnKeys(),
+                $element
+            ),
+            $ownerFieldDefinition instanceof AdvancedManyToManyRelation => new ElementMetadata(
+                $ownerFieldName,
+                $ownerFieldDefinition->getColumnKeys(),
+                $element
+            ),
+            default => $element,
+        };
     }
 
     /**
@@ -331,14 +430,15 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         Concrete $remoteObject,
         Concrete $element,
         string $action,
-        string $fieldName
+        string $fieldName,
+        UserInterface $user
     ): void {
         try {
             $actionTarget = 'to';
             if ($action === 'deleted') {
                 $actionTarget = 'from';
             }
-            $remoteObject->setUserModification($this->securityService->getCurrentUser()->getId());
+            $remoteObject->setUserModification($user->getId());
             $remoteObject->save();
             $this->pimcoreLogger->debug(
                 sprintf(
