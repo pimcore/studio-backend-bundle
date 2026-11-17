@@ -68,9 +68,23 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             $keyGroupRelation->getType()
         );
 
+        // The two members the object path adds and this one used to leave alone, in core's own order
+        // ({@see Classificationstore::enrichLayoutDefinition()}): a key laid out here answered with no
+        // tooltip and without the mandatory flag its assignment carries, so an editor that replaced an
+        // open layout with this one lost the help marker of every key and could hide a mandatory one
+        // as empty. Both read members already in hand - no query and no resolver.
+        $fallbackTooltip = $definition->getName();
+        if (!empty($keyGroupRelation->getDescription())) {
+            $fallbackTooltip .= ' - ' . $keyGroupRelation->getDescription();
+        }
+
+        $definition->setTooltip($definition->getTooltip() ?: $fallbackTooltip);
+
         if (method_exists($definition, '__wakeup')) {
             $definition->__wakeup();
         }
+
+        $definition->setMandatory($definition->getMandatory() || $keyGroupRelation->isMandatory());
 
         if ($definition instanceof LayoutDefinitionEnrichmentInterface && $object) {
             $context['object'] = $object;
