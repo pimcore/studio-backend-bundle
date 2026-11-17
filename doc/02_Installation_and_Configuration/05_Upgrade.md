@@ -41,6 +41,17 @@ The following steps are necessary during updating to newer versions.
   `oauth.client_credentials.access_token_ttl` seconds (default 900, minimum 60) and carry no refresh token. Nothing
   changes until the switch is turned on. The guarantee that every token acts for a logged-in human no longer holds
   once it is on. See [OAuth Server](./06_OAuth_Server.md#service-user-clients-client-credentials).
+- [Classification Store] Changed: a store created through Studio or by a configuration import is now created on the
+  `document` storage engine instead of being left with an empty `engine` column, which means the EAV engine and is
+  what every store created so far landed on. Existing stores are untouched - an empty column keeps meaning EAV, and
+  changing a store's engine stays `pimcore:classificationstore:flip`. The `engine` member of the store tree and the
+  store detail now reports the RESOLVED engine, so a store that stores none reports `eav` rather than `null`; `null`
+  is left for the case where the engine cannot be asked for at all, which is the case that also reports no
+  `engineCapabilities`.
+- [Classification Store] Changed: a configuration import no longer registers a `multiValue` key in a store whose
+  engine cannot address its qualifiers, since core refuses such a key at definition time. It is reported as a
+  conflict and skipped, in a dry run as in an apply. A key the store already carries that way is not refused, so
+  re-applying a file that describes it keeps working; only a capability the stored key does not already need is.
 - [Classification Store] Changed: an `imageGallery` or `encryptedField` key now exports its value in the grid export,
   where it previously produced an empty cell.
 - [Classification Store] Added: disabled keys can be listed and re-enabled. Re-enabling restores the key

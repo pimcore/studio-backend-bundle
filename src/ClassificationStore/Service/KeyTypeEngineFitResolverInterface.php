@@ -37,6 +37,27 @@ interface KeyTypeEngineFitResolverInterface
     public function findRefusingEngine(string $type, ?string $delegateType, ?int $storeId): ?string;
 
     /**
+     * The engine that cannot address what the key's DECLARATION promises, together with the
+     * capability names it lacks of it - or null where the declaration needs nothing the engine does
+     * not offer.
+     *
+     * A second question from the one above, and core asks it separately for the same reason
+     * ({@see \Pimcore\Model\DataObject\Classificationstore\KeyTypeSupport::requiredEngineFeatures()}):
+     * a `multiValue` wrapping an `input` IS held in the two value columns, because each of its slots
+     * holds an input, and what the EAV row has no column for is the qualifier saying which slot.
+     *
+     * Which of the named capabilities a key may still carry is for the caller to say, exactly as
+     * with the withdrawn types below: core's key save refuses only a capability the stored row does
+     * not already need, so that a key an installation defined before the refusal existed stays
+     * editable and removable. An installation that cannot be asked refuses nothing.
+     *
+     * @param array<string, mixed>|null $definition the definition blob of the key, decoded
+     *
+     * @return array{engine: string, capabilities: string[]}|null
+     */
+    public function findEngineRefusingDeclaration(string $type, ?array $definition, ?int $storeId): ?array;
+
+    /**
      * The field types among the given ones that have been withdrawn as a key type, in order. Which
      * of them a key may still carry is for the caller to say: core's key save refuses only a name
      * the stored row does not already carry. An installation without the type support is not asked.

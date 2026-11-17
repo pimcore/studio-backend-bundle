@@ -265,6 +265,53 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
     /**
      * {@inheritdoc}
      */
+    public function refuseDeclarationTheEngineCannotAddress(
+        ApplyContext $context,
+        ?KeyConfig $target,
+        ArtifactKeyEntry $keyEntry,
+        string $label,
+    ): bool {
+        $refusal = $this->keyTypeEngineFitResolver->findEngineRefusingDeclaration(
+            $keyEntry->getType(),
+            $keyEntry->getDefinition(),
+            $context->getStoreId()
+        );
+
+        if ($refusal === null) {
+            return false;
+        }
+
+        $carried = $target === null ? [] : ($this->keyTypeEngineFitResolver->findEngineRefusingDeclaration(
+            $target->getType(),
+            $this->readStoredDefinition($target),
+            $context->getStoreId()
+        )['capabilities'] ?? []);
+
+        $introduced = array_diff($refusal['capabilities'], $carried);
+        if ($introduced === []) {
+            return false;
+        }
+
+        $context->record(
+            ApplyOutcome::CONFLICT,
+            sprintf(
+                '%s: the declaration of a "%s" key needs %s, which the "%s" storage engine of the store'
+                . ' does not offer',
+                $label,
+                $keyEntry->getType(),
+                implode(', ', $introduced),
+                $refusal['engine']
+            )
+        );
+
+        $context->skip(ArtifactSection::KEYS, $keyEntry->getIdentifier());
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function refuseAssignment(
         ApplyContext $context,
         ArtifactAssignmentEntry $assignment,
@@ -311,10 +358,22 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
 
     private function readStoredDelegateType(KeyConfig $target): ?string
     {
-        $definition = json_decode($target->getDefinition(), true);
-        $delegateType = is_array($definition) ? ($definition['delegateDatatype'] ?? null) : null;
+        $delegateType = $this->readStoredDefinition($target)['delegateDatatype'] ?? null;
 
         return is_string($delegateType) && $delegateType !== '' ? $delegateType : null;
+    }
+
+    /**
+     * The stored definition blob of the key the entry was matched to, decoded, or null for a blob
+     * that does not decode to an array.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function readStoredDefinition(KeyConfig $target): ?array
+    {
+        $definition = json_decode($target->getDefinition(), true);
+
+        return is_array($definition) ? $definition : null;
     }
 
     /**

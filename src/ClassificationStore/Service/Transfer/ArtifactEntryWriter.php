@@ -194,11 +194,12 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
             return;
         }
 
-        // core's order: withdrawn, then the delegate, then what the engine holds
+        // core's order: withdrawn, then the delegate, then what the engine holds, then what it addresses
         if ($outcome !== ApplyOutcome::MATCHED_UNCHANGED
             && ($this->refusals->refuseWithdrawnKeyType($context, $target, $keyEntry, $label)
                 || $this->refusals->refuseDelegateThatIsNotAKeyType($context, $keyEntry, $label)
-                || $this->refusals->refuseKeyTypeTheEngineCannotHold($context, $keyEntry, $label))) {
+                || $this->refusals->refuseKeyTypeTheEngineCannotHold($context, $keyEntry, $label)
+                || $this->refusals->refuseDeclarationTheEngineCannotAddress($context, $target, $keyEntry, $label))) {
             return;
         }
 

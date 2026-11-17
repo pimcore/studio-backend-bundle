@@ -43,6 +43,12 @@ final class ApplyRefusalsTest extends Unit
 {
     private const int STORE_ID = 1;
 
+    private const string MULTI_VALUE_TYPE = 'multiValue';
+
+    private const string MULTI_VALUE_IDENTIFIER = '01MVKEY';
+
+    private const string MULTI_VALUE_LABEL = 'key "steering"';
+
     /**
      * A sub group's own ::update() refuses a name another row of the store carries, so a rename the
      * file asks for is refused here rather than arriving as a failed save.
@@ -640,6 +646,133 @@ final class ApplyRefusalsTest extends Unit
         );
     }
 
+    /**
+     * The import is the one live way a `multiValue` key still reaches an EAV store once new stores
+     * are created on the document engine: the artifact deliberately carries no engine, so a file
+     * exported from a document store applies into an EAV one without anything else noticing.
+     */
+    public function testADeclarationTheEngineCannotAddressIsRefusedNamingTheCapability(): void
+    {
+        $context = $this->createContext();
+        $entry = $this->createMultiValueEntry([['name' => 'Metric']]);
+
+        $refused = $this->createRefusals(keyTypeEngineFit: $this->createDeclarationFit())
+            ->refuseDeclarationTheEngineCannotAddress($context, null, $entry, self::MULTI_VALUE_LABEL);
+
+        $this->assertTrue($refused);
+        $this->assertSame(
+            [
+                self::MULTI_VALUE_LABEL . ': the declaration of a "multiValue" key needs MultiValue, Variants,'
+                . ' which the "eav" storage engine of the store does not offer',
+            ],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+        $this->assertTrue(
+            $context->isSkipped(ArtifactSection::KEYS, self::MULTI_VALUE_IDENTIFIER),
+            'nothing registers a refused key, so what refers to it is skipped with it'
+        );
+    }
+
+    /**
+     * The control the refusal needs, and the reason it is not blanket: a key the store already
+     * carries that way stays writable, exactly as a withdrawn type the stored row already carries
+     * does. Only what the stored row does not already need is refused - here the row names no
+     * variant and the file gives it two.
+     */
+    public function testADeclarationTheStoredKeyAlreadyNeedsIsNotRefusedAndOnlyTheWideningIs(): void
+    {
+        $refusals = $this->createRefusals(keyTypeEngineFit: $this->createDeclarationFit());
+
+        $stored = $this->createKey();
+        $stored->setType(self::MULTI_VALUE_TYPE);
+        $stored->setDefinition('{"variants":[{"name":"Metric"}]}');
+
+        $context = $this->createContext();
+        $this->assertFalse($refusals->refuseDeclarationTheEngineCannotAddress(
+            $context,
+            $stored,
+            $this->createMultiValueEntry([['name' => 'Metric']]),
+            self::MULTI_VALUE_LABEL
+        ));
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+
+        $plain = $this->createKey();
+        $plain->setType(self::MULTI_VALUE_TYPE);
+        $plain->setDefinition('{"variants":[]}');
+
+        $context = $this->createContext();
+        $this->assertTrue($refusals->refuseDeclarationTheEngineCannotAddress(
+            $context,
+            $plain,
+            $this->createMultiValueEntry([['name' => 'Metric']]),
+            self::MULTI_VALUE_LABEL
+        ));
+        $this->assertSame(
+            [
+                self::MULTI_VALUE_LABEL . ': the declaration of a "multiValue" key needs Variants, which the'
+                . ' "eav" storage engine of the store does not offer',
+            ],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT),
+            'only the capability the stored row does not already need'
+        );
+    }
+
+    public function testADeclarationTheEngineAddressesIsNotRefused(): void
+    {
+        $context = $this->createContext();
+
+        $refused = $this->createRefusals()->refuseDeclarationTheEngineCannotAddress(
+            $context,
+            null,
+            $this->createMultiValueEntry([]),
+            self::MULTI_VALUE_LABEL
+        );
+
+        $this->assertFalse($refused);
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+    }
+
+    /**
+     * A fit resolver answering the way core's does on an EAV store: the type needs `MultiValue` and
+     * a declaration naming variants needs `Variants` on top of it.
+     *
+     * @param array<int, array<string, string>> $variants
+     */
+    private function createMultiValueEntry(array $variants): ArtifactKeyEntry
+    {
+        return new ArtifactKeyEntry(
+            self::MULTI_VALUE_IDENTIFIER,
+            'steering',
+            null,
+            null,
+            self::MULTI_VALUE_TYPE,
+            ['delegateDatatype' => 'input', 'variants' => $variants],
+            true
+        );
+    }
+
+    private function createDeclarationFit(): KeyTypeEngineFitResolverInterface
+    {
+        return $this->makeEmpty(KeyTypeEngineFitResolverInterface::class, [
+            'findEngineRefusingDeclaration' => static function (
+                string $type,
+                ?array $definition,
+                ?int $storeId
+            ): ?array {
+                if ($type !== self::MULTI_VALUE_TYPE) {
+                    return null;
+                }
+
+                $capabilities = ['MultiValue'];
+                if (($definition['variants'] ?? []) !== []) {
+                    $capabilities[] = 'Variants';
+                }
+
+                return ['engine' => 'eav', 'capabilities' => $capabilities];
+            },
+        ]);
+    }
+
     public function testADelegateNoKeyIsDefinedWithIsRefusedNamingIt(): void
     {
         $fit = $this->makeEmpty(KeyTypeEngineFitResolverInterface::class, [
@@ -650,7 +783,7 @@ final class ApplyRefusalsTest extends Unit
             'slug',
             null,
             null,
-            'multiValue',
+            self::MULTI_VALUE_TYPE,
             ['delegateDatatype' => 'urlSlug'],
             true
         );

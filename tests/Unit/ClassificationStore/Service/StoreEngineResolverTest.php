@@ -22,6 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineRe
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Model\DataObject\Classificationstore\Engine\EngineFeature;
 use Pimcore\Model\DataObject\Classificationstore\Engine\EngineInterface;
+use Pimcore\Model\DataObject\Classificationstore\Engine\EngineResolver;
+use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
 use function array_map;
 use function enum_exists;
 use function in_array;
@@ -40,6 +42,10 @@ use function interface_exists;
  */
 final class StoreEngineResolverTest extends Unit
 {
+    private const string EAV = 'eav';
+
+    private const string DOCUMENT = 'document';
+
     public function testACoreWithoutTheEngineColumnReportsNoEngine(): void
     {
         $resolver = new StoreEngineResolver(null);
@@ -53,10 +59,10 @@ final class StoreEngineResolverTest extends Unit
     public function testTheStoredEngineIsReportedVerbatim(): void
     {
         $storeConfig = new EngineAwareStoreConfig();
-        $storeConfig->engine = 'document';
+        $storeConfig->engine = self::DOCUMENT;
 
         $this->assertSame(
-            'document',
+            self::DOCUMENT,
             (new StoreEngineResolver(null))->readEngine($storeConfig),
             'the engine is reported as the store stores it, not normalised'
         );
@@ -82,6 +88,104 @@ final class StoreEngineResolverTest extends Unit
             (new StoreEngineResolver(null))->readEngine($storeConfig),
             'a store on the default engine stores no engine, and that is what is published'
         );
+    }
+
+    /**
+     * What the read surfaces publish, which is the RESOLVED engine and not the raw column: an empty
+     * column means the default engine, and publishing it raw made a store that is on the EAV engine
+     * publish no engine at all - so the configuration screen's engine indicator rendered nothing
+     * for exactly the stores the question is about. Every store created before this release carries
+     * that empty column.
+     *
+     * The control is the pair: the raw read beside it still answers null for the same store, which
+     * is what makes this a change of what is published rather than of what is stored.
+     *
+     * @throws Exception
+     */
+    public function testAStoreStoringNoEnginePublishesTheResolvedDefaultEngine(): void
+    {
+        $this->requireCoreEngineSupport();
+
+        $storeConfig = new StoreConfig();
+        $storeConfig->setId(22);
+
+        $resolver = new StoreEngineResolver(new EngineResolver([self::EAV => $this->createEngine([])]));
+
+        $this->assertSame(self::EAV, $resolver->getEngine($storeConfig));
+        $this->assertNull($resolver->readEngine($storeConfig), 'the stored column is still empty');
+    }
+
+    /**
+     * And a store that does store one publishes that, untouched by the fallback.
+     *
+     * @throws Exception
+     */
+    public function testAStoreStoringAnEnginePublishesTheStoredOne(): void
+    {
+        $this->requireCoreEngineSupport();
+
+        $storeConfig = new StoreConfig();
+        $storeConfig->setId(1);
+        $storeConfig->setEngine(self::DOCUMENT);
+
+        $resolver = new StoreEngineResolver(new EngineResolver([
+            self::EAV => $this->createEngine([]),
+            self::DOCUMENT => $this->createEngine(EngineFeature::cases()),
+        ]));
+
+        $this->assertSame(self::DOCUMENT, $resolver->getEngine($storeConfig));
+    }
+
+    /**
+     * A core that cannot be asked keeps publishing nothing, which is the one case the indicator may
+     * render nothing for - and it is the same case the capabilities answer null for, so a client
+     * sees both or neither.
+     */
+    public function testACoreThatCannotBeAskedPublishesNoEngineAndNoCapabilities(): void
+    {
+        $storeConfig = new StoreConfig();
+        $storeConfig->setId(1);
+
+        $resolver = new StoreEngineResolver();
+
+        $this->assertNull($resolver->getEngine($storeConfig));
+        $this->assertNull($resolver->getEngineCapabilities($storeConfig));
+    }
+
+    /**
+     * The engine a store being CREATED is given. It is core's preferred engine rather than the
+     * default one, because an empty column is what every upgraded store carries and is the one
+     * value a new store must not be left with.
+     *
+     * @throws Exception
+     */
+    public function testANewStoreIsGivenThePreferredEngineOfCore(): void
+    {
+        $this->requireCoreEngineSupport();
+
+        $resolver = new StoreEngineResolver(new EngineResolver([
+            self::EAV => $this->createEngine([]),
+            self::DOCUMENT => $this->createEngine(EngineFeature::cases()),
+        ]));
+
+        $this->assertSame(self::DOCUMENT, $resolver->getEngineForNewStore());
+    }
+
+    /**
+     * The control for the write being skippable: an installation that registers no such engine, and
+     * one with no resolver at all, answer nothing - and the caller then writes nothing rather than
+     * writing the default engine's name, which would be a value no upgrade path ever writes.
+     *
+     * @throws Exception
+     */
+    public function testAnInstallationWithoutThePreferredEngineGivesANewStoreNone(): void
+    {
+        $this->requireCoreEngineSupport();
+
+        $withoutIt = new StoreEngineResolver(new EngineResolver([self::EAV => $this->createEngine([])]));
+
+        $this->assertNull($withoutIt->getEngineForNewStore());
+        $this->assertNull((new StoreEngineResolver())->getEngineForNewStore());
     }
 
     /**
