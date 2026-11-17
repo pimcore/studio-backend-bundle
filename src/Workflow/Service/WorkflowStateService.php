@@ -13,53 +13,54 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
+use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowStatesAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowStatusHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Repository\WorkflowElementsRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowStatus;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Workflow\Manager;
-use function array_keys;
-use function explode;
-use function in_array;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Workflow\Marking;
+use Symfony\Component\Workflow\WorkflowInterface;
+use function array_fill_keys;
+use function sprintf;
 
 /**
  * @internal
  */
 final readonly class WorkflowStateService implements WorkflowStateServiceInterface
 {
+    use ElementProviderTrait;
+
     public function __construct(
         private Manager $workflowManager,
-        private WorkflowElementsRepositoryInterface $elementsRepository,
+        private ServiceResolverInterface $serviceResolver,
         private WorkflowStatusHydratorInterface $workflowStatusHydrator,
+        private LoggerInterface $logger,
     ) {
     }
 
     public function applyVisibleStates(iterable $elements, string $elementType): void
     {
-        $elementsById = [];
+        $hasWorkflows = $this->workflowManager->getAllWorkflows() !== [];
+        $coreElementType = $this->getCoreElementType($elementType);
+
         foreach ($elements as $element) {
             if (!$element instanceof WorkflowStatesAwareInterface) {
                 continue;
             }
 
-            if ($this->showsWorkflowStates($element, $elementType)) {
-                $elementsById[$element->getId()] = $element;
+            if (!$this->showsWorkflowStates($element, $elementType)) {
+                continue;
             }
-        }
 
-        if ($elementsById === []) {
-            return;
-        }
-
-        $placesByElement = [];
-        foreach ($this->elementsRepository->fetchPlacesByElementIds($elementType, array_keys($elementsById)) as $row) {
-            $placesByElement[(int) $row['cid']][$row['workflow']] = (string) $row['place'];
-        }
-
-        $workflowNames = $this->workflowManager->getAllWorkflows();
-        foreach ($elementsById as $elementId => $element) {
-            $element->setWorkflowStates($this->getVisibleStates($workflowNames, $placesByElement[$elementId] ?? []));
+            $subject = $hasWorkflows
+                ? $this->serviceResolver->getElementById($coreElementType, $element->getId())
+                : null;
+            $element->setWorkflowStates($subject === null ? [] : $this->getVisibleStates($subject));
         }
     }
 
@@ -74,28 +75,46 @@ final readonly class WorkflowStateService implements WorkflowStateServiceInterfa
     }
 
     /**
-     * @param string[] $workflowNames
-     * @param array<string, string> $placesByWorkflow
-     *
      * @return WorkflowStatus[]
      */
-    private function getVisibleStates(array $workflowNames, array $placesByWorkflow): array
+    private function getVisibleStates(ElementInterface $subject): array
     {
         $states = [];
-        // workflows by priority and places in configuration order, like the detail view
-        foreach ($workflowNames as $workflowName) {
-            if (!isset($placesByWorkflow[$workflowName])) {
-                continue;
-            }
 
-            $places = explode(',', $placesByWorkflow[$workflowName]);
-            foreach ($this->workflowManager->getPlaceConfigsByWorkflowName($workflowName) as $placeConfig) {
-                if ($placeConfig->isVisibleInHeader() && in_array($placeConfig->getPlace(), $places, true)) {
-                    $states[] = $this->workflowStatusHydrator->hydrate($placeConfig);
+        // support strategies and marking stores are project code: one failing element must not break the listing
+        try {
+            foreach ($this->workflowManager->getAllWorkflowsForSubject($subject) as $workflow) {
+                $marking = $this->getMarking($workflow, $subject);
+                foreach ($this->workflowManager->getOrderedPlaceConfigs($workflow, $marking) as $placeConfig) {
+                    if ($placeConfig->isVisibleInHeader()) {
+                        $states[] = $this->workflowStatusHydrator->hydrate($placeConfig);
+                    }
                 }
             }
+        } catch (Exception $exception) {
+            $this->logger->warning(
+                sprintf(
+                    'Could not resolve the workflow states of element %d: %s',
+                    $subject->getId(),
+                    $exception->getMessage()
+                ),
+                ['exception' => $exception]
+            );
+
+            return [];
         }
 
         return $states;
+    }
+
+    // WorkflowInterface::getMarking() would store the initial places, a tree request must not write
+    private function getMarking(WorkflowInterface $workflow, ElementInterface $subject): Marking
+    {
+        $marking = $workflow->getMarkingStore()->getMarking($subject);
+        if ($marking->getPlaces() !== []) {
+            return $marking;
+        }
+
+        return new Marking(array_fill_keys($workflow->getDefinition()->getInitialPlaces(), 1));
     }
 }

@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -44,7 +43,6 @@ interface DocumentServiceInterface
 
     /**
      * @throws InvalidFilterServiceTypeException|SearchException|InvalidQueryTypeException|InvalidFilterTypeException
-     * @throws DatabaseException
      */
     public function getDocuments(ElementParameters $parameters): Collection;
 

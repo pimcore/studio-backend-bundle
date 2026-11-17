@@ -24,7 +24,7 @@ trait WorkflowStatesTrait
 {
     #[Property(
         description: 'Workflow states visible in the header; '
-            . 'null outside tree listings and for elements the user may not view',
+            . 'null outside tree listings, for elements the user may not view and for asset folders',
         type: 'array',
         items: new Items(ref: WorkflowStatus::class),
         nullable: true

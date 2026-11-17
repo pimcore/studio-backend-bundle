@@ -37,13 +37,4 @@ interface WorkflowElementsRepositoryInterface
         ?int $page = null,
         ?int $pageSize = null,
     ): array;
-
-    /**
-     * @param int[] $elementIds
-     *
-     * @throws DatabaseException
-     *
-     * @return list<array{cid: int|string, workflow: string, place: string|null}>
-     */
-    public function fetchPlacesByElementIds(string $elementType, array $elementIds): array;
 }

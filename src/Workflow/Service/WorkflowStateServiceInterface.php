@@ -13,20 +13,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-
 /**
  * @internal
  */
 interface WorkflowStateServiceInterface
 {
     /**
-     * Sets the workflow states visible in the header on the given elements, using one lookup for all of them.
+     * Sets the workflow states visible in the header on the given elements: only workflows that support the
+     * element, read through the workflow's marking store. The stored element decides, not an unpublished version.
      * Elements that do not carry workflow states are skipped.
      *
      * @param iterable<mixed> $elements
-     *
-     * @throws DatabaseException
      */
     public function applyVisibleStates(iterable $elements, string $elementType): void;
 }

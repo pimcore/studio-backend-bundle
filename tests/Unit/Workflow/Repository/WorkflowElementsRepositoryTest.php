@@ -68,47 +68,4 @@ final class WorkflowElementsRepositoryTest extends Unit
         $this->assertContains("(o.type IS NULL OR o.type != 'folder')", $wheres);
         $this->assertContains("(d.type IS NULL OR d.type != 'folder')", $wheres);
     }
-
-    public function testFetchPlacesByElementIdsFiltersByStoredTypeAndIds(): void
-    {
-        $parameters = [];
-        $conditions = [];
-        $queryBuilder = $this->createMock(QueryBuilder::class);
-        foreach (['select', 'from'] as $method) {
-            $queryBuilder->method($method)->willReturnSelf();
-        }
-        foreach (['where', 'andWhere'] as $method) {
-            $queryBuilder->method($method)->willReturnCallback(
-                function (string $condition) use (&$conditions, $queryBuilder) {
-                    $conditions[] = $condition;
-
-                    return $queryBuilder;
-                }
-            );
-        }
-        $queryBuilder->method('setParameter')->willReturnCallback(
-            function (string $key, mixed $value) use (&$parameters, $queryBuilder) {
-                $parameters[$key] = $value;
-
-                return $queryBuilder;
-            }
-        );
-        $rows = [['cid' => 7, 'workflow' => 'product_workflow', 'place' => 'open']];
-        $queryBuilder->method('fetchAllAssociative')->willReturn($rows);
-
-        $this->connection->method('createQueryBuilder')->willReturn($queryBuilder);
-        $this->dbResolver->method('get')->willReturn($this->connection);
-
-        $this->assertSame($rows, $this->repository->fetchPlacesByElementIds('data-object', [7, 9]));
-        // data objects are stored as "object"; the type is required because ids overlap between types
-        $this->assertSame(['ctype' => 'object', 'elementIds' => [7, 9]], $parameters);
-        $this->assertSame(['ews.ctype = :ctype', 'ews.cid IN (:elementIds)'], $conditions);
-    }
-
-    public function testFetchPlacesByElementIdsSkipsTheQueryWithoutIds(): void
-    {
-        $this->dbResolver->expects($this->never())->method('get');
-
-        $this->assertSame([], $this->repository->fetchPlacesByElementIds('asset', []));
-    }
 }

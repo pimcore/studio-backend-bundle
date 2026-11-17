@@ -15,41 +15,62 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Workflow\Service;
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
 use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowStatesAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowStatusHydrator;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Repository\WorkflowElementsRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowStatus;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateService;
+use Pimcore\Model\DataObject\AbstractObject;
+use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Folder;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Workflow\EventSubscriber\NotesSubscriber;
 use Pimcore\Workflow\ExpressionService;
 use Pimcore\Workflow\Manager;
 use Pimcore\Workflow\Place\PlaceConfig;
+use Psr\Log\LoggerInterface;
+use RuntimeException;
 use stdClass;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Workflow\Definition;
+use Symfony\Component\Workflow\Marking;
+use Symfony\Component\Workflow\MarkingStore\MarkingStoreInterface;
+use Symfony\Component\Workflow\Registry;
+use Symfony\Component\Workflow\SupportStrategy\InstanceOfSupportStrategy;
+use Symfony\Component\Workflow\Workflow;
+use Symfony\Component\Workflow\WorkflowInterface;
+use function array_fill_keys;
+use function array_filter;
 use function array_keys;
 use function array_map;
+use function array_values;
+use function in_array;
 
 /**
  * @internal
  */
 final class WorkflowStateServiceTest extends Unit
 {
+    private const array ENRICHMENT_PLACES = [
+        'edit_text' => ['label' => 'Edit Text', 'color' => '#ffa500', 'visibleInHeader' => true],
+        'hidden' => ['label' => 'Hidden', 'visibleInHeader' => false],
+        'done_images' => [
+            'label' => 'Done Images',
+            'color' => '#008000',
+            'colorInverted' => true,
+            'visibleInHeader' => true,
+        ],
+        'todo' => ['label' => 'ToDo', 'visibleInHeader' => true],
+    ];
+
     public function testAppliesVisibleStatesInConfigurationOrder(): void
     {
         $element = $this->createElement(12);
         $service = $this->createService(
-            [['cid' => 12, 'workflow' => 'enrichment', 'place' => 'done_images,edit_text,hidden']],
-            ['enrichment' => [
-                'edit_text' => ['label' => 'Edit Text', 'color' => '#ffa500', 'visibleInHeader' => true],
-                'hidden' => ['label' => 'Hidden', 'visibleInHeader' => false],
-                'done_images' => [
-                    'label' => 'Done Images',
-                    'color' => '#008000',
-                    'colorInverted' => true,
-                    'visibleInHeader' => true,
-                ],
-                'todo' => ['label' => 'ToDo', 'visibleInHeader' => true],
-            ]]
+            ['enrichment' => self::ENRICHMENT_PLACES],
+            [12 => [$this->createWorkflow('enrichment', ['done_images', 'edit_text', 'hidden'])]]
         );
 
         $service->applyVisibleStates([$element], ElementTypes::TYPE_DATA_OBJECT);
@@ -62,104 +83,148 @@ final class WorkflowStateServiceTest extends Unit
         $this->assertTrue($states[1]->getColorInverted());
     }
 
-    public function testOrdersWorkflowsByPriorityLikeTheDetailView(): void
+    public function testKeepsTheWorkflowOrderOfTheDetailView(): void
     {
         $element = $this->createElement(7);
         $service = $this->createService(
             [
-                ['cid' => 7, 'workflow' => 'alpha', 'place' => 'open'],
-                ['cid' => 7, 'workflow' => 'zeta', 'place' => 'review'],
+                'zeta' => ['open' => ['label' => 'Zeta open', 'visibleInHeader' => true]],
+                'alpha' => ['open' => ['label' => 'Alpha open', 'visibleInHeader' => true]],
             ],
-            [
-                'zeta' => ['review' => ['label' => 'Review', 'visibleInHeader' => true]],
-                'alpha' => ['open' => ['label' => 'Open', 'visibleInHeader' => true]],
-            ]
+            [7 => [$this->createWorkflow('zeta', ['open']), $this->createWorkflow('alpha', ['open'])]]
         );
 
         $service->applyVisibleStates([$element], ElementTypes::TYPE_ASSET);
-
-        $this->assertSame(['review', 'open'], $this->getTitles($element->getWorkflowStates()));
-    }
-
-    public function testUsesThePlaceConfigOfEachRowsWorkflow(): void
-    {
-        $element = $this->createElement(7);
-        $service = $this->createService(
-            [
-                ['cid' => 7, 'workflow' => 'first', 'place' => 'open'],
-                ['cid' => 7, 'workflow' => 'second', 'place' => 'open'],
-            ],
-            [
-                'first' => ['open' => ['label' => 'First open', 'visibleInHeader' => true]],
-                'second' => ['open' => ['label' => 'Second open', 'visibleInHeader' => true]],
-            ]
-        );
-
-        $service->applyVisibleStates([$element], ElementTypes::TYPE_DATA_OBJECT);
 
         $labels = array_map(
             static fn (WorkflowStatus $state): string => $state->getLabel(),
             $element->getWorkflowStates()
         );
-        $this->assertSame(['First open', 'Second open'], $labels);
+        $this->assertSame(['Zeta open', 'Alpha open'], $labels);
     }
 
-    public function testFetchesAllElementsWithOneLookup(): void
+    public function testShowsNoStateForAWorkflowThatDoesNotSupportTheElement(): void
     {
-        $first = $this->createElement(1);
-        $second = $this->createElement(2);
-        $repository = $this->makeEmpty(WorkflowElementsRepositoryInterface::class, [
-            'fetchPlacesByElementIds' => Expected::once(
-                function (string $elementType, array $elementIds): array {
-                    $this->assertSame(ElementTypes::TYPE_ASSET, $elementType);
-                    $this->assertSame([1, 2], $elementIds);
-
-                    return [['cid' => 2, 'workflow' => 'review', 'place' => 'open']];
-                }
-            ),
-        ]);
-        $service = new WorkflowStateService(
-            $this->createManager(['review' => ['open' => ['visibleInHeader' => true]]]),
-            $repository,
-            new WorkflowStatusHydrator()
+        $supported = $this->createElement(1);
+        $unsupported = $this->createElement(2);
+        $service = $this->createService(
+            ['enrichment' => self::ENRICHMENT_PLACES],
+            [1 => [$this->createWorkflow('enrichment', ['todo'])], 2 => []]
         );
 
-        $service->applyVisibleStates([$first, new stdClass(), $second], ElementTypes::TYPE_ASSET);
+        $service->applyVisibleStates([$supported, $unsupported], ElementTypes::TYPE_DATA_OBJECT);
 
-        $this->assertSame([], $first->getWorkflowStates());
-        $this->assertSame(['open'], $this->getTitles($second->getWorkflowStates()));
+        $this->assertSame(['todo'], $this->getTitles($supported->getWorkflowStates()));
+        $this->assertSame([], $unsupported->getWorkflowStates());
     }
 
-    public function testSkipsTheLookupWithoutWorkflowStateAwareElements(): void
+    public function testShowsTheInitialPlacesWithoutStoringThem(): void
     {
-        $repository = $this->makeEmpty(WorkflowElementsRepositoryInterface::class, [
-            'fetchPlacesByElementIds' => Expected::never(),
-        ]);
-        $service = new WorkflowStateService($this->createManager([]), $repository, new WorkflowStatusHydrator());
+        $element = $this->createElement(3);
+        $service = $this->createService(
+            ['enrichment' => self::ENRICHMENT_PLACES],
+            [3 => [$this->createWorkflow('enrichment', [], ['todo'])]]
+        );
 
-        $service->applyVisibleStates([new stdClass()], ElementTypes::TYPE_DOCUMENT);
+        $service->applyVisibleStates([$element], ElementTypes::TYPE_DATA_OBJECT);
+
+        $this->assertSame(['todo'], $this->getTitles($element->getWorkflowStates()));
+    }
+
+    public function testResolvesSupportPriorityAndPlaceOrderThroughTheWorkflowManager(): void
+    {
+        $registry = new Registry();
+        $manager = new Manager(
+            $registry,
+            $this->makeEmpty(NotesSubscriber::class),
+            $this->makeEmpty(ExpressionService::class),
+            $this->makeEmpty(EventDispatcherInterface::class)
+        );
+        $places = ['open' => ['done', 'edit'], 'review' => ['checked']];
+        foreach (['open' => 1, 'review' => 5] as $workflowName => $priority) {
+            $markingStore = $this->makeEmpty(MarkingStoreInterface::class, [
+                'getMarking' => new Marking(array_fill_keys($places[$workflowName], 1)),
+                'setMarking' => Expected::never(),
+            ]);
+            $registry->addWorkflow(
+                new Workflow(new Definition(['edit', 'done', 'checked'], []), $markingStore, null, $workflowName),
+                new InstanceOfSupportStrategy(Concrete::class)
+            );
+            $manager->registerWorkflow($workflowName, ['priority' => $priority]);
+            foreach (['edit', 'done', 'checked'] as $place) {
+                $manager->addPlaceConfig($workflowName, $place, ['visibleInHeader' => true]);
+            }
+        }
+        $subjects = [
+            1 => $this->makeEmpty(Concrete::class, ['getId' => 1]),
+            2 => $this->makeEmpty(Folder::class, ['getId' => 2]),
+        ];
+        $service = new WorkflowStateService(
+            $manager,
+            $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => static fn (string $type, int $id): AbstractObject => $subjects[$id],
+            ]),
+            new WorkflowStatusHydrator(),
+            $this->makeEmpty(LoggerInterface::class, ['warning' => Expected::never()])
+        );
+        $object = $this->createElement(1);
+        $folder = $this->createElement(2, 'folder');
+
+        $service->applyVisibleStates([$object, $folder], ElementTypes::TYPE_DATA_OBJECT);
+
+        // the higher priority workflow first, each workflow's places in configuration order
+        $this->assertSame(['checked', 'edit', 'done'], $this->getTitles($object->getWorkflowStates()));
+        $this->assertSame([], $folder->getWorkflowStates());
+    }
+
+    public function testLoadsEveryElementByItsCoreType(): void
+    {
+        $loaded = [];
+        $serviceResolver = $this->makeEmpty(ServiceResolverInterface::class, [
+            'getElementById' => function (string $type, int $id) use (&$loaded): ElementInterface {
+                $loaded[] = [$type, $id];
+
+                return $this->makeEmpty(AbstractObject::class, ['getId' => $id]);
+            },
+        ]);
+        $service = new WorkflowStateService(
+            $this->createManager(['enrichment' => self::ENRICHMENT_PLACES], []),
+            $serviceResolver,
+            new WorkflowStatusHydrator(),
+            $this->makeEmpty(LoggerInterface::class)
+        );
+
+        $service->applyVisibleStates(
+            [$this->createElement(1), new stdClass(), $this->createElement(2)],
+            ElementTypes::TYPE_DATA_OBJECT
+        );
+
+        $this->assertSame([['object', 1], ['object', 2]], $loaded);
+    }
+
+    public function testLoadsNothingWithoutConfiguredWorkflows(): void
+    {
+        $element = $this->createElement(1);
+        $service = new WorkflowStateService(
+            $this->createManager([], []),
+            $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => Expected::never()]),
+            new WorkflowStatusHydrator(),
+            $this->makeEmpty(LoggerInterface::class)
+        );
+
+        $service->applyVisibleStates([$element], ElementTypes::TYPE_DOCUMENT);
+
+        $this->assertSame([], $element->getWorkflowStates());
     }
 
     public function testSkipsElementsTheUserMayOnlyList(): void
     {
         $listOnly = $this->createElement(3, 'object', false);
         $viewable = $this->createElement(4);
-        $repository = $this->makeEmpty(WorkflowElementsRepositoryInterface::class, [
-            'fetchPlacesByElementIds' => Expected::once(
-                function (string $elementType, array $elementIds): array {
-                    $this->assertSame([4], $elementIds);
-
-                    return [
-                        ['cid' => 3, 'workflow' => 'review', 'place' => 'open'],
-                        ['cid' => 4, 'workflow' => 'review', 'place' => 'open'],
-                    ];
-                }
-            ),
-        ]);
-        $service = new WorkflowStateService(
-            $this->createManager(['review' => ['open' => ['visibleInHeader' => true]]]),
-            $repository,
-            new WorkflowStatusHydrator()
+        $service = $this->createService(
+            ['review' => ['open' => ['visibleInHeader' => true]]],
+            [4 => [$this->createWorkflow('review', ['open'])]],
+            [4]
         );
 
         $service->applyVisibleStates([$listOnly, $viewable], ElementTypes::TYPE_DATA_OBJECT);
@@ -172,22 +237,10 @@ final class WorkflowStateServiceTest extends Unit
     {
         $folder = $this->createElement(3, 'folder');
         $image = $this->createElement(4, 'image');
-        $repository = $this->makeEmpty(WorkflowElementsRepositoryInterface::class, [
-            'fetchPlacesByElementIds' => Expected::once(
-                function (string $elementType, array $elementIds): array {
-                    $this->assertSame([4], $elementIds);
-
-                    return [
-                        ['cid' => 3, 'workflow' => 'review', 'place' => 'open'],
-                        ['cid' => 4, 'workflow' => 'review', 'place' => 'open'],
-                    ];
-                }
-            ),
-        ]);
-        $service = new WorkflowStateService(
-            $this->createManager(['review' => ['open' => ['visibleInHeader' => true]]]),
-            $repository,
-            new WorkflowStatusHydrator()
+        $service = $this->createService(
+            ['review' => ['open' => ['visibleInHeader' => true]]],
+            [4 => [$this->createWorkflow('review', ['open'])]],
+            [4]
         );
 
         $service->applyVisibleStates([$folder, $image], ElementTypes::TYPE_ASSET);
@@ -200,8 +253,8 @@ final class WorkflowStateServiceTest extends Unit
     {
         $folder = $this->createElement(8, 'folder');
         $service = $this->createService(
-            [['cid' => 8, 'workflow' => 'review', 'place' => 'open']],
-            ['review' => ['open' => ['visibleInHeader' => true]]]
+            ['review' => ['open' => ['visibleInHeader' => true]]],
+            [8 => [$this->createWorkflow('review', ['open'])]]
         );
 
         $service->applyVisibleStates([$folder], ElementTypes::TYPE_DATA_OBJECT);
@@ -209,46 +262,137 @@ final class WorkflowStateServiceTest extends Unit
         $this->assertSame(['open'], $this->getTitles($folder->getWorkflowStates()));
     }
 
-    public function testIgnoresWorkflowsThatAreNoLongerConfigured(): void
+    public function testShowsNoStateForAnElementThatNoLongerExists(): void
     {
         $element = $this->createElement(5);
-        $service = $this->createService([['cid' => 5, 'workflow' => 'removed', 'place' => 'gone']], []);
+        $service = new WorkflowStateService(
+            $this->createManager(['review' => ['open' => ['visibleInHeader' => true]]], []),
+            $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => null]),
+            new WorkflowStatusHydrator(),
+            $this->makeEmpty(LoggerInterface::class)
+        );
 
         $service->applyVisibleStates([$element], ElementTypes::TYPE_DATA_OBJECT);
 
         $this->assertSame([], $element->getWorkflowStates());
     }
 
+    public function testAFailingElementShowsNoStateAndKeepsItsSiblings(): void
+    {
+        $failing = $this->createElement(5);
+        $sibling = $this->createElement(6);
+        $manager = $this->createManager(
+            ['review' => ['open' => ['visibleInHeader' => true]]],
+            [6 => [$this->createWorkflow('review', ['open'])]],
+            static fn (ElementInterface $subject) => $subject->getId() === 5
+                ? throw new RuntimeException('Unable to call method "getKey" of non-object "subject.getCategory()".')
+                : null
+        );
+        $logger = $this->makeEmpty(LoggerInterface::class, ['warning' => Expected::once()]);
+        $service = new WorkflowStateService(
+            $manager,
+            $this->createServiceResolver(),
+            new WorkflowStatusHydrator(),
+            $logger
+        );
+
+        $service->applyVisibleStates([$failing, $sibling], ElementTypes::TYPE_DATA_OBJECT);
+
+        $this->assertSame([], $failing->getWorkflowStates());
+        $this->assertSame(['open'], $this->getTitles($sibling->getWorkflowStates()));
+    }
+
     /**
      * @param array<string, array<string, array<string, mixed>>> $placeConfigsByWorkflow
+     * @param array<int, WorkflowInterface[]> $workflowsByElementId
+     * @param int[]|null $loadableIds
      */
-    private function createService(array $rows, array $placeConfigsByWorkflow): WorkflowStateService
-    {
+    private function createService(
+        array $placeConfigsByWorkflow,
+        array $workflowsByElementId,
+        ?array $loadableIds = null
+    ): WorkflowStateService {
         return new WorkflowStateService(
-            $this->createManager($placeConfigsByWorkflow),
-            $this->makeEmpty(WorkflowElementsRepositoryInterface::class, ['fetchPlacesByElementIds' => $rows]),
-            new WorkflowStatusHydrator()
+            $this->createManager($placeConfigsByWorkflow, $workflowsByElementId),
+            $this->createServiceResolver($loadableIds),
+            new WorkflowStatusHydrator(),
+            $this->makeEmpty(LoggerInterface::class)
         );
     }
 
     /**
-     * Workflows are registered in priority order, which getAllWorkflows() keeps.
-     *
-     * @param array<string, array<string, array<string, mixed>>> $placeConfigsByWorkflow
+     * @param int[]|null $loadableIds
      */
-    private function createManager(array $placeConfigsByWorkflow): Manager
+    private function createServiceResolver(?array $loadableIds = null): ServiceResolverInterface
     {
+        return $this->makeEmpty(ServiceResolverInterface::class, [
+            'getElementById' => function (string $type, int $id) use ($loadableIds): ElementInterface {
+                if ($loadableIds !== null) {
+                    $this->assertContains($id, $loadableIds);
+                }
+
+                return $this->makeEmpty(AbstractObject::class, ['getId' => $id]);
+            },
+        ]);
+    }
+
+    /**
+     * @param array<string, array<string, array<string, mixed>>> $placeConfigsByWorkflow
+     * @param array<int, WorkflowInterface[]> $workflowsByElementId
+     */
+    private function createManager(
+        array $placeConfigsByWorkflow,
+        array $workflowsByElementId,
+        ?callable $beforeSupportCheck = null
+    ): Manager {
         $expressionService = $this->makeEmpty(ExpressionService::class);
         $configs = [];
         foreach ($placeConfigsByWorkflow as $workflowName => $placeConfigs) {
             foreach ($placeConfigs as $place => $config) {
-                $configs[$workflowName][$place] = new PlaceConfig($place, $config, $expressionService, $workflowName);
+                $configs[$workflowName][] = new PlaceConfig($place, $config, $expressionService, $workflowName);
             }
         }
 
         return $this->make(Manager::class, [
             'getAllWorkflows' => array_keys($placeConfigsByWorkflow),
-            'getPlaceConfigsByWorkflowName' => static fn (string $workflowName): array => $configs[$workflowName] ?? [],
+            'getAllWorkflowsForSubject' => static function (ElementInterface $subject) use (
+                $workflowsByElementId,
+                $beforeSupportCheck
+            ): array {
+                if ($beforeSupportCheck !== null) {
+                    $beforeSupportCheck($subject);
+                }
+
+                return $workflowsByElementId[$subject->getId()] ?? [];
+            },
+            // as the core does: the marked places in configuration order
+            'getOrderedPlaceConfigs' => static fn (WorkflowInterface $workflow, Marking $marking): array
+                => array_values(array_filter(
+                    $configs[$workflow->getName()] ?? [],
+                    static fn (PlaceConfig $config): bool
+                        => in_array($config->getPlace(), array_keys($marking->getPlaces()), true)
+                )),
+        ]);
+    }
+
+    /**
+     * The workflow's own getMarking() and the store's setMarking() would write, the tree only reads.
+     *
+     * @param string[] $markedPlaces
+     * @param string[] $initialPlaces
+     */
+    private function createWorkflow(string $name, array $markedPlaces, array $initialPlaces = []): WorkflowInterface
+    {
+        $markingStore = $this->makeEmpty(MarkingStoreInterface::class, [
+            'getMarking' => new Marking(array_fill_keys($markedPlaces, 1)),
+            'setMarking' => Expected::never(),
+        ]);
+
+        return $this->makeEmpty(WorkflowInterface::class, [
+            'getName' => $name,
+            'getMarking' => Expected::never(),
+            'getMarkingStore' => $markingStore,
+            'getDefinition' => new Definition([...$markedPlaces, ...$initialPlaces], [], $initialPlaces),
         ]);
     }
 

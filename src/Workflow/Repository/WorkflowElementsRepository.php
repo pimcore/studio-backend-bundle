@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Repository;
 
-use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
@@ -74,27 +73,6 @@ final readonly class WorkflowElementsRepository implements WorkflowElementsRepos
         }
     }
 
-    public function fetchPlacesByElementIds(string $elementType, array $elementIds): array
-    {
-        if ($elementIds === []) {
-            return [];
-        }
-
-        try {
-            return $this->dbResolver->get()->createQueryBuilder()
-                ->select('ews.cid', 'ews.workflow', 'ews.place')
-                ->from('element_workflow_state', 'ews')
-                // ids of assets, objects and documents overlap, the type is part of the key
-                ->where('ews.ctype = :ctype')
-                ->andWhere('ews.cid IN (:elementIds)')
-                ->setParameter('ctype', $this->getStoredElementType($elementType))
-                ->setParameter('elementIds', $elementIds, ArrayParameterType::INTEGER)
-                ->fetchAllAssociative();
-        } catch (Exception $e) {
-            throw new DatabaseException($e->getMessage(), $e);
-        }
-    }
-
     private function applyWorkflowStateFilters(QueryBuilder $qb, ?string $stateName, ?string $elementType): void
     {
         if ($stateName !== null && $stateName !== '') {
@@ -103,13 +81,8 @@ final readonly class WorkflowElementsRepository implements WorkflowElementsRepos
         }
 
         if ($elementType !== null) {
-            $qb->andWhere('ews.ctype = :ctype')
-                ->setParameter('ctype', $this->getStoredElementType($elementType));
+            $ctype = $elementType === ElementTypes::TYPE_DATA_OBJECT ? ElementTypes::TYPE_OBJECT : $elementType;
+            $qb->andWhere('ews.ctype = :ctype')->setParameter('ctype', $ctype);
         }
-    }
-
-    private function getStoredElementType(string $elementType): string
-    {
-        return $elementType === ElementTypes::TYPE_DATA_OBJECT ? ElementTypes::TYPE_OBJECT : $elementType;
     }
 }
