@@ -723,40 +723,46 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
-     * The default variant declaration is published, not enforced: an unqualified value sent to a key
-     * declaring no default variant is stored exactly as it is for a key that declares nothing.
+     * The default variant is a slot a `multiValue` key can declare away, and a value addressed to it
+     * is then refused on the write path, by the error key and the status a named variant the key does
+     * not declare is refused with.
+     *
+     * Reaching core with it instead is what the refusal replaces: core raises `InvalidConfigException`
+     * for the slot it spells "default" ({@see Classificationstore::setKeyValues()}) and the write path
+     * reports that as a database failure, so a payload naming a slot the key does not have took the
+     * save of every other field and key of the object with it.
+     *
+     * The sibling half is the key that states nothing: it permits the slot, as core does, and the
+     * value is stored under it.
      *
      * @throws Exception
      */
-    public function testAnUnqualifiedValueIsStoredForAKeyDeclaringNoDefaultVariant(): void
+    public function testAnUnqualifiedValueIsRefusedForAKeyDeclaringNoDefaultVariant(): void
     {
-        $writes = [];
-        foreach ([[], ['defaultVariant' => false, 'defaultVariantLabel' => 'Standard']] as $declared) {
-            $stored = [];
-            $written = [];
-            $writtenEntries = [];
-            $keyConfigs = $this->qualifiedKeyConfigs(
-                ['variants' => [self::METRIC]] + $declared
-            );
-            $container = $this->createRecordingContainer(
-                $stored,
-                [self::QUALIFIED_GROUP => true],
-                $written,
-                $writtenEntries
-            );
+        $written = [];
 
-            $this->writeLanguages(
-                $container,
-                $keyConfigs,
-                $stored,
-                [self::LANGUAGE => [self::QUALIFIED_KEY => [['v' => '78']]]]
+        try {
+            $this->writeAndRecord(
+                $this->qualifiedKeyConfigs(['variants' => [self::METRIC], 'unqualifiedValue' => false]),
+                [self::QUALIFIED_KEY => [['v' => '78']]],
+                written: $written
             );
-
-            $writes[] = $this->describeCoreEntries($writtenEntries[0]);
+            $this->fail('Expected the write to be refused.');
+        } catch (AbstractApiException $exception) {
+            $this->assertSame(HttpResponseErrorKeys::UNDECLARED_VARIANT->value, $exception->getErrorKey());
+            $this->assertSame(self::UNPROCESSABLE, $exception->getStatusCode());
         }
 
-        $this->assertSame([['78', self::LANGUAGE, null]], $writes[1]);
-        $this->assertSame($writes[0], $writes[1]);
+        $this->assertSame([], $written);
+
+        $writtenEntries = [];
+        $this->writeAndRecord(
+            $this->qualifiedKeyConfigs(['variants' => [self::METRIC]]),
+            [self::QUALIFIED_KEY => [['v' => '78']]],
+            writtenEntries: $writtenEntries
+        );
+
+        $this->assertSame([['78', self::LANGUAGE, null]], $this->describeCoreEntries($writtenEntries[0]));
     }
 
     /**

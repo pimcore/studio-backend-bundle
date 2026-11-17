@@ -247,6 +247,77 @@ final class QualifiedValueSerializerTest extends Unit
     }
 
     /**
+     * A value addressed to the default slot of a key that declares named variants and permits no
+     * unqualified value is refused here, by the error key a named variant the key does not declare
+     * is refused with.
+     *
+     * Core refuses the same write ({@see Classificationstore::setKeyValues()} raises
+     * `InvalidConfigException` for the variant it spells "default"), and reached there it is wrapped
+     * as a database failure: a 500 that fails the save of every other field and key of the object
+     * with it, for a request naming a slot the key does not have.
+     *
+     * @dataProvider forbiddenDefaultSlotProvider
+     */
+    public function testAValueOfADefaultSlotTheKeyForbidsIsRefused(mixed $payload): void
+    {
+        $this->assertRefused(
+            HttpResponseErrorKeys::UNDECLARED_VARIANT,
+            fn (): array => $this->serializer->parseEntries(
+                $payload,
+                $this->createKeyConfig(permitsDefaultVariant: false)
+            )
+        );
+    }
+
+    /**
+     * Every shape a payload addresses the default slot in: an entry that names no variant, one that
+     * names it as null, and a value that is no list of entries at all.
+     *
+     * @return array<string, array{0: mixed}>
+     */
+    public static function forbiddenDefaultSlotProvider(): array
+    {
+        return [
+            'an entry naming no variant' => [[['v' => '80']]],
+            'an entry naming it as null' => [[['v' => '80', 'var' => null]]],
+            'a cell sending its entry alone' => [['v' => '80']],
+            'the bare value an un-updated client sends' => ['80'],
+            'a value that is no list of entries' => [['red', 'green']],
+        ];
+    }
+
+    /**
+     * The guard above holds a write to the key's declaration and to nothing else: the same key still
+     * takes a value of every variant it does declare.
+     */
+    public function testAKeyForbiddingTheDefaultSlotStillTakesItsDeclaredVariants(): void
+    {
+        $values = $this->serializer->parseEntries(
+            [
+                ['v' => '80', 'var' => self::METRIC],
+                ['v' => '176', 'var' => self::IMPERIAL],
+            ],
+            $this->createKeyConfig(permitsDefaultVariant: false)
+        );
+
+        $this->assertSame([self::METRIC, self::IMPERIAL], $this->describe($values));
+    }
+
+    /**
+     * The sibling of the case above, and what keeps the guard from reading the default slot as
+     * forbidden on every key: a key that permits an unqualified value - which is what a key stating
+     * nothing permits - still takes one, however the payload carries it.
+     */
+    public function testAKeyPermittingTheDefaultSlotStillTakesIt(): void
+    {
+        $entry = $this->serializer->parseEntries([['v' => '80']], $this->createKeyConfig());
+        $bare = $this->serializer->parseEntries('80', $this->createKeyConfig());
+
+        $this->assertSame([null], $this->describe($entry));
+        $this->assertSame([null], $this->describe($bare));
+    }
+
+    /**
      * Two entries that resolve to the same variant once an absent variant normalises to the
      * default are refused, by an error key of their own - also where an older client told them
      * apart by `p`, since a variant holds one value.
@@ -573,12 +644,16 @@ final class QualifiedValueSerializerTest extends Unit
     /**
      * @param string[] $variants
      */
-    private function createKeyConfig(array $variants = [self::METRIC, self::IMPERIAL]): KeyConfig
-    {
+    private function createKeyConfig(
+        array $variants = [self::METRIC, self::IMPERIAL],
+        bool $permitsDefaultVariant = true
+    ): KeyConfig {
         $keyConfig = new KeyConfig();
         $keyConfig->setName('weight');
         $keyConfig->setType(MultiValueServiceResolver::MULTI_VALUE_TYPE);
-        $keyConfig->setDefinition((string) json_encode(['variants' => $variants]));
+        $keyConfig->setDefinition(
+            (string) json_encode(['variants' => $variants, 'unqualifiedValue' => $permitsDefaultVariant])
+        );
 
         return $keyConfig;
     }
