@@ -138,7 +138,9 @@ final class ImportReport implements AdditionalAttributesInterface
         private readonly ?bool $replaced = null,
         #[Property(
             description: 'Number of entries the import removed from the store before writing the file into it; '
-                . 'zero unless the import replaced the configuration',
+                . 'zero unless the import replaced the configuration. Removing a group removes every stored '
+                . 'Classification Store value under it, on both storage engines, and importing the file again '
+                . 'does not bring those values back',
             type: 'integer',
             example: 0,
             nullable: true
@@ -146,13 +148,26 @@ final class ImportReport implements AdditionalAttributesInterface
         private readonly ?int $removed = null,
         #[Property(
             description: 'The removed entries by name, the entities before the relations, the last element naming '
-                . 'how many more there are',
+                . 'how many more there are. A removed group takes the stored values of every object using it with '
+                . 'it, which re-importing the file does not restore',
             type: 'array',
             items: new Items(type: 'string'),
             example: ['group "Dimensions"', 'key "weight"'],
             nullable: true
         )]
         private readonly ?array $removedEntries = null,
+        #[Property(
+            description: 'Whether the import removed, or on a dry run would remove, at least one group of the '
+                . 'store. Removing a group removes every stored Classification Store value under it, on both '
+                . 'storage engines, through the cascade of the value tables, and importing the file again does '
+                . 'not bring those values back. A statement about this import, not a count: nothing is measured '
+                . 'of the values the store holds. False for an import that removed no group, including every '
+                . 'import that did not replace the configuration',
+            type: 'boolean',
+            example: true,
+            nullable: true
+        )]
+        private readonly ?bool $storedValuesRemoved = null,
     ) {
     }
 
@@ -250,5 +265,10 @@ final class ImportReport implements AdditionalAttributesInterface
     public function getRemovedEntries(): ?array
     {
         return $this->removedEntries;
+    }
+
+    public function isStoredValuesRemoved(): ?bool
+    {
+        return $this->storedValuesRemoved;
     }
 }

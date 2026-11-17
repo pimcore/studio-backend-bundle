@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\Se
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\EngineCapabilityGuard;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParser;
@@ -36,9 +37,12 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\QualifiedColumnValueResolver;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ClassificationStoreConfig;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\MultiValueServiceResolver;
 use Pimcore\Cache\RuntimeCache;
+use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as ClassificationstoreField;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
@@ -94,7 +98,7 @@ final class ClassificationStoreResolverTest extends Unit
     {
         $result = $this->createResolver()->resolveForCoreElement(
             $this->createBareColumn(),
-            $this->makeEmpty(Concrete::class)
+            $this->makeObject()
         );
 
         $this->assertNull($result->getValue());
@@ -106,7 +110,7 @@ final class ClassificationStoreResolverTest extends Unit
     {
         $result = $this->createResolver()->resolveForExport(
             $this->createBareColumn(),
-            $this->makeEmpty(Concrete::class),
+            $this->makeObject(),
             $this->makeEmpty(UserInterface::class)
         );
 
@@ -136,7 +140,7 @@ final class ClassificationStoreResolverTest extends Unit
 
         $result = $this->createResolver($normalized)->resolveForCoreElement(
             $this->createKeyColumn(),
-            $this->makeEmpty(Concrete::class, ['getId' => 1])
+            $this->makeObject(['getId' => 1])
         );
 
         $this->assertSame($expected, $result->getValue());
@@ -323,7 +327,7 @@ final class ClassificationStoreResolverTest extends Unit
 
         $result = $resolver->resolveForExport(
             $this->createKeyColumn(),
-            $this->makeEmpty(Concrete::class),
+            $this->makeObject(),
             $this->makeEmpty(UserInterface::class)
         );
 
@@ -371,6 +375,102 @@ final class ClassificationStoreResolverTest extends Unit
         );
 
         $this->assertSame('kg', $received['defaultUnit']);
+    }
+
+    /**
+     * The key decides the bucket a cell reads: a localized key reads the column's locale, or the
+     * implicit read locale without one; a key that is not localized reads the language independent
+     * bucket whatever locale the column carries; a key stating no flag follows the field. The value
+     * and the inheritance come from the same bucket.
+     *
+     * @dataProvider languageProvider
+     *
+     * @throws Exception
+     */
+    public function testACellReadsTheBucketOfTheLanguageTheKeyDecides(
+        ?bool $keyFlag,
+        bool $fieldLocalized,
+        ?string $columnLocale,
+        string $expectedBucket
+    ): void {
+        $this->primeKeyConfig(['fieldtype' => 'input']);
+        $keyLocalization = new InMemoryKeyLocalizationResolver();
+        if ($keyFlag !== null) {
+            $keyLocalization->flagKeyId(self::KEY_ID, $keyFlag);
+        }
+
+        $result = $this->createLanguageResolver($keyLocalization)->resolveForCoreElement(
+            $this->createColumn(['groupId' => self::GROUP_ID, 'keyId' => self::KEY_ID], $columnLocale),
+            $this->createElementWithField($fieldLocalized)
+        );
+
+        $this->assertSame('value-' . $expectedBucket, $result->getValue());
+        $inheritance = $result->getInheritance();
+        $this->assertInstanceOf(InheritanceData::class, $inheritance);
+        $this->assertSame($expectedBucket === 'de' ? 2 : 1, $inheritance->getObjectId());
+    }
+
+    /**
+     * The export reads the language the cell shows: the `language` of the legacy parameters it hands
+     * the data service is the resolved bucket, not the column's own locale.
+     *
+     * @dataProvider languageProvider
+     *
+     * @throws Exception
+     */
+    public function testAnExportCarriesTheLanguageTheCellShows(
+        ?bool $keyFlag,
+        bool $fieldLocalized,
+        ?string $columnLocale,
+        string $expectedBucket
+    ): void {
+        $this->primeKeyConfig(['fieldtype' => 'input']);
+        $keyLocalization = new InMemoryKeyLocalizationResolver();
+        if ($keyFlag !== null) {
+            $keyLocalization->flagKeyId(self::KEY_ID, $keyFlag);
+        }
+        $language = null;
+        $dataService = $this->makeEmpty(DataServiceInterface::class, [
+            'getExportFieldValue' => static function (
+                Concrete $element,
+                Data $fieldDefinition,
+                string $key,
+                ?FieldContextData $contextData = null
+            ) use (&$language): string {
+                $language = $contextData?->getLegacyParameters()['context']['language'] ?? null;
+
+                return '';
+            },
+        ]);
+        $resolver = $this->createResolver(
+            null,
+            $this->createKeyFieldDefinitionResolver(),
+            $dataService,
+            gridService: $this->createLanguageGridService(),
+            keyLocalizationResolver: $keyLocalization
+        );
+
+        $resolver->resolveForExport(
+            $this->createColumn(['groupId' => self::GROUP_ID, 'keyId' => self::KEY_ID], $columnLocale),
+            $this->createElementWithField($fieldLocalized),
+            $this->makeEmpty(UserInterface::class)
+        );
+
+        $this->assertSame($expectedBucket, $language);
+    }
+
+    /**
+     * @return array<string, array{0: ?bool, 1: bool, 2: ?string, 3: string}>
+     */
+    public static function languageProvider(): array
+    {
+        return [
+            'a localized key with a column locale' => [true, false, 'de', 'de'],
+            'a localized key without a column locale reads the implicit one' => [true, false, null, 'de'],
+            'a key that is not localized ignores the column locale' => [false, true, 'de', 'default'],
+            'a key stating no flag follows a localized field' => [null, true, 'de', 'de'],
+            'a key stating no flag follows a field that is not localized' => [null, false, 'de', 'default'],
+        ];
     }
 
     /**
@@ -474,7 +574,7 @@ final class ClassificationStoreResolverTest extends Unit
 
         $this->createResolver()->resolveForCoreElement(
             $this->createColumn($config),
-            $this->makeEmpty(Concrete::class)
+            $this->makeObject()
         );
     }
 
@@ -554,7 +654,7 @@ final class ClassificationStoreResolverTest extends Unit
 
         $this->createResolver()->resolveForCoreElement(
             $this->createColumn(['groupIdentifier' => self::GROUP_IDENTIFIER, 'keyIdentifier' => self::KEY_IDENTIFIER]),
-            $this->makeEmpty(Concrete::class)
+            $this->makeObject()
         );
     }
 
@@ -562,15 +662,28 @@ final class ClassificationStoreResolverTest extends Unit
     {
         $result = $this->createResolver()->resolveForCoreElement(
             $this->createColumn(['groupIdentifier' => null, 'keyIdentifier' => null]),
-            $this->makeEmpty(Concrete::class)
+            $this->makeObject()
         );
 
         $this->assertNull($result->getValue());
     }
 
+    /**
+     * An object whose class carries no field at all, which is what the resolver reads the language
+     * of the field from.
+     *
+     * @param array<string, mixed> $overrides
+     *
+     * @throws Exception
+     */
+    private function makeObject(array $overrides = []): Concrete
+    {
+        return $this->makeEmpty(Concrete::class, ['getClass' => new ClassDefinition(), ...$overrides]);
+    }
+
     private function createObject(): Concrete
     {
-        return $this->makeEmpty(Concrete::class, ['getClassId' => 'EV']);
+        return $this->makeObject(['getClassId' => 'EV']);
     }
 
     private function createResolverWithUnresolvableReference(): ClassificationStoreResolver
@@ -620,6 +733,7 @@ final class ClassificationStoreResolverTest extends Unit
             $this->makeEmpty(LocalizedFieldResolverInterface::class),
             $this->makeEmpty(ColumnReferenceServiceInterface::class, ['resolve' => $resolved]),
             $this->createQualifiedColumnValueResolver($keyQualifierResolver, $dataService),
+            new InMemoryKeyLocalizationResolver(),
         );
     }
 
@@ -660,11 +774,11 @@ final class ClassificationStoreResolverTest extends Unit
     /**
      * @param array<string, mixed> $config
      */
-    private function createColumn(array $config): Column
+    private function createColumn(array $config, ?string $locale = null): Column
     {
         return new Column(
             key: self::COLUMN_KEY,
-            locale: null,
+            locale: $locale,
             type: self::COLUMN_TYPE,
             group: null,
             config: $config,
@@ -693,7 +807,9 @@ final class ClassificationStoreResolverTest extends Unit
         ?ServiceResolverInterface $classificationStoreServiceResolver = null,
         ?DataServiceInterface $dataService = null,
         ?ColumnReferenceServiceInterface $reference = null,
-        ?KeyGroupRelation $relation = null
+        ?KeyGroupRelation $relation = null,
+        ?GridServiceInterface $gridService = null,
+        ?KeyLocalizationResolverInterface $keyLocalizationResolver = null,
     ): ClassificationStoreResolver {
         // the real two: standing them in would leave what a cell and an export show for a list
         // untested here, which is the whole of what this resolver decides about one
@@ -701,7 +817,7 @@ final class ClassificationStoreResolverTest extends Unit
         $dataService ??= $this->makeEmpty(DataServiceInterface::class);
 
         return new ClassificationStoreResolver(
-            $this->createGridService($normalized),
+            $gridService ?? $this->createGridService($normalized),
             $this->makeEmpty(KeyRelationResolverInterface::class, [
                 'getByGroup' => [$relation ?? $this->createRelation()],
             ]),
@@ -711,6 +827,7 @@ final class ClassificationStoreResolverTest extends Unit
             $this->makeEmpty(LocalizedFieldResolverInterface::class),
             $reference ?? $this->makeEmpty(ColumnReferenceServiceInterface::class),
             $this->createQualifiedColumnValueResolver($keyQualifierResolver, $dataService),
+            $keyLocalizationResolver ?? new InMemoryKeyLocalizationResolver(),
         );
     }
 
@@ -792,6 +909,67 @@ final class ClassificationStoreResolverTest extends Unit
      *
      * @throws Exception
      */
+    /**
+     * A store holding a bucket per language, each with a value and an inheritance of its own, and an
+     * implicit read locale of `de`.
+     *
+     * @throws Exception
+     */
+    private function createLanguageGridService(): GridServiceInterface
+    {
+        $bucket = static fn (string $name, int $inheritedFrom): array => [
+            [self::KEY_ID => 'value-' . $name],
+            [self::KEY_ID => new InheritanceData($inheritedFrom, false)],
+        ];
+        [$defaultValue, $defaultInheritance] = $bucket('default', 1);
+        [$deValue, $deInheritance] = $bucket('de', 2);
+
+        return $this->makeEmpty(GridServiceInterface::class, [
+            'getImplicitReadLocale' => 'de',
+            'getColumnResolvers' => [
+                'dataobject.adapter' => $this->makeEmpty(CoreElementColumnResolverInterface::class, [
+                    'resolveForCoreElement' => new ColumnData(
+                        key: 'cs',
+                        locale: null,
+                        value: [self::GROUP_ID => ['default' => $defaultValue, 'de' => $deValue]],
+                        fieldType: 'dataobject.classificationstore',
+                        inheritance: [
+                            self::GROUP_ID => ['default' => $defaultInheritance, 'de' => $deInheritance],
+                        ],
+                    ),
+                ]),
+            ],
+        ]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function createLanguageResolver(KeyLocalizationResolverInterface $keyLocalization): ClassificationStoreResolver
+    {
+        return $this->createResolver(
+            null,
+            gridService: $this->createLanguageGridService(),
+            keyLocalizationResolver: $keyLocalization
+        );
+    }
+
+    /**
+     * An object whose class carries the store field, localized or not.
+     *
+     * @throws Exception
+     */
+    private function createElementWithField(bool $localized): Concrete
+    {
+        $field = new ClassificationstoreField();
+        $field->setName(self::COLUMN_KEY);
+        $field->setLocalized($localized);
+        $class = new ClassDefinition();
+        $class->setFieldDefinitions([self::COLUMN_KEY => $field]);
+
+        return $this->makeEmpty(Concrete::class, ['getId' => 1, 'getClass' => $class]);
+    }
+
     private function createGridService(mixed $normalized): GridServiceInterface
     {
         return $this->makeEmpty(GridServiceInterface::class, [

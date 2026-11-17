@@ -19,6 +19,11 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Command\ApplyStoreCom
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Command\ExportStoreCommand;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Controller\Configuration\Store\ExportController;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Controller\Configuration\Store\ImportController;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolver;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyTypeEngineFitResolver;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyTypeEngineFitResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusals;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilder;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilderInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDuplicator;
@@ -40,11 +45,14 @@ use ReflectionClass;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Yaml\Yaml;
 use function array_key_exists;
+use function array_map;
 use function dirname;
 use function sprintf;
 
@@ -87,6 +95,40 @@ final class ConfigurationTransferWiringTest extends Unit
             );
             $this->assertSame($implementation, $container->getDefinition($interface)->getClass());
         }
+    }
+
+    /**
+     * The refusal of a key type the engine cannot hold is registered under its interface and asks
+     * core for what it needs optionally, so a core without them boots and refuses nothing, and the
+     * bridge that answers the language question is handed core's resolver the same way.
+     */
+    public function testTheKeyTypeFitAndLocalizationBridgesAreRegisteredWithOptionalCoreServices(): void
+    {
+        $container = $this->loadContainer();
+
+        $fit = $container->getDefinition(KeyTypeEngineFitResolverInterface::class);
+        $this->assertSame(KeyTypeEngineFitResolver::class, $fit->getClass());
+        $localization = $container->getDefinition(KeyLocalizationResolverInterface::class);
+        $this->assertSame(KeyLocalizationResolver::class, $localization->getClass());
+
+        $optional = [
+            [$fit, '$keyTypeSupport'],
+            [$fit, '$engineResolver'],
+            [$localization, '$localizationResolver'],
+        ];
+        foreach ($optional as [$definition, $argument]) {
+            $reference = $definition->getArguments()[$argument] ?? null;
+            $this->assertInstanceOf(Reference::class, $reference, $argument);
+            $this->assertSame(
+                ContainerInterface::IGNORE_ON_INVALID_REFERENCE,
+                $reference->getInvalidBehavior(),
+                $argument
+            );
+        }
+
+        $refusalParameters = (new ReflectionClass(ApplyRefusals::class))->getConstructor()?->getParameters() ?? [];
+        $types = array_map(static fn ($parameter): string => (string) $parameter->getType(), $refusalParameters);
+        $this->assertContains(KeyTypeEngineFitResolverInterface::class, $types);
     }
 
     /**

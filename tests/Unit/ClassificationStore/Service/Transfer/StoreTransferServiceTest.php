@@ -257,6 +257,75 @@ final class StoreTransferServiceTest extends Unit
         }
     }
 
+    /**
+     * A replace that removed a group says so, and the statement is the apply's own: nothing counts
+     * values. An import that removed no group - a replace of an empty store, or a restore - says
+     * the opposite.
+     */
+    public function testAReplaceThatRemovedAGroupSaysStoredValuesWereRemoved(): void
+    {
+        $storeRepository = $this->createMock(StoreRepositoryInterface::class);
+        $storeRepository->method('getById')->willReturn($this->createStore(self::STORE_ID, '01ELSEWHERE'));
+        $storeRepository->method('getByIdentifier')->willReturn(null);
+
+        $removing = new ApplyReport();
+        $removing->record(ApplyOutcome::REMOVED, self::GROUP_ENTRY);
+        $removing->markGroupRemoved();
+        $empty = new ApplyReport();
+
+        $replaced = $this->createService($storeRepository, $removing)
+            ->importStore(self::STORE_ID, $this->createArtifactJson());
+        $emptyReplace = $this->createService($storeRepository, $empty)
+            ->importStore(self::STORE_ID, $this->createArtifactJson());
+
+        $this->assertTrue($replaced->isReplaced());
+        $this->assertTrue($replaced->isStoredValuesRemoved());
+        $this->assertTrue($emptyReplace->isReplaced());
+        $this->assertFalse($emptyReplace->isStoredValuesRemoved());
+    }
+
+    public function testAnImportThatDoesNotReplaceSaysNoStoredValuesWereRemoved(): void
+    {
+        $storeRepository = $this->createMock(StoreRepositoryInterface::class);
+        $storeRepository->method('getById')->willReturn($this->createStore(self::STORE_ID));
+        $storeRepository->method('getByIdentifier')->willReturn($this->createStore(self::STORE_ID));
+
+        $report = $this->createService($storeRepository)->importStore(self::STORE_ID, $this->createArtifactJson());
+
+        $this->assertFalse($report->isReplaced());
+        $this->assertFalse($report->isStoredValuesRemoved());
+    }
+
+    /**
+     * A dry run that carries a refusal answers 409 as the real apply does, and hands nothing to the
+     * search index: the refusal travels as a reported conflict.
+     */
+    public function testADryRunOverARefusedKeyTypeAnswersConflictAndFlushesNothing(): void
+    {
+        $storeRepository = $this->createMock(StoreRepositoryInterface::class);
+        $storeRepository->method('getById')->willReturn($this->createStore(self::STORE_ID));
+        $storeRepository->method('getByIdentifier')->willReturn($this->createStore(self::STORE_ID));
+
+        $applyReport = new ApplyReport();
+        $applyReport->record(
+            ApplyOutcome::CONFLICT,
+            'key "position": the field type "geopoint" cannot be held by the "eav" storage engine of the store'
+        );
+        $trigger = $this->createMock(SearchIndexRemapTriggerInterface::class);
+        $trigger->expects($this->never())->method('flush');
+
+        try {
+            $this
+                ->createService($storeRepository, $applyReport, $trigger)
+                ->importStore(self::STORE_ID, $this->createArtifactJson(), true);
+            $this->fail('A refused dry run cannot answer with a report.');
+        } catch (ConflictException $e) {
+            $this->assertSame(409, $e->getStatusCode());
+            $this->assertStringContainsString('key "position"', $e->getMessage());
+            $this->assertStringContainsString('geopoint', $e->getMessage());
+        }
+    }
+
     public function testAStoreIsResolvedByIdentifierForTheConsole(): void
     {
         $storeRepository = $this->createMock(StoreRepositoryInterface::class);
@@ -321,6 +390,7 @@ final class StoreTransferServiceTest extends Unit
     private function createService(
         StoreRepositoryInterface $storeRepository,
         ?ApplyReport $applyReport = null,
+        ?SearchIndexRemapTriggerInterface $searchIndexRemapTrigger = null,
     ): StoreTransferService {
         $reconciler = $this->createMock(ReconcilerInterface::class);
         $reconciler->method('apply')->willReturnCallback(
@@ -345,7 +415,7 @@ final class StoreTransferServiceTest extends Unit
             new ArtifactParser(),
             $this->makeEmpty(KeyRelationResolverInterface::class),
             $reconciler,
-            $this->makeEmpty(SearchIndexRemapTriggerInterface::class),
+            $searchIndexRemapTrigger ?? $this->makeEmpty(SearchIndexRemapTriggerInterface::class),
             $storeRepository
         );
     }

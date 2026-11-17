@@ -2127,9 +2127,15 @@ classification_store_configuration_store_import_description: |
   key gets a freshly generated identifier, the store keeps its own identifier and name, and the configuration
   the store held is removed and replaced by the file's. Importing the same file again gives the same store
   rather than a second copy. The report says which of the two happened and names what was removed.
+  A replace also deletes data: removing a group removes every stored Classification Store value under it, on
+  both storage engines, through the cascade of the value tables, and importing the file again does not bring
+  those values back. <strong>storedValuesRemoved</strong> says so - it is a statement about the import, not a
+  count of the values.
   Send <strong>dryRun</strong> to get the same report without writing anything, which is how a replace can be
-  shown before it happens. Refused with 409 when the configuration cannot be applied, and with 422 when the
-  file is not a parseable artifact.
+  shown before it happens. Refused with 409 when the configuration cannot be applied - including a key whose
+  field type is withdrawn as a key type, or wraps one no key is defined with, or cannot be held by the storage
+  engine of the store - and with 422 when the file is not a parseable
+  artifact.
 classification_store_configuration_store_import_summary: Import a store configuration
 classification_store_configuration_store_import_success_response: Report of what the import created, updated, adopted, skipped, removed and left in place
 classification_store_configuration_store_tree_description: Get all classification store configurations as a flat tree list

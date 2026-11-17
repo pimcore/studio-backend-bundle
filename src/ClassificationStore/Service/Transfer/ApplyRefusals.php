@@ -17,15 +17,20 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyTypeEngineFitResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use function array_diff;
 use function array_keys;
 use function implode;
 use function in_array;
+use function is_array;
+use function is_string;
+use function json_decode;
 use function mb_strtolower;
 use function sprintf;
 
@@ -49,6 +54,7 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
         private CollectionRepositoryInterface $collectionRepository,
         private GroupRepositoryInterface $groupRepository,
         private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
+        private KeyTypeEngineFitResolverInterface $keyTypeEngineFitResolver,
         private SubGroupRepositoryInterface $subGroupRepository,
     ) {
     }
@@ -163,6 +169,102 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
     /**
      * {@inheritdoc}
      */
+    public function refuseWithdrawnKeyType(
+        ApplyContext $context,
+        ?KeyConfig $target,
+        ArtifactKeyEntry $keyEntry,
+        string $label,
+    ): bool {
+        $introduced = array_diff(
+            $this->keyTypeEngineFitResolver->findWithdrawnTypes(
+                $this->collectTypeNames($keyEntry->getType(), $this->readDelegateType($keyEntry))
+            ),
+            $target === null ? [] : $this->keyTypeEngineFitResolver->findWithdrawnTypes(
+                $this->collectTypeNames($target->getType(), $this->readStoredDelegateType($target))
+            )
+        );
+
+        if ($introduced === []) {
+            return false;
+        }
+
+        $context->record(
+            ApplyOutcome::CONFLICT,
+            sprintf(
+                '%s: the field type "%s" has been withdrawn as a key type',
+                $label,
+                implode('", "', $introduced)
+            )
+        );
+
+        $context->skip(ArtifactSection::KEYS, $keyEntry->getIdentifier());
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function refuseDelegateThatIsNotAKeyType(
+        ApplyContext $context,
+        ArtifactKeyEntry $keyEntry,
+        string $label,
+    ): bool {
+        $delegateType = $this->keyTypeEngineFitResolver->findDelegateThatIsNotAKeyType(
+            $this->readDelegateType($keyEntry)
+        );
+
+        if ($delegateType === null) {
+            return false;
+        }
+
+        $context->record(
+            ApplyOutcome::CONFLICT,
+            sprintf('%s: a key cannot wrap the field type "%s", which no key is defined with', $label, $delegateType)
+        );
+
+        $context->skip(ArtifactSection::KEYS, $keyEntry->getIdentifier());
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function refuseKeyTypeTheEngineCannotHold(
+        ApplyContext $context,
+        ArtifactKeyEntry $keyEntry,
+        string $label,
+    ): bool {
+        $engine = $this->keyTypeEngineFitResolver->findRefusingEngine(
+            $keyEntry->getType(),
+            $this->readDelegateType($keyEntry),
+            $context->getStoreId()
+        );
+
+        if ($engine === null) {
+            return false;
+        }
+
+        $context->record(
+            ApplyOutcome::CONFLICT,
+            sprintf(
+                '%s: the field type "%s" cannot be held by the "%s" storage engine of the store',
+                $label,
+                $keyEntry->getType(),
+                $engine
+            )
+        );
+
+        // nothing registers a refused key, so what refers to it is skipped with it, in a dry run as in an apply
+        $context->skip(ArtifactSection::KEYS, $keyEntry->getIdentifier());
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function refuseAssignment(
         ApplyContext $context,
         ArtifactAssignmentEntry $assignment,
@@ -198,6 +300,29 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
         }
 
         return $refusals !== [];
+    }
+
+    private function readDelegateType(ArtifactKeyEntry $keyEntry): ?string
+    {
+        $delegateType = $keyEntry->getDefinition()['delegateDatatype'] ?? null;
+
+        return is_string($delegateType) && $delegateType !== '' ? $delegateType : null;
+    }
+
+    private function readStoredDelegateType(KeyConfig $target): ?string
+    {
+        $definition = json_decode($target->getDefinition(), true);
+        $delegateType = is_array($definition) ? ($definition['delegateDatatype'] ?? null) : null;
+
+        return is_string($delegateType) && $delegateType !== '' ? $delegateType : null;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function collectTypeNames(string $type, ?string $delegateType): array
+    {
+        return $delegateType === null ? [$type] : [$type, $delegateType];
     }
 
     /**

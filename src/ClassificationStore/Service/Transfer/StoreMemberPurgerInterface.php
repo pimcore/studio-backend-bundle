@@ -39,6 +39,10 @@ interface StoreMemberPurgerInterface
      * levels, which the database takes with their endpoints rather than this deleting them one by
      * one.
      *
+     * Removing a group removes every stored value under it, on both storage engines, through the
+     * cascade of the value tables; the report marks that ({@see ApplyReport::hasRemovedGroup()}) in
+     * a dry run as well.
+     *
      * A removal is the one change to a key the search index cannot be told about as a flag change -
      * the key is gone and a definition of null reads as indexed - so the deleting mode notes the
      * store's mapping as stale instead

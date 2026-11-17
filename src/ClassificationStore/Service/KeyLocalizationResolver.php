@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use Pimcore\Model\DataObject\Classificationstore\LocalizationResolver;
 use function is_bool;
 use function method_exists;
 
@@ -25,6 +27,15 @@ final readonly class KeyLocalizationResolver implements KeyLocalizationResolverI
     private const string GETTER = 'getLocalized';
 
     private const string SETTER = 'setLocalized';
+
+    private const string KEY_LOCALIZED_ACCESSOR = 'isKeyLocalized';
+
+    private const string ANY_KEY_LOCALIZED_ACCESSOR = 'hasLocalizedKey';
+
+    public function __construct(
+        private ?LocalizationResolver $localizationResolver = null,
+    ) {
+    }
 
     public function supportsLocalization(): bool
     {
@@ -39,6 +50,16 @@ final readonly class KeyLocalizationResolver implements KeyLocalizationResolverI
     public function setLocalized(KeyConfig $keyConfig, ?bool $localized): void
     {
         $this->writeFlag($keyConfig, $localized);
+    }
+
+    public function isKeyLocalized(int $keyId, Classificationstore $definition): bool
+    {
+        return $this->askCore(self::KEY_LOCALIZED_ACCESSOR, $keyId, $definition) ?? $definition->isLocalized();
+    }
+
+    public function hasLocalizedKey(Classificationstore $definition): bool
+    {
+        return $this->askCore(self::ANY_KEY_LOCALIZED_ACCESSOR, $definition) ?? $definition->isLocalized();
     }
 
     /**
@@ -87,5 +108,20 @@ final readonly class KeyLocalizationResolver implements KeyLocalizationResolverI
         }
 
         return $keyConfig->$accessor(...$arguments);
+    }
+
+    /**
+     * The core's localization resolver asked by name, for the reason {@see self::accessor()} is: the
+     * accessor is not this package's and the core whose it is need not carry it.
+     */
+    private function askCore(string $accessor, int|Classificationstore ...$arguments): ?bool
+    {
+        if ($this->localizationResolver === null || !method_exists($this->localizationResolver, $accessor)) {
+            return null;
+        }
+
+        $answer = $this->localizationResolver->$accessor(...$arguments);
+
+        return is_bool($answer) ? $answer : null;
     }
 }

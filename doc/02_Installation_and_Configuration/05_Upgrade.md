@@ -157,13 +157,16 @@ The following steps are necessary during updating to newer versions.
   an entry whose name already belongs to another identifier is skipped and named in the report. Importing a file that
   describes a *different* store duplicates it instead: every sub group, collection, group and key gets a freshly
   generated identifier, the store keeps its own identifier and name, and the configuration it held is removed and
-  replaced by the file's, so importing the same file twice gives the same store rather than a second copy. Send
-  `dryRun` with the import to get the report - what would be removed included - without writing anything. The report
+  replaced by the file's - which also removes the stored values under every removed group, and importing the file
+  again does not bring them back - so importing the same file twice gives the same store rather than a second copy.
+  Send `dryRun` with the import to get the report - what would be removed included - without writing anything. The report
   naming what was created, updated, adopted, skipped, removed and left in place is the command's and the API
   response's.
 - [Classification Store] Changed: a key's own `localized` flag is now honoured by the object data endpoints, where the
   class field's flag alone used to decide, so a key localized inside a non-localized field is read and written per
   language.
+- [Classification Store] Changed: a Classification Store grid column now reads the language its key decides, and may
+  now be offered a language where the field itself is not localized.
 - [Classification Store] Changed: a store configuration export now refuses when the configuration changed while it was
   being written, and must be run again. Over HTTP that arrives as a truncated download, on the console as a failed
   command.

@@ -18,14 +18,18 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyTypeEngineFitResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyContext;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusals;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyReport;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactAssignmentEntry;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\MatchedRow;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use function array_intersect;
+use function array_values;
 use function is_callable;
 
 /**
@@ -383,6 +387,7 @@ final class ApplyRefusalsTest extends Unit
                 $this->makeEmpty(CollectionRepositoryInterface::class),
                 $this->makeEmpty(GroupRepositoryInterface::class),
                 $keyGroupRelationRepository,
+                $this->makeEmpty(KeyTypeEngineFitResolverInterface::class),
                 $this->makeEmpty(SubGroupRepositoryInterface::class)
             );
 
@@ -563,6 +568,104 @@ final class ApplyRefusalsTest extends Unit
         return $key;
     }
 
+    /**
+     * The refusal asks the fit resolver about the key's own type and its wrapper delegate, and about
+     * the store the apply writes into - null for a store the apply has yet to create.
+     */
+    public function testAKeyTypeTheEngineCannotHoldIsRefusedNamingTheEngine(): void
+    {
+        $asked = [];
+        $fit = $this->makeEmpty(KeyTypeEngineFitResolverInterface::class, [
+            'findRefusingEngine' => function (string $type, ?string $delegate, ?int $storeId) use (&$asked): string {
+                $asked[] = [$type, $delegate, $storeId];
+
+                return 'eav';
+            },
+        ]);
+        $context = $this->createContext();
+        $entry = new ArtifactKeyEntry(
+            '01KEY',
+            'secret',
+            null,
+            null,
+            'encryptedField',
+            ['delegateDatatype' => 'geopoint'],
+            true
+        );
+
+        $refused = $this->createRefusals(keyTypeEngineFit: $fit)
+            ->refuseKeyTypeTheEngineCannotHold($context, $entry, 'key "secret"');
+
+        $this->assertTrue($refused);
+        $this->assertSame([['encryptedField', 'geopoint', self::STORE_ID]], $asked);
+        $this->assertSame(
+            ['key "secret": the field type "encryptedField" cannot be held by the "eav" storage engine of the store'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
+    public function testAKeyTypeEveryEngineHoldsIsNotRefused(): void
+    {
+        $context = $this->createContext();
+        $entry = new ArtifactKeyEntry('01KEY', 'weight', null, null, 'input', ['fieldtype' => 'input'], true);
+
+        $refused = $this->createRefusals()->refuseKeyTypeTheEngineCannotHold($context, $entry, 'key "weight"');
+
+        $this->assertFalse($refused);
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+    }
+
+    public function testAWithdrawnTypeTheStoredKeyAlreadyCarriesIsNotRefused(): void
+    {
+        $fit = $this->makeEmpty(KeyTypeEngineFitResolverInterface::class, [
+            'findWithdrawnTypes' => static fn (array $types): array => array_values(
+                array_intersect($types, ['consent'])
+            ),
+        ]);
+        $entry = new ArtifactKeyEntry('01KEY', 'agree', null, null, 'consent', ['fieldtype' => 'consent'], true);
+        $stored = $this->createKey();
+        $stored->setType('consent');
+        $stored->setDefinition('{"fieldtype":"consent"}');
+        $refusals = $this->createRefusals(keyTypeEngineFit: $fit);
+
+        $context = $this->createContext();
+        $this->assertFalse($refusals->refuseWithdrawnKeyType($context, $stored, $entry, 'key "agree"'));
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+
+        $context = $this->createContext();
+        $this->assertTrue($refusals->refuseWithdrawnKeyType($context, null, $entry, 'key "agree"'));
+        $this->assertSame(
+            ['key "agree": the field type "consent" has been withdrawn as a key type'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
+    public function testADelegateNoKeyIsDefinedWithIsRefusedNamingIt(): void
+    {
+        $fit = $this->makeEmpty(KeyTypeEngineFitResolverInterface::class, [
+            'findDelegateThatIsNotAKeyType' => static fn (?string $delegate): ?string => $delegate,
+        ]);
+        $entry = new ArtifactKeyEntry(
+            '01KEY',
+            'slug',
+            null,
+            null,
+            'multiValue',
+            ['delegateDatatype' => 'urlSlug'],
+            true
+        );
+        $context = $this->createContext();
+
+        $refused = $this->createRefusals(keyTypeEngineFit: $fit)
+            ->refuseDelegateThatIsNotAKeyType($context, $entry, 'key "slug"');
+
+        $this->assertTrue($refused);
+        $this->assertSame(
+            ['key "slug": a key cannot wrap the field type "urlSlug", which no key is defined with'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
     private function createContext(bool $dryRun = false): ApplyContext
     {
         $context = new ApplyContext($dryRun, new ApplyReport());
@@ -579,6 +682,7 @@ final class ApplyRefusalsTest extends Unit
         bool|callable $groupNameTaken = false,
         bool $subGroupNameTaken = false,
         array $assignedGroupNames = [],
+        ?KeyTypeEngineFitResolverInterface $keyTypeEngineFit = null,
     ): ApplyRefusals {
         $collectionRepository = $this->createMock(CollectionRepositoryInterface::class);
         $collectionRepository->method('isNameTaken')->willReturn($collectionNameTaken);
@@ -602,6 +706,7 @@ final class ApplyRefusalsTest extends Unit
             $collectionRepository,
             $groupRepository,
             $keyGroupRelationRepository,
+            $keyTypeEngineFit ?? $this->makeEmpty(KeyTypeEngineFitResolverInterface::class),
             $subGroupRepository
         );
     }

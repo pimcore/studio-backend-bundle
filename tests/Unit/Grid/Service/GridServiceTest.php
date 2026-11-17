@@ -25,6 +25,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnVariantExpander;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnVariantExpanderInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
@@ -52,6 +53,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowPermissionsAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\MultiValueServiceResolver;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -61,6 +63,7 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as ClassificationstoreField;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Concrete;
@@ -676,6 +679,185 @@ final class GridServiceTest extends Unit
             $deniedResolver->wasCalled,
             'the resolver must not be invoked when the implicit locale of a localized field is denied'
         );
+    }
+
+    /**
+     * A Classification Store column gates on the language when a key of its store is localized, even
+     * where the class field is not: the keys decide their own languages. Without a locale the gate
+     * is the implicit read locale, which is the language the cell is then read for.
+     */
+    public function testGetGridDataForElementGatesAClassificationStoreColumnOfALocalizedKey(): void
+    {
+        $field = new ClassificationstoreField();
+        $field->setName('cs');
+        $classDefinition = new ClassDefinition();
+        $classDefinition->addFieldDefinition('cs', $field);
+        $element = $this->makeEmpty(Concrete::class, ['getClass' => $classDefinition, 'getClassId' => 'cs-class']);
+        $column = new Column(key: 'cs', locale: null, type: 'dataobject.classificationstore', group: null, config: []);
+        $keyLocalization = new InMemoryKeyLocalizationResolver();
+        $keyLocalization->flagKeyId(1, true);
+
+        $outcomes = [];
+        foreach ([['fr' => 1], ['de' => 1]] as $allowedView) {
+            $resolver = $this->createRecordingResolver();
+            $service = $this->createService(
+                serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => $element]),
+                dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                    'getLanguagePermissions' => $allowedView,
+                ]),
+                securityService: $this->makeEmpty(SecurityServiceInterface::class),
+                columnResolverLoader: $this->makeEmpty(ColumnResolverLoaderInterface::class, [
+                    'loadColumnResolvers' => ['dataobject.classificationstore' => $resolver],
+                ]),
+                toolResolver: $this->makeEmpty(ToolResolverInterface::class, ['isValidLanguage' => true]),
+                localeService: $this->makeEmpty(LocaleServiceInterface::class, ['getLocale' => 'de']),
+                keyLocalizationResolver: $keyLocalization,
+            );
+
+            $data = $service->getGridDataForElement(
+                new ColumnCollection([$column]),
+                null,
+                ElementTypes::TYPE_OBJECT,
+                1,
+                false,
+                $this->buildUser(isAdmin: false),
+            );
+            $outcomes[] = [$data['columns'][0]->getValue(), $resolver->wasCalled];
+        }
+
+        self::assertSame([[null, false], ['LEAKED', true]], $outcomes);
+    }
+
+    /**
+     * The gate asks the column's own key: a key that is not localized is read from the language
+     * independent bucket, so no language permission applies to it even where another key of the
+     * store is localized and the column carries a locale.
+     */
+    public function testGetGridDataForElementDoesNotGateAClassificationStoreColumnOfANonLocalizedKey(): void
+    {
+        $field = new ClassificationstoreField();
+        $field->setName('cs');
+        $classDefinition = new ClassDefinition();
+        $classDefinition->addFieldDefinition('cs', $field);
+        $element = $this->makeEmpty(Concrete::class, ['getClass' => $classDefinition, 'getClassId' => 'cs-class']);
+        $keyLocalization = new InMemoryKeyLocalizationResolver();
+        $keyLocalization->flagKeyId(1, true);
+        $keyLocalization->flagKeyId(2, false);
+
+        $outcomes = [];
+        foreach ([[null, 1], ['de', 1], [null, 2], ['de', 2]] as [$locale, $keyId]) {
+            $column = new Column(
+                key: 'cs',
+                locale: $locale,
+                type: 'dataobject.classificationstore',
+                group: null,
+                config: ['keyId' => $keyId]
+            );
+            $resolver = $this->createRecordingResolver();
+            $service = $this->createService(
+                serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => $element]),
+                dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                    'getLanguagePermissions' => ['fr' => 1, 'default' => 1],
+                ]),
+                securityService: $this->makeEmpty(SecurityServiceInterface::class),
+                columnResolverLoader: $this->makeEmpty(ColumnResolverLoaderInterface::class, [
+                    'loadColumnResolvers' => ['dataobject.classificationstore' => $resolver],
+                ]),
+                toolResolver: $this->makeEmpty(ToolResolverInterface::class, ['isValidLanguage' => true]),
+                localeService: $this->makeEmpty(LocaleServiceInterface::class, ['getLocale' => 'de']),
+                keyLocalizationResolver: $keyLocalization,
+            );
+
+            $data = $service->getGridDataForElement(
+                new ColumnCollection([$column]),
+                null,
+                ElementTypes::TYPE_OBJECT,
+                1,
+                false,
+                $this->buildUser(isAdmin: false),
+            );
+            $outcomes[] = $resolver->wasCalled;
+        }
+
+        self::assertSame([false, false, true, true], $outcomes);
+    }
+
+    /**
+     * A key that is not localized is gated on the language independent bucket it is read from, so a
+     * user who may not read it is denied on the export path too, which does not intersect with the
+     * permitted languages the way the adapter does. An empty locale is no locale.
+     */
+    public function testGetGridDataForElementGatesANonLocalizedKeyOnTheLanguageIndependentPermission(): void
+    {
+        $field = new ClassificationstoreField();
+        $field->setName('cs');
+        $classDefinition = new ClassDefinition();
+        $classDefinition->addFieldDefinition('cs', $field);
+        $element = $this->makeEmpty(Concrete::class, ['getClass' => $classDefinition, 'getClassId' => 'cs-class']);
+        $keyLocalization = new InMemoryKeyLocalizationResolver();
+        $keyLocalization->flagKeyId(1, false);
+        $keyLocalization->flagKeyId(2, true);
+
+        $outcomes = [];
+        foreach ([[1, 'de', ['de' => 1]], [1, 'de', ['de' => 1, 'default' => 1]], [2, '', ['de' => 1]]] as [$keyId, $locale, $allowedView]) {
+            $column = new Column(
+                key: 'cs',
+                locale: $locale,
+                type: 'dataobject.classificationstore',
+                group: null,
+                config: ['keyId' => $keyId]
+            );
+            $resolver = $this->createRecordingResolver();
+            $service = $this->createService(
+                serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => $element]),
+                dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                    'getLanguagePermissions' => $allowedView,
+                ]),
+                securityService: $this->makeEmpty(SecurityServiceInterface::class),
+                columnResolverLoader: $this->makeEmpty(ColumnResolverLoaderInterface::class, [
+                    'loadColumnResolvers' => ['dataobject.classificationstore' => $resolver],
+                ]),
+                toolResolver: $this->makeEmpty(ToolResolverInterface::class, ['isValidLanguage' => true]),
+                localeService: $this->makeEmpty(LocaleServiceInterface::class, ['getLocale' => 'de']),
+                keyLocalizationResolver: $keyLocalization,
+            );
+
+            $service->getGridDataForElement(
+                new ColumnCollection([$column]),
+                null,
+                ElementTypes::TYPE_OBJECT,
+                1,
+                false,
+                $this->buildUser(isAdmin: false),
+            );
+            $outcomes[] = $resolver->wasCalled;
+        }
+
+        self::assertSame([false, true, true], $outcomes);
+    }
+
+    private function createRecordingResolver(): ColumnResolverInterface&CoreElementColumnResolverInterface
+    {
+        return new class implements ColumnResolverInterface, CoreElementColumnResolverInterface {
+            public bool $wasCalled = false;
+
+            public function getType(): string
+            {
+                return 'dataobject.classificationstore';
+            }
+
+            public function supportedElementTypes(): array
+            {
+                return [ElementTypes::TYPE_OBJECT];
+            }
+
+            public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
+            {
+                $this->wasCalled = true;
+
+                return new ColumnData(key: 'cs', locale: $column->getLocale(), value: 'LEAKED', fieldType: 'input');
+            }
+        };
     }
 
     /**
@@ -1493,6 +1675,7 @@ final class GridServiceTest extends Unit
         ?RuntimeCacheResolverInterface $runtimeCacheResolver = null,
         ?ClassDefinitionResolverInterface $classDefinitionResolver = null,
         ?ColumnVariantExpanderInterface $columnVariantExpander = null,
+        ?KeyLocalizationResolverInterface $keyLocalizationResolver = null,
     ): GridService {
         return new GridService(
             $this->makeEmpty(ColumnDefinitionLoaderInterface::class),
@@ -1520,6 +1703,7 @@ final class GridServiceTest extends Unit
                 new KeyQualifierResolver(new MultiValueServiceResolver()),
                 $this->makeEmpty(ColumnReferenceServiceInterface::class)
             ),
+            $keyLocalizationResolver ?? new InMemoryKeyLocalizationResolver(),
         );
     }
 }
