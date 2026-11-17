@@ -91,9 +91,6 @@ final class GridService implements GridServiceInterface
      */
     private array $columnCollectors = [];
 
-    /** @var array<string, bool> */
-    private array $classificationStoreKeyLocalized = [];
-
     public function __construct(
         private readonly ColumnDefinitionLoaderInterface $columnDefinitionLoader,
         private readonly ColumnResolverLoaderInterface $columnResolverLoader,
@@ -513,13 +510,12 @@ final class GridService implements GridServiceInterface
         }
 
         $keyId = $this->resolveColumnKeyId($element, $column);
-        $cacheKey = $element->getClassId() . '|' . $column->getKey() . '|' . ($keyId ?? '');
-
-        $this->classificationStoreKeyLocalized[$cacheKey] ??= $keyId !== null
+        // asked every time: the key's localized flag is configuration that can change while a worker lives
+        $localized = $keyId !== null
             ? $this->keyLocalizationResolver->isKeyLocalized($keyId, $definition)
             : $this->keyLocalizationResolver->hasLocalizedKey($definition);
 
-        if (!$this->classificationStoreKeyLocalized[$cacheKey]) {
+        if (!$localized) {
             // read from the language independent bucket, which is itself a permission: the export
             // resolver does not intersect with the permitted languages the way the adapter does
             return [MappingProperty::NOT_LOCALIZED_KEY, false];
