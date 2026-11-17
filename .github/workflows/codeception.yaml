@@ -67,15 +67,7 @@ jobs:
             # CI must install that branch instead of ^2026.4 from packagist. Without
             # it PHPStan reports every new core class as unknown and codeception
             # cannot boot.
-            #
-            # Pinned one branch further for this PR: the core half of this change is
-            # pimcore/pimcore#19722 on cs-store-engine-and-variant-gate, which is
-            # cs-store-improvements plus that one commit. getPreferredEngine() and
-            # requiredEngineFeatures() live only there, so against the epic branch
-            # PHPStan reports both as undefined and three unit tests fail.
-            # RESTORE TO 'dev-cs-store-improvements as 2026.99.9' once #19722 is
-            # merged, and before this PR is merged - the branch is deleted on merge.
-            FILTERED_MATRIX_JSON=$(echo $MATRIX_JSON | jq --arg php_versions "$php_versions" --arg pimcore_version 'dev-cs-store-engine-and-variant-gate as 2026.99.9' '
+            FILTERED_MATRIX_JSON=$(echo $MATRIX_JSON | jq --arg php_versions "$php_versions" --arg pimcore_version 'dev-cs-store-improvements as 2026.99.9' '
             {
               matrix: [
                 .configs[] |
