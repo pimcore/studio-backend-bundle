@@ -37,6 +37,10 @@ final class KeyTypeEngineFitResolverTest extends Unit
 {
     private const string EAV = 'eav';
 
+    private const string MULTI_VALUE = 'multiValue';
+
+    private const string INPUT = 'input';
+
     public function testAStructuredTypeIsRefusedByAnEngineWithoutTheCapability(): void
     {
         $this->assertSame(self::EAV, $this->createResolver(false)->findRefusingEngine('geopoint', null, null));
@@ -49,7 +53,7 @@ final class KeyTypeEngineFitResolverTest extends Unit
 
     public function testATypeTheValueColumnsHoldIsHeldByEveryEngine(): void
     {
-        $this->assertNull($this->createResolver(false)->findRefusingEngine('input', null, null));
+        $this->assertNull($this->createResolver(false)->findRefusingEngine(self::INPUT, null, null));
     }
 
     public function testATypeOutsideTheAcceptedSetIsNotGoverned(): void
@@ -62,7 +66,7 @@ final class KeyTypeEngineFitResolverTest extends Unit
         $resolver = $this->createResolver(false);
 
         $this->assertSame(self::EAV, $resolver->findRefusingEngine('encryptedField', 'geopoint', null));
-        $this->assertNull($resolver->findRefusingEngine('encryptedField', 'input', null));
+        $this->assertNull($resolver->findRefusingEngine('encryptedField', self::INPUT, null));
     }
 
     public function testAnInstallationWithoutAnEngineResolverRefusesNothing(): void
@@ -76,9 +80,9 @@ final class KeyTypeEngineFitResolverTest extends Unit
     {
         $this->assertSame(
             ['consent', 'permissionManyToOneRelation'],
-            $this->createResolver(true)->findWithdrawnTypes(['consent', 'input', 'permissionManyToOneRelation'])
+            $this->createResolver(true)->findWithdrawnTypes(['consent', self::INPUT, 'permissionManyToOneRelation'])
         );
-        $this->assertSame([], $this->createResolver(true)->findWithdrawnTypes(['input']));
+        $this->assertSame([], $this->createResolver(true)->findWithdrawnTypes([self::INPUT]));
     }
 
     public function testADelegateTheKeyTypesExcludeIsFoundAndNothingElse(): void
@@ -86,7 +90,7 @@ final class KeyTypeEngineFitResolverTest extends Unit
         $resolver = $this->createResolver(true);
 
         $this->assertSame('urlSlug', $resolver->findDelegateThatIsNotAKeyType('urlSlug'));
-        $this->assertNull($resolver->findDelegateThatIsNotAKeyType('input'));
+        $this->assertNull($resolver->findDelegateThatIsNotAKeyType(self::INPUT));
         $this->assertNull($resolver->findDelegateThatIsNotAKeyType(null));
     }
 
@@ -96,6 +100,58 @@ final class KeyTypeEngineFitResolverTest extends Unit
 
         $this->assertSame([], $resolver->findWithdrawnTypes(['consent']));
         $this->assertNull($resolver->findDelegateThatIsNotAKeyType('urlSlug'));
+    }
+
+    /**
+     * The declaration question, on the engine that offers neither capability. The same key is held
+     * in the value columns - its inner type is an `input` - so the refusal cannot come from there.
+     */
+    public function testAMultiValueDeclarationIsRefusedByAnEngineOfferingNeitherCapability(): void
+    {
+        $resolver = $this->createResolver(false);
+
+        $this->assertNull(
+            $resolver->findRefusingEngine(self::MULTI_VALUE, self::INPUT, null),
+            'the holdability question says yes about this key'
+        );
+        $this->assertSame(
+            ['engine' => self::EAV, 'capabilities' => ['MultiValue', 'Variants']],
+            $resolver->findEngineRefusingDeclaration(
+                self::MULTI_VALUE,
+                ['delegateDatatype' => self::INPUT, 'variants' => [['name' => 'Metric']]],
+                null
+            )
+        );
+    }
+
+    public function testADeclarationNamingNoVariantIsRefusedForTheTypeAlone(): void
+    {
+        $this->assertSame(
+            ['engine' => self::EAV, 'capabilities' => ['MultiValue']],
+            $this->createResolver(false)->findEngineRefusingDeclaration(self::MULTI_VALUE, [], null)
+        );
+    }
+
+    /**
+     * The control: an engine offering both capabilities refuses the same declaration not at all, and
+     * no other type is refused on either engine.
+     */
+    public function testAnEngineOfferingTheCapabilitiesRefusesTheSameDeclarationNotAtAll(): void
+    {
+        $declaration = ['delegateDatatype' => self::INPUT, 'variants' => [['name' => 'Metric']]];
+
+        $this->assertNull(
+            $this->createQualifyingResolver()->findEngineRefusingDeclaration(self::MULTI_VALUE, $declaration, null)
+        );
+        $this->assertNull($this->createResolver(false)->findEngineRefusingDeclaration(self::INPUT, $declaration, null));
+        $this->assertNull($this->createResolver(false)->findEngineRefusingDeclaration('encryptedField', [], null));
+    }
+
+    public function testAnInstallationWithoutAnEngineResolverRefusesNoDeclaration(): void
+    {
+        $resolver = new KeyTypeEngineFitResolver($this->createSupport(), null);
+
+        $this->assertNull($resolver->findEngineRefusingDeclaration(self::MULTI_VALUE, [], null));
     }
 
     private function createResolver(bool $structured): KeyTypeEngineFitResolver
@@ -108,6 +164,18 @@ final class KeyTypeEngineFitResolverTest extends Unit
         return new KeyTypeEngineFitResolver(
             $this->createSupport(),
             new EngineResolver([self::EAV => $engine])
+        );
+    }
+
+    /**
+     * An engine answering every capability, registered under the default name so that a null store
+     * id resolves to it - the engine the declaration gate has to accept.
+     */
+    private function createQualifyingResolver(): KeyTypeEngineFitResolver
+    {
+        return new KeyTypeEngineFitResolver(
+            $this->createSupport(),
+            new EngineResolver([self::EAV => $this->makeEmpty(EngineInterface::class, ['supports' => true])])
         );
     }
 

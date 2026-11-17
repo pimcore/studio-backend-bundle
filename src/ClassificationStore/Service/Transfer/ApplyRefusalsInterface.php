@@ -97,6 +97,28 @@ interface ApplyRefusalsInterface
     ): bool;
 
     /**
+     * A key entry whose DECLARATION needs an engine capability the store the apply writes into does
+     * not offer - a `multiValue` key, whose value is addressed under qualifiers the EAV value row
+     * has no column for. The refusal core's own key save raises for it, named here instead of
+     * surfacing as a failed save.
+     *
+     * The artifact deliberately carries no engine
+     * ({@see ArtifactEntryMapperInterface}), so importing a file exported from a document store
+     * into an EAV store is the one live way such a key still arrives after new stores are created
+     * on the document engine. It reports as an ordinary conflict, in a dry run as in an apply.
+     *
+     * The target the entry was matched to is passed for the same reason the withdrawn refusal takes
+     * it: core refuses only a configuration that introduces the need, so a key the store already
+     * carries that way stays writable.
+     */
+    public function refuseDeclarationTheEngineCannotAddress(
+        ApplyContext $context,
+        ?KeyConfig $target,
+        ArtifactKeyEntry $keyEntry,
+        string $label,
+    ): bool;
+
+    /**
      * The refusals one key assignment carries on its own: a key the same file disables, a key the
      * target carries disabled and the file does not enable, an override outside the closed list the
      * model enforces, and a sub group neither the file nor the store carries.

@@ -49,9 +49,10 @@ final class StoreTreeNode implements AdditionalAttributesInterface
         )]
         private readonly ?string $identifier = null,
         #[Property(
-            description: 'The engine the store stores its values with, as the store stores it; null where it stores'
-                . ' none, which is the default engine, and null as well on a core that does not report an engine'
-                . ' at all.',
+            description: 'The engine the store stores its values with, resolved: a store whose column is empty'
+                . ' is on the default engine and reports that engine rather than nothing. Null only where the'
+                . ' question cannot be put - a core that does not report an engine at all, or a store whose'
+                . ' engine does not resolve - which is the same case the capabilities report null for.',
             type: 'string',
             example: 'document',
             nullable: true

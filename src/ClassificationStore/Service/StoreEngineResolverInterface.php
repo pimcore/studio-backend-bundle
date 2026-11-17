@@ -42,13 +42,34 @@ interface StoreEngineResolverInterface
     public const string FEATURE_VARIANTS = 'Variants';
 
     /**
-     * The engine the store stores, or null where it stores none.
+     * The engine the store's values are RESOLVED to, which for a store whose column is empty is the
+     * default engine rather than nothing.
      *
-     * `composer.json` allows a core whose `classificationstore_stores` has no `engine` column, and
-     * such a core has no accessor for it: there, every store reports null for this member and for
-     * the capabilities as well.
+     * Deliberately the resolved engine and not the raw column: an empty column means the default
+     * engine, so reporting it raw made a store that is on the EAV engine report no engine at all -
+     * and the engine indicator of the configuration screen then rendered nothing where it should
+     * say which engine the store is on. Every store created before this release carries that empty
+     * column, so the two answers differ for exactly the stores the question is about.
+     *
+     * Null only where the question cannot be put: `composer.json` allows a core whose
+     * `classificationstore_stores` has no `engine` column and which has no accessor for it, and a
+     * store whose engine does not resolve is not guessed at. That is the same case the capabilities
+     * answer null for, so a client sees "no engine" and "no capabilities" together or neither.
      */
     public function getEngine(StoreConfig $storeConfig): ?string;
+
+    /**
+     * The engine name a store that is being CREATED is given, or null on an installation that
+     * cannot be asked or does not register one - a caller then writes no engine, and the store
+     * means the default engine the way every store did before the column existed.
+     *
+     * Not the default engine: an empty column is what every upgraded store carries, and that is the
+     * one value a new store must not be left with, because the capabilities its keys may declare
+     * are decided by it. Core owns which engine that is
+     * ({@see \Pimcore\Model\DataObject\Classificationstore\Engine\EngineResolver::getPreferredEngine()});
+     * this bundle only writes what core names.
+     */
+    public function getEngineForNewStore(): ?string;
 
     /**
      * The capability names the store's engine reports, resolved from the configuration already

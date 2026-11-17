@@ -31,6 +31,10 @@ final readonly class StoreEngineResolver implements StoreEngineResolverInterface
 {
     private const string ENGINE_GETTER = 'getEngine';
 
+    private const string ENGINE_SETTER = 'setEngine';
+
+    private const string PREFERRED_ENGINE_GETTER = 'getPreferredEngine';
+
     public function __construct(
         private ?EngineResolver $engineResolver = null,
     ) {
@@ -38,11 +42,36 @@ final readonly class StoreEngineResolver implements StoreEngineResolverInterface
 
     public function getEngine(StoreConfig $storeConfig): ?string
     {
-        if (!$this->declaresAccessor(self::ENGINE_GETTER)) {
+        if ($this->engineResolver === null || !$this->declaresAccessor(self::ENGINE_GETTER)) {
             return null;
         }
 
-        return $this->readEngine($storeConfig);
+        $stored = $this->readEngine($storeConfig);
+        if ($stored !== null) {
+            return $stored;
+        }
+
+        try {
+            return $this->engineResolver->nameEngine(
+                $this->engineResolver->resolve(null, (int) $storeConfig->getId())
+            );
+        } catch (Exception) {
+            return null;
+        }
+    }
+
+    public function getEngineForNewStore(): ?string
+    {
+        if ($this->engineResolver === null
+            || !$this->declaresAccessor(self::ENGINE_SETTER)
+            || !$this->declaresAccessor(self::PREFERRED_ENGINE_GETTER, $this->engineResolver)
+        ) {
+            return null;
+        }
+
+        $engine = $this->engineResolver->{self::PREFERRED_ENGINE_GETTER}();
+
+        return $engine instanceof EngineInterface ? $this->engineResolver->nameEngine($engine) : null;
     }
 
     public function getEngineCapabilities(StoreConfig $storeConfig): ?array
@@ -134,12 +163,12 @@ final readonly class StoreEngineResolver implements StoreEngineResolverInterface
     }
 
     /**
-     * Whether the core's store configuration declares the accessor at all. Asked by name, for the
-     * reason {@see self::readEngine()} asks by name: the method is not this package's and the core
-     * whose it is need not have it.
+     * Whether the core class declares the accessor at all - the store configuration unless another
+     * subject is named. Asked by name, for the reason {@see self::readEngine()} asks by name: the
+     * method is not this package's and the core whose it is need not have it.
      */
-    private function declaresAccessor(string $accessor): bool
+    private function declaresAccessor(string $accessor, string|object $subject = StoreConfig::class): bool
     {
-        return method_exists(StoreConfig::class, $accessor);
+        return method_exists($subject, $accessor);
     }
 }

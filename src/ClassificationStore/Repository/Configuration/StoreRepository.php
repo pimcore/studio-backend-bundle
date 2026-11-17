@@ -17,6 +17,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DBALException;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\StoreConfigResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -51,6 +52,7 @@ final readonly class StoreRepository implements StoreRepositoryInterface
     public function __construct(
         private StoreConfigResolverInterface $storeConfigResolver,
         private Connection $connection,
+        private StoreEngineResolverInterface $storeEngineResolver,
     ) {
     }
 
@@ -139,9 +141,16 @@ final readonly class StoreRepository implements StoreRepositoryInterface
         string $name,
         ?string $description,
     ): StoreConfig {
+        // before the `??=`, because only a row this apply creates may be given an engine
+        $isNew = $config === null;
+
         $config ??= new StoreConfig();
         $config->setName($name);
         $config->setDescription($description ?? '');
+
+        if ($isNew) {
+            $this->setEngineOfANewStore($config);
+        }
 
         try {
             // before the save, so that a new row carries the file's identifier instead of a fresh one
@@ -169,6 +178,7 @@ final readonly class StoreRepository implements StoreRepositoryInterface
 
         $config = new StoreConfig();
         $config->setName($name);
+        $this->setEngineOfANewStore($config);
 
         try {
             $config->save();
@@ -203,5 +213,24 @@ final readonly class StoreRepository implements StoreRepositoryInterface
         }
 
         return $config;
+    }
+
+    /**
+     * Writes the engine onto a store configuration that has no row yet, which is the only
+     * configuration that may be given one: an empty column means the default engine and is what
+     * every store an installation upgraded with carries, so writing it onto an existing row would
+     * re-point a store at storage holding none of its values.
+     *
+     * Nothing is written on an installation that cannot be asked, and such a store means the
+     * default engine the way every store did before the column existed - a core without the column
+     * has no setter either, and one without the preferred engine registered has no name to write.
+     */
+    private function setEngineOfANewStore(StoreConfig $config): void
+    {
+        $engine = $this->storeEngineResolver->getEngineForNewStore();
+
+        if ($engine !== null) {
+            $config->setEngine($engine);
+        }
     }
 }

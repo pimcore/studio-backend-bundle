@@ -14,18 +14,27 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Pimcore\Model\DataObject\Classificationstore\Engine\EngineFeature;
+use Pimcore\Model\DataObject\Classificationstore\Engine\EngineInterface;
 use Pimcore\Model\DataObject\Classificationstore\Engine\EngineResolver;
 use Pimcore\Model\DataObject\Classificationstore\KeyTypeSupport;
 use Pimcore\Model\DataObject\Exception\ClassificationStoreEngineNotAvailableException;
 use Pimcore\Model\DataObject\Exception\UnknownClassificationStoreEngineException;
 use function array_filter;
 use function array_values;
+use function method_exists;
 
 /**
  * @internal
  */
 final readonly class KeyTypeEngineFitResolver implements KeyTypeEngineFitResolverInterface
 {
+    /**
+     * Core's answer to what a key's declaration needs of an engine, asked by name for the reason
+     * every core method this bundle reaches is optional: `composer.json` allows a core that does not
+     * carry it, and there nothing is refused because core's own save refuses nothing either.
+     */
+    private const string DECLARATION_PROBE = 'requiredEngineFeatures';
+
     public function __construct(
         private ?KeyTypeSupport $keyTypeSupport = null,
         private ?EngineResolver $engineResolver = null,
@@ -45,12 +54,8 @@ final readonly class KeyTypeEngineFitResolver implements KeyTypeEngineFitResolve
             return null;
         }
 
-        try {
-            $engine = $storeId === null
-                ? $this->engineResolver->getDefaultEngine()
-                : $this->engineResolver->resolveForStore($storeId);
-        } catch (UnknownClassificationStoreEngineException | ClassificationStoreEngineNotAvailableException) {
-            // a store whose engine cannot be resolved cannot be asked; core's own save names that failure
+        $engine = $this->resolveEngine($storeId);
+        if ($engine === null) {
             return null;
         }
 
@@ -59,6 +64,39 @@ final readonly class KeyTypeEngineFitResolver implements KeyTypeEngineFitResolve
         }
 
         return $this->engineResolver->nameEngine($engine);
+    }
+
+    public function findEngineRefusingDeclaration(string $type, ?array $definition, ?int $storeId): ?array
+    {
+        if ($this->engineResolver === null
+            || $this->keyTypeSupport === null
+            || !$this->declaresMethod($this->keyTypeSupport, self::DECLARATION_PROBE)
+        ) {
+            return null;
+        }
+
+        $required = $this->keyTypeSupport->{self::DECLARATION_PROBE}($type, $definition);
+        if ($required === []) {
+            return null;
+        }
+
+        $engine = $this->resolveEngine($storeId);
+        if ($engine === null) {
+            return null;
+        }
+
+        $lacked = [];
+        foreach ($required as $feature) {
+            if (!$engine->supports($feature)) {
+                $lacked[] = $feature->name;
+            }
+        }
+
+        if ($lacked === []) {
+            return null;
+        }
+
+        return ['engine' => $this->engineResolver->nameEngine($engine), 'capabilities' => $lacked];
     }
 
     public function findWithdrawnTypes(array $types): array
@@ -83,5 +121,33 @@ final readonly class KeyTypeEngineFitResolver implements KeyTypeEngineFitResolve
         }
 
         return $delegateType;
+    }
+
+    /**
+     * Whether the core object declares the method at all, {@see self::DECLARATION_PROBE}.
+     */
+    private function declaresMethod(object $subject, string $method): bool
+    {
+        return method_exists($subject, $method);
+    }
+
+    /**
+     * The engine behind the store, or null where it cannot be asked: a null store id is a store
+     * that does not exist yet, and a store whose engine does not resolve is not guessed at - core's
+     * own save names that failure where it happens rather than from here.
+     */
+    private function resolveEngine(?int $storeId): ?EngineInterface
+    {
+        if ($this->engineResolver === null) {
+            return null;
+        }
+
+        try {
+            return $storeId === null
+                ? $this->engineResolver->getDefaultEngine()
+                : $this->engineResolver->resolveForStore($storeId);
+        } catch (UnknownClassificationStoreEngineException | ClassificationStoreEngineNotAvailableException) {
+            return null;
+        }
     }
 }
