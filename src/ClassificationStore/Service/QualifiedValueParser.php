@@ -40,9 +40,11 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
 
     public function parseEntries(mixed $payload, KeyConfig $keyConfig): array
     {
-        if ($payload === []) {
+        if ($payload === [] || $payload === null) {
             // the empty entry list, which is what a key holding no value publishes - no entry, not one
-            // entry holding the empty array
+            // entry holding the empty array. Null says the same thing: the key holds nothing. Read as
+            // a value instead it becomes one entry of the DEFAULT variant, which a key declaring only
+            // named variants never declares, and core then refuses the entire write.
             return [];
         }
 

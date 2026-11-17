@@ -171,7 +171,11 @@ final class QualifiedValueSerializerTest extends Unit
             'a multi select value' => [['red', 'green']],
             'a relation value' => [[['type' => 'object', 'id' => 7]]],
             'a keyed array' => [['value' => '80']],
-            'null' => [null],
+            // null is NOT here: it is the absence of a value, not one, and it is what the editor
+            // sends for a key it holds nothing at. Parsed as a value it addresses the DEFAULT
+            // variant, which a key declaring only named variants never declares, so core refuses
+            // the write and the whole object fails to save
+            // ({@see self::testNullIsNoEntryRatherThanOneEntryOfTheDefaultVariant()}).
             // a legitimate value PHP would otherwise make disappear
             'the string zero' => ['0'],
             'the integer zero' => [0],
@@ -192,6 +196,17 @@ final class QualifiedValueSerializerTest extends Unit
      * The empty list never reaches this parse for a key that declares nothing: such a key's payload
      * is one value whatever it looks like, so its own stored empty array is untouched by this.
      */
+    /**
+     * A key the payload names but holds no value at carries null, and that is the same statement as
+     * the empty list: the key holds nothing. Read as a value it would instead become one entry of
+     * the DEFAULT variant - which a key declaring only named variants never declares, so core
+     * refuses the whole write and the object cannot be saved at all.
+     */
+    public function testNullIsNoEntryRatherThanOneEntryOfTheDefaultVariant(): void
+    {
+        $this->assertSame([], $this->serializer->parseEntries(null, $this->createKeyConfig()));
+    }
+
     public function testTheEmptyListIsNoEntryRatherThanOneEntryHoldingIt(): void
     {
         $this->assertSame([], $this->serializer->parseEntries([], $this->createKeyConfig()));
