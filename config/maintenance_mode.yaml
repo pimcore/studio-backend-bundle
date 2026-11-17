@@ -1,0 +1,24 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    # controllers are imported separately to make sure they're public
+    # and have a tag that allows actions to type-hint services
+    Pimcore\Bundle\StudioBackendBundle\MaintenanceMode\Controller\:
+        resource: '../src/MaintenanceMode/Controller'
+        public: true
+        tags: [ 'controller.service_arguments' ]
+
+    #
+    # Services
+    #
+    Pimcore\Bundle\StudioBackendBundle\MaintenanceMode\Service\MaintenanceModeServiceInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\MaintenanceMode\Service\MaintenanceModeService
+
+    #
+    # Hydrators
+    #
+    Pimcore\Bundle\StudioBackendBundle\MaintenanceMode\Hydrator\MaintenanceModeStateHydratorInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\MaintenanceMode\Hydrator\MaintenanceModeStateHydrator

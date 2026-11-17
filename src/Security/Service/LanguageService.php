@@ -116,7 +116,7 @@ final readonly class LanguageService implements LanguageServiceInterface
      */
     public function getTranslationAllowedLanguages(UserInterface $user, string $domain): array
     {
-        if (in_array($domain, [TranslatorServiceInterface::DOMAIN, 'admin'], true)) {
+        if ($domain === TranslatorServiceInterface::DOMAIN) {
             return $this->adminLanguageService->getAvailableAdminLanguages();
         }
 

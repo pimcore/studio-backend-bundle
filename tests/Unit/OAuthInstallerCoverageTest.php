@@ -47,6 +47,7 @@ final class OAuthInstallerCoverageTest extends Unit
     private const array LATER_COLUMNS = [
         'resource' => 'Version20260901120000',
         'metadata_hash' => 'Version20260914120000',
+        'service_user_id' => 'Version20261105120000',
     ];
 
     /**

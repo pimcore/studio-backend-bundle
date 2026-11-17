@@ -17,14 +17,18 @@ use OpenApi\Attributes\Post;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ItemsParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ScalarItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Schema\RelocatedItem;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RecycleBinServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
@@ -52,7 +56,7 @@ final class RestoreController extends AbstractApiController
     }
 
     /**
-     * @throws EnvironmentException|NotFoundException
+     * @throws EnvironmentException|InvalidElementTypeException|NotFoundException|UserNotFoundException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_recycle_bin_restore', methods: ['POST'])]
     #[IsGranted(UserPermissions::RECYCLE_BIN->value)]
@@ -66,7 +70,10 @@ final class RestoreController extends AbstractApiController
     #[RequestBody(
         content: new ScalarItemsJson('integer', 'items'),
     )]
-    #[SuccessResponse(description: 'recycle_bin_restore_items_success_response')]
+    #[SuccessResponse(
+        description: 'recycle_bin_restore_items_success_response',
+        content: new ItemsJson(RelocatedItem::class)
+    )]
     #[CreatedResponse(
         description: 'recycle_bin_restore_items_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')
@@ -79,13 +86,14 @@ final class RestoreController extends AbstractApiController
     public function restoreRecycleBinItems(
         #[MapRequestPayload] ItemsParameter $parameters
     ): Response {
-        $jobRunId = $this->recycleBinService->restore($parameters);
+        $result = $this->recycleBinService->restore($parameters);
+        $jobRunId = $result->getJobRunId();
 
-        if ($jobRunId) {
+        if ($jobRunId !== null) {
 
             return $this->jsonResponse(['jobRunId' => $jobRunId], HttpResponseCodes::CREATED->value);
         }
 
-        return new Response();
+        return $this->jsonResponse(['items' => $result->getRelocatedItems()]);
     }
 }

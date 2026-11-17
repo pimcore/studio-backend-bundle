@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryI
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolver;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpServerConfigurationService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository\ServiceUserRepositoryInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use stdClass;
@@ -153,6 +154,81 @@ final class McpServerConfigurationServiceTest extends Unit
         $this->assertEquals(
             [new McpServerAccessEntry('admin.al', canRead: false, canAccess: false, canEdit: false)],
             $repository->get('shared')->access->sharedRoles
+        );
+    }
+
+    public function testSaveConfigurationStoresAServiceUserGrantAsAccessOnly(): void
+    {
+        $repository = $this->repository();
+        $service = $this->service($repository, self::USER_NAME, serviceUsers: ['ci-bot']);
+
+        $service->saveConfiguration($this->parameter(
+            'shared',
+            sharedUsers: [['name' => 'ci-bot', 'canRead' => true, 'canAccess' => true, 'canEdit' => true]],
+        ));
+
+        // A service user cannot open Studio: Read and Edit are stored as false whatever was sent,
+        // Access is kept as sent.
+        $this->assertEquals(
+            [new McpServerAccessEntry('ci-bot', canRead: false, canAccess: true, canEdit: false)],
+            $repository->get('shared')->access->sharedUsers
+        );
+    }
+
+    public function testSaveConfigurationLeavesAHumanGrantUnchangedBesideAServiceUser(): void
+    {
+        $repository = $this->repository();
+        $service = $this->service($repository, self::USER_NAME, serviceUsers: ['ci-bot']);
+
+        $service->saveConfiguration($this->parameter(
+            'shared',
+            sharedUsers: [
+                ['name' => 'ci-bot', 'canRead' => true, 'canAccess' => true, 'canEdit' => true],
+                ['name' => 'alice', 'canRead' => true, 'canAccess' => true, 'canEdit' => true],
+            ],
+        ));
+
+        // The human entry in the same payload is stored exactly as sent.
+        $this->assertEquals(
+            [
+                new McpServerAccessEntry('ci-bot', canRead: false, canAccess: true, canEdit: false),
+                new McpServerAccessEntry('alice', canRead: true, canAccess: true, canEdit: true),
+            ],
+            $repository->get('shared')->access->sharedUsers
+        );
+    }
+
+    public function testSaveConfigurationLeavesAnUnknownNameUnchanged(): void
+    {
+        $repository = $this->repository();
+        $service = $this->service($repository, self::USER_NAME, serviceUsers: ['ci-bot']);
+
+        $service->saveConfiguration($this->parameter(
+            'shared',
+            sharedUsers: [['name' => 'ghost', 'canRead' => true, 'canAccess' => false, 'canEdit' => true]],
+        ));
+
+        // Neither a human nor a service user: stored as sent.
+        $this->assertEquals(
+            [new McpServerAccessEntry('ghost', canRead: true, canAccess: false, canEdit: true)],
+            $repository->get('shared')->access->sharedUsers
+        );
+    }
+
+    public function testSaveConfigurationNeverMakesAServiceUserNamedAsTheOwnerAnImplicitEditor(): void
+    {
+        $repository = $this->repository();
+        // YAML allows any string, so a service user may carry the owner's name.
+        $service = $this->service($repository, self::USER_NAME, serviceUsers: [self::USER_NAME]);
+
+        $service->saveConfiguration($this->parameter(
+            'shared',
+            sharedUsers: [['name' => self::USER_NAME, 'canRead' => false, 'canAccess' => true, 'canEdit' => false]],
+        ));
+
+        $this->assertEquals(
+            [new McpServerAccessEntry(self::USER_NAME, canRead: false, canAccess: true, canEdit: false)],
+            $repository->get('shared')->access->sharedUsers
         );
     }
 
@@ -324,7 +400,8 @@ final class McpServerConfigurationServiceTest extends Unit
 
     /**
      * @param list<int>    $roles
-     * @param list<string> $adminUsers names the {@see UserResolverInterface} reports as admins
+     * @param list<string> $adminUsers    names the {@see UserResolverInterface} reports as admins
+     * @param list<string> $serviceUsers  names the {@see ServiceUserRepositoryInterface} reports as service users
      */
     private function service(
         McpServerConfigRepositoryInterface $repository,
@@ -332,6 +409,7 @@ final class McpServerConfigurationServiceTest extends Unit
         bool $isAdmin = false,
         array $roles = [],
         array $adminUsers = [],
+        array $serviceUsers = [],
     ): McpServerConfigurationService {
         return new McpServerConfigurationService(
             new McpServerHydrator(),
@@ -356,8 +434,19 @@ final class McpServerConfigurationServiceTest extends Unit
                 ]),
             ]),
             $this->userResolver($adminUsers),
+            $this->serviceUserRepository($serviceUsers),
             self::ISSUER,
         );
+    }
+
+    /**
+     * @param list<string> $serviceUsers
+     */
+    private function serviceUserRepository(array $serviceUsers): ServiceUserRepositoryInterface
+    {
+        return $this->makeEmpty(ServiceUserRepositoryInterface::class, [
+            'isServiceUserName' => static fn (string $name): bool => in_array($name, $serviceUsers, true),
+        ]);
     }
 
     /**

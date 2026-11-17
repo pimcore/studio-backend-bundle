@@ -33,6 +33,7 @@ final class AuthorizationServerMetadataController
         private readonly ScopeRegistryInterface $scopeRegistry,
         private readonly bool $clientIdMetadataDocumentSupported = false,
         private readonly bool $registrationEnabled = false,
+        private readonly bool $clientCredentialsEnabled = false,
     ) {
     }
 
@@ -48,7 +49,11 @@ final class AuthorizationServerMetadataController
             'issuer' => $base,
             'authorization_endpoint' => $base . OAuthPath::AUTHORIZE,
             'token_endpoint' => $base . OAuthPath::TOKEN,
-            'grant_types_supported' => ['authorization_code', 'refresh_token'],
+            // client_credentials only while its switch is on, and then only for clients
+            // bound to a service user; registration never grants it.
+            'grant_types_supported' => $this->clientCredentialsEnabled
+                ? ['authorization_code', 'refresh_token', 'client_credentials']
+                : ['authorization_code', 'refresh_token'],
             'response_types_supported' => ['code'],
             'code_challenge_methods_supported' => ['S256'],
             // `client_secret_post` is not advertised: the transport a client uses is not

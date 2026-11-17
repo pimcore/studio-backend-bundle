@@ -53,5 +53,12 @@ interface TokenRecordStoreInterface
 
     public function isRevoked(string $identifier): bool;
 
+    /**
+     * Revokes every recorded token (by its identifier, the `jti`) issued for the user.
+     *
+     * @return int the number of records newly revoked
+     */
+    public function revokeByUserId(int $userId): int;
+
     public function deleteExpired(int $now): int;
 }

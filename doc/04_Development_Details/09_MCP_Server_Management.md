@@ -83,6 +83,11 @@ derived list; an edit through the API keeps such a declaration. The `urlSlug` is
 create and locked on update. In the `studio_mcp_servers` configuration the key of each server is its slug, so it
 may only contain `a-z`, `0-9` and hyphens.
 
+The scopes are enforced when a tool is called: an OAuth access token that carries scopes but not `mcp:write` is
+refused every tool that is not read-only (HTTP 403). A token without any scope, a `pmcp_` token, a personal access
+token and the Studio session carry no scopes and are not limited by them. Which tools a server offers is decided by
+its tool selection, never by the scope. See [Providing MCP tools](../03_Extending/15_Providing_MCP_Tools.md).
+
 ## Access and sharing
 
 Access is **deny-by-default** with three **independent** capabilities per server:
@@ -115,6 +120,12 @@ capabilities — so clients need not re-derive them.
 
 > **Back-compat.** Grants stored before `canRead` existed carry no `can_read` key; they default to **read on**,
 > preserving the previous "listed = read" behaviour.
+
+**Service users.** A [service user](../02_Installation_and_Configuration/08_Service_Users.md) is granted by its name in
+`access.shared_users`, like any other user, and a grant with `canAccess` lets it connect to the running server. A
+service user cannot open Studio, so Config Read and Config Edit mean nothing for it: whenever a server is saved, the
+entry of a service user is stored with `canRead: false` and `canEdit: false`, whatever the client sent. `canAccess` is
+kept as sent. A service user is never an implicit editor, not even when its name equals the owner's.
 
 ## Managing servers in Pimcore Studio
 

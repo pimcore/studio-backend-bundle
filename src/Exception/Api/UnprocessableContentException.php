@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 
 /**
@@ -20,8 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
  */
 final class UnprocessableContentException extends AbstractApiException
 {
-    public function __construct(string $message)
+    public function __construct(string $message, ?Exception $previous = null)
     {
-        parent::__construct(HttpResponseCodes::UNPROCESSABLE_CONTENT->value, $message);
+        parent::__construct(HttpResponseCodes::UNPROCESSABLE_CONTENT->value, $message, $previous);
     }
 }

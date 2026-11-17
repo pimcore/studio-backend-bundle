@@ -34,6 +34,30 @@ final class EmbeddedIdentityResolverTest extends Unit
         $this->assertSame($user, $resolver->resolve('42'));
     }
 
+    /**
+     * The subject of a client_credentials token is the bound service user's id, and
+     * User::getById() returns the ServiceUser for it, so the resolver needs no branch of
+     * its own: the service user comes back as itself, with its own permissions.
+     */
+    public function testResolvesAServiceUserSubjectToTheServiceUser(): void
+    {
+        $serviceUser = User::newServiceUser();
+        $serviceUser->setId(77);
+        $serviceUser->setActive(true);
+        $authResolver = $this->createMock(AuthenticationResolverInterface::class);
+        $authResolver->method('isValidUser')->with($serviceUser)->willReturn(true);
+
+        $resolver = new EmbeddedIdentityResolver(
+            $authResolver,
+            static fn (int $id): ?User => $id === 77 ? $serviceUser : null,
+        );
+
+        $resolved = $resolver->resolve('77');
+
+        $this->assertTrue($resolved->isServiceUser());
+        $this->assertSame($serviceUser, $resolved);
+    }
+
     public function testRejectsDisabledOrInvalidUser(): void
     {
         $user = new User();

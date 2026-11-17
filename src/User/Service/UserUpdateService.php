@@ -55,7 +55,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
      */
     public function updateUserById(UpdateUserParameter $updateUserParameter, int $userId): void
     {
-        $user = $this->userRepository->getUserById($userId);
+        $user = $this->userRepository->getPersonById($userId);
 
         if ($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
             throw new ForbiddenException('Only admin can update admin user');
@@ -63,6 +63,11 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
 
         if ($this->securityService->getCurrentUser()->isAdmin()) {
             $user->setAdmin($updateUserParameter->isAdmin());
+        }
+
+        // a changed email allows taking over the account through the password reset: admin only for other users
+        if ($updateUserParameter->getEmail() !== $user->getEmail()) {
+            $this->denyForNonAdminUnlessOwnAccount($user, 'Only admin can change the email of another user');
         }
 
         $user->setEmail($updateUserParameter->getEmail());
@@ -131,7 +136,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
      */
     public function updatePasswordById(UpdatePasswordParameter $updateParameter, int $userId): void
     {
-        $user = $this->userRepository->getUserById($userId);
+        $user = $this->userRepository->getPersonById($userId);
 
         if ($user->getName() === 'system') {
             throw new ForbiddenException('System user password cannot be changed');
@@ -140,6 +145,9 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         if ($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
             throw new ForbiddenException('Only admin can update admin user');
         }
+
+        // setting a password allows logging in as that user: admin only for other users
+        $this->denyForNonAdminUnlessOwnAccount($user, 'Only admin can change the password of another user');
 
         if ($updateParameter->getPassword() !== $updateParameter->getPasswordConfirmation()) {
             throw new InvalidArgumentException('Passwords do not match');
@@ -150,8 +158,10 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         }
 
         if ($updateParameter->getOldPassword() !== null) {
-            $this->validateOldPassword($updateParameter, $user);
+            $this->validateOldPassword($updateParameter);
         }
+
+        $this->validatePasswordDiffers($updateParameter, $user);
 
         $passwordHash = $this->authenticationResolver->getPasswordHash(
             $user->getName(),
@@ -172,15 +182,33 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
     }
 
     /**
+     * @throws ForbiddenException
+     */
+    private function denyForNonAdminUnlessOwnAccount(UserInterface $target, string $message): void
+    {
+        $currentUser = $this->securityService->getCurrentUser();
+
+        if (!$currentUser->isAdmin() && $currentUser->getId() !== $target->getId()) {
+            throw new ForbiddenException($message);
+        }
+    }
+
+    /**
      * @throws InvalidArgumentException
      */
-    private function validateOldPassword(UpdatePasswordParameter $parameter, UserInterface $user): void
+    private function validateOldPassword(UpdatePasswordParameter $parameter): void
     {
         $errors = $this->validator->validate($parameter->getOldPassword(), [new UserPassword()]);
         if (count($errors) > 0) {
             throw new InvalidArgumentException('Old password is incorrect');
         }
+    }
 
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validatePasswordDiffers(UpdatePasswordParameter $parameter, UserInterface $user): void
+    {
         /** @var User $user */
         if ($this->authenticationResolver->verifyPassword($user, $parameter->getPassword())) {
             throw new InvalidArgumentException('New password cannot be the same as the old password');

@@ -18,6 +18,10 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\TokenLink;
 
+/**
+ * @deprecated since 2026.3.5 and without effect: the token link endpoint no longer reads a request body, the link is
+ *             built server-side. Will be removed in the next major version.
+ */
 #[Attribute(Attribute::TARGET_METHOD)]
 final class TokenLinkRequestBody extends RequestBody
 {

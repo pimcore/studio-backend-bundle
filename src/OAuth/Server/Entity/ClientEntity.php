@@ -19,9 +19,10 @@ use League\OAuth2\Server\Entities\Traits\EntityTrait;
 use function in_array;
 
 /**
- * An OAuth client (pre-registered, CIMD or dynamically registered). Public clients
- * authenticate via PKCE; confidential dynamic clients carry a secret validated at the
- * token endpoint.
+ * An OAuth client (pre-registered, CIMD, dynamically registered or bound to a service
+ * user). Public clients authenticate via PKCE; confidential clients carry a secret
+ * validated at the token endpoint. Only a client bound to a service user may use the
+ * client_credentials grant.
  *
  * @internal
  */
@@ -30,12 +31,16 @@ final class ClientEntity implements ClientEntityInterface
     use EntityTrait;
     use ClientTrait;
 
+    private const string CLIENT_CREDENTIALS = 'client_credentials';
+
     /**
      * @param string|string[]   $redirectUri
      * @param list<string>|null $grantTypes the grants this client registered for, or null
      *                                      when this client source carries no grant metadata
      * @param list<string>|null $scopes     the scopes this client registered for, or null
      *                                      when this client source carries no scope metadata
+     * @param int|null $serviceUserId the service user this client is bound to, or null for
+     *                                every client that is not a service-user client
      */
     public function __construct(
         string $identifier,
@@ -45,6 +50,7 @@ final class ClientEntity implements ClientEntityInterface
         private readonly bool $preRegistered = false,
         private readonly ?array $grantTypes = null,
         private readonly ?array $scopes = null,
+        private readonly ?int $serviceUserId = null,
     ) {
         $this->identifier = $identifier;
         $this->name = $name;
@@ -84,7 +90,27 @@ final class ClientEntity implements ClientEntityInterface
      */
     public function supportsGrantType(string $grantType): bool
     {
+        // A client bound to a service user is a credential for that one grant, whatever
+        // its record lists; every other client never gets it, including the config and
+        // CIMD clients that are otherwise unrestricted.
+        if ($this->serviceUserId !== null) {
+            return $grantType === self::CLIENT_CREDENTIALS;
+        }
+
+        if ($grantType === self::CLIENT_CREDENTIALS) {
+            return false;
+        }
+
         return $this->grantTypes === null || in_array($grantType, $this->grantTypes, true);
+    }
+
+    /**
+     * The id of the service user a client_credentials token for this client is issued
+     * for, or null when this client is not bound to one.
+     */
+    public function getServiceUserId(): ?int
+    {
+        return $this->serviceUserId;
     }
 
     /**
