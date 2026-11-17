@@ -40,9 +40,11 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
 
     public function parseEntries(mixed $payload, KeyConfig $keyConfig): array
     {
-        if ($payload === []) {
+        if ($payload === [] || $payload === null) {
             // the empty entry list, which is what a key holding no value publishes - no entry, not one
-            // entry holding the empty array
+            // entry holding the empty array. Null says the same thing: the key holds nothing. Read as
+            // a value instead it becomes one entry of the DEFAULT variant, which a key declaring only
+            // named variants never declares, and core then refuses the entire write.
             return [];
         }
 
@@ -55,6 +57,8 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
 
         if (!$this->looksLikeEntryList($payload)) {
             // an un-updated client sends the value itself, which is the default variant
+            $this->assertDeclaredVariant(null, $declared, $keyConfig);
+
             return [new QualifiedValue($payload)];
         }
 
@@ -62,7 +66,7 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
         $seen = [];
 
         foreach ($payload as $entry) {
-            $value = $this->parseEntry($entry, $declared);
+            $value = $this->parseEntry($entry, $declared, $keyConfig);
             $qualifier = $value->getQualifier();
 
             if (array_key_exists($qualifier, $seen)) {
@@ -122,7 +126,7 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
      *
      * @throws InvalidArgumentException
      */
-    private function parseEntry(mixed $entry, array $declared): QualifiedValue
+    private function parseEntry(mixed $entry, array $declared, KeyConfig $keyConfig): QualifiedValue
     {
         if (!$this->isEntry($entry)) {
             throw new InvalidArgumentException(
@@ -139,7 +143,7 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
             $this->readVariantName($entry[QualifiedValueSerializerInterface::VARIANT_MEMBER] ?? null)
         );
 
-        $this->assertDeclaredVariant($value->getVariant(), $declared);
+        $this->assertDeclaredVariant($value->getVariant(), $declared, $keyConfig);
 
         return $value;
     }
@@ -166,17 +170,49 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
     }
 
     /**
+     * The slot a value addresses, held to the key's declaration - the default slot included, which
+     * a `multiValue` key can declare away ({@see KeyQualifierResolverInterface::getDefaultVariant()}).
+     *
+     * Core refuses a value of a slot the key does not declare and raises `InvalidConfigException`
+     * for it ({@see \Pimcore\Model\DataObject\Classificationstore::setKeyValues()}), which the write
+     * path reports as a database failure - a 500 taking the save of the whole object with it. So the
+     * same verdict is reached here instead, where the request can still be answered as the malformed
+     * request it is, and on the declaration itself rather than on what core threw.
+     *
      * @param string[] $declared
      *
      * @throws InvalidArgumentException
      */
-    private function assertDeclaredVariant(?string $variant, array $declared): void
+    private function assertDeclaredVariant(?string $variant, array $declared, KeyConfig $keyConfig): void
     {
-        if ($variant === null || in_array($variant, $declared, true)) {
-            return;
+        if ($variant === null) {
+            if ($this->permitsDefaultVariant($keyConfig)) {
+                return;
+            }
+
+            throw new InvalidArgumentException(
+                sprintf(
+                    'The Classification Store key "%s" does not declare %s.',
+                    $keyConfig->getName(),
+                    self::DEFAULT_VARIANT_LABEL
+                ),
+                errorKey: HttpResponseErrorKeys::UNDECLARED_VARIANT->value
+            );
         }
 
-        throw $this->undeclaredVariant();
+        if (!in_array($variant, $declared, true)) {
+            throw $this->undeclaredVariant();
+        }
+    }
+
+    /**
+     * Whether the key permits a value carrying no variant. A key that declares no qualifiers at all
+     * does not reach this parse, and is answered the way core answers one: the default slot is the
+     * single slot every such key has.
+     */
+    private function permitsDefaultVariant(KeyConfig $keyConfig): bool
+    {
+        return $this->keyQualifierResolver->getDefaultVariant($keyConfig)?->isPermitted() ?? true;
     }
 
     private function undeclaredVariant(): InvalidArgumentException

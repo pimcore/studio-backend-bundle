@@ -92,6 +92,12 @@ final class ClassificationStoreAdapterTest extends Unit
     private const int OTHER_QUALIFIED_KEY = 403;
 
     /**
+     * A key id no store configures, which is what a key deleted from the configuration leaves behind
+     * in a payload the grid built before it was.
+     */
+    private const int UNCONFIGURED_KEY = 499;
+
+    /**
      * An engine reporting both capabilities, which is what a write of a list needs to be judged
      * against at all - the capability gate is fail-closed, so a test about anything else has to
      * state that the engine is able to hold what it writes.
@@ -723,40 +729,46 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
-     * The default variant declaration is published, not enforced: an unqualified value sent to a key
-     * declaring no default variant is stored exactly as it is for a key that declares nothing.
+     * The default variant is a slot a `multiValue` key can declare away, and a value addressed to it
+     * is then refused on the write path, by the error key and the status a named variant the key does
+     * not declare is refused with.
+     *
+     * Reaching core with it instead is what the refusal replaces: core raises `InvalidConfigException`
+     * for the slot it spells "default" ({@see Classificationstore::setKeyValues()}) and the write path
+     * reports that as a database failure, so a payload naming a slot the key does not have took the
+     * save of every other field and key of the object with it.
+     *
+     * The sibling half is the key that states nothing: it permits the slot, as core does, and the
+     * value is stored under it.
      *
      * @throws Exception
      */
-    public function testAnUnqualifiedValueIsStoredForAKeyDeclaringNoDefaultVariant(): void
+    public function testAnUnqualifiedValueIsRefusedForAKeyDeclaringNoDefaultVariant(): void
     {
-        $writes = [];
-        foreach ([[], ['defaultVariant' => false, 'defaultVariantLabel' => 'Standard']] as $declared) {
-            $stored = [];
-            $written = [];
-            $writtenEntries = [];
-            $keyConfigs = $this->qualifiedKeyConfigs(
-                ['variants' => [self::METRIC]] + $declared
-            );
-            $container = $this->createRecordingContainer(
-                $stored,
-                [self::QUALIFIED_GROUP => true],
-                $written,
-                $writtenEntries
-            );
+        $written = [];
 
-            $this->writeLanguages(
-                $container,
-                $keyConfigs,
-                $stored,
-                [self::LANGUAGE => [self::QUALIFIED_KEY => [['v' => '78']]]]
+        try {
+            $this->writeAndRecord(
+                $this->qualifiedKeyConfigs(['variants' => [self::METRIC], 'unqualifiedValue' => false]),
+                [self::QUALIFIED_KEY => [['v' => '78']]],
+                written: $written
             );
-
-            $writes[] = $this->describeCoreEntries($writtenEntries[0]);
+            $this->fail('Expected the write to be refused.');
+        } catch (AbstractApiException $exception) {
+            $this->assertSame(HttpResponseErrorKeys::UNDECLARED_VARIANT->value, $exception->getErrorKey());
+            $this->assertSame(self::UNPROCESSABLE, $exception->getStatusCode());
         }
 
-        $this->assertSame([['78', self::LANGUAGE, null]], $writes[1]);
-        $this->assertSame($writes[0], $writes[1]);
+        $this->assertSame([], $written);
+
+        $writtenEntries = [];
+        $this->writeAndRecord(
+            $this->qualifiedKeyConfigs(['variants' => [self::METRIC]]),
+            [self::QUALIFIED_KEY => [['v' => '78']]],
+            writtenEntries: $writtenEntries
+        );
+
+        $this->assertSame([['78', self::LANGUAGE, null]], $this->describeCoreEntries($writtenEntries[0]));
     }
 
     /**
@@ -1020,6 +1032,51 @@ final class ClassificationStoreAdapterTest extends Unit
         }
 
         $this->assertSame([], $written);
+    }
+
+    /**
+     * A cell address naming a key the store no longer configures is refused the way the address that
+     * names no key at all is, and is not fatal: resolving the key off the field definition reaches a
+     * getter that cannot answer `null`, so the cache failing to resolve it raised a `TypeError` and
+     * took the save of every other key and field of the object with it.
+     *
+     * The sibling half is the same address on a key the store does configure, which still writes.
+     *
+     * @throws Exception
+     */
+    public function testAVariantCellAddressOfAKeyTheStoreNoLongerConfiguresIsRefused(): void
+    {
+        $written = [];
+
+        try {
+            $this->writeAndRecord(
+                $this->qualifiedKeyConfigs(),
+                [self::UNCONFIGURED_KEY . '#' . self::METRIC => '60'],
+                isPatch: true,
+                capabilities: self::BOTH_CAPABILITIES,
+                written: $written
+            );
+            $this->fail('Expected the write to be refused.');
+        } catch (AbstractApiException $exception) {
+            $this->assertSame(HttpResponseErrorKeys::UNDECLARED_VARIANT->value, $exception->getErrorKey());
+            $this->assertSame(self::UNPROCESSABLE, $exception->getStatusCode());
+        }
+
+        $this->assertSame([], $written);
+
+        $writtenEntries = [];
+        $this->writeAndRecord(
+            $this->qualifiedKeyConfigs(),
+            [self::QUALIFIED_KEY . '#' . self::METRIC => '60'],
+            isPatch: true,
+            capabilities: self::BOTH_CAPABILITIES,
+            writtenEntries: $writtenEntries
+        );
+
+        $this->assertSame(
+            [['60', self::LANGUAGE, self::METRIC]],
+            $this->describeCoreEntries($writtenEntries[0])
+        );
     }
 
     /**
@@ -2516,6 +2573,11 @@ final class ClassificationStoreAdapterTest extends Unit
                 'tryDataAdapter' => $this->makeEmpty(SetterDataInterface::class, [
                     'getDataForSetter' => 'new-value',
                 ]),
+            ]),
+            // the write path resolves the key configuration through the cache, not off the
+            // definition, so that a key the store no longer configures is skipped and not fatal
+            definitionCacheResolver: $this->makeEmpty(DefinitionCacheResolverInterface::class, [
+                'get' => new KeyConfig(),
             ]),
             languageService: $this->makeEmpty(LanguageServiceInterface::class, [
                 'getUserAllowedLanguagesWithLanguageIndependentValue' => $allowedLanguages,

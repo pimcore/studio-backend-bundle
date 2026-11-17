@@ -171,7 +171,11 @@ final class QualifiedValueSerializerTest extends Unit
             'a multi select value' => [['red', 'green']],
             'a relation value' => [[['type' => 'object', 'id' => 7]]],
             'a keyed array' => [['value' => '80']],
-            'null' => [null],
+            // null is NOT here: it is the absence of a value, not one, and it is what the editor
+            // sends for a key it holds nothing at. Parsed as a value it addresses the DEFAULT
+            // variant, which a key declaring only named variants never declares, so core refuses
+            // the write and the whole object fails to save
+            // ({@see self::testNullIsNoEntryRatherThanOneEntryOfTheDefaultVariant()}).
             // a legitimate value PHP would otherwise make disappear
             'the string zero' => ['0'],
             'the integer zero' => [0],
@@ -192,6 +196,17 @@ final class QualifiedValueSerializerTest extends Unit
      * The empty list never reaches this parse for a key that declares nothing: such a key's payload
      * is one value whatever it looks like, so its own stored empty array is untouched by this.
      */
+    /**
+     * A key the payload names but holds no value at carries null, and that is the same statement as
+     * the empty list: the key holds nothing. Read as a value it would instead become one entry of
+     * the DEFAULT variant - which a key declaring only named variants never declares, so core
+     * refuses the whole write and the object cannot be saved at all.
+     */
+    public function testNullIsNoEntryRatherThanOneEntryOfTheDefaultVariant(): void
+    {
+        $this->assertSame([], $this->serializer->parseEntries(null, $this->createKeyConfig()));
+    }
+
     public function testTheEmptyListIsNoEntryRatherThanOneEntryHoldingIt(): void
     {
         $this->assertSame([], $this->serializer->parseEntries([], $this->createKeyConfig()));
@@ -229,6 +244,77 @@ final class QualifiedValueSerializerTest extends Unit
             // never the default variant: the declaration cannot carry an empty name
             'the empty name' => [''],
         ];
+    }
+
+    /**
+     * A value addressed to the default slot of a key that declares named variants and permits no
+     * unqualified value is refused here, by the error key a named variant the key does not declare
+     * is refused with.
+     *
+     * Core refuses the same write ({@see Classificationstore::setKeyValues()} raises
+     * `InvalidConfigException` for the variant it spells "default"), and reached there it is wrapped
+     * as a database failure: a 500 that fails the save of every other field and key of the object
+     * with it, for a request naming a slot the key does not have.
+     *
+     * @dataProvider forbiddenDefaultSlotProvider
+     */
+    public function testAValueOfADefaultSlotTheKeyForbidsIsRefused(mixed $payload): void
+    {
+        $this->assertRefused(
+            HttpResponseErrorKeys::UNDECLARED_VARIANT,
+            fn (): array => $this->serializer->parseEntries(
+                $payload,
+                $this->createKeyConfig(permitsDefaultVariant: false)
+            )
+        );
+    }
+
+    /**
+     * Every shape a payload addresses the default slot in: an entry that names no variant, one that
+     * names it as null, and a value that is no list of entries at all.
+     *
+     * @return array<string, array{0: mixed}>
+     */
+    public static function forbiddenDefaultSlotProvider(): array
+    {
+        return [
+            'an entry naming no variant' => [[['v' => '80']]],
+            'an entry naming it as null' => [[['v' => '80', 'var' => null]]],
+            'a cell sending its entry alone' => [['v' => '80']],
+            'the bare value an un-updated client sends' => ['80'],
+            'a value that is no list of entries' => [['red', 'green']],
+        ];
+    }
+
+    /**
+     * The guard above holds a write to the key's declaration and to nothing else: the same key still
+     * takes a value of every variant it does declare.
+     */
+    public function testAKeyForbiddingTheDefaultSlotStillTakesItsDeclaredVariants(): void
+    {
+        $values = $this->serializer->parseEntries(
+            [
+                ['v' => '80', 'var' => self::METRIC],
+                ['v' => '176', 'var' => self::IMPERIAL],
+            ],
+            $this->createKeyConfig(permitsDefaultVariant: false)
+        );
+
+        $this->assertSame([self::METRIC, self::IMPERIAL], $this->describe($values));
+    }
+
+    /**
+     * The sibling of the case above, and what keeps the guard from reading the default slot as
+     * forbidden on every key: a key that permits an unqualified value - which is what a key stating
+     * nothing permits - still takes one, however the payload carries it.
+     */
+    public function testAKeyPermittingTheDefaultSlotStillTakesIt(): void
+    {
+        $entry = $this->serializer->parseEntries([['v' => '80']], $this->createKeyConfig());
+        $bare = $this->serializer->parseEntries('80', $this->createKeyConfig());
+
+        $this->assertSame([null], $this->describe($entry));
+        $this->assertSame([null], $this->describe($bare));
     }
 
     /**
@@ -558,12 +644,16 @@ final class QualifiedValueSerializerTest extends Unit
     /**
      * @param string[] $variants
      */
-    private function createKeyConfig(array $variants = [self::METRIC, self::IMPERIAL]): KeyConfig
-    {
+    private function createKeyConfig(
+        array $variants = [self::METRIC, self::IMPERIAL],
+        bool $permitsDefaultVariant = true
+    ): KeyConfig {
         $keyConfig = new KeyConfig();
         $keyConfig->setName('weight');
         $keyConfig->setType(MultiValueServiceResolver::MULTI_VALUE_TYPE);
-        $keyConfig->setDefinition((string) json_encode(['variants' => $variants]));
+        $keyConfig->setDefinition(
+            (string) json_encode(['variants' => $variants, 'unqualifiedValue' => $permitsDefaultVariant])
+        );
 
         return $keyConfig;
     }

@@ -136,8 +136,8 @@ final readonly class ClassificationStoreAdapter implements
         if ($isPatch) {
             $elementStore = $this->handleNormalize($element->get($key), $fieldDefinition, $user);
             $store['activeGroups'] = $this->getActiveGroupsFromStore($store);
-            $store = $this->foldVariantAddresses($fieldDefinition, $store);
-            $store = $this->patchStore($fieldDefinition, $elementStore, $store);
+            $store = $this->foldVariantAddresses($store);
+            $store = $this->patchStore($elementStore, $store);
         }
 
         $activeGroups = $store['activeGroups'] ?? [];
@@ -269,7 +269,7 @@ final readonly class ClassificationStoreAdapter implements
      *
      * @throws InvalidArgumentException
      */
-    private function foldVariantAddresses(ClassificationstoreDefinition $definition, array $store): array
+    private function foldVariantAddresses(array $store): array
     {
         foreach ($store as $groupId => $groupData) {
             if (!is_int($groupId) || !is_array($groupData)) {
@@ -278,7 +278,7 @@ final readonly class ClassificationStoreAdapter implements
 
             foreach ($groupData as $language => $keys) {
                 if (is_array($keys)) {
-                    $store[$groupId][$language] = $this->foldBucketAddresses($definition, $keys);
+                    $store[$groupId][$language] = $this->foldBucketAddresses($keys);
                 }
             }
         }
@@ -293,7 +293,7 @@ final readonly class ClassificationStoreAdapter implements
      *
      * @throws InvalidArgumentException
      */
-    private function foldBucketAddresses(ClassificationstoreDefinition $definition, array $keys): array
+    private function foldBucketAddresses(array $keys): array
     {
         foreach ($keys as $address => $value) {
             $separator = is_string($address) ? strpos($address, '#') : false;
@@ -301,7 +301,7 @@ final readonly class ClassificationStoreAdapter implements
                 continue;
             }
 
-            $keyId = $this->getDeclaringKeyId($definition, substr($address, 0, $separator));
+            $keyId = $this->getDeclaringKeyId(substr($address, 0, $separator));
 
             $variant = substr($address, $separator + 1);
 
@@ -344,13 +344,19 @@ final readonly class ClassificationStoreAdapter implements
     }
 
     /**
-     * @throws InvalidArgumentException when the address names no key, or one that declares no variants
+     * The key a cell address names, resolved through the cache like the rest of the write path: the
+     * getter off the definition cannot answer `null`, so a key the store no longer configures raised
+     * a `TypeError` there and took the save of the whole object with it. A refusal rather than the
+     * skip {@see self::processGroupKeys()} makes, because a cell address is only ever the client's.
+     *
+     * @throws InvalidArgumentException when the address names no key, one the store no longer
+     *  configures, or one that declares no variants
      */
-    private function getDeclaringKeyId(ClassificationstoreDefinition $definition, string $keyId): int
+    private function getDeclaringKeyId(string $keyId): int
     {
-        if (!ctype_digit($keyId)
-            || !$this->keyQualifierResolver->declaresQualifiers($definition->getKeyConfiguration((int) $keyId))
-        ) {
+        $keyConfig = ctype_digit($keyId) ? $this->definitionCacheResolver->get((int) $keyId) : null;
+
+        if ($keyConfig === null || !$this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
             throw new InvalidArgumentException(
                 'The value names a variant the key does not declare.',
                 errorKey: HttpResponseErrorKeys::UNDECLARED_VARIANT->value
@@ -374,7 +380,6 @@ final readonly class ClassificationStoreAdapter implements
      * Which keys the patch carries at all is {@see self::patchQualifiedSlots()}.
      */
     private function patchStore(
-        ClassificationstoreDefinition $definition,
         ?array $elementStore,
         array $store
     ): array {
@@ -392,7 +397,6 @@ final readonly class ClassificationStoreAdapter implements
                 }
 
                 $patched[$groupId][$language] = $this->patchQualifiedSlots(
-                    $definition,
                     $keys,
                     $this->getSuppliedKeys($store, $groupId, $language)
                 );
@@ -418,14 +422,13 @@ final readonly class ClassificationStoreAdapter implements
      * @return array<array-key, mixed>
      */
     private function patchQualifiedSlots(
-        ClassificationstoreDefinition $definition,
         array $keys,
         array $supplied
     ): array {
         foreach ($keys as $keyId => $value) {
-            $keyConfig = $definition->getKeyConfiguration((int) $keyId);
+            $keyConfig = $this->definitionCacheResolver->get((int) $keyId);
 
-            if (!$this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
+            if ($keyConfig === null || !$this->keyQualifierResolver->declaresQualifiers($keyConfig)) {
                 continue;
             }
 
@@ -595,7 +598,14 @@ final readonly class ClassificationStoreAdapter implements
         $relations = $this->getClassificationStoreKeysFromGroup($groupId);
         $isWritten = false;
         foreach ($keys as $keyId => $value) {
-            $keyConfig = $definition->getKeyConfiguration($keyId);
+            // A key the payload names but the store no longer configures is skipped rather than
+            // fatal: the non-nullable getter throws on a definition the cache cannot resolve, and
+            // one malformed bucket would take the whole save with it.
+            $keyConfig = $this->definitionCacheResolver->get((int) $keyId);
+            if ($keyConfig === null) {
+                continue;
+            }
+
             if (!in_array($language, $keyLanguages($keyConfig), true)) {
                 continue;
             }

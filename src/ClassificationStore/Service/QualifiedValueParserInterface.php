@@ -43,7 +43,8 @@ interface QualifiedValueParserInterface
      * The payload of a key that declares nothing never reaches here, so its own empty array stays
      * the value it has always been.
      *
-     * Every entry is held to the declaration of the `multiValue` key, whatever the store holds.
+     * Every entry is held to the declaration of the `multiValue` key, whatever the store holds - the
+     * default slot included, which such a key can declare away.
      *
      * @return QualifiedValue[]
      *
