@@ -166,9 +166,9 @@ final class GroupServiceTest extends Unit
     /**
      * Every key of the group carries what it declares about its qualified values, read off its own
      * key configuration: a key of type `multiValue` publishes its variants as objects in the order it
-     * declares them, its `multiValue` setting and its `maximum`. A key of any other type reports null
-     * for all three - whatever its blob carries - rather than an empty list and false, which a client
-     * would read as a key that permits no variant and holds one value.
+     * declares them and its default variant. A key of any other type reports null for each - whatever
+     * its blob carries - rather than an empty list, which a client would read as a key that permits
+     * no variant.
      *
      * The layout-by-key path has the same assertion in
      * {@see KeyGroupLayoutServiceTest::testTheKeyLayoutCarriesWhatTheKeyDeclaresAboutItsValues()};
@@ -184,33 +184,26 @@ final class GroupServiceTest extends Unit
                 11 => [
                     'fieldtype' => 'multiValue',
                     'variants' => [['name' => 'metric', 'label' => 'Metric'], 'imperial'],
-                    'multiValue' => true,
-                    'maximum' => 3,
                     'unqualifiedValue' => false,
                     'unqualifiedValueLabel' => 'Standard',
                 ],
-                12 => ['fieldtype' => 'quantityValue', 'variants' => ['metric'], 'multiValue' => true],
+                12 => ['fieldtype' => 'quantityValue', 'variants' => ['metric']],
                 13 => ['fieldtype' => 'input'],
             ])
             ->getLayoutDefinition(self::GROUP_ID, new LayoutParameter(self::FIELD_NAME, self::OBJECT_ID))
             ->getKeys();
 
-        // the same objects and the same maximum the layout-by-key path publishes for that key
+        // the same objects the layout-by-key path publishes for that key
         $this->assertEquals([new VariantLayout('metric', 'Metric'), new VariantLayout('imperial')], $keys[0]->getVariants());
-        $this->assertTrue($keys[0]->getMultiValue());
-        $this->assertSame(3, $keys[0]->getMaximum());
         $this->assertFalse($keys[0]->getDefaultVariant());
         $this->assertSame('Standard', $keys[0]->getDefaultVariantLabel());
 
         $this->assertNull($keys[1]->getDefaultVariant());
         $this->assertNull($keys[1]->getDefaultVariantLabel());
         $this->assertNull($keys[1]->getVariants());
-        $this->assertNull($keys[1]->getMultiValue());
-        $this->assertNull($keys[1]->getMaximum());
 
         $this->assertNull($keys[2]->getVariants());
-        $this->assertNull($keys[2]->getMultiValue());
-        $this->assertNull($keys[2]->getMaximum());
+        $this->assertNull($keys[2]->getDefaultVariant());
     }
 
     /**
@@ -226,8 +219,7 @@ final class GroupServiceTest extends Unit
             ->getKeys();
 
         $this->assertNull($keys[0]->getVariants());
-        $this->assertNull($keys[0]->getMultiValue());
-        $this->assertNull($keys[0]->getMaximum());
+        $this->assertNull($keys[0]->getDefaultVariant());
     }
 
     /**
@@ -264,8 +256,6 @@ final class GroupServiceTest extends Unit
 
                 $multiValue = DeclaredMultiValue::from($definition);
                 $multiValue->setVariants($definition['variants'] ?? []);
-                $multiValue->setMultiValue($definition['multiValue'] ?? false);
-                $multiValue->setMaximum($definition['maximum'] ?? null);
 
                 return $multiValue;
             });
@@ -415,8 +405,6 @@ final class GroupServiceTest extends Unit
 
                 $multiValue = DeclaredMultiValue::from($definition);
                 $multiValue->setVariants($definition['variants'] ?? []);
-                $multiValue->setMultiValue($definition['multiValue'] ?? false);
-                $multiValue->setMaximum($definition['maximum'] ?? null);
 
                 return $multiValue;
             });

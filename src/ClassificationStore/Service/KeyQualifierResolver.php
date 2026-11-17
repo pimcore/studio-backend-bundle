@@ -23,7 +23,6 @@ use function array_key_exists;
 use function hash;
 use function is_array;
 use function is_bool;
-use function is_int;
 use function is_string;
 use function json_decode;
 use function method_exists;
@@ -41,12 +40,6 @@ final class KeyQualifierResolver implements KeyQualifierResolverInterface, Reset
 
     private const string DEFAULT_VARIANT_LABEL_GETTER = 'getUnqualifiedValueLabel';
 
-    // The repeatable flag and its cap: read by name for the same reason, a core `multiValue`
-    // that predates them declares neither, and that key is not repeatable.
-    private const string MULTI_VALUE_GETTER = 'isMultiValue';
-
-    private const string MAXIMUM_GETTER = 'getMaximum';
-
     /**
      * The digest the memo key spells a `definition` blob as. Deliberately a NON-cryptographic hash:
      * the memo key only has to tell two blobs apart, it is never stored, compared against a secret
@@ -60,8 +53,8 @@ final class KeyQualifierResolver implements KeyQualifierResolverInterface, Reset
      * `definition` blob - the two the resolution reads and nothing else.
      *
      * Rebuilding a whole core field definition from the blob is what every read here costs, and the
-     * same key is asked repeatedly: one group layout asks three times per key (its variants, its
-     * `multiValue` flag, its maximum) and the object data path asks again per key and language, on
+     * same key is asked repeatedly: one group layout asks twice per key (its variants, its default
+     * variant) and the object data path asks again per key and language, on
      * the read and on the write.
      *
      * Keyed by what it is resolved FROM rather than by the key's id, so nothing has to invalidate
@@ -101,30 +94,6 @@ final class KeyQualifierResolver implements KeyQualifierResolverInterface, Reset
         return $this->getDeclaration($keyConfig)?->getVariants();
     }
 
-    public function isMultiValue(KeyConfig $keyConfig): ?bool
-    {
-        $declaration = $this->getDeclaration($keyConfig);
-        if ($declaration === null) {
-            return null;
-        }
-
-        $multiValue = $this->readAccessor($declaration, self::MULTI_VALUE_GETTER);
-
-        return is_bool($multiValue) ? $multiValue : null;
-    }
-
-    public function getMaximum(KeyConfig $keyConfig): ?int
-    {
-        $declaration = $this->getDeclaration($keyConfig);
-        if ($declaration === null) {
-            return null;
-        }
-
-        $maximum = $this->readAccessor($declaration, self::MAXIMUM_GETTER);
-
-        return is_int($maximum) ? $maximum : null;
-    }
-
     public function getDefaultVariant(KeyConfig $keyConfig): ?DefaultVariant
     {
         $declaration = $this->getDeclaration($keyConfig);
@@ -143,8 +112,7 @@ final class KeyQualifierResolver implements KeyQualifierResolverInterface, Reset
 
     /**
      * The accessor by name: `composer.json` allows a core whose `multiValue` declares no default
-     * variant setting, repeatable flag or maximum, and against one of those the answer is the one a
-     * blob omitting it gets.
+     * variant setting, and against one of those the answer is the one a blob omitting it gets.
      */
     private function readAccessor(MultiValue $declaration, string $accessor): mixed
     {

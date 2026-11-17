@@ -663,10 +663,10 @@ final class ClassificationStoreAdapterTest extends Unit
      * Every blob of a key that is not of type `multiValue`, which holds exactly the one slot a key always had, so that the two
      * assertions above are made of each of them and not only of a blob carrying neither member.
      *
-     * A key carrying `variants: []` or `multiValue: false` declares a member and still permits only
-     * the default slot; so would every key of every store that already exists, the day a core
-     * reports both members for all of them. Reading the presence of a member rather than what it
-     * says would change the payload shape of all of those keys at once.
+     * A key carrying `variants: []` declares a member and still permits only the default slot; so
+     * would every key of every store that already exists, the day a core reports the member for all
+     * of them. Reading the presence of a member rather than what it says would change the payload
+     * shape of all of those keys at once.
      *
      * @return array<string, array{0: array<string, mixed>}>
      */
@@ -675,19 +675,16 @@ final class ClassificationStoreAdapterTest extends Unit
         return [
             'neither member' => [['fieldtype' => 'input']],
             'no variant beside the default one' => [['variants' => []]],
-            'one value per variant' => [['multiValue' => false]],
-            'both, stating the single slot' => [['variants' => [], 'multiValue' => false]],
             // the key is not of type `multiValue`, so what its blob carries declares nothing
             'a variant beside the default one' => [['variants' => [self::METRIC, self::IMPERIAL]]],
-            'a list of values per variant' => [['multiValue' => true]],
-            'both, naming variants and a list' => [['variants' => [self::METRIC], 'multiValue' => true]],
         ];
     }
 
     /**
      * A `multiValue` key carries its values at the one slot as an ordered list of entries - the
      * default variant first, then each declared variant in the order the key declares it - read
-     * through core's `getKeyValues()`, one call per slot. A key with no value is left out.
+     * through core's `getKeyValues()`, one call per slot and one value per variant. A key with no
+     * value is left out.
      *
      * @throws Exception
      */
@@ -695,6 +692,7 @@ final class ClassificationStoreAdapterTest extends Unit
     {
         $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => '80']]];
         $slots = [self::QUALIFIED_GROUP => [self::QUALIFIED_KEY => [self::LANGUAGE => [
+            // a value an older store still holds at a higher position is not published
             '' => [1 => '81'],
             self::IMPERIAL => [0 => '176'],
         ]]]];
@@ -717,7 +715,6 @@ final class ClassificationStoreAdapterTest extends Unit
         $this->assertSame(
             [
                 ['v' => '80'],
-                ['v' => '81', 'p' => 1],
                 ['v' => '176', 'var' => self::IMPERIAL],
             ],
             $detail[self::QUALIFIED_GROUP][self::LANGUAGE][self::QUALIFIED_KEY]
@@ -739,7 +736,7 @@ final class ClassificationStoreAdapterTest extends Unit
             $written = [];
             $writtenEntries = [];
             $keyConfigs = $this->qualifiedKeyConfigs(
-                ['variants' => [self::METRIC], 'multiValue' => true] + $declared
+                ['variants' => [self::METRIC]] + $declared
             );
             $container = $this->createRecordingContainer(
                 $stored,
@@ -758,7 +755,7 @@ final class ClassificationStoreAdapterTest extends Unit
             $writes[] = $this->describeCoreEntries($writtenEntries[0]);
         }
 
-        $this->assertSame([['78', self::LANGUAGE, null, 0]], $writes[1]);
+        $this->assertSame([['78', self::LANGUAGE, null]], $writes[1]);
         $this->assertSame($writes[0], $writes[1]);
     }
 
@@ -766,7 +763,7 @@ final class ClassificationStoreAdapterTest extends Unit
      * A `multiValue` key written through the object-editor data path is stored through core's
      * `setKeyValues()` and read back through `getKeyValues()`, not as one list in the default slot: a
      * value written against a declared variant is readable by core's own qualified reader at that
-     * variant, and `getLocalizedKeyValue()` answers with position 0 of the default one.
+     * variant, and `getLocalizedKeyValue()` answers with the value of the default one.
      *
      * Then one variant is cleared and is gone while the other is untouched, by a patch naming it
      * with no value and by a PUT that leaves it out.
@@ -797,7 +794,11 @@ final class ClassificationStoreAdapterTest extends Unit
         $this->assertSame([], $written, 'no list is written as the one value of the default slot');
         $this->assertCount(1, $writtenEntries);
         $this->assertSame(
-            [['78', self::LANGUAGE, null, 0], ['80', self::LANGUAGE, self::METRIC, 0], ['176', self::LANGUAGE, self::IMPERIAL, 0]],
+            [
+                ['78', self::LANGUAGE, null],
+                ['80', self::LANGUAGE, self::METRIC],
+                ['176', self::LANGUAGE, self::IMPERIAL],
+            ],
             $this->describeCoreEntries($writtenEntries[0])
         );
         $this->assertSame([0 => '78'], $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY));
@@ -846,22 +847,12 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
-     * A PUT naming the first position of a variant the store holds a longer list at drops the higher
-     * positions, and does so without a null entry addressing any of them.
-     *
-     * The non-patch clear is computed per VARIANT on purpose, and the positions inside a variant the
-     * write names are not its business: `Classificationstore::storeSlot()` replaces the whole
-     * (language, variant) slot of a key that declares a list - "the entries ARE the list and the
-     * whole slot is replaced, so a write that drops a value drops it" - before it writes the
-     * positions it was given. A null entry per omitted position would be the write naming positions
-     * it is dropping, and `Classificationstore::resolveSlots()` asks the engine to address the
-     * HIGHEST position a slot names, so clearing a held list would then need the list capability the
-     * write itself does not: a key that grew a second value under an engine that has since stopped
-     * reporting `multiValue` could no longer be shortened back.
+     * An entry an older client still sends with a `p` is accepted and written to its variant's one
+     * slot, whatever position it names, so the frontend and backend may be updated in either order.
      *
      * @throws Exception
      */
-    public function testAPutNamingTheFirstPositionOfAHeldListDropsTheHigherPositions(): void
+    public function testAnEntryCarryingAPositionFromAnOlderClientLandsInItsVariantsOneSlot(): void
     {
         $stored = [];
         $slots = [];
@@ -877,41 +868,18 @@ final class ClassificationStoreAdapterTest extends Unit
         );
 
         $this->writeLanguages($container, $keyConfigs, $stored, [self::LANGUAGE => [self::QUALIFIED_KEY => [
-            ['v' => '78'],
-            ['v' => '79', 'p' => 1],
-            ['v' => '80', 'var' => self::METRIC],
-            ['v' => '81', 'var' => self::METRIC, 'p' => 1],
+            ['v' => '78', 'p' => 1],
+            ['v' => '80', 'var' => self::METRIC, 'p' => 0],
         ]]]);
 
         $this->assertSame(
-            [0 => '78', 1 => '79'],
-            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY)
+            [['78', self::LANGUAGE, null], ['80', self::LANGUAGE, self::METRIC]],
+            $this->describeCoreEntries($writtenEntries[0])
         );
-        $this->assertSame(
-            [0 => '80', 1 => '81'],
-            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::METRIC)
-        );
-
-        // a PUT naming position 0 of each held variant and nothing above it
-        $this->writeLanguages($container, $keyConfigs, $stored, [self::LANGUAGE => [self::QUALIFIED_KEY => [
-            ['v' => '78'],
-            ['v' => '80', 'var' => self::METRIC],
-        ]]]);
-
-        $this->assertSame(
-            [['78', self::LANGUAGE, null, 0], ['80', self::LANGUAGE, self::METRIC, 0]],
-            $this->describeCoreEntries($writtenEntries[1]),
-            'a variant the write names carries no null entry: core replaces its whole slot'
-        );
-        $this->assertSame(
-            [0 => '78'],
-            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY),
-            'the second position of the default variant is gone'
-        );
+        $this->assertSame([0 => '78'], $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY));
         $this->assertSame(
             [0 => '80'],
-            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::METRIC),
-            'the second position of a named variant is gone'
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::METRIC)
         );
     }
 
@@ -947,7 +915,7 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
-     * A patch carrying one entry changes the value at that position only and leaves the other values
+     * A patch carrying one entry changes the value of that variant only and leaves the other values
      * of the key as they are, matched by qualifier and never by position in the array.
      *
      * @throws Exception
@@ -956,7 +924,8 @@ final class ClassificationStoreAdapterTest extends Unit
     {
         $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => 'first']]];
         $slots = [self::QUALIFIED_GROUP => [self::QUALIFIED_KEY => [self::LANGUAGE => [
-            '' => [1 => 'second', 2 => 'third'],
+            self::METRIC => [0 => 'second'],
+            self::IMPERIAL => [0 => 'third'],
         ]]]];
         $written = [];
         $writtenEntries = [];
@@ -972,13 +941,18 @@ final class ClassificationStoreAdapterTest extends Unit
             $container,
             $this->qualifiedKeyConfigs(),
             $stored,
-            [self::LANGUAGE => [self::QUALIFIED_KEY => [['v' => 'patched', 'p' => 1]]]],
+            [self::LANGUAGE => [self::QUALIFIED_KEY => [['v' => 'patched', 'var' => self::METRIC]]]],
             isPatch: true
         );
 
+        $this->assertSame([0 => 'first'], $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY));
         $this->assertSame(
-            [0 => 'first', 1 => 'patched', 2 => 'third'],
-            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY)
+            [0 => 'patched'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::METRIC)
+        );
+        $this->assertSame(
+            [0 => 'third'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::IMPERIAL)
         );
     }
 
@@ -1025,49 +999,6 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
-     * A repeating key's variant cell travels as a list of entries; the address variant applies to each
-     * of them, so the positions survive instead of the list being taken as one value.
-     *
-     * @throws Exception
-     */
-    public function testAPatchOfARepeatingVariantCellKeepsThePositionsOfItsEntries(): void
-    {
-        $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => '0']]];
-        $slots = [self::QUALIFIED_GROUP => [self::QUALIFIED_KEY => [self::LANGUAGE => [
-            self::IMPERIAL => [0 => '25'],
-        ]]]];
-        $written = [];
-        $writtenEntries = [];
-        $container = $this->createRecordingContainer(
-            $stored,
-            [self::QUALIFIED_GROUP => true],
-            $written,
-            $writtenEntries,
-            $slots
-        );
-
-        $this->writeLanguages(
-            $container,
-            $this->qualifiedKeyConfigs(),
-            $stored,
-            [self::LANGUAGE => [self::QUALIFIED_KEY . '#' . self::METRIC => [
-                ['v' => '60', 'p' => 0],
-                ['v' => '61', 'p' => 1],
-            ]]],
-            isPatch: true
-        );
-
-        $this->assertSame(
-            [0 => '60', 1 => '61'],
-            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::METRIC)
-        );
-        $this->assertSame(
-            [0 => '25'],
-            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::LANGUAGE, self::IMPERIAL)
-        );
-    }
-
-    /**
      * The variant of a cell address is held to the key's declaration like any other write.
      *
      * @throws Exception
@@ -1103,7 +1034,7 @@ final class ClassificationStoreAdapterTest extends Unit
     {
         $stored = [self::QUALIFIED_GROUP => [self::GERMAN => [self::QUALIFIED_KEY => 'first']]];
         $slots = [self::QUALIFIED_GROUP => [self::QUALIFIED_KEY => [self::GERMAN => [
-            '' => [1 => 'second', 2 => 'third'],
+            self::IMPERIAL => [0 => 'second'],
         ]]]];
         $written = [];
         $writtenEntries = [];
@@ -1127,7 +1058,7 @@ final class ClassificationStoreAdapterTest extends Unit
             'myStore',
             ['myStore' => [
                 self::QUALIFIED_GROUP => [
-                    self::GERMAN => [self::QUALIFIED_KEY => [['v' => 'patched', 'p' => 1]]],
+                    self::GERMAN => [self::QUALIFIED_KEY => [['v' => 'patched', 'var' => self::METRIC]]],
                 ],
                 'activeGroups' => [self::QUALIFIED_GROUP => true],
             ]],
@@ -1136,8 +1067,16 @@ final class ClassificationStoreAdapterTest extends Unit
         );
 
         $this->assertSame(
-            [0 => 'first', 1 => 'patched', 2 => 'third'],
+            [0 => 'first'],
             $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::GERMAN)
+        );
+        $this->assertSame(
+            [0 => 'second'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::GERMAN, self::IMPERIAL)
+        );
+        $this->assertSame(
+            [0 => 'patched'],
+            $container->getKeyValues(self::QUALIFIED_GROUP, self::QUALIFIED_KEY, self::GERMAN, self::METRIC)
         );
     }
 
@@ -1230,7 +1169,7 @@ final class ClassificationStoreAdapterTest extends Unit
      */
     public function testTheSingleDefaultSlotIsWrittenOnAnEngineReportingNoCapability(): void
     {
-        $expected = [['80', self::LANGUAGE, null, 0]];
+        $expected = [['80', self::LANGUAGE, null]];
 
         foreach ([[['v' => '80']], '80'] as $payload) {
             $writtenEntries = [];
@@ -1366,25 +1305,24 @@ final class ClassificationStoreAdapterTest extends Unit
     {
         $stored = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => 'first']]];
         $slots = [self::QUALIFIED_GROUP => [self::QUALIFIED_KEY => [self::LANGUAGE => [
-            '' => [1 => 'second', 2 => 'third'],
+            self::METRIC => [0 => 'second'],
         ]]]];
 
         $seen = $this->recordCurrentValuesSeenBySubAdapter(
             $stored,
             [self::QUALIFIED_KEY => [
                 ['v' => 'A'],
-                ['v' => 'B', 'p' => 1],
-                ['v' => 'C', 'p' => 2],
-                ['v' => 'D', 'var' => self::IMPERIAL],
+                ['v' => 'B', 'var' => self::METRIC],
+                ['v' => 'C', 'var' => self::IMPERIAL],
             ]],
             $slots
         );
 
-        $this->assertSame(['first', 'second', 'third', null], $seen);
+        $this->assertSame(['first', 'second', null], $seen);
     }
 
     /**
-     * The search preview shows one value: the default variant at position 0, the first value where
+     * The search preview shows one value: the default variant's, the first value where
      * there is none.
      *
      * @throws Exception
@@ -1420,7 +1358,7 @@ final class ClassificationStoreAdapterTest extends Unit
     /**
      * @param array<int, MultiValue> $entries
      *
-     * @return array<int, array{0: mixed, 1: ?string, 2: ?string, 3: ?int}>
+     * @return array<int, array{0: mixed, 1: ?string, 2: ?string}>
      */
     private function describeCoreEntries(array $entries): array
     {
@@ -1429,7 +1367,6 @@ final class ClassificationStoreAdapterTest extends Unit
                 $entry->getValue(),
                 $entry->getLanguage(),
                 $entry->getVariant(),
-                $entry->getPosition(),
             ],
             $entries
         );
@@ -1558,7 +1495,7 @@ final class ClassificationStoreAdapterTest extends Unit
         try {
             $this->writeAndRecord(
                 $this->qualifiedKeyConfigs(),
-                [self::QUALIFIED_KEY => [['v' => '80'], ['v' => '81', 'p' => 1]]],
+                [self::QUALIFIED_KEY => [['v' => '80'], ['v' => '81', 'var' => self::METRIC]]],
                 capabilities: [],
                 written: $written
             );
@@ -1599,25 +1536,25 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
-     * A second position on a key that does not declare itself repeatable is refused on the write
-     * path, by its own error key, however able the store's engine is.
+     * Two entries of one variant that differ only in the `p` an older client sends are refused on the
+     * write path, however able the store's engine is: the `p` is not read, so both address one slot.
      *
      * @throws Exception
      */
-    public function testASecondPositionOnAKeyThatIsNotRepeatableIsRefusedOnTheWritePath(): void
+    public function testTwoEntriesOfOneVariantDifferingOnlyInPositionAreRefusedOnTheWritePath(): void
     {
         $written = [];
 
         try {
             $this->writeAndRecord(
-                $this->qualifiedKeyConfigs(['variants' => [self::METRIC, self::IMPERIAL]]),
+                $this->qualifiedKeyConfigs(),
                 [self::QUALIFIED_KEY => [['v' => '80'], ['v' => '81', 'p' => 1]]],
                 capabilities: self::BOTH_CAPABILITIES,
                 written: $written
             );
             $this->fail('Expected the write to be refused.');
         } catch (AbstractApiException $exception) {
-            $this->assertSame(HttpResponseErrorKeys::KEY_NOT_REPEATABLE->value, $exception->getErrorKey());
+            $this->assertSame(HttpResponseErrorKeys::DUPLICATE_VALUE_QUALIFIER->value, $exception->getErrorKey());
         }
 
         $this->assertSame([], $written);
@@ -1662,14 +1599,14 @@ final class ClassificationStoreAdapterTest extends Unit
     {
         $qualified = [self::QUALIFIED_GROUP => [self::LANGUAGE => [self::QUALIFIED_KEY => 'first']]];
 
-        // one flag, because one entry was supplied: the two the merge carries over from the row
-        // never reach the key's own type adapter at all, which is asserted over the value they keep
+        // one flag, because one entry was supplied: the one the merge carries over from the row
+        // never reaches the key's own type adapter at all, which is asserted over the value it keeps
         // in testAPatchOfOneRelationEntryLeavesAnUntouchedSiblingRawInTheRow()
         $this->assertSame(
             [false],
             $this->recordPatchFlagsSeenBySubAdapter(
                 $qualified,
-                [self::QUALIFIED_KEY => [['v' => 'patched', 'p' => 1]]]
+                [self::QUALIFIED_KEY => [['v' => 'patched', 'var' => self::METRIC]]]
             )
         );
 
@@ -1949,7 +1886,7 @@ final class ClassificationStoreAdapterTest extends Unit
      */
     private function qualifiedKeyConfigs(?array $declaration = null): array
     {
-        $declaration ??= ['variants' => [self::METRIC, self::IMPERIAL], 'multiValue' => true];
+        $declaration ??= ['variants' => [self::METRIC, self::IMPERIAL]];
 
         return [
             self::QUALIFIED_KEY => $this->createKeyConfig($declaration, MultiValueServiceResolver::MULTI_VALUE_TYPE),
@@ -2372,10 +2309,9 @@ final class ClassificationStoreAdapterTest extends Unit
      * `setKeyValues()` is core's, down to what a write replaces: it "replaces the (language,
      * variant) slots the given entries name, and leaves every other slot of the key as it is:
      * writing one variant does not touch the values of another"
-     * ({@see Classificationstore::setKeyValues()}), the slot of a key declaring a list being
-     * replaced whole, so that a write dropping a value drops it (`Classificationstore::storeSlot()`).
-     * Position 0 of the default variant is the value `$stored` holds at (group, language, key),
-     * which is where core keeps it too.
+     * ({@see Classificationstore::setKeyValues()}), each slot holding one value. The default
+     * variant's value is the one `$stored` holds at (group, language, key), which is where core
+     * keeps it too.
      *
      * @param array<int, array<string, array<int, mixed>>> $stored
      * @param array<int, bool> $activeGroups
@@ -2427,7 +2363,8 @@ final class ClassificationStoreAdapterTest extends Unit
                 foreach ($entries as $entry) {
                     $language = $entry->getLanguage() ?? 'default';
                     $variant = $entry->getVariant() ?? '';
-                    $replaced[$language][$variant][$entry->getPosition() ?? 0] = $entry->getValue();
+                    // a variant holds one value, so the slot is the entry's alone
+                    $replaced[$language][$variant] = [0 => $entry->getValue()];
                 }
 
                 foreach ($replaced as $language => $variants) {

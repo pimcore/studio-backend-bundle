@@ -24,9 +24,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Concrete;
-use function array_map;
-use function array_values;
-use function json_encode;
 use function method_exists;
 use function sprintf;
 use function ucfirst;
@@ -51,16 +48,7 @@ final readonly class QualifiedColumnValueResolver implements QualifiedColumnValu
             return $value;
         }
 
-        $values = $this->qualifiedValueSerializer->getVariantValues($value, $config->getVariant());
-        if ($values === []) {
-            return null;
-        }
-
-        if ($this->keyQualifierResolver->isMultiValue($keyConfig) !== true) {
-            return $values[0];
-        }
-
-        return $this->toEntries($values, $config->getVariant());
+        return $this->qualifiedValueSerializer->getVariantValues($value, $config->getVariant())[0] ?? null;
     }
 
     public function declaresQualifiers(ClassificationStoreConfig $config): bool
@@ -88,7 +76,6 @@ final readonly class QualifiedColumnValueResolver implements QualifiedColumnValu
             return '';
         }
 
-        $keyConfig = $this->getKeyConfig($config);
         $values = $this->qualifiedValueSerializer->getVariantValues(
             $this->qualifiedValueSerializer->toPayload(
                 $this->qualifiedValueSerializer->readStoredEntries(
@@ -96,50 +83,23 @@ final readonly class QualifiedColumnValueResolver implements QualifiedColumnValu
                     $config->getGroupId(),
                     $config->getKeyId(),
                     $locale,
-                    $keyConfig
+                    $this->getKeyConfig($config)
                 )
             ),
             $config->getVariant()
         );
 
-        // not reading the slot itself, which would answer the default slot for a variant that holds nothing
-        $formatted = array_map(
-            fn (mixed $value): mixed => $this->dataService->getExportFieldValue(
-                $element,
-                $fieldDefinition,
-                $fieldName,
-                new FieldContextData(legacyParameters: [...$legacyParameters, 'injectedData' => $value])
-            ),
-            $values
-        );
-
-        if ($formatted === []) {
+        if ($values === []) {
             return '';
         }
 
-        return $this->keyQualifierResolver->isMultiValue($keyConfig) === true
-            ? json_encode($formatted)
-            : $formatted[0];
-    }
-
-    /**
-     * @param mixed[] $values
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    private function toEntries(array $values, ?string $variant): array
-    {
-        $entries = [];
-        foreach (array_values($values) as $position => $value) {
-            $entry = [QualifiedValueSerializerInterface::VALUE_MEMBER => $value];
-            if ($variant !== null) {
-                $entry[QualifiedValueSerializerInterface::VARIANT_MEMBER] = $variant;
-            }
-            $entry[QualifiedValueSerializerInterface::POSITION_MEMBER] = $position;
-            $entries[] = $entry;
-        }
-
-        return $entries;
+        // not reading the slot itself, which would answer the default slot for a variant that holds nothing
+        return $this->dataService->getExportFieldValue(
+            $element,
+            $fieldDefinition,
+            $fieldName,
+            new FieldContextData(legacyParameters: [...$legacyParameters, 'injectedData' => $values[0]])
+        );
     }
 
     /**

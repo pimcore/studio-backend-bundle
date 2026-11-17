@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 /**
- * One value of a key, addressed by the qualifiers it carries inside its (group, key, language) slot.
+ * One value of a key, addressed by the variant it carries inside its (group, key, language) slot.
  *
- * A variant of null is the default variant and a position of 0 is the first position, so a value
- * that carries neither qualifier addresses the same slot core's single-value path addresses.
+ * A variant of null is the default variant, so a value that carries no variant addresses the same
+ * slot core's single-value path addresses.
  *
  * @internal
  */
@@ -26,7 +26,6 @@ final readonly class QualifiedValue
     public function __construct(
         private mixed $value,
         private ?string $variant = null,
-        private int $position = 0,
     ) {
     }
 
@@ -40,26 +39,19 @@ final readonly class QualifiedValue
         return $this->variant;
     }
 
-    public function getPosition(): int
-    {
-        return $this->position;
-    }
-
     /**
-     * The identity of the slot this value addresses, which is the pair and nothing else - the
-     * language and the key are the bucket it already sits in. The position leads and is always an
-     * integer, so everything after the separator is the variant name verbatim and no two distinct
-     * pairs can spell the same identity. The default variant spells the empty name, which no
-     * declared variant can be: {@see KeyQualifierResolverInterface::getVariants()} leaves an empty
-     * name out of the declaration.
+     * The identity of the slot this value addresses, which is the variant and nothing else - the
+     * language and the key are the bucket it already sits in. The default variant spells the empty
+     * name, which no declared variant can be: {@see KeyQualifierResolverInterface::getVariants()}
+     * leaves an empty name out of the declaration.
      */
     public function getQualifier(): string
     {
-        return $this->position . ':' . ($this->variant ?? '');
+        return $this->variant ?? '';
     }
 
     public function withValue(mixed $value): self
     {
-        return new self($value, $this->variant, $this->position);
+        return new self($value, $this->variant);
     }
 }

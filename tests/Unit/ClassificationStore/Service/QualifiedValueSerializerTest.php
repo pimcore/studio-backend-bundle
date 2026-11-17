@@ -31,9 +31,9 @@ use function array_map;
 use function json_encode;
 
 /**
- * The three rejected writes a client has to tell apart carry three distinct `errorKey` values in the
- * error body - the member {@see \Pimcore\Bundle\StudioBackendBundle\EventSubscriber\ApiExceptionSubscriber}
- * puts there - rather than three distinct status codes or a response convention of their own.
+ * The rejected writes a client has to tell apart carry distinct `errorKey` values in the error body
+ * - the member {@see \Pimcore\Bundle\StudioBackendBundle\EventSubscriber\ApiExceptionSubscriber}
+ * puts there - rather than distinct status codes or a response convention of their own.
  *
  * @internal
  */
@@ -60,24 +60,19 @@ final class QualifiedValueSerializerTest extends Unit
     }
 
     /**
-     * An entry with no qualifiers is emitted without `var` and without `p`: an absent variant means
-     * the default variant and an absent position means position 0.
+     * An entry of the default variant is emitted without `var`, and no entry carries `p`.
      */
-    public function testAnEntryWithoutQualifiersIsEmittedWithoutThem(): void
+    public function testAnEntryIsEmittedWithItsVariantAndNoPosition(): void
     {
         $payload = $this->serializer->toPayload([
             new QualifiedValue('80'),
             new QualifiedValue('176', self::IMPERIAL),
-            new QualifiedValue('81', null, 1),
-            new QualifiedValue('177', self::IMPERIAL, 1),
         ]);
 
         $this->assertSame(
             [
                 ['v' => '80'],
                 ['v' => '176', 'var' => self::IMPERIAL],
-                ['v' => '81', 'p' => 1],
-                ['v' => '177', 'var' => self::IMPERIAL, 'p' => 1],
             ],
             $payload
         );
@@ -94,10 +89,7 @@ final class QualifiedValueSerializerTest extends Unit
             $this->createKeyConfig()
         );
 
-        $this->assertSame(
-            [[self::METRIC, 0], [self::IMPERIAL, 0], [null, 0]],
-            $this->describe($values)
-        );
+        $this->assertSame([self::METRIC, self::IMPERIAL, null], $this->describe($values));
         $this->assertSame(['80', '176', '81'], array_map(
             static fn (QualifiedValue $value): mixed => $value->getValue(),
             $values
@@ -105,26 +97,55 @@ final class QualifiedValueSerializerTest extends Unit
     }
 
     /**
-     * A client that has not been updated sends the value itself, which is position 0 of the default
-     * variant - the slot core's single-value path addresses.
+     * A client that has not been updated sends the value itself, which is the default variant - the
+     * slot core's single-value path addresses.
      */
     public function testAScalarIsOneEntryOfTheDefaultVariant(): void
     {
         $values = $this->serializer->parseEntries('80', $this->createKeyConfig());
 
-        $this->assertSame([[null, 0]], $this->describe($values));
+        $this->assertSame([null], $this->describe($values));
         $this->assertSame('80', $values[0]->getValue());
     }
 
     /**
-     * A grid cell names the variant and position it addresses by sending its entry alone, as an object.
+     * A grid cell names the variant it addresses by sending its entry alone, as an object.
      */
     public function testACellSendsItsEntryAloneAndNamesItsVariant(): void
     {
-        $values = $this->serializer->parseEntries(['v' => '60', 'var' => self::METRIC, 'p' => 1], $this->createKeyConfig());
+        $values = $this->serializer->parseEntries(['v' => '60', 'var' => self::METRIC], $this->createKeyConfig());
 
-        $this->assertSame([[self::METRIC, 1]], $this->describe($values));
+        $this->assertSame([self::METRIC], $this->describe($values));
         $this->assertSame('60', $values[0]->getValue());
+    }
+
+    /**
+     * An older client still sends `p`, whatever it holds; it is not read, so the entry addresses its
+     * variant's one value and the two halves of the change can ship in either order.
+     *
+     * @dataProvider legacyPositionProvider
+     */
+    public function testAPositionAnOlderClientSendsIsAcceptedAndNotRead(mixed $position): void
+    {
+        $values = $this->serializer->parseEntries(
+            [['v' => '80', 'p' => $position], ['v' => '60', 'var' => self::METRIC, 'p' => $position]],
+            $this->createKeyConfig()
+        );
+
+        $this->assertSame([null, self::METRIC], $this->describe($values));
+        $this->assertSame([['v' => '80'], ['v' => '60', 'var' => self::METRIC]], $this->serializer->toPayload($values));
+    }
+
+    /**
+     * @return array<string, array{0: mixed}>
+     */
+    public static function legacyPositionProvider(): array
+    {
+        return [
+            'the first position' => [0],
+            'a later position' => [1],
+            'a malformed position' => ['1'],
+        ];
     }
 
     /**
@@ -137,7 +158,7 @@ final class QualifiedValueSerializerTest extends Unit
     {
         $values = $this->serializer->parseEntries($payload, $this->createKeyConfig());
 
-        $this->assertSame([[null, 0]], $this->describe($values));
+        $this->assertSame([null], $this->describe($values));
         $this->assertSame($payload, $values[0]->getValue());
     }
 
@@ -177,7 +198,7 @@ final class QualifiedValueSerializerTest extends Unit
 
         $named = $this->serializer->parseEntries([['v' => []]], $this->createKeyConfig());
 
-        $this->assertSame([[null, 0]], $this->describe($named));
+        $this->assertSame([null], $this->describe($named));
         $this->assertSame([], $named[0]->getValue());
     }
 
@@ -211,8 +232,9 @@ final class QualifiedValueSerializerTest extends Unit
     }
 
     /**
-     * Two entries that resolve to the same (variant, position) once the absent qualifiers normalise
-     * to the default are refused, by an error key of their own.
+     * Two entries that resolve to the same variant once an absent variant normalises to the
+     * default are refused, by an error key of their own - also where an older client told them
+     * apart by `p`, since a variant holds one value.
      *
      * @dataProvider duplicateQualifierProvider
      *
@@ -232,20 +254,22 @@ final class QualifiedValueSerializerTest extends Unit
     public static function duplicateQualifierProvider(): array
     {
         return [
-            'both qualifiers absent' => [[['v' => '80'], ['v' => '81']]],
-            'an absent position against an explicit 0' => [[['v' => '80'], ['v' => '81', 'p' => 0]]],
+            'both variants absent' => [[['v' => '80'], ['v' => '81']]],
             'an absent variant against an explicit null' => [[['v' => '80'], ['v' => '81', 'var' => null]]],
-            'the same variant at the same position' => [[
-                ['v' => '80', 'var' => self::METRIC, 'p' => 1],
+            'the same variant twice' => [[
+                ['v' => '80', 'var' => self::METRIC],
+                ['v' => '81', 'var' => self::METRIC],
+            ]],
+            'the same variant at two positions of an older client' => [[
+                ['v' => '80', 'var' => self::METRIC, 'p' => 0],
                 ['v' => '81', 'var' => self::METRIC, 'p' => 1],
             ]],
         ];
     }
 
     /**
-     * Two entries whose variant names differ only in a way a key identity could collapse stay two
-     * slots: the position leads the identity and is always an integer, so nothing after the
-     * separator is read as anything but the name itself.
+     * Two variant names that differ only by characters a composed identity could collapse stay two
+     * slots: the identity is the name itself.
      */
     public function testTwoVariantNamesThatCouldCollapseIntoOneKeyStayTwoSlots(): void
     {
@@ -256,7 +280,7 @@ final class QualifiedValueSerializerTest extends Unit
             $keyConfig
         );
 
-        $this->assertSame([['a', 0], ['a:0', 0], [':0', 0]], $this->describe($values));
+        $this->assertSame(['a', 'a:0', ':0'], $this->describe($values));
     }
 
     /**
@@ -281,39 +305,11 @@ final class QualifiedValueSerializerTest extends Unit
         return [
             'a scalar among entries' => ['80'],
             'an object without a value' => [['var' => self::IMPERIAL]],
-            'an object whose position is a string' => [['v' => '80', 'p' => '1']],
         ];
     }
 
     /**
-     * @dataProvider badPositionProvider
-     */
-    public function testAPositionThatIsNotANonNegativeIntegerIsRefused(mixed $position): void
-    {
-        $this->assertRefused(
-            HttpResponseErrorKeys::INVALID_ARGUMENT,
-            fn (): array => $this->serializer->parseEntries(
-                [['v' => '80', 'p' => $position]],
-                $this->createKeyConfig()
-            )
-        );
-    }
-
-    /**
-     * @return array<string, array{0: mixed}>
-     */
-    public static function badPositionProvider(): array
-    {
-        return [
-            'a numeric string' => ['1'],
-            'a float' => [1.5],
-            'a negative position' => [-1],
-            'a boolean' => [true],
-        ];
-    }
-
-    /**
-     * A write that needs a capability the store's engine does not report is refused, by the third
+     * A write that needs a capability the store's engine does not report is refused, by its own
      * error key - and only such a write.
      *
      * @dataProvider capabilityProvider
@@ -346,7 +342,6 @@ final class QualifiedValueSerializerTest extends Unit
     {
         $default = [new QualifiedValue('80')];
         $variant = [new QualifiedValue('80'), new QualifiedValue('176', self::IMPERIAL)];
-        $repeated = [new QualifiedValue('80'), new QualifiedValue('81', null, 1)];
 
         return [
             'the single default slot on an engine reporting nothing' => [$default, [], false],
@@ -361,17 +356,6 @@ final class QualifiedValueSerializerTest extends Unit
                 [StoreEngineResolverInterface::FEATURE_VARIANTS],
                 false,
             ],
-            'a second position on an engine reporting nothing' => [$repeated, [], true],
-            'a second position on an engine reporting Variants only' => [
-                $repeated,
-                [StoreEngineResolverInterface::FEATURE_VARIANTS],
-                true,
-            ],
-            'a second position on an engine reporting MultiValue' => [
-                $repeated,
-                [StoreEngineResolverInterface::FEATURE_MULTI_VALUE],
-                false,
-            ],
         ];
     }
 
@@ -382,8 +366,8 @@ final class QualifiedValueSerializerTest extends Unit
      * gives against the very core the gate exists to protect, so letting it through would skip every
      * capability check there.
      *
-     * Both qualifiers are asserted, not only the one that was found open, and so is the sibling case
-     * that must stay open: a write needing no capability still succeeds against null.
+     * The sibling case that must stay open is asserted too: a write needing no capability still
+     * succeeds against null.
      */
     public function testACoreThatCannotBeAskedRefusesAWriteNeedingACapability(): void
     {
@@ -395,58 +379,11 @@ final class QualifiedValueSerializerTest extends Unit
             HttpResponseErrorKeys::ENGINE_CAPABILITY_MISSING,
             fn (): mixed => $this->serializer->assertSupported([new QualifiedValue('176', self::IMPERIAL)], null)
         );
-
-        $this->assertRefused(
-            HttpResponseErrorKeys::ENGINE_CAPABILITY_MISSING,
-            fn (): mixed => $this->serializer->assertSupported([new QualifiedValue('81', null, 1)], null)
-        );
-    }
-
-    /**
-     * The sibling of the variant guard: a key that does not declare itself repeatable holds one
-     * value per variant, so a position other than the first is a qualifier it does not permit and
-     * is refused by its own error key rather than stored.
-     *
-     * @dataProvider notRepeatableProvider
-     *
-     * @param array<string, mixed> $definition
-     */
-    public function testAPositionOnAKeyThatIsNotRepeatableIsRefused(array $definition): void
-    {
-        $keyConfig = $this->createKeyConfigFrom($definition);
-
-        $this->assertRefused(
-            HttpResponseErrorKeys::KEY_NOT_REPEATABLE,
-            fn (): array => $this->serializer->parseEntries(
-                [['v' => '80'], ['v' => '81', 'p' => 1]],
-                $keyConfig
-            )
-        );
-
-        // and the first position is still accepted on the very same key
-        $this->assertSame(
-            [[null, 0], [self::IMPERIAL, 0]],
-            $this->describe($this->serializer->parseEntries(
-                [['v' => '80'], ['v' => '176', 'var' => self::IMPERIAL]],
-                $keyConfig
-            ))
-        );
-    }
-
-    /**
-     * @return array<string, array{0: array<string, mixed>}>
-     */
-    public static function notRepeatableProvider(): array
-    {
-        return [
-            'multiValue declared false' => [['variants' => [self::METRIC, self::IMPERIAL], 'multiValue' => false]],
-            'multiValue not declared at all' => [['variants' => [self::METRIC, self::IMPERIAL]]],
-        ];
     }
 
     /**
      * The stored values are core's: one `getKeyValues()` per slot, the default variant first and then
-     * each declared variant in declared order, each slot's values in position order.
+     * each declared variant in declared order, one value per variant.
      */
     public function testTheStoredEntriesAreReadSlotBySlotThroughCore(): void
     {
@@ -461,7 +398,7 @@ final class QualifiedValueSerializerTest extends Unit
                 $asked[] = [$groupId, $keyId, $language, $variant];
 
                 return match ($variant) {
-                    null => [0 => '80', 1 => '81'],
+                    null => [0 => '80'],
                     self::IMPERIAL => [0 => '176'],
                     default => [],
                 };
@@ -474,11 +411,31 @@ final class QualifiedValueSerializerTest extends Unit
             [[5, 7, 'en', null], [5, 7, 'en', self::METRIC], [5, 7, 'en', self::IMPERIAL]],
             $asked
         );
-        $this->assertSame([[null, 0], [null, 1], [self::IMPERIAL, 0]], $this->describe($values));
-        $this->assertSame(['80', '81', '176'], array_map(
+        $this->assertSame([null, self::IMPERIAL], $this->describe($values));
+        $this->assertSame(['80', '176'], array_map(
             static fn (QualifiedValue $value): mixed => $value->getValue(),
             $values
         ));
+    }
+
+    /**
+     * A row written while a variant could still repeat publishes the first value it holds there.
+     */
+    public function testAVariantHoldingMoreThanOneStoredValuePublishesTheFirst(): void
+    {
+        $store = Stub::make(Classificationstore::class, [
+            'getKeyValues' => static fn (
+                int $groupId,
+                int $keyId,
+                ?string $language = null,
+                ?string $variant = null
+            ): array => $variant === null ? [0 => '80', 1 => '81'] : [],
+        ]);
+
+        $values = $this->serializer->readStoredEntries($store, 5, 7, 'en', $this->createKeyConfig());
+
+        $this->assertSame([null], $this->describe($values));
+        $this->assertSame('80', $values[0]->getValue());
     }
 
     /**
@@ -504,7 +461,7 @@ final class QualifiedValueSerializerTest extends Unit
 
         $values = $this->serializer->readStoredEntries($store, 5, 7, 'default', $this->createKeyConfig());
 
-        $this->assertSame([[null, 0]], $this->describe($values));
+        $this->assertSame([null], $this->describe($values));
     }
 
     /**
@@ -523,7 +480,7 @@ final class QualifiedValueSerializerTest extends Unit
     public static function defaultSlotProvider(): array
     {
         return [
-            'the default variant at position 0 wins over a variant listed first' => [
+            'the default variant wins over a variant listed first' => [
                 [['v' => '176', 'var' => self::IMPERIAL], ['v' => '80']],
                 '80',
             ],
@@ -537,7 +494,7 @@ final class QualifiedValueSerializerTest extends Unit
     }
 
     /**
-     * The merge matches by qualifier and never by position in the list, so a write naming one slot
+     * The merge matches by variant and never by position in the list, so a write naming one slot
      * leaves every other entry of the key as it was.
      */
     public function testTheMergeMatchesByQualifierAndKeepsTheRest(): void
@@ -545,14 +502,14 @@ final class QualifiedValueSerializerTest extends Unit
         $merged = $this->serializer->mergeEntries(
             [
                 new QualifiedValue('80'),
-                new QualifiedValue('81', null, 1),
-                new QualifiedValue('82', null, 2),
+                new QualifiedValue('60', self::METRIC),
+                new QualifiedValue('176', self::IMPERIAL),
             ],
-            [new QualifiedValue('99', null, 1)]
+            [new QualifiedValue('99', self::METRIC)]
         );
 
-        $this->assertSame([[null, 0], [null, 1], [null, 2]], $this->describe($merged));
-        $this->assertSame(['80', '99', '82'], array_map(
+        $this->assertSame([null, self::METRIC, self::IMPERIAL], $this->describe($merged));
+        $this->assertSame(['80', '99', '176'], array_map(
             static fn (QualifiedValue $value): mixed => $value->getValue(),
             $merged
         ));
@@ -561,14 +518,11 @@ final class QualifiedValueSerializerTest extends Unit
     /**
      * @param QualifiedValue[] $values
      *
-     * @return array<int, array{0: ?string, 1: int}>
+     * @return array<int, ?string>
      */
     private function describe(array $values): array
     {
-        return array_map(
-            static fn (QualifiedValue $value): array => [$value->getVariant(), $value->getPosition()],
-            $values
-        );
+        return array_map(static fn (QualifiedValue $value): ?string => $value->getVariant(), $values);
     }
 
     /**
@@ -606,18 +560,10 @@ final class QualifiedValueSerializerTest extends Unit
      */
     private function createKeyConfig(array $variants = [self::METRIC, self::IMPERIAL]): KeyConfig
     {
-        return $this->createKeyConfigFrom(['variants' => $variants, 'multiValue' => true]);
-    }
-
-    /**
-     * @param array<string, mixed> $definition
-     */
-    private function createKeyConfigFrom(array $definition): KeyConfig
-    {
         $keyConfig = new KeyConfig();
         $keyConfig->setName('weight');
         $keyConfig->setType(MultiValueServiceResolver::MULTI_VALUE_TYPE);
-        $keyConfig->setDefinition((string) json_encode($definition));
+        $keyConfig->setDefinition((string) json_encode(['variants' => $variants]));
 
         return $keyConfig;
     }

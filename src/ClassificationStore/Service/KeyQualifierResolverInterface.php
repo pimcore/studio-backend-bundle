@@ -20,8 +20,8 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
  * object data path cannot drift apart on what a key permits.
  *
  * The declaration is the key's type: a key declares qualifiers when its field definition, resolved
- * from its type and its `definition` blob, is a core `multiValue` definition. `variants` and
- * `multiValue` written into the blob of a key of any other type declare nothing. Nothing is
+ * from its type and its `definition` blob, is a core `multiValue` definition. `variants` written
+ * into the blob of a key of any other type declare nothing. Nothing is
  * resolved against the engine of the key's store here.
  *
  * @internal
@@ -49,18 +49,6 @@ interface KeyQualifierResolverInterface
      * @return array<int, array<string, string>>|null
      */
     public function getVariantDeclarations(KeyConfig $keyConfig): ?array;
-
-    /**
-     * Whether the `multiValue` key holds more than one value per variant, or null where the key is
-     * not of type `multiValue`.
-     */
-    public function isMultiValue(KeyConfig $keyConfig): ?bool;
-
-    /**
-     * How many values one slot of the `multiValue` key may hold, or null where it declares no limit
-     * or the key is not of type `multiValue`.
-     */
-    public function getMaximum(KeyConfig $keyConfig): ?int;
 
     /**
      * Whether the `multiValue` key permits a value carrying no variant, and that slot's optional label,

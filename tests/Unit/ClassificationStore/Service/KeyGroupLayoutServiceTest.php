@@ -272,7 +272,7 @@ final class KeyGroupLayoutServiceTest extends Unit
         $keyConfig = $this->createKeyConfig(self::KEY_ID, self::KEY_NAME);
         $keyConfig->setType('multiValue');
         $keyConfig->setDefinition(
-            '{"variants":[{"name":"metric","label":"Metric"},"imperial"],"multiValue":true,"maximum":3,'
+            '{"variants":[{"name":"metric","label":"Metric"},"imperial"],'
             . '"unqualifiedValue":false,"unqualifiedValueLabel":"Standard"}'
         );
 
@@ -284,8 +284,6 @@ final class KeyGroupLayoutServiceTest extends Unit
             [new VariantLayout('metric', 'Metric'), new VariantLayout('imperial')],
             $keyLayout->getVariants()
         );
-        $this->assertTrue($keyLayout->getMultiValue());
-        $this->assertSame(3, $keyLayout->getMaximum());
     }
 
     public function testTheLayoutDefinitionIsBuiltFromTheOptionsTheAssignmentNarrowedTo(): void
@@ -600,20 +598,18 @@ final class KeyGroupLayoutServiceTest extends Unit
     {
         $keyConfig = $this->createKeyConfig(self::KEY_ID, self::KEY_NAME);
         $keyConfig->setType('quantityValue');
-        $keyConfig->setDefinition('{"variants":["metric"],"multiValue":true,"maximum":3}');
+        $keyConfig->setDefinition('{"variants":["metric"]}');
 
         $keyLayout = $this->getKeyLayout($keyConfig);
 
         $this->assertNull($keyLayout->getVariants());
-        $this->assertNull($keyLayout->getMultiValue());
-        $this->assertNull($keyLayout->getMaximum());
         $this->assertNull($keyLayout->getDefaultVariant());
         $this->assertNull($keyLayout->getDefaultVariantLabel());
     }
 
     /**
-     * A key declaring neither member reports null for both, and so does a key whose configuration
-     * cannot be loaded at all - the way its title and its `localized` flag do.
+     * A key declaring no variants reports null, and so does a key whose configuration cannot be
+     * loaded at all - the way its title and its `localized` flag do.
      *
      * @throws Exception
      */
@@ -622,12 +618,10 @@ final class KeyGroupLayoutServiceTest extends Unit
         $declaringNothing = $this->getKeyLayout($this->createKeyConfig(self::KEY_ID, self::KEY_NAME));
 
         $this->assertNull($declaringNothing->getVariants());
-        $this->assertNull($declaringNothing->getMultiValue());
-        $this->assertNull($declaringNothing->getMaximum());
+        $this->assertNull($declaringNothing->getDefaultVariant());
 
         $this->assertNull($this->getKeyLayout(null)->getVariants());
-        $this->assertNull($this->getKeyLayout(null)->getMultiValue());
-        $this->assertNull($this->getKeyLayout(null)->getMaximum());
+        $this->assertNull($this->getKeyLayout(null)->getDefaultVariant());
     }
 
     /**
@@ -856,8 +850,6 @@ final class KeyGroupLayoutServiceTest extends Unit
 
                 $multiValue = DeclaredMultiValue::from($definition);
                 $multiValue->setVariants($definition['variants'] ?? []);
-                $multiValue->setMultiValue($definition['multiValue'] ?? false);
-                $multiValue->setMaximum($definition['maximum'] ?? null);
 
                 return $multiValue;
             });

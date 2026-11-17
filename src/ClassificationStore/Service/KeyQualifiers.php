@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\VariantLayout;
 
 /**
- * What a key declares about its qualified values, resolved once off one key configuration: the five
+ * What a key declares about its qualified values, resolved once off one key configuration: the three
  * members a key layout publishes beside its definition. Every member is null for a key that is not
  * of type `multiValue`.
  *
@@ -29,8 +29,6 @@ final readonly class KeyQualifiers
      */
     public function __construct(
         private ?array $variants,
-        private ?bool $multiValue,
-        private ?int $maximum,
         private ?bool $defaultVariant,
         private ?string $defaultVariantLabel,
     ) {
@@ -42,16 +40,6 @@ final readonly class KeyQualifiers
     public function getVariants(): ?array
     {
         return $this->variants;
-    }
-
-    public function getMultiValue(): ?bool
-    {
-        return $this->multiValue;
-    }
-
-    public function getMaximum(): ?int
-    {
-        return $this->maximum;
     }
 
     public function getDefaultVariant(): ?bool

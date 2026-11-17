@@ -74,9 +74,9 @@ final class KeyLayoutTest extends Unit
     }
 
     /**
-     * Both members are optional and nullable, and a key declaring neither reports null for both
-     * rather than an empty list and false - which a client would read as a key that permits no
-     * variant and holds exactly one value, two decisions the key has not taken.
+     * The member is optional and nullable, and a key declaring none reports null rather than an
+     * empty list - which a client would read as a key that permits no variant, a decision the key
+     * has not taken.
      */
     public function testTheQualifiedValueDeclarationIsOptionalAndNullable(): void
     {
@@ -85,26 +85,11 @@ final class KeyLayoutTest extends Unit
         $declaringNothing = new KeyLayout(42, 'weight', 'The weight', $definition);
 
         $this->assertNull($declaringNothing->getVariants());
-        $this->assertNull($declaringNothing->getMultiValue());
-        $this->assertNull($declaringNothing->getMaximum());
 
         $variants = [new VariantLayout('metric', 'Metric'), new VariantLayout('imperial')];
-        $declaring = new KeyLayout(
-            42,
-            'weight',
-            'The weight',
-            $definition,
-            null,
-            null,
-            null,
-            $variants,
-            true,
-            3
-        );
+        $declaring = new KeyLayout(42, 'weight', 'The weight', $definition, null, null, null, $variants);
 
         $this->assertSame($variants, $declaring->getVariants());
-        $this->assertTrue($declaring->getMultiValue());
-        $this->assertSame(3, $declaring->getMaximum());
         $this->assertSame('Metric', $declaring->getVariants()[0]->getLabel());
         $this->assertNull($declaring->getVariants()[1]->getLabel());
     }

@@ -163,7 +163,7 @@ final class KeyLabelPathAgreementTest extends Unit
         $keyGroupLayoutService = $this->createMock(KeyGroupLayoutServiceInterface::class);
         $keyGroupLayoutService
             ->method('getKeyQualifiers')
-            ->willReturn(new KeyQualifiers(null, null, null, null, null));
+            ->willReturn(new KeyQualifiers(null, null, null));
 
         return new ActiveGroupTitleEnricher(
             $labelResolver,

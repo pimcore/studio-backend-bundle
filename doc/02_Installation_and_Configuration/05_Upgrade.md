@@ -143,9 +143,9 @@ The following steps are necessary during updating to newer versions.
   assignment's `metadata` reserves. Studio stores it, publishes it, and enqueues a deferred remap of every search index
   the key's store reaches when it changes; whether a key marked `false` is then left out of an index is the search
   index's own answer, not this bundle's.
-- [Classification Store] Added: a key declares qualified values - variants, and more than one value per variant - by
-  being of type `multiValue`, and the object data endpoints then read and write that key through the core store's own
-  qualified API, with its `variants` published as objects carrying a `name` and an optional `label`, and a `maximum`.
+- [Classification Store] Added: a key declares qualified values - one value per variant - by being of type
+  `multiValue`, and the object data endpoints then read and write that key through the core store's own qualified API,
+  with its `variants` published as objects carrying a `name` and an optional `label`.
   `variants` or `multiValue` written into the definition of a key of any other type are ignored, not migrated: such a
   key keeps holding one value of its own type, and a value already stored for it is left as it is.
 - [Classification Store] Added: a store's whole configuration can be exported and imported again as one file, from the

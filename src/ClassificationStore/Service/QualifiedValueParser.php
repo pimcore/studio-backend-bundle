@@ -21,7 +21,6 @@ use function array_is_list;
 use function array_key_exists;
 use function in_array;
 use function is_array;
-use function is_int;
 use function is_string;
 use function sprintf;
 
@@ -49,31 +48,26 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
 
         $declared = $this->keyQualifierResolver->getVariants($keyConfig) ?? [];
 
-        // a grid cell addresses one variant and position, so it sends its entry alone: an object carrying `v`
+        // a grid cell addresses one variant, so it sends its entry alone: an object carrying `v`
         if (is_array($payload) && !array_is_list($payload) && $this->isEntry($payload)) {
             $payload = [$payload];
         }
 
         if (!$this->looksLikeEntryList($payload)) {
-            // an un-updated client sends the value itself, which is the default variant at position 0
+            // an un-updated client sends the value itself, which is the default variant
             return [new QualifiedValue($payload)];
         }
 
-        $repeatable = $this->keyQualifierResolver->isMultiValue($keyConfig) === true;
         $values = [];
         $seen = [];
 
         foreach ($payload as $entry) {
-            $value = $this->parseEntry($entry, $declared, $repeatable);
+            $value = $this->parseEntry($entry, $declared);
             $qualifier = $value->getQualifier();
 
             if (array_key_exists($qualifier, $seen)) {
                 throw new InvalidArgumentException(
-                    sprintf(
-                        'Two values address %s at position %d.',
-                        $this->describeVariant($value->getVariant()),
-                        $value->getPosition()
-                    ),
+                    sprintf('Two values address %s.', $this->describeVariant($value->getVariant())),
                     errorKey: HttpResponseErrorKeys::DUPLICATE_VALUE_QUALIFIER->value
                 );
             }
@@ -128,7 +122,7 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
      *
      * @throws InvalidArgumentException
      */
-    private function parseEntry(mixed $entry, array $declared, bool $repeatable): QualifiedValue
+    private function parseEntry(mixed $entry, array $declared): QualifiedValue
     {
         if (!$this->isEntry($entry)) {
             throw new InvalidArgumentException(
@@ -139,17 +133,13 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
             );
         }
 
+        // a `p` an older client still sends is not read, so every entry addresses the slot's one value
         $value = new QualifiedValue(
             $entry[QualifiedValueSerializerInterface::VALUE_MEMBER],
-            $this->readVariantName($entry[QualifiedValueSerializerInterface::VARIANT_MEMBER] ?? null),
-            $this->readPosition(
-                $entry[QualifiedValueSerializerInterface::POSITION_MEMBER]
-                    ?? QualifiedValueSerializerInterface::DEFAULT_POSITION
-            )
+            $this->readVariantName($entry[QualifiedValueSerializerInterface::VARIANT_MEMBER] ?? null)
         );
 
         $this->assertDeclaredVariant($value->getVariant(), $declared);
-        $this->assertPositionPermitted($value->getPosition(), $repeatable);
 
         return $value;
     }
@@ -176,23 +166,6 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
     }
 
     /**
-     * @throws InvalidArgumentException
-     */
-    private function readPosition(mixed $position): int
-    {
-        if (!is_int($position) || $position < QualifiedValueSerializerInterface::DEFAULT_POSITION) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    'The "%s" of a value has to be a non-negative integer.',
-                    QualifiedValueSerializerInterface::POSITION_MEMBER
-                )
-            );
-        }
-
-        return $position;
-    }
-
-    /**
      * @param string[] $declared
      *
      * @throws InvalidArgumentException
@@ -204,26 +177,6 @@ final readonly class QualifiedValueParser implements QualifiedValueParserInterfa
         }
 
         throw $this->undeclaredVariant();
-    }
-
-    /**
-     * The position a value addresses, against the key's own `multiValue` setting - the sibling of
-     * {@see self::assertDeclaredVariant()}, which holds a variant to the names the key declares. A
-     * key that does not declare itself repeatable holds one value per variant, so a position other
-     * than the first is a qualifier it does not permit and is refused rather than silently stored.
-     *
-     * @throws InvalidArgumentException
-     */
-    private function assertPositionPermitted(int $position, bool $repeatable): void
-    {
-        if ($repeatable || $position === QualifiedValueSerializerInterface::DEFAULT_POSITION) {
-            return;
-        }
-
-        throw new InvalidArgumentException(
-            'The key does not declare that it holds more than one value per variant.',
-            errorKey: HttpResponseErrorKeys::KEY_NOT_REPEATABLE->value
-        );
     }
 
     private function undeclaredVariant(): InvalidArgumentException

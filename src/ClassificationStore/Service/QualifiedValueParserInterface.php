@@ -31,11 +31,10 @@ interface QualifiedValueParserInterface
 {
     /**
      * The entries a write supplies, validated: the shape, the variant names against the key's
-     * declaration, the positions against its `multiValue` setting, and the uniqueness of the
-     * (variant, position) pairs.
+     * declaration, and one entry per variant. A `p` an older client sends is not read.
      *
-     * A payload that is not a list of qualified entries is one entry of the default variant at
-     * position 0, which is what an un-updated client sends. A list holding at least one entry
+     * A payload that is not a list of qualified entries is one entry of the default variant, which
+     * is what an un-updated client sends. A list holding at least one entry
      * object - an array carrying `v` - is a list of entries; the array value of a multi-select or a
      * relation field is not, and such a value keeps travelling whole.
      *

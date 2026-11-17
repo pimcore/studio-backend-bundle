@@ -322,8 +322,8 @@ final readonly class ClassificationStoreAdapter implements
     }
 
     /**
-     * The entries one variant cell's patch carries: a repeating key's cell is a list of
-     * `{v, p}` entries, any other cell one entry object or a bare value.
+     * The entries one variant cell's patch carries: one entry object or a bare value, or a list of
+     * entries an older client still sends.
      *
      * @return array<int, array<array-key, mixed>>
      */
@@ -730,7 +730,7 @@ final readonly class ClassificationStoreAdapter implements
 
         $coreEntries = [];
         foreach ($entries as $entry) {
-            $coreEntries[] = new MultiValue($entry->getValue(), $language, $entry->getVariant(), $entry->getPosition());
+            $coreEntries[] = new MultiValue($entry->getValue(), $language, $entry->getVariant());
         }
 
         if (!$isPatch) {
@@ -777,14 +777,6 @@ final readonly class ClassificationStoreAdapter implements
      * answered as a client error here: every one of those is refused at the request boundary first
      * ({@see QualifiedValueParserInterface::parseEntries()}), so core raising one means Studio and
      * core read the key's declaration differently - which is not something the request can correct.
-     *
-     * The declared `maximum` is NOT one of those refusals, and is deliberately not held at the
-     * request boundary either: core's setter stores the list, and core's own validation reports a
-     * slot holding more values than the key declares when the object is saved
-     * ({@see Data\Classificationstore::checkValidity()}, one field-level failure per slot), which the
-     * save path answers as the 422 of a field validation failure. The rule there counts the values a
-     * slot HOLDS rather than the position they sit at, so holding a position to the maximum here
-     * would refuse writes core accepts.
      *
      * @param MultiValue[] $entries
      *
