@@ -23,6 +23,7 @@ use function array_key_exists;
 use function hash;
 use function is_array;
 use function is_bool;
+use function is_int;
 use function is_string;
 use function json_decode;
 use function method_exists;
@@ -39,6 +40,12 @@ final class KeyQualifierResolver implements KeyQualifierResolverInterface, Reset
     private const string DEFAULT_VARIANT_PERMITTED_GETTER = 'permitsUnqualifiedValue';
 
     private const string DEFAULT_VARIANT_LABEL_GETTER = 'getUnqualifiedValueLabel';
+
+    // The repeatable flag and its cap: read by name for the same reason, a core `multiValue`
+    // that predates them declares neither, and that key is not repeatable.
+    private const string MULTI_VALUE_GETTER = 'isMultiValue';
+
+    private const string MAXIMUM_GETTER = 'getMaximum';
 
     /**
      * The digest the memo key spells a `definition` blob as. Deliberately a NON-cryptographic hash:
@@ -96,12 +103,26 @@ final class KeyQualifierResolver implements KeyQualifierResolverInterface, Reset
 
     public function isMultiValue(KeyConfig $keyConfig): ?bool
     {
-        return $this->getDeclaration($keyConfig)?->isMultiValue();
+        $declaration = $this->getDeclaration($keyConfig);
+        if ($declaration === null) {
+            return null;
+        }
+
+        $multiValue = $this->readAccessor($declaration, self::MULTI_VALUE_GETTER);
+
+        return is_bool($multiValue) ? $multiValue : null;
     }
 
     public function getMaximum(KeyConfig $keyConfig): ?int
     {
-        return $this->getDeclaration($keyConfig)?->getMaximum();
+        $declaration = $this->getDeclaration($keyConfig);
+        if ($declaration === null) {
+            return null;
+        }
+
+        $maximum = $this->readAccessor($declaration, self::MAXIMUM_GETTER);
+
+        return is_int($maximum) ? $maximum : null;
     }
 
     public function getDefaultVariant(KeyConfig $keyConfig): ?DefaultVariant
@@ -122,7 +143,8 @@ final class KeyQualifierResolver implements KeyQualifierResolverInterface, Reset
 
     /**
      * The accessor by name: `composer.json` allows a core whose `multiValue` declares no default
-     * variant setting, and against one of those the answer is the one a blob omitting it gets.
+     * variant setting, repeatable flag or maximum, and against one of those the answer is the one a
+     * blob omitting it gets.
      */
     private function readAccessor(MultiValue $declaration, string $accessor): mixed
     {
