@@ -140,8 +140,9 @@ final readonly class StoreMemberPurger implements StoreMemberPurgerInterface
 
     /**
      * Keys and groups first: both relation tables hang off them and the database takes the rows of
-     * those with them - and, with a group's, the stored value rows under it on both storage engines. Sub groups last, because their delete is refused while an assignment still
-     * tags one ({@see SubGroupRepositoryInterface::delete()}), and by then there is none.
+     * those with them - and, with a group's, the stored value rows under it on both storage engines.
+     * Sub groups last, because their delete is refused while an assignment still tags one
+     * ({@see SubGroupRepositoryInterface::delete()}), and by then there is none.
      */
     private function removeEntities(int $storeId): void
     {

@@ -167,22 +167,28 @@ final class GridService implements GridServiceInterface
             return true;
         }
 
-        // An empty value for an allowed locale can silently fall back to the default language
-        // (LocalizedValueTrait::getLocalizedValue()). If that fallback language isn't permitted,
-        // the column must be treated as not viewable - otherwise a denied language's value could
-        // still leak out through the fallback.
-        if ($this->localizedFieldResolver->doGetFallbackValues()) {
-            $defaultLanguage = $this->toolResolver->getDefaultLanguage();
-            $fallbackLanguageIsDenied = $defaultLanguage !== null
-                && $defaultLanguage !== $locale
-                && !array_key_exists($defaultLanguage, $allowedView);
+        return !$this->isFallbackLanguageDenied($locale, $allowedView);
+    }
 
-            if ($fallbackLanguageIsDenied) {
-                return false;
-            }
+    /**
+     * An empty value for an allowed locale can silently fall back to the default language
+     * (LocalizedValueTrait::getLocalizedValue()). If that fallback language isn't permitted,
+     * the column must be treated as not viewable - otherwise a denied language's value could
+     * still leak out through the fallback.
+     *
+     * @param array<string, mixed> $allowedView
+     */
+    private function isFallbackLanguageDenied(string $locale, array $allowedView): bool
+    {
+        if (!$this->localizedFieldResolver->doGetFallbackValues()) {
+            return false;
         }
 
-        return true;
+        $defaultLanguage = $this->toolResolver->getDefaultLanguage();
+
+        return $defaultLanguage !== null
+            && $defaultLanguage !== $locale
+            && !array_key_exists($defaultLanguage, $allowedView);
     }
 
     /**
@@ -413,7 +419,11 @@ final class GridService implements GridServiceInterface
             && $databaseElement !== null
             && $this->isLocalizedClassField($databaseElement, $column->getKey());
 
-        $storeGate = $databaseElement !== null ? $this->resolveClassificationStoreGate($databaseElement, $column) : null;
+        $storeGate = null;
+        if ($databaseElement !== null) {
+            $storeGate = $this->resolveClassificationStoreGate($databaseElement, $column);
+        }
+
         if ($storeGate !== null) {
             // the language the read resolves to decides the permission, not the column's raw locale
             [$gateLocale, $isLocalizedField] = $storeGate;
@@ -422,24 +432,7 @@ final class GridService implements GridServiceInterface
         if ($databaseElement !== null
             && !$this->isLocaleViewableForElement($databaseElement, $gateLocale, $user, $isLocalizedField)
         ) {
-            if ($storeGate !== null) {
-                $deniedResolver = $this->getColumnResolvers()[$column->getType()] ?? null;
-                $denied = $deniedResolver instanceof DeniedColumnDataResolverInterface
-                    ? $deniedResolver->resolveDeniedForCoreElement($column, $databaseElement)
-                    : null;
-                if ($denied !== null) {
-                    return $denied;
-                }
-            }
-
-            $variant = $column->getConfig()['variant'] ?? null;
-
-            return new ColumnData(
-                key: $column->getKey() . (is_string($variant) && $variant !== '' ? '#' . $variant : ''),
-                locale: $column->getLocale(),
-                value: null,
-                fieldType: $column->getType(),
-            );
+            return $this->resolveDeniedColumnData($column, $databaseElement, $storeGate !== null);
         }
 
         $resolver = $this->getColumnResolvers()[$column->getType()];
@@ -457,6 +450,30 @@ final class GridService implements GridServiceInterface
                     CoreElementColumnResolverInterface'
                 ),
         };
+    }
+
+    private function resolveDeniedColumnData(
+        Column $column,
+        ElementInterface $databaseElement,
+        bool $isStoreColumn,
+    ): ColumnData
+    {
+        $deniedResolver = $isStoreColumn ? ($this->getColumnResolvers()[$column->getType()] ?? null) : null;
+        if ($deniedResolver instanceof DeniedColumnDataResolverInterface) {
+            $denied = $deniedResolver->resolveDeniedForCoreElement($column, $databaseElement);
+            if ($denied !== null) {
+                return $denied;
+            }
+        }
+
+        $variant = $column->getConfig()['variant'] ?? null;
+
+        return new ColumnData(
+            key: $column->getKey() . (is_string($variant) && $variant !== '' ? '#' . $variant : ''),
+            locale: $column->getLocale(),
+            value: null,
+            fieldType: $column->getType(),
+        );
     }
 
     /**
