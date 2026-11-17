@@ -36,7 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     required: [
         'id', 'name', 'email', 'active', 'permissions', 'roles', 'classes', 'docTypes',
         'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'clientId', 'lastLogin',
-        'clientCredentialsEnabled', 'mcpTokens',
+        'clientCredentialsEnabled', 'mcpTokens', 'responsibleUsers', 'responsibleRoles',
     ],
     type: 'object'
 )]
@@ -47,6 +47,8 @@ final class ServiceUser implements AdditionalAttributesInterface
     /**
      * @param string[] $permissions
      * @param int[] $roles
+     * @param int[] $responsibleUsers
+     * @param int[] $responsibleRoles
      * @param string[] $classes
      * @param string[] $docTypes
      * @param UserWorkspace[] $assetWorkspaces
@@ -99,8 +101,7 @@ final class ServiceUser implements AdditionalAttributesInterface
         #[Property(description: 'Timestamp of the last login', type: 'integer', example: 1718757677, nullable: true)]
         private readonly ?int $lastLogin,
         #[Property(
-            description: 'Whether the OAuth client_credentials grant is enabled on this instance. '
-                . 'While false, the client secret authenticates nothing; use an MCP access token.',
+            description: 'Whether the OAuth client_credentials grant is enabled; if false, use an MCP access token',
             type: 'boolean',
             example: false
         )]
@@ -111,6 +112,18 @@ final class ServiceUser implements AdditionalAttributesInterface
             type: 'object'
         )]
         private readonly ServiceUserMcpTokens $mcpTokens,
+        #[Property(
+            description: 'IDs of the users who answer for the service user',
+            type: 'array',
+            items: new Items(type: 'integer')
+        )]
+        private readonly array $responsibleUsers,
+        #[Property(
+            description: 'IDs of the roles whose members answer for the service user',
+            type: 'array',
+            items: new Items(type: 'integer')
+        )]
+        private readonly array $responsibleRoles,
     ) {
     }
 
@@ -208,5 +221,21 @@ final class ServiceUser implements AdditionalAttributesInterface
     public function getMcpTokens(): ServiceUserMcpTokens
     {
         return $this->mcpTokens;
+    }
+
+    /**
+     * @return int[]
+     */
+    public function getResponsibleUsers(): array
+    {
+        return $this->responsibleUsers;
+    }
+
+    /**
+     * @return int[]
+     */
+    public function getResponsibleRoles(): array
+    {
+        return $this->responsibleRoles;
     }
 }

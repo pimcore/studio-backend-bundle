@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\MappedParameter\CreateFromUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\ServiceUser\MappedParameter\CreateParameter;
@@ -44,6 +45,8 @@ interface ServiceUserServiceInterface
      * Creates the service user and its OAuth client. The client secret is returned only here.
      *
      * @throws ElementExistsException|InvalidArgumentException|NotFoundException|ParseException|DatabaseException
+     * @throws UnprocessableContentException when a service user is given as responsible user, or when core
+     *                                       refuses the save, e.g. a responsible id deleted before the save
      */
     public function createServiceUser(CreateParameter $parameter): ServiceUserCredentials;
 
@@ -58,6 +61,8 @@ interface ServiceUserServiceInterface
     /**
      * @throws InvalidArgumentException when a name, password, admin or two-factor field is sent
      * @throws NotFoundException|ParseException|DatabaseException
+     * @throws UnprocessableContentException when a service user is given as responsible user, or when core
+     *                                       refuses the save, e.g. a responsible id deleted before the save
      */
     public function updateServiceUser(int $id, UpdateParameter $parameter): ServiceUser;
 
