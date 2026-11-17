@@ -2133,7 +2133,8 @@ classification_store_configuration_store_import_description: |
   count of the values.
   Send <strong>dryRun</strong> to get the same report without writing anything, which is how a replace can be
   shown before it happens. Refused with 409 when the configuration cannot be applied - including a key whose
-  field type the storage engine of the store cannot hold - and with 422 when the file is not a parseable
+  field type is withdrawn as a key type, or wraps one no key is defined with, or cannot be held by the storage
+  engine of the store - and with 422 when the file is not a parseable
   artifact.
 classification_store_configuration_store_import_summary: Import a store configuration
 classification_store_configuration_store_import_success_response: Report of what the import created, updated, adopted, skipped, removed and left in place

@@ -72,6 +72,32 @@ final class KeyTypeEngineFitResolverTest extends Unit
         $this->assertNull($resolver->findRefusingEngine('geopoint', null, null));
     }
 
+    public function testOnlyTheWithdrawnTypesAreFound(): void
+    {
+        $this->assertSame(
+            ['consent', 'permissionManyToOneRelation'],
+            $this->createResolver(true)->findWithdrawnTypes(['consent', 'input', 'permissionManyToOneRelation'])
+        );
+        $this->assertSame([], $this->createResolver(true)->findWithdrawnTypes(['input']));
+    }
+
+    public function testADelegateTheKeyTypesExcludeIsFoundAndNothingElse(): void
+    {
+        $resolver = $this->createResolver(true);
+
+        $this->assertSame('urlSlug', $resolver->findDelegateThatIsNotAKeyType('urlSlug'));
+        $this->assertNull($resolver->findDelegateThatIsNotAKeyType('input'));
+        $this->assertNull($resolver->findDelegateThatIsNotAKeyType(null));
+    }
+
+    public function testAnInstallationWithoutTheTypeSupportAsksNothing(): void
+    {
+        $resolver = new KeyTypeEngineFitResolver(null, null);
+
+        $this->assertSame([], $resolver->findWithdrawnTypes(['consent']));
+        $this->assertNull($resolver->findDelegateThatIsNotAKeyType('urlSlug'));
+    }
+
     private function createResolver(bool $structured): KeyTypeEngineFitResolver
     {
         $engine = $this->makeEmpty(EngineInterface::class, [

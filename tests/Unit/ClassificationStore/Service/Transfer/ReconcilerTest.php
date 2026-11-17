@@ -60,6 +60,7 @@ use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
 use ReflectionMethod;
 use ReflectionParameter;
 use function array_filter;
+use function array_intersect;
 use function array_map;
 use function array_values;
 use function implode;
@@ -562,6 +563,63 @@ final class ReconcilerTest extends Unit
             // the sections before the keys were written inside the transaction the rollback took back
             $this->assertNotContains(sprintf('key:%s:%s', self::KEY_IDENTIFIER, self::KEY_NAME), $this->writes);
         }
+    }
+
+    /**
+     * A key of a withdrawn type, or wrapping a delegate no key is defined with, is refused as a
+     * reported conflict before the engine is asked: 409 in both modes, one rollback, no key write.
+     */
+    public function testAWithdrawnKeyTypeAndAnUnacceptableDelegateAreRefusedAsConflictsInBothModes(): void
+    {
+        $cases = [
+            'withdrawn' => ['consent', [], 'withdrawn as a key type'],
+            'delegate' => ['encryptedField', ['delegateDatatype' => 'urlSlug'], 'urlSlug'],
+        ];
+
+        foreach ($cases as [$type, $extraDefinition, $expected]) {
+            foreach ([false, true] as $dryRun) {
+                $this->writes = [];
+                $connection = $this->createMock(Connection::class);
+                $connection->method('isTransactionActive')->willReturn(false);
+                $connection->expects($dryRun ? $this->never() : $this->once())->method('rollBack');
+                $connection->expects($this->never())->method('commit');
+
+                $entry = $this->createKeyEntry(enabled: true);
+                $entry['type'] = $type;
+                $entry['definition'] = ['fieldtype' => $type] + $extraDefinition;
+                $json = json_encode($this->createArtifact(['keys' => [$entry]]), JSON_THROW_ON_ERROR);
+                $service = $this->createTransferService(
+                    $this->createReconciler(connection: $connection, keyTypeEngineFit: $this->createTypeFit()),
+                    $this->createStore()
+                );
+
+                try {
+                    $service->importStore(self::STORE_ID, $json, $dryRun);
+                    $this->fail('A key the type rules refuse must be refused.');
+                } catch (ConflictException $e) {
+                    $this->assertSame(409, $e->getStatusCode());
+                    $this->assertStringContainsString('key "weight"', $e->getMessage());
+                    $this->assertStringContainsString($expected, $e->getMessage());
+                }
+
+                $this->assertNotContains(sprintf('key:%s:%s', self::KEY_IDENTIFIER, self::KEY_NAME), $this->writes);
+            }
+        }
+    }
+
+    /**
+     * The type rules answer for the fixture's names: `consent` is withdrawn and `urlSlug` is no delegate.
+     */
+    private function createTypeFit(): KeyTypeEngineFitResolverInterface
+    {
+        return $this->makeEmpty(KeyTypeEngineFitResolverInterface::class, [
+            'findWithdrawnTypes' => static fn (array $types): array => array_values(
+                array_intersect($types, ['consent'])
+            ),
+            'findDelegateThatIsNotAKeyType' => static fn (?string $delegate): ?string => $delegate === 'urlSlug'
+                ? $delegate
+                : null,
+        ]);
     }
 
     /**

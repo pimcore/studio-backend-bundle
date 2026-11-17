@@ -18,6 +18,8 @@ use Pimcore\Model\DataObject\Classificationstore\Engine\EngineResolver;
 use Pimcore\Model\DataObject\Classificationstore\KeyTypeSupport;
 use Pimcore\Model\DataObject\Exception\ClassificationStoreEngineNotAvailableException;
 use Pimcore\Model\DataObject\Exception\UnknownClassificationStoreEngineException;
+use function array_filter;
+use function array_values;
 
 /**
  * @internal
@@ -57,5 +59,29 @@ final readonly class KeyTypeEngineFitResolver implements KeyTypeEngineFitResolve
         }
 
         return $this->engineResolver->nameEngine($engine);
+    }
+
+    public function findWithdrawnTypes(array $types): array
+    {
+        if ($this->keyTypeSupport === null) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            $types,
+            fn (string $type): bool => $this->keyTypeSupport->isWithdrawnKeyType($type)
+        ));
+    }
+
+    public function findDelegateThatIsNotAKeyType(?string $delegateType): ?string
+    {
+        if ($delegateType === null
+            || $this->keyTypeSupport === null
+            || $this->keyTypeSupport->isAcceptedDelegateType($delegateType)
+        ) {
+            return null;
+        }
+
+        return $delegateType;
     }
 }

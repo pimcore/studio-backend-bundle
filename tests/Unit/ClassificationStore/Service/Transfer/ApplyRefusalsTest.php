@@ -28,6 +28,8 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Matc
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use function array_intersect;
+use function array_values;
 use function is_callable;
 
 /**
@@ -611,6 +613,57 @@ final class ApplyRefusalsTest extends Unit
 
         $this->assertFalse($refused);
         $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+    }
+
+    public function testAWithdrawnTypeTheStoredKeyAlreadyCarriesIsNotRefused(): void
+    {
+        $fit = $this->makeEmpty(KeyTypeEngineFitResolverInterface::class, [
+            'findWithdrawnTypes' => static fn (array $types): array => array_values(
+                array_intersect($types, ['consent'])
+            ),
+        ]);
+        $entry = new ArtifactKeyEntry('01KEY', 'agree', null, null, 'consent', ['fieldtype' => 'consent'], true);
+        $stored = $this->createKey();
+        $stored->setType('consent');
+        $stored->setDefinition('{"fieldtype":"consent"}');
+        $refusals = $this->createRefusals(keyTypeEngineFit: $fit);
+
+        $context = $this->createContext();
+        $this->assertFalse($refusals->refuseWithdrawnKeyType($context, $stored, $entry, 'key "agree"'));
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+
+        $context = $this->createContext();
+        $this->assertTrue($refusals->refuseWithdrawnKeyType($context, null, $entry, 'key "agree"'));
+        $this->assertSame(
+            ['key "agree": the field type "consent" has been withdrawn as a key type'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
+    public function testADelegateNoKeyIsDefinedWithIsRefusedNamingIt(): void
+    {
+        $fit = $this->makeEmpty(KeyTypeEngineFitResolverInterface::class, [
+            'findDelegateThatIsNotAKeyType' => static fn (?string $delegate): ?string => $delegate,
+        ]);
+        $entry = new ArtifactKeyEntry(
+            '01KEY',
+            'slug',
+            null,
+            null,
+            'multiValue',
+            ['delegateDatatype' => 'urlSlug'],
+            true
+        );
+        $context = $this->createContext();
+
+        $refused = $this->createRefusals(keyTypeEngineFit: $fit)
+            ->refuseDelegateThatIsNotAKeyType($context, $entry, 'key "slug"');
+
+        $this->assertTrue($refused);
+        $this->assertSame(
+            ['key "slug": a key cannot wrap the field type "urlSlug", which no key is defined with'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
     }
 
     private function createContext(bool $dryRun = false): ApplyContext

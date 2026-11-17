@@ -14,8 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 /**
- * The one place the question core's key save asks of a key's field type is put from this bundle:
- * can the engine of the store hold it. The same three conditions, in the same order, as
+ * The one place the questions core's key save asks of a key's field type are put from this bundle:
+ * is it withdrawn, is its delegate a key type, can the engine of the store hold it. The same
+ * conditions, in the same order, as
  * {@see \Pimcore\Model\DataObject\Classificationstore\KeyConfig::save()}, so that a write which
  * would be refused there is named before it is attempted.
  *
@@ -34,4 +35,21 @@ interface KeyTypeEngineFitResolverInterface
      * resolved, which is not thrown from here.
      */
     public function findRefusingEngine(string $type, ?string $delegateType, ?int $storeId): ?string;
+
+    /**
+     * The field types among the given ones that have been withdrawn as a key type, in order. Which
+     * of them a key may still carry is for the caller to say: core's key save refuses only a name
+     * the stored row does not already carry. An installation without the type support is not asked.
+     *
+     * @param string[] $types
+     *
+     * @return string[]
+     */
+    public function findWithdrawnTypes(array $types): array;
+
+    /**
+     * The delegate type that is not a field type a key may be defined with, or null where it is one
+     * or no delegate is given. Core asks this before it asks what the engine can hold.
+     */
+    public function findDelegateThatIsNotAKeyType(?string $delegateType): ?string;
 }
