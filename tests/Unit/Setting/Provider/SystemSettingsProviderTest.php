@@ -20,6 +20,8 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider;
 use Pimcore\Model\Document;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use ReflectionClass;
 
 final class SystemSettingsProviderTest extends Unit
@@ -81,10 +83,54 @@ final class SystemSettingsProviderTest extends Unit
         $this->assertSame('', $documents['error_pages']['localized']['de']);
     }
 
+    public function testGetDocumentSettingsFallsBackWhenConfiguredErrorPageIsMissing(): void
+    {
+        $warnedPaths = [];
+        $logger = $this->makeEmpty(LoggerInterface::class, [
+            'warning' => function (string $message, array $context) use (&$warnedPaths): void {
+                $warnedPaths[] = $context['path'];
+            },
+        ]);
+
+        $provider = $this->createProvider(
+            documents: [
+                'versions' => ['days' => 10, 'steps' => 5],
+                'error_pages' => [
+                    'default' => '/error',
+                    'localized' => [
+                        'en' => '/en/error',
+                    ],
+                ],
+            ],
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementByPath' => null,
+            ]),
+            elementDataService: $this->makeEmpty(ElementDataServiceInterface::class),
+            logger: $logger
+        );
+
+        $documents = $this->invokeGetDocumentSettings($provider);
+
+        $this->assertSame(['/error', '/en/error'], $warnedPaths);
+        $this->assertSame(
+            [
+                'versions' => ['days' => 10, 'steps' => 5],
+                'error_pages' => [
+                    'default' => '',
+                    'localized' => [
+                        'en' => '',
+                    ],
+                ],
+            ],
+            $documents
+        );
+    }
+
     private function createProvider(
         array $documents,
         ServiceResolverInterface $serviceResolver,
-        ElementDataServiceInterface $elementDataService
+        ElementDataServiceInterface $elementDataService,
+        LoggerInterface $logger = new NullLogger()
     ): SystemSettingsProvider {
         $reflection = new ReflectionClass(SystemSettingsProvider::class);
         $provider = $reflection->newInstanceWithoutConstructor();
@@ -95,6 +141,7 @@ final class SystemSettingsProviderTest extends Unit
         $this->setPrivateProperty($reflection, $provider, 'configResolver', new ConfigResolver());
         $this->setPrivateProperty($reflection, $provider, 'serviceResolver', $serviceResolver);
         $this->setPrivateProperty($reflection, $provider, 'elementDataService', $elementDataService);
+        $this->setPrivateProperty($reflection, $provider, 'logger', $logger);
 
         return $provider;
     }

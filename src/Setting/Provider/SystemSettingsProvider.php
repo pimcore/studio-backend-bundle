@@ -17,13 +17,15 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\ConfigResolver;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\VersionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\AdminLanguageServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\SystemSettingsConfig;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function ini_get;
+use function is_string;
 
 /**
  * @internal
@@ -31,8 +33,6 @@ use function ini_get;
 #[AutoconfigureTag('pimcore.studio_backend.settings_provider')]
 final readonly class SystemSettingsProvider implements SettingsProviderInterface, UpdateSettingsProviderInterface
 {
-    use ElementProviderTrait;
-
     private array $systemSettings;
 
     public function __construct(
@@ -43,6 +43,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         private ServiceResolverInterface $serviceResolver,
         private ElementDataServiceInterface $elementDataService,
         private AdminLanguageServiceInterface $adminLanguageService,
+        private LoggerInterface $logger,
         private bool $autoCreateTranslations = true,
     ) {
         $this->systemSettings = $systemSettingsConfig->getSystemSettingsConfig();
@@ -136,21 +137,16 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
 
         $errorPages = $documents['error_pages'] ?? [];
 
-        $errorPage = $this->getErrorDocument($errorPages['default'] ?? null);
-        if ($errorPage) {
-            $errorPages['default'] = $this->elementDataService->getRelatedElementData(
-                $errorPage
-            );
+        $defaultErrorPage = $errorPages['default'] ?? null;
+        if (is_string($defaultErrorPage) && $defaultErrorPage !== '') {
+            $errorPages['default'] = $this->getErrorPageData($defaultErrorPage);
         }
 
         foreach ($errorPages['localized'] ?? [] as $language => $localizedErrorPage) {
-            $element = $this->getErrorDocument($localizedErrorPage);
-            if (!$element) {
+            if (!is_string($localizedErrorPage) || $localizedErrorPage === '') {
                 continue;
             }
-            $errorPages['localized'][$language] = $this->elementDataService->getRelatedElementData(
-                $element
-            );
+            $errorPages['localized'][$language] = $this->getErrorPageData($localizedErrorPage);
         }
 
         $documents['error_pages'] = $errorPages;
@@ -158,16 +154,22 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         return $documents;
     }
 
-    private function getErrorDocument(?string $path): ?ElementInterface
+    /**
+     * A configured error page that no longer exists falls back to "not configured",
+     * so it does not break every request that reads the system settings.
+     */
+    private function getErrorPageData(string $path): RelatedElementData|string
     {
-        if (!$path) {
-            return null;
+        $document = $this->serviceResolver->getElementByPath(ElementTypes::TYPE_DOCUMENT, $path);
+        if ($document === null) {
+            $this->logger->warning(
+                'Configured error page "{path}" does not exist, it is treated as not configured.',
+                ['path' => $path]
+            );
+
+            return '';
         }
 
-        return $this->getElementByPath(
-            $this->serviceResolver,
-            'document',
-            $path
-        );
+        return $this->elementDataService->getRelatedElementData($document);
     }
 }
