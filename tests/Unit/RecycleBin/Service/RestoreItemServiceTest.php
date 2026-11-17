@@ -133,6 +133,7 @@ final class RestoreItemServiceTest extends Unit
 
     /**
      * @throws Exception
+     *
      * @dataProvider restoreFailureProvider
      */
     #[DataProvider('restoreFailureProvider')]
@@ -186,6 +187,7 @@ final class RestoreItemServiceTest extends Unit
 
     /**
      * @throws Exception
+     *
      * @dataProvider versioningStateProvider
      */
     #[DataProvider('versioningStateProvider')]

@@ -43,6 +43,7 @@ final class FallbackFolderServiceTest extends Unit
 {
     /**
      * @throws Exception
+     *
      * @dataProvider parentWithoutLookupProvider
      */
     #[DataProvider('parentWithoutLookupProvider')]
@@ -69,6 +70,7 @@ final class FallbackFolderServiceTest extends Unit
 
     /**
      * @throws Exception
+     *
      * @dataProvider parentLookupProvider
      */
     #[DataProvider('parentLookupProvider')]
@@ -106,6 +108,7 @@ final class FallbackFolderServiceTest extends Unit
 
     /**
      * @throws Exception
+     *
      * @dataProvider rootParentProvider
      */
     #[DataProvider('rootParentProvider')]
@@ -136,6 +139,7 @@ final class FallbackFolderServiceTest extends Unit
 
     /**
      * @throws Exception
+     *
      * @dataProvider elementTypeProvider
      */
     #[DataProvider('elementTypeProvider')]
@@ -169,6 +173,7 @@ final class FallbackFolderServiceTest extends Unit
 
     /**
      * @throws Exception
+     *
      * @dataProvider elementTypeProvider
      */
     #[DataProvider('elementTypeProvider')]
@@ -204,6 +209,7 @@ final class FallbackFolderServiceTest extends Unit
      * @param array<string, int> $takenKeys key => ID of the element that holds it in the fallback folder
      *
      * @throws Exception
+     *
      * @dataProvider takenKeyProvider
      */
     #[DataProvider('takenKeyProvider')]
@@ -301,6 +307,7 @@ final class FallbackFolderServiceTest extends Unit
      * @param array<string, int> $takenKeys key => ID of the element that holds it in the fallback folder
      *
      * @throws Exception
+     *
      * @dataProvider originalKeyProvider
      */
     #[DataProvider('originalKeyProvider')]
@@ -465,6 +472,7 @@ final class FallbackFolderServiceTest extends Unit
 
     /**
      * @throws Exception
+     *
      * @dataProvider folderCreationFailureProvider
      */
     #[DataProvider('folderCreationFailureProvider')]
