@@ -233,6 +233,46 @@ final class WorkflowStateServiceTest extends Unit
         $this->assertSame(['open'], $this->getTitles($viewable->getWorkflowStates()));
     }
 
+    public function testShowsNoStatesWhenTheCurrentPlaceDeniesView(): void
+    {
+        $denied = $this->createElement(3);
+        $allowed = $this->createElement(4);
+        $service = $this->createService(
+            ['review' => [
+                'locked' => ['visibleInHeader' => true, 'permissions' => [['view' => false]]],
+                'open' => ['visibleInHeader' => true, 'permissions' => [['publish' => false]]],
+            ]],
+            [
+                3 => [$this->createWorkflow('review', ['locked'])],
+                4 => [$this->createWorkflow('review', ['open'])],
+            ]
+        );
+
+        $service->applyVisibleStates([$denied, $allowed], ElementTypes::TYPE_DATA_OBJECT);
+
+        // the search index allows view for both, only the workflow place denies it
+        $this->assertNull($denied->getWorkflowStates());
+        $this->assertSame(['open'], $this->getTitles($allowed->getWorkflowStates()));
+    }
+
+    public function testKeepsTheStatesWhenTheDenyingPermissionConditionIsNotMet(): void
+    {
+        $element = $this->createElement(3);
+        $service = $this->createService(
+            ['review' => [
+                'locked' => [
+                    'visibleInHeader' => true,
+                    'permissions' => [['condition' => 'is_granted("ROLE_GUEST")', 'view' => false]],
+                ],
+            ]],
+            [3 => [$this->createWorkflow('review', ['locked'])]]
+        );
+
+        $service->applyVisibleStates([$element], ElementTypes::TYPE_DATA_OBJECT);
+
+        $this->assertSame(['locked'], $this->getTitles($element->getWorkflowStates()));
+    }
+
     public function testSkipsAssetFoldersLikeTheEditor(): void
     {
         $folder = $this->createElement(3, 'folder');

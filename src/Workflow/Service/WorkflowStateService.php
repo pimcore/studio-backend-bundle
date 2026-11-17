@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowStatesAwareInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowStatusHydratorInterface;
@@ -26,6 +27,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Workflow\Marking;
 use Symfony\Component\Workflow\WorkflowInterface;
 use function array_fill_keys;
+use function array_merge;
 use function sprintf;
 
 /**
@@ -60,7 +62,10 @@ final readonly class WorkflowStateService implements WorkflowStateServiceInterfa
             $subject = $hasWorkflows
                 ? $this->serviceResolver->getElementById($coreElementType, $element->getId())
                 : null;
-            $element->setWorkflowStates($subject === null ? [] : $this->getVisibleStates($subject));
+            $states = $subject === null ? [] : $this->getVisibleStates($subject);
+            if ($states !== null) {
+                $element->setWorkflowStates($states);
+            }
         }
     }
 
@@ -75,17 +80,22 @@ final readonly class WorkflowStateService implements WorkflowStateServiceInterfa
     }
 
     /**
-     * @return WorkflowStatus[]
+     * @return WorkflowStatus[]|null null when the element's current places deny the view permission
      */
-    private function getVisibleStates(ElementInterface $subject): array
+    private function getVisibleStates(ElementInterface $subject): ?array
     {
         $states = [];
+        $placePermissions = [];
 
         // support strategies and marking stores are project code: one failing element must not break the listing
         try {
             foreach ($this->workflowManager->getAllWorkflowsForSubject($subject) as $workflow) {
                 $marking = $this->getMarking($workflow, $subject);
                 foreach ($this->workflowManager->getOrderedPlaceConfigs($workflow, $marking) as $placeConfig) {
+                    $placePermissions = array_merge(
+                        $placePermissions,
+                        $placeConfig->getUserPermissions($workflow, $subject)
+                    );
                     if ($placeConfig->isVisibleInHeader()) {
                         $states[] = $this->workflowStatusHydrator->hydrate($placeConfig);
                     }
@@ -102,6 +112,12 @@ final readonly class WorkflowStateService implements WorkflowStateServiceInterfa
             );
 
             return [];
+        }
+
+        // the index view flag does not know place permissions; merged as Manager::isDeniedInWorkflow() does,
+        // which cannot be used here because it stores the initial marking
+        if (($placePermissions[ElementPermissions::VIEW_PERMISSION] ?? null) === false) {
+            return null;
         }
 
         return $states;
