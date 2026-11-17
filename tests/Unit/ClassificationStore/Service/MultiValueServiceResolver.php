@@ -46,11 +46,16 @@ final class MultiValueServiceResolver implements ServiceResolverInterface
     public function getFieldDefinitionFromJson(array $definition, string $type): ?Data
     {
         if ($type !== self::MULTI_VALUE_TYPE) {
-            return new Input();
+            $input = new Input();
+            // a stored key definition carries its own name, and the layout reads it for the tooltip
+            $input->setName((string) ($definition['name'] ?? ''));
+
+            return $input;
         }
 
         $multiValue = DeclaredMultiValue::from($definition);
         $multiValue->setVariants($definition['variants'] ?? []);
+        $multiValue->setName((string) ($definition['name'] ?? ''));
 
         return $multiValue;
     }

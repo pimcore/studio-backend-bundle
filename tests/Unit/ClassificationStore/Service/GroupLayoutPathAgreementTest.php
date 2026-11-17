@@ -148,6 +148,41 @@ final class GroupLayoutPathAgreementTest extends Unit
     /**
      * @throws Exception
      */
+    /**
+     * The two members core adds on the object path, {@see Classificationstore::enrichLayoutDefinition()}:
+     * a fallback tooltip of the key's name, with the assignment's description appended where it has
+     * one, and the mandatory flag of the assignment merged into the key's own. The layout endpoint
+     * used to add neither, so replacing an open layout with its answer dropped every help marker and
+     * could let a mandatory key be hidden as empty.
+     */
+    public function testTheLayoutDefinitionCarriesTheFallbackTooltipAndTheAssignmentsMandatoryFlag(): void
+    {
+        $relations = [11 => $this->createRelation(11, self::INPUT_TYPE)];
+        // a stored key definition carries its own name, which is what core reads for the fallback
+        $relations[11]->setDefinition(
+            (string) json_encode(self::INPUT_DEFINITION + ['name' => 'key11'])
+        );
+        $service = $this->createKeyGroupLayoutService(
+            $this->createKeyConfigs($relations),
+            $this->createKeyRelationResolver($relations)
+        );
+
+        $definition = $service->getLayoutDefinition($relations[11], self::FIELD_NAME);
+        $this->assertSame('key11', $definition->getTooltip(), 'the key name stands in as the tooltip');
+        $this->assertFalse($definition->getMandatory(), 'an assignment that is not mandatory leaves it alone');
+
+        $relations[11]->setDescription('Outer diameter');
+        $relations[11]->setMandatory(true);
+
+        $definition = $service->getLayoutDefinition($relations[11], self::FIELD_NAME);
+        $this->assertSame(
+            'key11 - Outer diameter',
+            $definition->getTooltip(),
+            "the assignment's description is appended to the name"
+        );
+        $this->assertTrue($definition->getMandatory(), 'a mandatory assignment makes the key mandatory');
+    }
+
     public function testBothPathsPublishTheSameGroupTitle(): void
     {
         [$groupLayout, $fieldDefinition] = $this->layoutFromBothPaths($this->createTaggedRelations());
