@@ -38,6 +38,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\PqlFilter:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\EmptyFilter:
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
+
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\UserFilter:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 

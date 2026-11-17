@@ -139,6 +139,20 @@ Available filters are:
 |                 workflow                 |              string or null              | place name; omit/`null` = all states of the workflow |      true      |
 
 
+#### Empty / not empty
+
+Any column filter with a `key` can carry an `operator` instead of a value to find elements where the field has no value
+(`empty`) or any value (`notEmpty`). The `filterValue` is not needed and ignored, the `type` of the column still has to
+be sent. This works for every field type that is searchable, including relations, quantity values and image galleries.
+
+| `operator` | Matches                                                          |
+|:----------:|:-----------------------------------------------------------------|
+|  `empty`   | the field has no value (missing, `null`, or an empty string for text fields) |
+| `notEmpty` | the field has any value                                          |
+
+An unknown `operator` or a `key` that is not a plain field name (letters, digits, `_`, `.`) is rejected with HTTP
+status 422.
+
 ### Examples:
 
 Filter by a string column with a wildcard search:
@@ -170,6 +184,19 @@ Rows are returned whose value equals **any** of the values exactly: no wildcards
 The values are trimmed, empty values are ignored and duplicates are removed. A list without values does not filter,
 and at most 1000 values are accepted. Every value must be a string; otherwise (or above the limit) the request is
 rejected with HTTP status 422.
+
+Filter by a relation without a value, e.g. all products without a category:
+```json
+...
+"columnFilters" [
+  {
+    "key": "categories",
+    "type": "dataobject.relation",
+    "operator": "empty"
+  }
+]
+...
+```
 
 Filter by a select column:
 ```json
