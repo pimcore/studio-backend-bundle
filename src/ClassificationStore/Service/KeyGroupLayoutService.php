@@ -167,8 +167,6 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             subGroup: $key->getSubGroup(),
             localized: $this->getKeyLocalized($key->getKeyId()),
             variants: $this->getKeyVariants($key->getKeyId()),
-            multiValue: $this->getKeyMultiValue($key->getKeyId()),
-            maximum: $this->getKeyMaximum($key->getKeyId()),
             defaultVariant: $this->getKeyDefaultVariant($key->getKeyId()),
             defaultVariantLabel: $this->getKeyDefaultVariantLabel($key->getKeyId()),
         );
@@ -219,8 +217,6 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
 
         return new KeyQualifiers(
             variants: $this->resolveVariants($keyConfig),
-            multiValue: $this->keyQualifierResolver->isMultiValue($keyConfig),
-            maximum: $this->keyQualifierResolver->getMaximum($keyConfig),
             defaultVariant: $defaultVariant?->isPermitted(),
             defaultVariantLabel: $defaultVariant?->getLabel(),
         );
@@ -232,22 +228,6 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
     public function getKeyVariants(int $keyId): ?array
     {
         return $this->resolveKeyQualifiers($keyId)?->getVariants();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getKeyMultiValue(int $keyId): ?bool
-    {
-        return $this->resolveKeyQualifiers($keyId)?->getMultiValue();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getKeyMaximum(int $keyId): ?int
-    {
-        return $this->resolveKeyQualifiers($keyId)?->getMaximum();
     }
 
     /**

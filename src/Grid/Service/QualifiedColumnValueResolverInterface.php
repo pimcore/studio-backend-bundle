@@ -29,8 +29,7 @@ interface QualifiedColumnValueResolverInterface
 {
     /**
      * The cell of a column: `$value` as it is where the key declares no qualifiers (or is unknown),
-     * otherwise the one value of the column's variant, or for a repeating key the entry list the
-     * write path reads, so that a cell sent back unchanged keeps every position.
+     * otherwise the one value of the column's variant.
      */
     public function getCellValue(mixed $value, ClassificationStoreConfig $config): mixed;
 
@@ -42,8 +41,8 @@ interface QualifiedColumnValueResolverInterface
     public function declaresQualifiers(ClassificationStoreConfig $config): bool;
 
     /**
-     * The export of a column of a key that declares qualifiers: the values its variant holds, each
-     * formatted by the key's own field definition. A repeating key exports them as a bare JSON array.
+     * The export of a column of a key that declares qualifiers: the one value its variant holds,
+     * formatted by the key's own field definition.
      *
      * @param array<string, mixed> $legacyParameters
      *

@@ -51,8 +51,6 @@ final class MultiValueServiceResolver implements ServiceResolverInterface
 
         $multiValue = DeclaredMultiValue::from($definition);
         $multiValue->setVariants($definition['variants'] ?? []);
-        $multiValue->setMultiValue($definition['multiValue'] ?? false);
-        $multiValue->setMaximum($definition['maximum'] ?? null);
 
         return $multiValue;
     }

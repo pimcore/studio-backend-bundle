@@ -50,13 +50,12 @@ final class KeyDetail implements AdditionalAttributesInterface
             description: 'Definition of the key, reported as it is stored. The member "indexed" is reserved: it is'
                 . ' this key\'s own search index flag, where false asks for the key to be left out of the search'
                 . ' index wherever it is used and anything else leaves it indexed. Studio stores the flag and queues'
-                . ' a remap when it changes; honouring it is the search index\'s own. The members "variants" and'
-                . ' "multiValue" declare something only in the definition of a key of type "multiValue": there,'
-                . ' "variants" is the ordered list of variants the key permits, each a name and an optional label,'
-                . ' "multiValue" is whether the key holds more than one value per variant, and the key carries its'
-                . ' values in the object data payload as a list of entries rather than as a single value, whatever'
-                . ' its variants list holds. In the definition of a key of any other type they are stored and'
-                . ' published as written and declare nothing: such a key carries one value, unchanged.',
+                . ' a remap when it changes; honouring it is the search index\'s own. The member "variants"'
+                . ' declares something only in the definition of a key of type "multiValue": there it is the'
+                . ' ordered list of variants the key permits, each a name and an optional label, the key holds one'
+                . ' value in each of them, and it carries those values in the object data payload as a list of'
+                . ' entries rather than as a single value. In the definition of a key of any other type it is'
+                . ' stored and published as written and declares nothing: such a key carries one value, unchanged.',
             type: 'object',
             nullable: true
         )]

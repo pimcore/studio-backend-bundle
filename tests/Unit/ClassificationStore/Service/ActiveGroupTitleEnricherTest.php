@@ -86,8 +86,6 @@ final class ActiveGroupTitleEnricherTest extends Unit
     /** The members a key publishes about its qualified values, beside its sub group. */
     private const array QUALIFIER_MEMBERS = [
         'variants',
-        'multiValue',
-        'maximum',
         'defaultVariant',
         'defaultVariantLabel',
     ];
@@ -338,7 +336,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
     }
 
     /**
-     * The five members a key declares about its qualified values are published beside the title, off
+     * The three members a key declares about its qualified values are published beside the title, off
      * the key configuration the layout has already loaded, so an already assigned group renders the
      * variant editors the group layout endpoint renders for a freshly added one.
      */
@@ -346,8 +344,6 @@ final class ActiveGroupTitleEnricherTest extends Unit
     {
         $qualifiers = new KeyQualifiers(
             variants: [new VariantLayout('metric', 'Metric'), new VariantLayout('imperial')],
-            multiValue: true,
-            maximum: 3,
             defaultVariant: false,
             defaultVariantLabel: 'Standard',
         );
@@ -362,14 +358,14 @@ final class ActiveGroupTitleEnricherTest extends Unit
         $key = $this->keys($fieldDefinition, self::GROUP_ID)[0];
 
         $this->assertEquals($qualifiers->getVariants(), $key['variants']);
-        $this->assertTrue($key['multiValue']);
-        $this->assertSame(3, $key['maximum']);
+        $this->assertArrayNotHasKey('multiValue', $key);
+        $this->assertArrayNotHasKey('maximum', $key);
         $this->assertFalse($key['defaultVariant']);
         $this->assertSame('Standard', $key['defaultVariantLabel']);
     }
 
     /**
-     * A key whose configuration the layout never cached reports null on all five, rather than the
+     * A key whose configuration the layout never cached reports null on all three, rather than the
      * empty list and false a client would read as a key that permits no variant.
      */
     public function testAKeyWithoutAConfigurationReportsNullOnEveryQualifierMember(): void
@@ -586,7 +582,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
         $keyGroupLayoutService = $this->createMock(KeyGroupLayoutServiceInterface::class);
         $keyGroupLayoutService
             ->method('getKeyQualifiers')
-            ->willReturn($qualifiers ?? new KeyQualifiers(null, null, null, null, null));
+            ->willReturn($qualifiers ?? new KeyQualifiers(null, null, null));
 
         return $keyGroupLayoutService;
     }

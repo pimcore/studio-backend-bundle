@@ -21,13 +21,12 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Exception\UnsupportedEngineFeatureException;
 use function array_filter;
 use function array_is_list;
+use function array_key_first;
 use function array_map;
 use function array_merge;
 use function array_values;
 use function is_array;
-use function is_int;
 use function is_string;
-use function usort;
 
 /**
  * The qualified values of one `multiValue` key in one language: what core's store holds at its
@@ -82,8 +81,8 @@ final readonly class QualifiedValueSerializer implements QualifiedValueSerialize
                 // an engine that cannot address the variant holds nothing there.
                 //
                 // Only a NAMED variant ever reaches this: core asserts the engine's capability for a
-                // variant other than the default one, and for a position above 0, and for nothing
-                // else ({@see Classificationstore::getKeyValues()}), so the default slot - the one
+                // variant other than the default one and for nothing else
+                // ({@see Classificationstore::getKeyValues()}), so the default slot - the one
                 // slot every key has - is either read or it throws below. A read that could not
                 // answer at all is therefore never published as a key holding nothing.
                 continue;
@@ -91,8 +90,9 @@ final readonly class QualifiedValueSerializer implements QualifiedValueSerialize
                 throw new DatabaseException($exception->getMessage(), previous: $exception);
             }
 
-            foreach ($slot as $position => $value) {
-                $values[] = new QualifiedValue($value, $variant, (int) $position);
+            // a variant holds one value, the first its slot lists
+            if ($slot !== []) {
+                $values[] = new QualifiedValue($slot[array_key_first($slot)], $variant);
             }
         }
 
@@ -108,7 +108,7 @@ final readonly class QualifiedValueSerializer implements QualifiedValueSerialize
         $values = $this->readPayload($payload);
 
         foreach ($values as $value) {
-            if ($value->getVariant() === null && $value->getPosition() === self::DEFAULT_POSITION) {
+            if ($value->getVariant() === null) {
                 return $value->getValue();
             }
         }
@@ -126,12 +126,8 @@ final readonly class QualifiedValueSerializer implements QualifiedValueSerialize
             $this->readPayload($payload),
             static fn (QualifiedValue $value): bool => $value->getVariant() === $variant
         );
-        usort(
-            $values,
-            static fn (QualifiedValue $a, QualifiedValue $b): int => $a->getPosition() <=> $b->getPosition()
-        );
 
-        return array_map(static fn (QualifiedValue $value): mixed => $value->getValue(), $values);
+        return array_values(array_map(static fn (QualifiedValue $value): mixed => $value->getValue(), $values));
     }
 
     public function mergeEntries(array $stored, array $supplied): array
@@ -158,10 +154,6 @@ final readonly class QualifiedValueSerializer implements QualifiedValueSerialize
                 $entry[self::VARIANT_MEMBER] = $value->getVariant();
             }
 
-            if ($value->getPosition() !== self::DEFAULT_POSITION) {
-                $entry[self::POSITION_MEMBER] = $value->getPosition();
-            }
-
             $payload[] = $entry;
         }
 
@@ -184,12 +176,10 @@ final readonly class QualifiedValueSerializer implements QualifiedValueSerialize
             }
 
             $variant = $entry[self::VARIANT_MEMBER] ?? null;
-            $position = $entry[self::POSITION_MEMBER] ?? self::DEFAULT_POSITION;
 
             $values[] = new QualifiedValue(
                 $entry[self::VALUE_MEMBER],
-                is_string($variant) && $variant !== '' ? $variant : null,
-                is_int($position) && $position >= self::DEFAULT_POSITION ? $position : self::DEFAULT_POSITION
+                is_string($variant) && $variant !== '' ? $variant : null
             );
         }
 

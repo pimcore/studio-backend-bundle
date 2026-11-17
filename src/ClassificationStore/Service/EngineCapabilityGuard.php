@@ -34,13 +34,6 @@ final readonly class EngineCapabilityGuard implements EngineCapabilityGuardInter
             $reported,
             'a variant other than the default one'
         );
-
-        $this->assertFeature(
-            $this->needsMultiValue($values),
-            StoreEngineResolverInterface::FEATURE_MULTI_VALUE,
-            $reported,
-            'more than one value per variant'
-        );
     }
 
     /**
@@ -67,24 +60,6 @@ final readonly class EngineCapabilityGuard implements EngineCapabilityGuardInter
     {
         foreach ($values as $value) {
             if ($value->getVariant() !== null) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * A position other than the first, which is what a repeatable key holds a second value at.
-     * Two values of two different variants both sit at position 0 and need `Variants` instead, so
-     * the length of the list is not what decides here.
-     *
-     * @param QualifiedValue[] $values
-     */
-    private function needsMultiValue(array $values): bool
-    {
-        foreach ($values as $value) {
-            if ($value->getPosition() !== QualifiedValueSerializerInterface::DEFAULT_POSITION) {
                 return true;
             }
         }

@@ -71,22 +71,6 @@ final readonly class KeyLayout
         )]
         private ?array $variants = null,
         #[Property(
-            description: 'Whether a key of type `multiValue` holds more than one value per variant; null for a key'
-                . ' of any other type.',
-            type: 'boolean',
-            example: true,
-            nullable: true
-        )]
-        private ?bool $multiValue = null,
-        #[Property(
-            description: 'How many values one slot of a key of type `multiValue` may hold; null where it declares no'
-                . ' limit and for a key of any other type. It is published, not enforced by this endpoint.',
-            type: 'integer',
-            example: 3,
-            nullable: true
-        )]
-        private ?int $maximum = null,
-        #[Property(
             description: 'Whether a key of type `multiValue` permits a value carrying no variant; null for a key of'
                 . ' any other type. It is published, not enforced by this endpoint.',
             type: 'boolean',
@@ -143,16 +127,6 @@ final readonly class KeyLayout
     public function getVariants(): ?array
     {
         return $this->variants;
-    }
-
-    public function getMultiValue(): ?bool
-    {
-        return $this->multiValue;
-    }
-
-    public function getMaximum(): ?int
-    {
-        return $this->maximum;
     }
 
     public function getDefaultVariant(): ?bool

@@ -262,8 +262,8 @@ final class PatchServiceTest extends Unit
     {
         $service = $this->createService(static function (): void {
             throw new InvalidArgumentException(
-                'The key does not declare that it holds more than one value per variant.',
-                errorKey: HttpResponseErrorKeys::KEY_NOT_REPEATABLE->value
+                'The value names a variant the key does not declare.',
+                errorKey: HttpResponseErrorKeys::UNDECLARED_VARIANT->value
             );
         });
 
@@ -272,7 +272,7 @@ final class PatchServiceTest extends Unit
             $this->fail('Expected the refusal to reach the caller');
         } catch (InvalidArgumentException $exception) {
             $this->assertSame(HttpResponseCodes::UNPROCESSABLE_CONTENT->value, $exception->getStatusCode());
-            $this->assertSame(HttpResponseErrorKeys::KEY_NOT_REPEATABLE->value, $exception->getErrorKey());
+            $this->assertSame(HttpResponseErrorKeys::UNDECLARED_VARIANT->value, $exception->getErrorKey());
         }
     }
 
