@@ -122,16 +122,37 @@ final class StoreCreationEngineTest extends Unit
     }
 
     /**
-     * Runs the call and swallows whatever the save fails with: there is no database in this suite,
-     * so every one of these paths fails at `StoreConfig::save()` - after the engine decision, which
-     * is the thing under test.
+     * Runs the call and swallows the save failing: there is no database in this suite, so every
+     * one of these paths fails at `StoreConfig::save()` - after the engine decision, which is the
+     * thing under test.
+     *
+     * Only what the save raises is swallowed. The absent connection surfaces as an `Error` rather
+     * than an `Exception`, so catching by type would either let the save through or hide an
+     * `Error` from the engine decision itself, which these tests would then pass without noticing.
      */
     private function swallowTheSave(callable $call): void
     {
         try {
             $call();
-        } catch (Throwable) {
-            // the save is not what this asserts
+        } catch (Throwable $throwable) {
+            if (!$this->raisedByTheSave($throwable)) {
+                throw $throwable;
+            }
         }
+    }
+
+    /**
+     * Whether the save is on the way down to where this was raised, which is what makes it the
+     * absent database rather than the code under test.
+     */
+    private function raisedByTheSave(Throwable $throwable): bool
+    {
+        foreach ($throwable->getTrace() as $frame) {
+            if (($frame['class'] ?? null) === StoreConfig::class && ($frame['function'] ?? null) === 'save') {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -41,6 +41,8 @@ final class KeyTypeEngineFitResolverTest extends Unit
 
     private const string INPUT = 'input';
 
+    private const string DOCUMENT = 'document';
+
     public function testAStructuredTypeIsRefusedByAnEngineWithoutTheCapability(): void
     {
         $this->assertSame(self::EAV, $this->createResolver(false)->findRefusingEngine('geopoint', null, null));
@@ -118,7 +120,7 @@ final class KeyTypeEngineFitResolverTest extends Unit
             ['engine' => self::EAV, 'capabilities' => ['MultiValue', 'Variants']],
             $resolver->findEngineRefusingDeclaration(
                 self::MULTI_VALUE,
-                ['delegateDatatype' => self::INPUT, 'variants' => [['name' => 'Metric']]],
+                $this->declarationWithAVariant(),
                 null
             )
         );
@@ -138,7 +140,7 @@ final class KeyTypeEngineFitResolverTest extends Unit
      */
     public function testAnEngineOfferingTheCapabilitiesRefusesTheSameDeclarationNotAtAll(): void
     {
-        $declaration = ['delegateDatatype' => self::INPUT, 'variants' => [['name' => 'Metric']]];
+        $declaration = $this->declarationWithAVariant();
 
         $this->assertNull(
             $this->createQualifyingResolver()->findEngineRefusingDeclaration(self::MULTI_VALUE, $declaration, null)
@@ -152,6 +154,68 @@ final class KeyTypeEngineFitResolverTest extends Unit
         $resolver = new KeyTypeEngineFitResolver($this->createSupport(), null);
 
         $this->assertNull($resolver->findEngineRefusingDeclaration(self::MULTI_VALUE, [], null));
+    }
+
+    /**
+     * A store that does not exist yet is judged against the engine it would be created on. This is
+     * the dry run of an import that creates the store: it records the store as created without
+     * writing a row, so the keys that follow are asked about with no store id, and the default
+     * engine would refuse a declaration the apply then accepts on the preferred one.
+     */
+    public function testAStoreNotCreatedYetIsJudgedAgainstThePreferredEngine(): void
+    {
+        $declaration = $this->declarationWithAVariant();
+
+        $this->assertNull(
+            $this->createResolverOverBothEngines()->findEngineRefusingDeclaration(
+                self::MULTI_VALUE,
+                $declaration,
+                null
+            ),
+            'the preferred engine offers the capabilities, so nothing is refused'
+        );
+        $this->assertNull($this->createResolverOverBothEngines()->findRefusingEngine('geopoint', null, null));
+    }
+
+    /**
+     * The control for the test above, on the same declaration and the same null store id: an
+     * installation that registers no preferred engine creates the store on the default one, and
+     * there the declaration is refused. The registered engines are the only difference.
+     */
+    public function testAStoreNotCreatedYetFallsBackToTheDefaultEngineWhereNoneIsPreferred(): void
+    {
+        $declaration = $this->declarationWithAVariant();
+
+        $this->assertSame(
+            ['engine' => self::EAV, 'capabilities' => ['MultiValue', 'Variants']],
+            $this->createResolver(false)->findEngineRefusingDeclaration(self::MULTI_VALUE, $declaration, null)
+        );
+    }
+
+    /**
+     * A `multiValue` declaration naming one variant, which needs both capabilities of an engine:
+     * `MultiValue` for the type and `Variants` for the variant it names.
+     *
+     * @return array<string, mixed>
+     */
+    private function declarationWithAVariant(): array
+    {
+        return ['delegateDatatype' => self::INPUT, 'variants' => [['name' => 'Metric']]];
+    }
+
+    /**
+     * Both engines registered under the names core resolves them by: a refusing one as the default
+     * and a qualifying one as the preferred, which is the shape of a real installation.
+     */
+    private function createResolverOverBothEngines(): KeyTypeEngineFitResolver
+    {
+        return new KeyTypeEngineFitResolver(
+            $this->createSupport(),
+            new EngineResolver([
+                self::EAV => $this->makeEmpty(EngineInterface::class, ['supports' => false]),
+                self::DOCUMENT => $this->makeEmpty(EngineInterface::class, ['supports' => true]),
+            ])
+        );
     }
 
     private function createResolver(bool $structured): KeyTypeEngineFitResolver

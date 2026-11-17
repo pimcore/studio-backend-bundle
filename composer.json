@@ -24,7 +24,7 @@
     "nesbot/carbon": "^3.10.0",
     "pimcore/static-resolver-bundle": "^2026.2.0",
     "pimcore/generic-data-index-bundle": "dev-cs-store-improvements as 2026.99.9",
-    "pimcore/pimcore": "dev-cs-store-improvements as 2026.99.9",
+    "pimcore/pimcore": "dev-cs-store-engine-and-variant-gate as 2026.99.9",
     "zircote/swagger-php": "^5.0.2 || ^6.0 || ^7.2",
     "ext-zip": "*",
     "symfony/mercure": "^0.6.5",

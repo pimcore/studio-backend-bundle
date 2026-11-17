@@ -35,6 +35,12 @@ final readonly class KeyTypeEngineFitResolver implements KeyTypeEngineFitResolve
      */
     private const string DECLARATION_PROBE = 'requiredEngineFeatures';
 
+    /**
+     * Core's answer to the engine a store being created is put on, asked by name for the same
+     * reason {@see self::DECLARATION_PROBE} is.
+     */
+    private const string PREFERRED_ENGINE_PROBE = 'getPreferredEngine';
+
     public function __construct(
         private ?KeyTypeSupport $keyTypeSupport = null,
         private ?EngineResolver $engineResolver = null,
@@ -144,10 +150,26 @@ final readonly class KeyTypeEngineFitResolver implements KeyTypeEngineFitResolve
 
         try {
             return $storeId === null
-                ? $this->engineResolver->getDefaultEngine()
+                ? $this->engineOfAStoreNotCreatedYet($this->engineResolver)
                 : $this->engineResolver->resolveForStore($storeId);
         } catch (UnknownClassificationStoreEngineException | ClassificationStoreEngineNotAvailableException) {
             return null;
         }
+    }
+
+    /**
+     * The engine a store that does not exist yet would be created on, which is the preferred one
+     * and not the default one: a dry run reaches this with no store id because the store it reports
+     * as created has no row, and judging its keys against the default engine would refuse what the
+     * real apply then accepts. The default engine only where core registers no preferred one, which
+     * is also the engine such an installation creates the store on.
+     */
+    private function engineOfAStoreNotCreatedYet(EngineResolver $engineResolver): EngineInterface
+    {
+        if (!$this->declaresMethod($engineResolver, self::PREFERRED_ENGINE_PROBE)) {
+            return $engineResolver->getDefaultEngine();
+        }
+
+        return $engineResolver->{self::PREFERRED_ENGINE_PROBE}() ?? $engineResolver->getDefaultEngine();
     }
 }
