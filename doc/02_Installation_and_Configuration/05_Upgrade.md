@@ -40,6 +40,12 @@ The following steps are necessary during updating to newer versions.
   - `User::getById()` returns the `User` for a service-user id as for any user id, with `isServiceUser()` true. Code that
     assumes an id always names a human must call `isServiceUser()` first.
 - [Service Users] MCP server sharing: a service user's entry in `access.shared_users` is stored with `canRead` and `canEdit` false, whatever the client sent; `canAccess` is kept as sent. See [MCP Server Management](../04_Development_Details/09_MCP_Server_Management.md#access-and-sharing).
+- [Service Users] Added: the service-user schema carries `responsibleUsers` and `responsibleRoles` (lists of ids, the
+  people and the roles who answer for the service user), and `POST /service-user` and `PUT /service-user/{id}` accept
+  both as optional lists. On create a missing list means none; on update a missing (or `null`) list keeps the stored
+  values and an empty list clears them. An unknown user or role id answers `404`; a
+  service-user id in `responsibleUsers` answers `422`. Needs `pimcore/pimcore` with `User::getResponsibleUsers()` and
+  `getResponsibleRoles()`. Additive; no endpoint or permission changes.
 - [Service Users] Added: the service-user schema (`GET /pimcore-studio/api/service-users` and
   `/service-user/{id}`, and the responses that return it) carries `clientCredentialsEnabled` (whether the OAuth
   `client_credentials` grant is on) and `mcpTokens` (`active`, `latestExpiresAt`; a summary of the MCP access tokens,
@@ -102,10 +108,22 @@ The following steps are necessary during updating to newer versions.
   `ScoreAwareInterface` (`getScore()`/`setScore()`); subclasses that already declare these methods must match the
   new signatures.
 
+- [Grid] Changed: the data object `available-columns` response
+  (`GET /pimcore-studio/api/data-object/grid/available-columns`) now reports relation (`manyToOneRelation`,
+  `manyToManyRelation`, `manyToManyObjectRelation`, `advancedManyToManyRelation`, `advancedManyToManyObjectRelation`),
+  `image`, `imageGallery`, `geopoint` and `quantityValue` columns as `filterable: true`; they were `false`. These
+  fields can now be added in the listing's filter panel. Relations and quantity values show a value filter that
+  already existed but was never reachable; image, image gallery and geo point fields can only be searched for "no
+  value" or "any value" with the new `operator` of a column filter (see `doc/01_Architecture_Overview/01_Grid.md`).
+  This is additive and intended, but an API client that treated `filterable: false` as "never filterable" will see a
+  difference for these fields.
+
 - [OpenAPI] Improved: `zircote/swagger-php` 6.x is now supported (`^5.0 || ^6.0`); the previous `>=5.6` conflict was removed. The generated Studio OpenAPI document is unchanged.
 
 > **Note:** since swagger-php 5.6 an explicit `type:` or `ref:` on a `#[Property]` attribute no longer inherits the nullability of the PHP parameter it annotates. A property such as `#[Property(type: 'string')] private ?string $title` is emitted as `"type": "string"` instead of `"type": ["string", "null"]` once an installation resolves swagger-php >= 5.6. All Studio schemas now declare `nullable: true` explicitly. Bundles that register their own `open_api_scan_paths` must do the same for every PHP-nullable (or `mixed`) parameter whose attribute sets `type:` or `ref:`, otherwise their schemas silently lose `null` in the generated document and in clients generated from it. Properties without an explicit `type:` are not affected. The static `OpenApi\Generator::scan()` was removed in swagger-php 6.0; `OpenApiService` now uses `(new Generator())->generate()`.
 
+- [Recycle Bin] Changed: restoring an element whose parent no longer exists puts it into a `/__restored` folder of
+  its element type at the root, created on demand, instead of failing. A taken key gets a number (`_1`, `_2`, ...).
 - [Security] Added: two-factor authentication for the Studio login (authenticator app codes). See
   [Two-Factor Authentication](./07_Two_Factor_Authentication.md).
   - New configuration: `pimcore_studio_backend.two_factor_authentication.issuer` (default `Pimcore`) and

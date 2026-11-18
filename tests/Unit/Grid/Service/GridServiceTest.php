@@ -1053,6 +1053,7 @@ final class GridServiceTest extends Unit
     public static function malformedColumnProvider(): array
     {
         return [
+            'null type (PEES-1995)' => [['type' => null]],
             'non numeric width' => [['width' => 'abc']],
             'non array group' => [['group' => 'data_object']],
         ];

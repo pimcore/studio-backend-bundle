@@ -17,6 +17,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentResolverInterfac
 use Pimcore\Bundle\StudioBackendBundle\Email\Event\PreResponse\EmailLogEntryDetailEvent;
 use Pimcore\Bundle\StudioBackendBundle\Email\Event\PreResponse\EmailLogEntryEvent;
 use Pimcore\Bundle\StudioBackendBundle\Email\Event\PreResponse\EmailLogEntryParamsEvent;
+use Pimcore\Bundle\StudioBackendBundle\Email\MappedParameter\EmailLogParameters;
 use Pimcore\Bundle\StudioBackendBundle\Email\Repository\EmailLogRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntry;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntryDetail;
@@ -26,7 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\Email\Util\Trait\EmailLogFieldTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -62,7 +62,7 @@ final readonly class EmailLogService implements EmailLogServiceInterface
     ) {
     }
 
-    public function listEntries(CollectionParameters $parameters): Collection
+    public function listEntries(EmailLogParameters $parameters): Collection
     {
         $list = [];
         $listing = $this->emailLogRepository->getListing($parameters);

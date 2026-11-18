@@ -14,6 +14,7 @@ studio_ee_csv_creation_failed: 'La exportación CSV falló: %message%'
 studio_ee_xlsx_creation_failed: 'La exportación XLSX falló: %message%'
 studio_ee_recycle_bin_delete_failed: 'El elemento con ID %id% no se pudo eliminar de la papelera de reciclaje: %message%'
 studio_ee_recycle_bin_restore_failed: 'El elemento de la papelera de reciclaje con ID %id% no se pudo restaurar: %message%'
+studio_ee_recycle_bin_restore_relocated: El elemento de tipo %type% con ID %id% se restauró en %path% porque su elemento padre ya no existe
 studio_ee_csv_data_collection_failed: 'Los datos para la exportación CSV no se pudieron extraer para %id%: %message%'
 studio_ee_element_patch_failed: 'El elemento de tipo %type% con ID %id% no se pudo actualizar: %message%'
 studio_ee_element_rewrite_references_failed: 'Las referencias del elemento de tipo %type% con ID %id% no se pudieron reescribir: %message%'

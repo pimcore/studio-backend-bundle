@@ -39,7 +39,8 @@ final readonly class Filter
         #[Property(
             description: 'Column Filter',
             type: 'object',
-            example: '[{"key":"name","type": "metadata.object","filterValue": 1, "locale":"de"}]'
+            example: '[{"key":"name","type": "metadata.object","filterValue": 1, "locale":"de"},'
+                . '{"key":"category","type": "dataobject.relation","operator": "empty"}]'
         )]
         private array $columnFilters = [],
         #[Property(
