@@ -43,7 +43,7 @@ final readonly class ObjectDependenciesService implements ObjectDependenciesServ
             throw new InvalidFilterException(sprintf('pageSize must not exceed %d', self::MAX_PAGE_SIZE));
         }
 
-        $targetUser = $this->userRepository->getUserById($userId);
+        $targetUser = $this->userRepository->getPersonById($userId);
 
         if ($targetUser->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
             throw new ForbiddenException('Only admins can view other admins');

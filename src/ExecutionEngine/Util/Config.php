@@ -29,6 +29,8 @@ enum Config: string
     case ELEMENT_BATCH_DELETE_FAILED_MESSAGE = 'studio_ee_element_batch_delete_failed';
     case ZIP_FILE_COPY_FAILED_MESSAGE = 'studio_ee_zip_file_copy_failed';
     case ZIP_FILE_UPLOAD_FAILED_MESSAGE = 'studio_ee_zip_file_upload_failed';
+    case ZIP_ASSET_BINARY_MISSING_MESSAGE = 'studio_ee_zip_asset_binary_missing';
+    case ZIP_NO_ASSET_BINARIES_FOUND_MESSAGE = 'studio_ee_zip_no_asset_binaries_found';
     case ZIP_CLEANUP_FAILED_MESSAGE = 'studio_ee_zip_cleanup_failed';
     case CSV_CREATION_FAILED_MESSAGE = 'studio_ee_csv_creation_failed';
     case CSV_DATA_COLLECTION_FAILED_MESSAGE = 'studio_ee_csv_data_collection_failed';
@@ -44,6 +46,7 @@ enum Config: string
     case XLSX_CREATION_FAILED_MESSAGE = 'studio_ee_xlsx_creation_failed';
     case RECYCLE_BIN_DELETE_FAILED = 'studio_ee_recycle_bin_delete_failed';
     case RECYCLE_BIN_RESTORE_FAILED = 'studio_ee_recycle_bin_restore_failed';
+    case RECYCLE_BIN_RESTORE_RELOCATED = 'studio_ee_recycle_bin_restore_relocated';
     case ELEMENT_REPLACE_ASSIGNMENT_FAILED = 'studio_ee_element_replace_assignment_failed';
     case BULK_IMPORT_FAILED_MESSAGE = 'studio_ee_bulk_import_failed';
     case OWNERSHIP_MANAGEMENT_REASSIGN_FAILED = 'studio_ee_ownership_management_reassign_failed';

@@ -17,9 +17,12 @@ use Mcp\Server\Transport\Http\Middleware\CorsMiddleware;
 use Mcp\Server\Transport\Http\Middleware\ProtocolVersionMiddleware;
 use Mcp\Server\Transport\StreamableHttpTransport;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Exception\InsufficientMcpScopeException;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpScopes;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerCapability;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpToolCallScopeGuardInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Server\McpServerFactoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -30,9 +33,17 @@ use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use function array_filter;
+use function array_values;
+use function is_array;
+use function is_resource;
+use function is_string;
 use function sprintf;
+use function stream_get_contents;
+use function strlen;
 
 /**
  * Serves a configured MCP server over HTTP at /pimcore-mcp/studio/{server}, under
@@ -48,10 +59,13 @@ use function sprintf;
 #[IsGranted('ROLE_PIMCORE_USER')]
 final readonly class McpServerController
 {
+    private const int MAX_BODY_BYTES = 4 * 1024 * 1024;
+
     public function __construct(
         private McpServerConfigRepositoryInterface $serverRepository,
         private McpServerFactoryInterface $serverFactory,
         private McpServerAccessResolverInterface $accessResolver,
+        private McpToolCallScopeGuardInterface $scopeGuard,
         private SecurityServiceInterface $securityService,
         private HttpMessageFactoryInterface $httpMessageFactory,
         private HttpFoundationFactoryInterface $httpFoundationFactory,
@@ -76,6 +90,16 @@ final readonly class McpServerController
             );
         }
 
+        $scopes = $this->tokenScopes($request);
+
+        try {
+            if ($this->scopeGuard->limits($scopes)) {
+                $this->scopeGuard->assertAllowed($this->boundedBody($request), $scopes);
+            }
+        } catch (InsufficientMcpScopeException $exception) {
+            throw new AccessDeniedHttpException($exception->getMessage(), $exception);
+        }
+
         // An explicit middleware stack is passed because the SDK's default also installs
         // DnsRebindingProtectionMiddleware, which literally matches Host/Origin against
         // {localhost, 127.0.0.1, [::1]} and 403s anything else — incompatible with a
@@ -95,6 +119,33 @@ final readonly class McpServerController
         $response = $this->serverFactory->createServer($definition)->run($transport);
 
         return $this->httpFoundationFactory->createResponse($response);
+    }
+
+    /**
+     * Reads at most the transport's body limit, so a limited token cannot make the check itself allocate an
+     * unbounded payload; a larger body is answered with 413 like the transport does.
+     */
+    private function boundedBody(Request $request): string
+    {
+        $stream = $request->getContent(true);
+        $body = is_resource($stream) ? stream_get_contents($stream, self::MAX_BODY_BYTES + 1) : $stream;
+        $body = is_string($body) ? $body : '';
+
+        if (strlen($body) > self::MAX_BODY_BYTES) {
+            throw new HttpException(Response::HTTP_REQUEST_ENTITY_TOO_LARGE, 'The request body is too large.');
+        }
+
+        return $body;
+    }
+
+    /**
+     * @return list<string>|null null when the credential is not an OAuth token or carries no scopes
+     */
+    private function tokenScopes(Request $request): ?array
+    {
+        $scopes = $request->attributes->get(McpScopes::REQUEST_ATTRIBUTE);
+
+        return is_array($scopes) ? array_values(array_filter($scopes, is_string(...))) : null;
     }
 
     private function resolveServer(string $slug): McpServerDefinition

@@ -26,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Me
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetInfo;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -36,6 +35,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementSaveExceptionTrait;
 use Pimcore\Helper\MimeTypeHelper;
 use Pimcore\Model\Asset\Folder;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -50,6 +50,8 @@ use function sprintf;
  */
 final readonly class UploadService implements UploadServiceInterface
 {
+    use ElementSaveExceptionTrait;
+
     public function __construct(
         private AssetServiceInterface $assetService,
         private AssetResolverInterface $assetResolver,
@@ -85,7 +87,6 @@ final readonly class UploadService implements UploadServiceInterface
     }
 
     /**
-     * @throws DatabaseException
      * @throws EnvironmentException
      * @throws FilesystemException
      * @throws ForbiddenException
@@ -170,7 +171,6 @@ final readonly class UploadService implements UploadServiceInterface
     }
 
     /**
-     * @throws DatabaseException
      * @throws EnvironmentException
      * @throws ForbiddenException
      * @throws NotFoundException
@@ -207,7 +207,7 @@ final readonly class UploadService implements UploadServiceInterface
 
             return $newFileName;
         } catch (Exception $e) {
-            throw new DatabaseException($e->getMessage());
+            $this->throwElementSaveException($e);
         } finally {
             @unlink($sourcePath);
         }
@@ -255,7 +255,6 @@ final readonly class UploadService implements UploadServiceInterface
     }
 
     /**
-     * @throws DatabaseException
      * @throws EnvironmentException
      */
     private function uploadAssetLocally(
@@ -271,7 +270,7 @@ final readonly class UploadService implements UploadServiceInterface
                 $assetParams
             );
         } catch (Exception $e) {
-            throw new DatabaseException($e->getMessage());
+            $this->throwElementSaveException($e);
         } finally {
             @unlink($sourcePath);
         }

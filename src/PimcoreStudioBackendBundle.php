@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\Notifica
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\OAuthProtectedResourceProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PatchAdapterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PhpCodeTransformerPass;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\SessionAccessPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\SettingsProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\TransformerPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\UpdateAdapterPass;
@@ -89,6 +90,7 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
         $container->addCompilerPass(new DataIndexFilterPass());
         $container->addCompilerPass(new ListingFilterPass());
         $container->addCompilerPass(new PatchAdapterPass());
+        $container->addCompilerPass(new SessionAccessPass());
         $container->addCompilerPass(new FilterMapperPass());
         $container->addCompilerPass(new GridColumnDefinitionPass());
         $container->addCompilerPass(new GridColumnResolverPass());

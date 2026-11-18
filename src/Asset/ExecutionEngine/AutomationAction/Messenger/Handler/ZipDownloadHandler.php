@@ -81,6 +81,7 @@ final class ZipDownloadHandler extends AbstractHandler
             true
         );
 
+        $addedCount = 0;
         foreach ($assetIds as $assetId) {
             if (!$this->shouldBeExecuted($jobRun)) {
                 return;
@@ -105,7 +106,18 @@ final class ZipDownloadHandler extends AbstractHandler
                 return;
             }
 
-            $this->zipService->addFile($archive, $asset, $basePath);
+            if ($this->zipService->addFile($archive, $asset, $basePath)) {
+                $addedCount++;
+            } else {
+                $this->logMessageToJobRun(
+                    $jobRun,
+                    Config::ZIP_ASSET_BINARY_MISSING_MESSAGE->value,
+                    [
+                        '%id%' => $asset->getId(),
+                        '%path%' => $asset->getRealFullPath(),
+                    ]
+                );
+            }
 
             $this->updateProgress(
                 $this->publishService,
@@ -114,6 +126,15 @@ final class ZipDownloadHandler extends AbstractHandler
                 $this->getJobStep($message)->getName(),
                 $assetCount + 1
             );
+        }
+
+        if ($addedCount === 0) {
+            $this->abort($this->getAbortData(
+                Config::ZIP_NO_ASSET_BINARIES_FOUND_MESSAGE->value,
+                [
+                    'jobRunId' => $jobRunId,
+                ]
+            ));
         }
 
         $archive->close();

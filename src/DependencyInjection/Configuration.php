@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
@@ -109,6 +110,7 @@ class Configuration implements ConfigurationInterface
         $this->addRecycleBinThreshold($rootNode);
         $this->addMercureConfiguration($rootNode);
         $this->addAssetDownloadLimits($rootNode);
+        $this->addAssetTextSettings($rootNode);
         $this->addCsvSettings($rootNode);
         $this->addGridConfiguration($rootNode);
         $this->addSearchGridConfiguration($rootNode);
@@ -334,11 +336,12 @@ class Configuration implements ConfigurationInterface
                 ->children()
                     ->scalarNode('hub_url_server')
                         ->info(
-                            'The url to the mercure hub for the server.' .
-                            'This can also be the docker container name '.
-                            '(e.g., http://mercure/.well-known/mercure). ' .
-                            'If it is not set, default will be set to ' .
-                            '"http(s)://<YOUR_PIMCORE_MAIN_DOMAIN>/hub/.well-known/mercure".'
+                            'The url to the mercure hub for the server. ' .
+                            'This setting must be set and has no default, because the server url ' .
+                            'cannot be derived from the browser request. ' .
+                            'It is not checked at boot; when it is empty, no updates are published. ' .
+                            'This can also be the docker container name ' .
+                            '(e.g., http://mercure/.well-known/mercure).'
                         )
                         ->defaultNull()
                     ->end()
@@ -385,6 +388,21 @@ class Configuration implements ConfigurationInterface
                     ->integerNode(DownloadLimits::MAX_ZIP_FILE_AMOUNT->value)
                         ->info('The maximum amount of assets that can be downloaded at once.')
                         ->defaultValue(1000)
+                    ->end()
+                ->end()
+            ->end();
+    }
+
+    private function addAssetTextSettings(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('asset_text_settings')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->integerNode('max_file_size')
+                        ->info('The maximum size in bytes of a text asset that Studio loads for preview and editing.')
+                        ->defaultValue(TextEncoderInterface::DEFAULT_MAX_FILE_SIZE)
+                        ->min(1)
                     ->end()
                 ->end()
             ->end();
@@ -822,6 +840,13 @@ class Configuration implements ConfigurationInterface
                                     'Map of Pimcore username to bearer token list. '
                                     . 'Tokens can reference env vars: \'%%env(MY_TOKEN)%%\'.'
                                 )
+                                ->setDeprecated(
+                                    'pimcore/studio-backend-bundle',
+                                    '2026.4',
+                                    'Static MCP personal access tokens are deprecated and will be removed in 2027.1. '
+                                    . 'Use OAuth (authorization_code for people, client_credentials for service users) '
+                                    . 'or MCP access tokens.'
+                                )
                                 ->useAttributeAsKey('username')
                                 ->arrayPrototype()
                                     ->scalarPrototype()->end()
@@ -1006,6 +1031,7 @@ class Configuration implements ConfigurationInterface
                         ->scalarPrototype()->end()
                         ->defaultValue([])
                     ->end()
+                    ->append($this->addOAuthClientCredentialsNode())
                     ->append($this->addOAuthClientIdMetadataDocumentsNode())
                     ->append($this->addOAuthDynamicClientRegistrationNode())
                     ->arrayNode('keys')
@@ -1114,6 +1140,31 @@ class Configuration implements ConfigurationInterface
         }
 
         return false;
+    }
+
+    private function addOAuthClientCredentialsNode(): ArrayNodeDefinition
+    {
+        $node = (new TreeBuilder('client_credentials'))->getRootNode();
+        $node
+            ->addDefaultsIfNotSet()
+            ->info(
+                'OAuth client_credentials grant for confidential clients bound to a service user. '
+                . 'The token is issued for the bound service user, without a refresh token. '
+                . 'Dynamically registered and CIMD clients never get this grant. Opt-in; default off.'
+            )
+            ->children()
+                ->booleanNode('enabled')
+                    ->info('Enable the grant at the token endpoint and advertise it in metadata.')
+                    ->defaultFalse()
+                ->end()
+                ->integerNode('access_token_ttl')
+                    ->info('Access-token lifetime in seconds for this grant. Keep it short.')
+                    ->min(60)
+                    ->defaultValue(900)
+                ->end()
+            ->end();
+
+        return $node;
     }
 
     private function addOAuthClientIdMetadataDocumentsNode(): ArrayNodeDefinition
@@ -1332,7 +1383,7 @@ class Configuration implements ConfigurationInterface
                         ->defaultValue('Pimcore')
                     ->end()
                     ->scalarNode('server_name')
-                        ->info('Server name in the authenticator app. Defaults to the router\'s request context host.')
+                        ->info('Server name in the authenticator app. Defaults to the main domain, if set.')
                         ->defaultNull()
                     ->end()
                 ->end()

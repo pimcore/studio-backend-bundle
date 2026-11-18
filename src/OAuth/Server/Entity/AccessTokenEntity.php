@@ -103,9 +103,18 @@ final class AccessTokenEntity implements AccessTokenEntityInterface
         return $builder->getToken($configuration->signer(), $configuration->signingKey())->toString();
     }
 
+    /**
+     * A client bound to a service user acts as that service user and nobody else, so its
+     * subject is the bound id: never the client id, and never another user identifier.
+     */
     private function getSubjectIdentifier(): string
     {
-        return $this->getUserIdentifier() ?? $this->getClient()->getIdentifier();
+        $client = $this->getClient();
+        if ($client instanceof ClientEntity && $client->getServiceUserId() !== null) {
+            return (string) $client->getServiceUserId();
+        }
+
+        return $this->getUserIdentifier() ?? $client->getIdentifier();
     }
 
     private function getScopeString(): string

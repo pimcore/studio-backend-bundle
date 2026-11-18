@@ -29,3 +29,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver\FieldCollectionResolver:
     tags: [ 'pimcore.studio_backend.field_definition_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver\ClassificationStoreResolver:
+    tags: [ 'pimcore.studio_backend.field_definition_resolver' ]

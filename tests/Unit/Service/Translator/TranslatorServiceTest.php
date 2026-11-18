@@ -24,12 +24,15 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translations;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
 use Pimcore\Config;
+use Pimcore\Model\Translation as TranslationModel;
 use Pimcore\Model\Translation\Listing;
 use Pimcore\Model\UserInterface;
 use Pimcore\Translation\Translator;
@@ -96,6 +99,24 @@ final class TranslatorServiceTest extends Unit
             'two-factor-setup-form.confirm',
             'two-factor-setup-form.load-error',
             'two-factor-setup-form.expired',
+        ] as $key) {
+            $this->assertArrayHasKey($key, $keys);
+        }
+    }
+
+    /**
+     * Maintenance mode can start while the login page is open, so its notice can show before the login.
+     */
+    public function testMaintenanceModeNoticeKeysArePublic(): void
+    {
+        $translatorService = $this->mockTranslatorService(false);
+
+        $keys = $translatorService->getAllTranslationsByLocale('en', true)->getKeys();
+
+        foreach ([
+            'maintenance-mode.locked-out.title',
+            'maintenance-mode.locked-out.text',
+            'maintenance-mode.locked-out.reload',
         ] as $key) {
             $this->assertArrayHasKey($key, $keys);
         }
@@ -170,6 +191,53 @@ final class TranslatorServiceTest extends Unit
         $parameter = new CollectionFilterParameter($filterParameter);
 
         $this->assertSame($listing, $translatorService->getTranslationList('messages', $parameter));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testListTranslationsOnlyReturnsAllowedLanguages(): void
+    {
+        $user = $this->makeEmpty(UserInterface::class);
+
+        $translation = new TranslationModel();
+        $translation->setKey('pme_key');
+        $translation->setType('simple');
+        $translation->setTranslations(['en' => 'Car', 'de' => 'Auto', 'cs' => 'Auto cs', 'fr_BE' => 'Voiture']);
+
+        $listing = $this->createMock(Listing::class);
+        $listing->method('getTranslations')->willReturn([$translation]);
+        $listing->method('count')->willReturn(1);
+
+        $repository = $this->createMock(TranslationRepositoryInterface::class);
+        $repository->method('getTranslationList')->willReturn($listing);
+
+        $translatorService = $this->mockTranslatorService(
+            repository: $repository,
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'isLoggedIn' => true,
+                'getCurrentUser' => $user,
+            ]),
+            languageService: $this->makeEmpty(LanguageServiceInterface::class, [
+                'getTranslationAllowedLanguages' => ['en', 'fr_BE'],
+            ]),
+            translationsHydrator: new class implements TranslationsHydratorInterface {
+                public function hydrate(TranslationModel $translation): Translations
+                {
+                    $schema = (new TranslationsHydrator())->hydrate($translation);
+                    $schema->addAdditionalAttribute('pme_meta', 'kept');
+
+                    return $schema;
+                }
+            },
+        );
+
+        $items = $translatorService->listTranslations('admin', new CollectionFilterParameter())->getItems();
+
+        $this->assertCount(1, $items);
+        $this->assertSame('pme_key', $items[0]->getKey());
+        $this->assertSame(['en' => 'Car', 'fr_BE' => 'Voiture'], $items[0]->getTranslations());
+        $this->assertSame(['pme_meta' => 'kept'], $items[0]->getAdditionalAttributes());
     }
 
     /**
@@ -301,6 +369,7 @@ final class TranslatorServiceTest extends Unit
         ?LanguageServiceInterface $languageService = null,
         ?ListingFilterInterface $listingFilter = null,
         ?FilterMapperServiceInterface $filterMapper = null,
+        ?TranslationsHydratorInterface $translationsHydrator = null,
     ): TranslatorServiceInterface {
         $translator = $this->makeEmpty(Translator::class);
         $repository ??= $this->makeEmpty(TranslationRepositoryInterface::class);
@@ -310,7 +379,7 @@ final class TranslatorServiceTest extends Unit
         $languageService ??= $this->makeEmpty(LanguageServiceInterface::class);
         $listingFilter ??= $this->makeEmpty(ListingFilterInterface::class);
         $filterMapper ??= $this->makeEmpty(FilterMapperServiceInterface::class);
-        $translationsHydrator = $this->makeEmpty(TranslationsHydratorInterface::class);
+        $translationsHydrator ??= $this->makeEmpty(TranslationsHydratorInterface::class);
         $eventDispatcher = $this->makeEmpty(EventDispatcherInterface::class);
         $cacheResolver = $this->makeEmpty(CacheResolverInterface::class);
         $toolResolver = $this->makeEmpty(ToolResolverInterface::class);

@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedExceptio
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\AbstractObject;
+use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
@@ -37,7 +38,9 @@ final readonly class IndexAdapter implements PatchAdapterInterface
      */
     public function patch(ElementInterface $element, array $data, UserInterface $user): void
     {
-        if (!$element instanceof AbstractObject || !array_key_exists($this->getIndexKey(), $data)) {
+        if ((!$element instanceof AbstractObject && !$element instanceof Document) ||
+            !array_key_exists($this->getIndexKey(), $data)
+        ) {
             return;
         }
 
@@ -61,6 +64,7 @@ final readonly class IndexAdapter implements PatchAdapterInterface
     {
         return [
             ElementTypes::TYPE_OBJECT,
+            ElementTypes::TYPE_DOCUMENT,
         ];
     }
 }

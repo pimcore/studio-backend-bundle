@@ -48,7 +48,7 @@ final class ObjectDependenciesServiceTest extends Unit
             'hydrate' => new Dependency(1, '/path/to/object', 'Car'),
         ]);
         $userRepository = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
+            'getPersonById' => $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
         ]);
         $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
             'getCurrentUser' => $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),

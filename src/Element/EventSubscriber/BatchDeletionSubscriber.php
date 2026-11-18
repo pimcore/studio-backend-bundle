@@ -45,7 +45,8 @@ final readonly class BatchDeletionSubscriber implements EventSubscriberInterface
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
         if ($event->getJobName() !== Jobs::BATCH_DELETE_ASSETS->value &&
-            $event->getJobName() !== Jobs::BATCH_DELETE_DATA_OBJECTS->value
+            $event->getJobName() !== Jobs::BATCH_DELETE_DATA_OBJECTS->value &&
+            $event->getJobName() !== Jobs::BATCH_DELETE_DOCUMENTS->value
         ) {
             return;
         }

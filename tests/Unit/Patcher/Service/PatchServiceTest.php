@@ -15,20 +15,30 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Patcher\Service;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorService;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\AdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\SubTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
+use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version\CoauthorContext;
 use RuntimeException;
@@ -54,6 +64,39 @@ final class PatchServiceTest extends Unit
         $this->coauthorContext = new CoauthorContext();
     }
 
+    public function testPatchRejectsAnEmptyList(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createService(static fn () => null)->patch(ElementTypes::TYPE_DOCUMENT, [], $this->user);
+    }
+
+    public function testPatchRejectsAnEntryWithoutId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createService(static fn () => null)->patch(ElementTypes::TYPE_DOCUMENT, [[]], $this->user);
+    }
+
+    public function testPatchRejectsANonIntegerId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createService(static fn () => null)->patch(ElementTypes::TYPE_DOCUMENT, [['id' => '83']], $this->user);
+    }
+
+    public function testPatchRejectsAnInvalidEntryInAList(): void
+    {
+        // a batch must not start a job when one of its entries cannot be processed
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createService(static fn () => null)->patch(
+            ElementTypes::TYPE_DOCUMENT,
+            [['id' => 1], ['key' => 'no-id']],
+            $this->user
+        );
+    }
+
     public function testPatchActivatesCoauthorContextDuringSaveAndRestoresAfter(): void
     {
         $captured = [];
@@ -77,6 +120,62 @@ final class PatchServiceTest extends Unit
         $this->assertFalse($this->coauthorContext->isActive());
         $this->assertNull($this->coauthorContext->getType());
         $this->assertNull($this->coauthorContext->getCoauthor());
+    }
+
+    /**
+     * An auto-save must not write the owners of a reverse relation; an explicit save (also Save draft) does.
+     *
+     * @dataProvider remoteChangeTasksProvider
+     */
+    public function testPatchAppliesRemoteChangesOnlyForExplicitSaves(?string $task, bool $expectedApplied): void
+    {
+        $applied = 0;
+        $adapter = new class($applied) implements SetterDataInterface, RemoteStorageDataInterface {
+            public function __construct(private int &$calls)
+            {
+            }
+
+            public function getDataForSetter(
+                Concrete $element,
+                Data $fieldDefinition,
+                string $key,
+                array $data,
+                UserInterface $user,
+                ?FieldContextData $contextData = null,
+                bool $isPatch = false
+            ): null {
+                $this->calls++;
+
+                return null;
+            }
+        };
+        $class = (new ClassDefinition())->setId('test')->addFieldDefinition('owners', (new Input())->setName('owners'));
+        $object = $this->makeEmpty(Concrete::class, ['getId' => 1, 'getClass' => $class]);
+        $service = $this->createService(
+            static fn () => null,
+            $this->makeEmpty(DataAdapterServiceInterface::class, ['tryDataAdapter' => $adapter])
+        );
+
+        $patch = ['editableData' => ['owners' => [['id' => 7]]]];
+        if ($task !== null) {
+            $patch['task'] = $task;
+        }
+        $service->patchElement($object, ElementTypes::TYPE_OBJECT, $patch, $this->user);
+
+        $this->assertSame($expectedApplied ? 1 : 0, $applied);
+    }
+
+    public static function remoteChangeTasksProvider(): array
+    {
+        return [
+            'autoSave' => [ElementSaveTasks::AUTOSAVE->value, false],
+            'unknown task' => ['draft', false],
+            'version' => [ElementSaveTasks::VERSION->value, true],
+            'save' => [ElementSaveTasks::SAVE->value, true],
+            'publish' => [ElementSaveTasks::PUBLISH->value, true],
+            'unpublish' => [ElementSaveTasks::UNPUBLISH->value, true],
+            'no task' => [null, true],
+        ];
     }
 
     public function testPatchWithoutCoauthorKeysNeverActivatesContext(): void
@@ -133,6 +232,22 @@ final class PatchServiceTest extends Unit
         $this->assertFalse($this->coauthorContext->isActive());
         $this->assertNull($this->coauthorContext->getType());
         $this->assertNull($this->coauthorContext->getCoauthor());
+    }
+
+    /**
+     * Regression test for pimcore/platform-version#376: a validation failure during a PATCH must reach
+     * the client as a 422, not as a generic saving error.
+     */
+    public function testPatchMapsValidationExceptionToFieldValidationFailed(): void
+    {
+        $service = $this->createService(static function (): void {
+            throw new ValidationException('field is mandatory');
+        });
+
+        $this->expectException(FieldValidationFailedException::class);
+        $this->expectExceptionMessage('field is mandatory');
+
+        $service->patchElement($this->element, ElementTypes::TYPE_ASSET, [], $this->user);
     }
 
     public function testPatchRestoresOuterContextWhenSaveThrows(): void
@@ -453,13 +568,13 @@ final class PatchServiceTest extends Unit
         return array_map(static fn (array $item) => [$item['id'], $item['type']], $items);
     }
 
-    private function createService(callable $onSave): PatchService
+    private function createService(callable $onSave, ?DataAdapterServiceInterface $dataAdapterService = null): PatchService
     {
         return new PatchService(
             adapterLoader: $this->makeEmpty(AdapterLoaderInterface::class, [
                 'loadAdapters' => [],
             ]),
-            dataAdapterService: $this->makeEmpty(DataAdapterServiceInterface::class),
+            dataAdapterService: $dataAdapterService ?? $this->makeEmpty(DataAdapterServiceInterface::class),
             elementService: $this->makeEmpty(ElementServiceInterface::class),
             jobExecutionAgent: $this->makeEmpty(JobExecutionAgentInterface::class),
             indexService: $this->makeEmpty(ElementIndexServiceInterface::class),

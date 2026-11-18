@@ -14,6 +14,7 @@ studio_ee_csv_creation_failed: 'La exportación CSV falló: %message%'
 studio_ee_xlsx_creation_failed: 'La exportación XLSX falló: %message%'
 studio_ee_recycle_bin_delete_failed: 'El elemento con ID %id% no se pudo eliminar de la papelera de reciclaje: %message%'
 studio_ee_recycle_bin_restore_failed: 'El elemento de la papelera de reciclaje con ID %id% no se pudo restaurar: %message%'
+studio_ee_recycle_bin_restore_relocated: El elemento de tipo %type% con ID %id% se restauró en %path% porque su elemento padre ya no existe
 studio_ee_csv_data_collection_failed: 'Los datos para la exportación CSV no se pudieron extraer para %id%: %message%'
 studio_ee_element_patch_failed: 'El elemento de tipo %type% con ID %id% no se pudo actualizar: %message%'
 studio_ee_element_rewrite_references_failed: 'Las referencias del elemento de tipo %type% con ID %id% no se pudieron reescribir: %message%'
@@ -31,6 +32,7 @@ studio_ee_job_upload_assets: Cargar assets
 studio_ee_job_clone_data_objects: Clonar objetos de datos
 studio_ee_job_delete_data_objects: Eliminar objetos de datos
 studio_ee_job_batch_delete_data_objects: Eliminar objetos de datos por lotes
+studio_ee_job_batch_delete_documents: Eliminar documentos por lotes
 studio_ee_job_clone_documents: Clonar documentos
 studio_ee_job_delete_documents: Eliminar documentos
 studio_ee_job_rewrite_element_references: Reescribir referencias de elementos

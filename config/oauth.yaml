@@ -123,6 +123,12 @@ services:
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStoreInterface:
         class: Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStore
 
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ServiceUserClientStoreInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ServiceUserClientStore
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Service\ServiceUserClientServiceInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Service\ServiceUserClientService
+
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\ClientRegistrarInterface:
         alias: Pimcore\Bundle\StudioBackendBundle\OAuth\Server\ClientRegistrar
 
@@ -165,6 +171,8 @@ services:
             $authCodeTtl: 600
             $refreshTokenTtl: 2592000
             $allowLocalhostLoopback: true
+            $clientCredentialsEnabled: false
+            $clientCredentialsAccessTokenTtl: 900
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\TokenController:
         public: true

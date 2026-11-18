@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
@@ -64,7 +65,7 @@ interface RoleServiceInterface
     public function getRoleById(int $roleId): DetailedRole;
 
     /**
-     * @throws NotFoundException|DatabaseException
+     * @throws ForbiddenException|NotFoundException|DatabaseException
      */
     public function updateRoleById(int $roleId, UpdateRoleParameter $updateRoleParameter): void;
 }

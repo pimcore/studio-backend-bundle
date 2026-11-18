@@ -19,6 +19,8 @@ use Pimcore\Model\Element\ElementInterface;
 
 interface TextEncoderInterface
 {
+    public const int DEFAULT_MAX_FILE_SIZE = 2000000;
+
     /**
      * @throws InvalidElementTypeException|MaxFileSizeExceededException
      */

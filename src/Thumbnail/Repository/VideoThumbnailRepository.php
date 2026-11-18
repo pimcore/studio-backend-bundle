@@ -51,7 +51,7 @@ final readonly class VideoThumbnailRepository implements VideoThumbnailRepositor
             $exception = $e;
         }
 
-        if (!$config || $exception) {
+        if (!$config) {
             throw new NotFoundException(type: 'video thumbnail configuration', id: $name, previous: $exception);
         }
 

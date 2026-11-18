@@ -23,6 +23,10 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 final class OAuthCorsSubscriberTest extends Unit
 {
+    private const string MCP_PATH = '/pimcore-mcp/studio/my-server';
+
+    private const string MCP_CLIENT = 'https://client.example';
+
     /**
      * @param list<string> $allowedOrigins
      */
@@ -78,6 +82,93 @@ final class OAuthCorsSubscriberTest extends Unit
 
         $this->assertSame('*', $event->getResponse()->headers->get('Access-Control-Allow-Origin'));
         $this->assertSame('WWW-Authenticate', $event->getResponse()->headers->get('Access-Control-Expose-Headers'));
+    }
+
+    public function testMcpPreflightIsAnsweredWithTheStatelessEraHeaders(): void
+    {
+        $event = $this->requestEvent($this->request(self::MCP_PATH, 'OPTIONS', self::MCP_CLIENT));
+
+        $this->subscriber()->onKernelRequest($event);
+
+        $this->assertTrue($event->hasResponse());
+        $response = $event->getResponse();
+        $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
+        $this->assertSame('*', $response->headers->get('Access-Control-Allow-Origin'));
+        $this->assertSame('GET, POST, DELETE, OPTIONS', $response->headers->get('Access-Control-Allow-Methods'));
+
+        $allowHeaders = strtolower((string) $response->headers->get('Access-Control-Allow-Headers'));
+        $allowed = array_map('trim', explode(',', $allowHeaders));
+        $expected = [
+            'authorization', 'content-type', 'accept', 'last-event-id',
+            'mcp-protocol-version', 'mcp-session-id', 'mcp-method', 'mcp-name',
+        ];
+        foreach ($expected as $header) {
+            $this->assertContains($header, $allowed);
+        }
+    }
+
+    public function testMcpPreflightIsAnsweredOnTheAgentEndpointsToo(): void
+    {
+        $event = $this->requestEvent($this->request('/pimcore-mcp/agent/meta', 'OPTIONS', self::MCP_CLIENT));
+
+        $this->subscriber()->onKernelRequest($event);
+
+        $this->assertTrue($event->hasResponse());
+        $this->assertStringContainsString(
+            'Mcp-Name',
+            (string) $event->getResponse()->headers->get('Access-Control-Allow-Headers')
+        );
+    }
+
+    public function testMcpResponseExposesTheSessionId(): void
+    {
+        $request = $this->request(self::MCP_PATH, 'POST', self::MCP_CLIENT);
+        $event = $this->responseEvent($request, new Response('{}', Response::HTTP_UNAUTHORIZED));
+
+        $this->subscriber()->onKernelResponse($event);
+
+        $headers = $event->getResponse()->headers;
+        $this->assertSame('*', $headers->get('Access-Control-Allow-Origin'));
+        $this->assertSame(
+            'Mcp-Session-Id, WWW-Authenticate, Retry-After',
+            $headers->get('Access-Control-Expose-Headers')
+        );
+    }
+
+    public function testMcpPreflightFollowsTheAllowList(): void
+    {
+        $subscriber = $this->subscriber(allowedOrigins: ['https://app.example']);
+
+        $listed = $this->requestEvent($this->request(self::MCP_PATH, 'OPTIONS', 'https://app.example'));
+        $subscriber->onKernelRequest($listed);
+        $this->assertSame(
+            'https://app.example',
+            $listed->getResponse()->headers->get('Access-Control-Allow-Origin')
+        );
+
+        $unlisted = $this->requestEvent($this->request(self::MCP_PATH, 'OPTIONS', 'https://evil.example'));
+        $subscriber->onKernelRequest($unlisted);
+        $this->assertFalse($unlisted->getResponse()->headers->has('Access-Control-Allow-Origin'));
+    }
+
+    public function testMcpPathIsUntouchedWhenDisabled(): void
+    {
+        $optionsEvent = $this->requestEvent($this->request(self::MCP_PATH, 'OPTIONS'));
+        $this->subscriber(enabled: false)->onKernelRequest($optionsEvent);
+        $this->assertFalse($optionsEvent->hasResponse());
+
+        $responseEvent = $this->responseEvent($this->request(self::MCP_PATH), new Response());
+        $this->subscriber(enabled: false)->onKernelResponse($responseEvent);
+        $this->assertFalse($responseEvent->getResponse()->headers->has('Access-Control-Allow-Origin'));
+    }
+
+    public function testEncodedMcpPathIsRecognisedLikeTheRouterSeesIt(): void
+    {
+        $event = $this->requestEvent($this->request('/%70imcore-mcp/studio/s', 'OPTIONS'));
+
+        $this->subscriber()->onKernelRequest($event);
+
+        $this->assertTrue($event->hasResponse());
     }
 
     public function testNonOAuthPathIsUntouched(): void
