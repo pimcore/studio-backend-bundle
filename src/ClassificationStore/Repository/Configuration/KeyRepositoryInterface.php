@@ -30,7 +30,7 @@ interface KeyRepositoryInterface
 {
     /**
      * `$excludeKeysOfGroupId` leaves the keys that group holds out of the listing and out of the
-     * total it counts; null is every key of the store, and a group holding none excludes nothing.
+     * total it counts; null narrows nothing, and a group holding none excludes nothing either.
      *
      * @throws InvalidArgumentException
      */

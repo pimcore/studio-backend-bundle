@@ -74,10 +74,8 @@ final readonly class KeyRepository implements KeyRepositoryInterface
 
     private const string STORE_SCOPE_CONDITION = '`storeId` = :' . self::STORE_SCOPE_PARAMETER;
 
-    /**
-     * Own parameter name, for the same reason the store scope has one.
-     */
-    private const string GROUP_EXCLUSION_PARAMETER = 'excludeKeysOfGroupId';
+    // `scope` prefixed, not the request field's name: the column filters run later and bind under the column's name
+    private const string GROUP_EXCLUSION_PARAMETER = 'scopeExcludedGroupId';
 
     /**
      * A condition, so the page and the listing's COUNT(*) are both over the narrowed set.

@@ -15,10 +15,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Repo
 
 use Codeception\Test\Unit;
 use Doctrine\DBAL\Connection;
+use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepository;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperService;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\EqualsFilter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\PaginationFilter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\SortFilter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
@@ -29,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\In
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Listing;
 use function count;
+use function preg_match;
 use function str_contains;
 
 /**
@@ -54,7 +57,14 @@ final class KeyGroupExclusionListingTest extends Unit
 
     private const string CORRELATION = '`classificationstore_relations`.`keyId` = `classificationstore_keys`.`id`';
 
-    private const string EXCLUSION_PARAMETER = ':excludeKeysOfGroupId';
+    private const string EXCLUSION_PARAMETER = ':scopeExcludedGroupId';
+
+    private const int HIJACKED_GROUP_ID = 99;
+
+    // the request field's own name, which is what the exclusion was first bound under
+    private const string HIJACK_KEY = 'excludeKeysOfGroupId';
+
+    private const string EXCLUSION_PLACEHOLDER_PATTERN = '/`groupId` = :(\w+)\)/';
 
     public function testTheListingCarriesNoExclusionWhenTheGroupIsNotNamed(): void
     {
@@ -89,9 +99,38 @@ final class KeyGroupExclusionListingTest extends Unit
 
         $variables = $listing->getConditionVariables();
 
-        $this->assertArrayHasKey('excludeKeysOfGroupId', $variables);
-        $this->assertSame(self::GROUP_ID, $variables['excludeKeysOfGroupId']);
+        $this->assertArrayHasKey('scopeExcludedGroupId', $variables);
+        $this->assertSame(self::GROUP_ID, $variables['scopeExcludedGroupId']);
         $this->assertFalse(str_contains($this->getExecutedQuery(), (string) self::GROUP_ID));
+    }
+
+    /**
+     * Pimcore merges every binding into one named set and the column filters are applied last, so a
+     * filter keyed like the exclusion's parameter would rebind it to the client's group.
+     */
+    public function testAColumnFilterNamedAfterTheRequestFieldCannotRebindTheExclusion(): void
+    {
+        $listing = $this->getListingWithColumnFilters([
+            ['key' => self::HIJACK_KEY, 'type' => 'equals', 'filterValue' => self::HIJACKED_GROUP_ID],
+        ]);
+
+        $condition = $listing->getCondition();
+        $variables = $listing->getConditionVariables();
+
+        $this->assertSame(1, preg_match(self::EXCLUSION_PLACEHOLDER_PATTERN, $condition, $matches), $condition);
+        $exclusionParameter = $matches[1];
+
+        $this->assertSame(
+            self::GROUP_ID,
+            $variables[$exclusionParameter] ?? null,
+            'The group the route excludes has to survive the filter.'
+        );
+        $this->assertNotSame(
+            self::HIJACK_KEY,
+            $exclusionParameter,
+            'The exclusion has to bind under an internal name, not the request field\'s.'
+        );
+        $this->assertSame(self::HIJACKED_GROUP_ID, $variables[self::HIJACK_KEY] ?? null);
     }
 
     public function testTheTotalIsCountedOverTheNarrowedSet(): void
@@ -132,6 +171,44 @@ final class KeyGroupExclusionListingTest extends Unit
 
         $this->assertTrue(str_contains($count, self::EXCLUSION_SUBQUERY), $count);
         $this->assertTrue(str_contains($count, '(enabled is null or enabled = 0)'), $count);
+    }
+
+    /**
+     * The real column filters, only the loader stood in for; no database, the bindings are on the listing.
+     *
+     * @param list<array<string, mixed>> $columnFilters
+     */
+    private function getListingWithColumnFilters(array $columnFilters): Listing
+    {
+        $quotingConnection = $this->makeEmpty(Connection::class, [
+            'quoteIdentifier' => static fn (string $identifier): string => '`' . $identifier . '`',
+        ]);
+        $equalsFilter = new EqualsFilter(
+            $this->makeEmpty(DbResolverInterface::class, ['get' => $quotingConnection])
+        );
+        $listingFilter = $this->makeEmpty(ListingFilterInterface::class, [
+            'applyFilters' => static fn (
+                FilterParameter $parameters,
+                mixed $listing
+            ): mixed => $equalsFilter->apply($parameters, $listing),
+        ]);
+        $repository = new KeyRepository(
+            $this->makeEmpty(KeyConfigResolverInterface::class),
+            new InMemoryKeyLocalizationResolver(),
+            $listingFilter,
+            new SearchHelperService(
+                $this->makeEmpty(TranslationRepositoryInterface::class),
+                $this->makeEmpty(SecurityServiceInterface::class)
+            ),
+            $quotingConnection
+        );
+
+        return $repository->getListing(
+            new FilterParameter(columnFilters: $columnFilters),
+            self::STORE_ID,
+            false,
+            self::GROUP_ID
+        );
     }
 
     private function load(?int $excludeKeysOfGroupId = null, bool $named = false): string
