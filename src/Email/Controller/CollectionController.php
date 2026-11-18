@@ -63,7 +63,8 @@ final class CollectionController extends AbstractApiController
         name: 'documentId',
         description: 'Filter the email log by the ID of the email document that sent the emails',
         required: false,
-        example: 1
+        example: 1,
+        minimum: 1
     )]
     #[SuccessResponse(
         description: 'email_log_get_collection_success_response',

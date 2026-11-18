@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Email\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Email\MappedParameter\EmailLogParameters;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntryDetail;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntryParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Email\MappedParameter\EmailLogParameters;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Mail;
 use Pimcore\Model\Tool\Email\Log;

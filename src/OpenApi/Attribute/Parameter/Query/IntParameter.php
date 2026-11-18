@@ -25,13 +25,16 @@ final class IntParameter extends QueryParameter
         string $description,
         bool $required = true,
         int $example = 42,
+        ?int $minimum = null,
     ) {
         parent::__construct(
             name: $name,
             description: $description,
             in: 'query',
             required: $required,
-            schema: new Schema(type: 'integer', example: $example),
+            // `null` is swagger-php's own "not set": the attribute maps it back to
+            // Generator::UNDEFINED, so an unconstrained parameter emits no `minimum` key.
+            schema: new Schema(type: 'integer', minimum: $minimum, example: $example),
         );
     }
 }
