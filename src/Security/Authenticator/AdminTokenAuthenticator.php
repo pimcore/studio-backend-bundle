@@ -57,8 +57,6 @@ class AdminTokenAuthenticator extends AbstractAuthenticator
             throw new AccessDeniedException('Failed to authenticate with the given token');
         }
 
-        $pimcoreUser->setTwoFactorAuthentication('required', false);
-
         $userBadge = new UserBadge($pimcoreUser->getUsername(), function () use ($pimcoreUser) {
             return new User($pimcoreUser);
         });
