@@ -29,9 +29,17 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Listing;
 interface KeyRepositoryInterface
 {
     /**
+     * `$excludeKeysOfGroupId` leaves the keys that group holds out of the listing and out of the
+     * total it counts; null is every key of the store, and a group holding none excludes nothing.
+     *
      * @throws InvalidArgumentException
      */
-    public function getListing(FilterParameter $parameters, int $storeId, bool $disabledOnly = false): Listing;
+    public function getListing(
+        FilterParameter $parameters,
+        int $storeId,
+        bool $disabledOnly = false,
+        ?int $excludeKeysOfGroupId = null,
+    ): Listing;
 
     /**
      * @throws NotFoundException
