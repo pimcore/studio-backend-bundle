@@ -21,12 +21,14 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepositoryInterfa
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\UpdateSiteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\SiteService;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\Document\Folder as CoreFolder;
-use Pimcore\Model\Site;
 use Pimcore\Model\User;
+use RuntimeException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function sprintf;
 
@@ -46,9 +48,12 @@ final class SiteServicePermissionTest extends Unit
 
     private User $user;
 
+    private int $permissionChecks = 0;
+
     protected function _before(): void
     {
         $this->user = new User();
+        $this->permissionChecks = 0;
     }
 
     public function testUpdateSiteRejectsElementWithoutSettingsPermission(): void
@@ -69,48 +74,53 @@ final class SiteServicePermissionTest extends Unit
         $service->deleteSite(self::DOCUMENT_ID);
     }
 
-    public function testUpdateSitePersistsWhenSettingsPermissionGranted(): void
+    public function testUpdateSiteProceedsToSiteCreationWhenSettingsPermissionGranted(): void
     {
         $document = new CoreFolder();
-        // Site is final and cannot be doubled; use a real instance and assert on its
-        // resulting state instead of mock call expectations.
-        $site = new Site();
-        $service = $this->createService($document, true, $site);
+        // Site is final and its save() needs a booted kernel, so a unit test cannot persist one.
+        // A failing create() proves the settings check passed and execution reached the mutation.
+        $service = $this->createService($document, true, [
+            'getByRootId' => null,
+            'create' => function (): never {
+                throw new RuntimeException('create reached');
+            },
+        ]);
 
-        $parameters = new UpdateSiteParameters(
-            mainDomain: 'primary.example.com',
-            domains: ['secondary.example.com'],
-            errorDocument: '/error-page',
-            localizedErrorDocuments: [],
-            redirectToMainDomain: true,
-        );
-        $service->updateSite(self::DOCUMENT_ID, $parameters);
-
-        $this->assertSame('primary.example.com', $site->getMainDomain());
-        $this->assertSame(['secondary.example.com'], $site->getDomains());
-        $this->assertSame('/error-page', $site->getErrorDocument());
-        $this->assertTrue($site->getRedirectToMainDomain());
+        try {
+            $service->updateSite(self::DOCUMENT_ID, new UpdateSiteParameters());
+            $this->fail('Expected the site creation to be reached.');
+        } catch (ElementSavingFailedException) {
+            $this->assertSame(1, $this->permissionChecks);
+        }
     }
 
-    public function testDeleteSitePersistsWhenSettingsPermissionGranted(): void
+    public function testDeleteSiteProceedsToSiteLookupWhenSettingsPermissionGranted(): void
     {
         $document = new CoreFolder();
-        // Site is final and cannot be doubled; use a real instance so delete() runs
-        // for real instead of asserting on a mock expectation.
-        $site = new Site();
-        $service = $this->createService($document, true, $site);
+        // No site is bound to the document: reaching NotFoundException proves the settings
+        // check passed and execution got to the site lookup, without calling Site::delete().
+        $service = $this->createService($document, true, ['getByRootId' => null]);
 
-        $this->expectNotToPerformAssertions();
-        $service->deleteSite(self::DOCUMENT_ID);
+        try {
+            $service->deleteSite(self::DOCUMENT_ID);
+            $this->fail('Expected the site lookup to be reached.');
+        } catch (NotFoundException) {
+            $this->assertSame(1, $this->permissionChecks);
+        }
     }
 
-    private function createService(CoreFolder $document, bool $hasSettingsPermission, ?Site $site = null): SiteService
+    private function createService(
+        CoreFolder $document,
+        bool $hasSettingsPermission,
+        array $siteResolverStubs = []
+    ): SiteService
     {
         $hasElementPermission = function (
             CoreFolder $element,
             User $user,
             string $permission
         ) use ($hasSettingsPermission): void {
+            $this->permissionChecks++;
             $this->assertSame($this->user, $user);
             $this->assertSame(
                 ElementPermissions::SETTINGS_PERMISSION,
@@ -134,10 +144,7 @@ final class SiteServicePermissionTest extends Unit
             ]),
             $this->makeEmpty(SiteHydratorInterface::class),
             $this->makeEmpty(SiteRepositoryInterface::class),
-            $this->makeEmpty(SiteResolverInterface::class, [
-                'getByRootId' => $site,
-                'create' => $site,
-            ]),
+            $this->makeEmpty(SiteResolverInterface::class, $siteResolverStubs),
             $this->makeEmpty(ToolResolverInterface::class),
         );
     }
