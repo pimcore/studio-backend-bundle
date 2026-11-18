@@ -123,6 +123,7 @@ Available filters are:
 |          system.quantity_value           |                  array                   | `from`, `to`, `is`, `setting`, `unitId` |      true      |
 |       system.input_quantity_value        |                  string                  |    `unitId`(string), `value`(string)    |      true      |
 |               system.rgba                |                  object                  |         `r`,`g`,`b`,`a (0 - 1)`         |      true      |
+|             system.fieldName             |                  string                  |  relation field name, see note below    |     false      |
 |        classificationstore.string        |                  string                  |                                         |      true      |
 |         classificationstore.rgba         |                  object                  |         `r`,`g`,`b`,`a(0 - 1)`          |      true      |
 |         classificationstore.date         | object of ISO 8601<br/>will round to day |          `from`, `to`, or `on`          |      true      |
@@ -137,6 +138,12 @@ Available filters are:
 |           dataobject.relation            |                  array                   |    array of `type`, `ids` objects       |      true      |
 |          system.unreferenced             |                 boolean                  |  Asset grid only — unreferenced assets  |     false      |
 |                 workflow                 |              string or null              | place name; omit/`null` = all states of the workflow |      true      |
+
+> **Note:** `system.fieldName` is a context-only filter. The Studio UI adds it in the data object
+> element selector so that the backend knows which relation field the selection is being made for.
+> Studio ships no filter for it, so by default it does not change the result set. To act on it,
+> register your own filter — see
+> [Extending Search Index Filters](../03_Extending/09_Extending_Filters/01_Extending_Search_Index_Filters.md).
 
 
 #### Empty / not empty
