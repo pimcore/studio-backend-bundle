@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter
 
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
+use Symfony\Component\Validator\Constraints\Positive;
 
 /**
  * @internal
@@ -24,6 +25,9 @@ final readonly class KeyCollectionParameters extends CollectionFilterParameter
     public function __construct(
         ?FilterParameter $filters = null,
         private bool $disabledOnly = false,
+        // A group id, not a list of key ids: what the group holds is read when the page is read
+        #[Positive(message: 'The group to exclude the assigned keys of must be a positive id.')]
+        private ?int $excludeKeysOfGroupId = null,
     ) {
         parent::__construct($filters);
     }
@@ -31,5 +35,10 @@ final readonly class KeyCollectionParameters extends CollectionFilterParameter
     public function isDisabledOnly(): bool
     {
         return $this->disabledOnly;
+    }
+
+    public function getExcludeKeysOfGroupId(): ?int
+    {
+        return $this->excludeKeysOfGroupId;
     }
 }

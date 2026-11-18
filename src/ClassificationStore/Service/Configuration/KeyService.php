@@ -58,7 +58,8 @@ final readonly class KeyService implements KeyServiceInterface
         $listing = $this->keyConfigurationRepository->getListing(
             $this->filterMapper->getFilterParameters($parameters),
             $storeId,
-            $parameters->isDisabledOnly()
+            $parameters->isDisabledOnly(),
+            $parameters->getExcludeKeysOfGroupId()
         );
         $configs = $listing->load();
         $items = [];

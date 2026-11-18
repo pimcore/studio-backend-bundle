@@ -44,6 +44,13 @@ final class KeyCollectionRequestBody extends RequestBody
                         default: false,
                         example: false
                     ),
+                    new Property(
+                        property: 'excludeKeysOfGroupId',
+                        description: 'classification_store_configuration_key_collection_exclude_keys_of_group_id',
+                        type: 'integer',
+                        nullable: true,
+                        example: 12
+                    ),
                 ],
                 type: 'object',
             ),

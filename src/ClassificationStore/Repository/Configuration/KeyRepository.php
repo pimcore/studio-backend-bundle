@@ -34,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Listing;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Dao as KeyGroupRelationDao;
 use Throwable;
 use function array_unique;
 use function array_values;
@@ -73,6 +74,16 @@ final readonly class KeyRepository implements KeyRepositoryInterface
 
     private const string STORE_SCOPE_CONDITION = '`storeId` = :' . self::STORE_SCOPE_PARAMETER;
 
+    // `scope` prefixed, not the request field's name: the column filters run later and bind under the column's name
+    private const string GROUP_EXCLUSION_PARAMETER = 'scopeExcludedGroupId';
+
+    /**
+     * A condition, so the page and the listing's COUNT(*) are both over the narrowed set.
+     * NOT EXISTS and not `NOT IN`, which a NULL `keyId` would answer UNKNOWN for every row.
+     */
+    private const string GROUP_EXCLUSION_CONDITION = 'NOT EXISTS (SELECT 1 FROM `%s`'
+        . ' WHERE `%s`.`keyId` = `%s`.`id` AND `%s`.`groupId` = :' . self::GROUP_EXCLUSION_PARAMETER . ')';
+
     private const string IDENTIFIER_QUERY =
         'SELECT `id`, `identifier` FROM `%s` WHERE `storeId` = ? AND `identifier` IN (?)';
 
@@ -91,12 +102,29 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getListing(FilterParameter $parameters, int $storeId, bool $disabledOnly = false): Listing
-    {
+    public function getListing(
+        FilterParameter $parameters,
+        int $storeId,
+        bool $disabledOnly = false,
+        ?int $excludeKeysOfGroupId = null,
+    ): Listing {
         $listing = new Listing();
         // core's `includeDisabled` swaps the enabled condition for the disabled one, it never unions them
         $listing->setIncludeDisabled($disabledOnly);
         $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
+
+        if ($excludeKeysOfGroupId !== null) {
+            $listing->addConditionParam(
+                sprintf(
+                    self::GROUP_EXCLUSION_CONDITION,
+                    KeyGroupRelationDao::TABLE_NAME_RELATIONS,
+                    KeyGroupRelationDao::TABLE_NAME_RELATIONS,
+                    KeyConfigDao::TABLE_NAME_KEYS,
+                    KeyGroupRelationDao::TABLE_NAME_RELATIONS
+                ),
+                [self::GROUP_EXCLUSION_PARAMETER => $excludeKeysOfGroupId]
+            );
+        }
 
         $this->applySearchCondition($listing, $parameters);
         $this->listingFilter->applyFilters($parameters, $listing);

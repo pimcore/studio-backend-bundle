@@ -2179,7 +2179,13 @@ classification_store_configuration_key_collection_description: |
   By default the list holds the enabled keys only. Setting `disabledOnly` to true switches the list to the
   disabled keys only, including keys that were never enabled; it never adds them to the enabled ones.
   Filters, sorting, paging and the total count apply within the selected list.
+  Setting `excludeKeysOfGroupId` to the id of a group leaves the keys already assigned to that group out
+  of the list, so that filters, sorting, paging and the total count all apply to the keys still available
+  for it. Omitted, the enabled or disabled selection above is left untouched.
 classification_store_configuration_key_collection_disabled_only: Return the disabled keys instead of the enabled ones
+classification_store_configuration_key_collection_exclude_keys_of_group_id: |
+  Leave out the keys already assigned to this group, from the list and from the total count.
+  Omit it to leave the enabled or disabled selection untouched.
 classification_store_configuration_key_collection_summary: List key configurations
 classification_store_configuration_key_collection_success_response: Paginated list of key configurations
 classification_store_configuration_key_create_description: Create a new classification store key configuration within a store
