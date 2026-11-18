@@ -83,6 +83,11 @@ derived list; an edit through the API keeps such a declaration. The `urlSlug` is
 create and locked on update. In the `studio_mcp_servers` configuration the key of each server is its slug, so it
 may only contain `a-z`, `0-9` and hyphens.
 
+The scopes are enforced when a tool is called: an OAuth access token that carries scopes but not `mcp:write` is
+refused every tool that is not read-only (HTTP 403). A token without any scope, a `pmcp_` token, a personal access
+token and the Studio session carry no scopes and are not limited by them. Which tools a server offers is decided by
+its tool selection, never by the scope. See [Providing MCP tools](../03_Extending/15_Providing_MCP_Tools.md).
+
 ## Access and sharing
 
 Access is **deny-by-default** with three **independent** capabilities per server:
