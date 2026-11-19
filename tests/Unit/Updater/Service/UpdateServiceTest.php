@@ -25,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedExceptio
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContext;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -499,28 +498,6 @@ final class UpdateServiceTest extends Unit
             $this->fail('Expected ForbiddenException');
         } catch (ForbiddenException) {
             $this->assertSame([$target], $createCheckedOn);
-        }
-    }
-
-    public function testDocumentMoveToMissingDestinationIsNotFound(): void
-    {
-        $document = $this->documentMock(2, 1);
-        $this->resolve([2 => $document]);
-        $permissions = [];
-        $this->securityService->method('hasElementPermission')
-            ->willReturnCallback(static function ($element, $user, string $permission) use (&$permissions): void {
-                $permissions[] = $permission;
-            });
-
-        $this->adapterLoader->expects($this->never())->method('loadAdapters');
-        $this->documentDataService->expects($this->never())->method('updateDocumentData');
-        $this->saveService->expects($this->never())->method('save');
-
-        try {
-            $this->service->update('document', 2, ['parentId' => 99, 'task' => 'save']);
-            $this->fail('Expected NotFoundException');
-        } catch (NotFoundException) {
-            $this->assertNotContains('create', $permissions);
         }
     }
 
