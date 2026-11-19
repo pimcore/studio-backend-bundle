@@ -77,6 +77,9 @@ final readonly class CoauthorService implements CoauthorServiceInterface
 
     /**
      * {@inheritdoc}
+     *
+     * Async patches (folder, batch) save in a worker where the MCP call is gone and the payload coauthor would be
+     * accepted again: they rely on this stripping happening before the job is queued.
      */
     public function withoutPayloadCoauthorInMcpCall(array $payload): array
     {
