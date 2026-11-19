@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -52,6 +53,10 @@ final readonly class TreeQuery implements TreeQueryInterface
     ): QueryInterface {
         $type = $widget->getElementType();
         $query = $this->queryFactory->create($type);
+        // The user has to be set before filtering, filters apply the user's workspace
+        // permissions - same as DataObjectService::getDataObjects(). Without this, the search
+        // index query built for the widget carries no permission restriction at all.
+        $query->setUser($user);
         $query = $filterService->applyFilters($query, $this->getQueryParameters($widget, $parentId), $type);
 
         if ($type === ElementTypes::TYPE_DATA_OBJECT) {
@@ -128,7 +133,12 @@ final readonly class TreeQuery implements TreeQueryInterface
         QueryInterface $query,
         UserInterface $user
     ): void {
-        $parent = $this->elementService->getAllowedElementByPath($type, $rootPath, $user);
+        // Resolved without a view-permission check, same reasoning as
+        // ElementTreeWidgetConfigHydrator::resolveCustomRootFolder(): this is the widget's
+        // configured root, only used here to compute sort position, not opened - a user scoped
+        // to a descendant folder must still be able to sort/query within it.
+        $parentId = $this->elementService->getElementIdByPath($type, new PathParameter($rootPath), $user);
+        $parent = $this->elementService->getElementById($type, $parentId);
 
         if (!$parent instanceof DataObject) {
             throw new NotFoundException(
