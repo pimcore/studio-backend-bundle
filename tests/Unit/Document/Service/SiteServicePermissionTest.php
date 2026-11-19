@@ -113,8 +113,7 @@ final class SiteServicePermissionTest extends Unit
         CoreFolder $document,
         bool $hasSettingsPermission,
         array $siteResolverStubs = []
-    ): SiteService
-    {
+    ): SiteService {
         $hasElementPermission = function (
             CoreFolder $element,
             User $user,
