@@ -14,7 +14,7 @@ The following steps are necessary during updating to newer versions.
   `McpServerFactory`, `CoauthorService` and `VersionRepository` (all `@internal`) got constructor arguments for it.
 - [Elements] Deprecated: `coauthorType` and `coauthor` in the bodies of the element patch and update endpoints
   and of `PUT /pimcore-studio/api/versions/{id}`. Outside MCP they work as before, are marked `deprecated` in the
-  OpenAPI schema and raise a deprecation notice. They are removed in 2027.1
+  OpenAPI schema and raise a deprecation notice; the reserved coauthor type `mcp-server` is refused there (HTTP 400), because only an MCP server may stamp it. They are removed in 2027.1
   (https://github.com/pimcore/platform-version/issues/814). The coauthor is set by the server: MCP servers stamp it themselves.
 - [Authentication] Deprecated: static MCP personal access tokens (`pimcore_studio_backend.mcp.authentication.tokens`,
   handled by `PatAuthenticator`). They keep working on 2026.x; configuring them and each request they authenticate

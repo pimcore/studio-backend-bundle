@@ -62,6 +62,8 @@ final readonly class CoauthorService implements CoauthorServiceInterface
             VersionCoauthor::MAX_COAUTHOR_LENGTH
         );
 
+        VersionCoauthor::assertPayloadMayClaimType(ElementSaveServiceInterface::INDEX_COAUTHOR_TYPE, $coauthorType);
+
         trigger_deprecation(
             'pimcore/studio-backend-bundle',
             '2026.4',

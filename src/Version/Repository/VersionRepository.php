@@ -17,12 +17,14 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Version\VersionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContextInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter\UpdateVersionParameter;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
@@ -124,7 +126,7 @@ final readonly class VersionRepository implements VersionRepositoryInterface
     }
 
     /**
-     * @throws ElementSavingFailedException
+     * @throws ElementSavingFailedException|InvalidArgumentException
      */
     public function updateVersion(
         Version $version,
@@ -187,6 +189,10 @@ final readonly class VersionRepository implements VersionRepositoryInterface
 
         if ($this->mcpCallContext->isInMcpCall()) {
             return;
+        }
+
+        if ($coauthorType !== null) {
+            VersionCoauthor::assertPayloadMayClaimType('coauthorType', $coauthorType);
         }
 
         trigger_deprecation(

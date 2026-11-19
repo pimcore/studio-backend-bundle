@@ -17,6 +17,7 @@ use const E_USER_DEPRECATED;
 use Codeception\Test\Unit;
 use Error;
 use Pimcore\Bundle\StaticResolverBundle\Models\Version\VersionResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContext;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter\UpdateVersionParameter;
@@ -57,6 +58,22 @@ final class VersionRepositoryTest extends Unit
         $this->assertCount(1, $deprecations);
         $this->assertStringContainsString('2027.1', $deprecations[0]);
         $this->assertStringContainsString('platform-version/issues/814', $deprecations[0]);
+    }
+
+    public function testOutsideMcpTheReservedMcpServerTypeIsRejected(): void
+    {
+        $version = $this->version('agent', 'someone');
+        $deprecations = [];
+
+        try {
+            $this->withDeprecations($deprecations, function () use ($version): void {
+                $this->update($version, new UpdateVersionParameter(coauthorType: 'mcp-server', coauthor: 'x'));
+            });
+            $this->fail('The reserved type must be rejected');
+        } catch (InvalidArgumentException) {
+            $this->assertSame('agent', $version->getCoauthorType());
+            $this->assertSame('someone', $version->getCoauthor());
+        }
     }
 
     public function testOutsideMcpAnEmptyStringStillClearsTheCoauthor(): void

@@ -96,6 +96,22 @@ final class CoauthorServiceTest extends Unit
         $this->assertNull($result);
     }
 
+    public function testOutsideMcpTheReservedMcpServerTypeIsRejected(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->service->extractFromPayload(['coauthorType' => 'mcp-server', 'coauthor' => 'x']);
+    }
+
+    public function testInsideMcpTheReservedMcpServerTypeInThePayloadIsIgnoredNotRejected(): void
+    {
+        $result = $this->mcpCallContext->run(
+            fn (): ?array => $this->service->extractFromPayload(['coauthorType' => 'mcp-server', 'coauthor' => 'x'])
+        );
+
+        $this->assertNull($result);
+    }
+
     public function testOutsideMcpAnOverlongPayloadCoauthorIsStillRejected(): void
     {
         $this->expectException(InvalidArgumentException::class);
