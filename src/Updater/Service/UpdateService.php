@@ -154,6 +154,10 @@ final readonly class UpdateService implements UpdateServiceInterface
             return;
         }
 
+        if ($data[self::PARENT_ID_KEY] === null) {
+            return;
+        }
+
         $parentId = (int)$data[self::PARENT_ID_KEY];
         if ($parentId === $document->getParentId()) {
             return;
