@@ -26,6 +26,7 @@ use Twig\Extension\SandboxExtension;
 use Twig\Extra\Intl\IntlExtension;
 use Twig\Extra\String\StringExtension;
 use Twig\Loader\ArrayLoader;
+use Twig\TwigFunction;
 
 /**
  * @internal
@@ -179,8 +180,117 @@ final class TemplateGeneratorTest extends Unit
         $this->generate('{% apply upper %}{{ value }}{% endapply %}', ['value' => 'x']);
     }
 
-    private function generate(string $template, array $context): string
+    /**
+     * Regression test for GHSA-9g62-2rj4-v227: the initializer used to build the
+     * SecurityPolicy from only 3 of its 7 constructor arguments, so a configured
+     * blocked class was silently ignored and every method on it stayed callable.
+     */
+    public function testBlocksMethodCallOnBlockedClass(): void
     {
+        $fixture = new class {
+            public function getSecret(): string
+            {
+                return 'super-secret';
+            }
+        };
+
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate(
+            '{{ value.getSecret() }}',
+            ['value' => $fixture],
+            blockedClasses: [$fixture::class]
+        );
+    }
+
+    /**
+     * Regression test for GHSA-9g62-2rj4-v227: hard-blocked methods must be enforced
+     * even when the owning class is not (also) in the blocked-class list.
+     */
+    public function testBlocksHardBlockedMethod(): void
+    {
+        $fixture = new class {
+            public function getSecret(): string
+            {
+                return 'super-secret';
+            }
+        };
+
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate(
+            '{{ value.getSecret() }}',
+            ['value' => $fixture],
+            hardBlockedMethods: [$fixture::class => ['getSecret']]
+        );
+    }
+
+    /**
+     * Legitimate templates must keep working when no object-protection lists apply
+     * to the object in question.
+     */
+    public function testAllowsMethodCallWhenObjectIsNotRestricted(): void
+    {
+        $fixture = new class {
+            public function getSecret(): string
+            {
+                return 'super-secret';
+            }
+        };
+
+        $this->assertSame(
+            'super-secret',
+            $this->generate('{{ value.getSecret() }}', ['value' => $fixture])
+        );
+    }
+
+    /**
+     * Regression test for GHSA-9g62-2rj4-v227: $blockedFunctions must actually reach the
+     * policy, not just $blockedClasses and $hardBlockedMethods. A `pimcore_*`-prefixed
+     * function is auto-allowed unless it is named here.
+     */
+    public function testBlocksBlockedPimcoreFunction(): void
+    {
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate(
+            '{{ pimcore_test_lookup() }}',
+            [],
+            blockedFunctions: ['pimcore_test_lookup'],
+            registerFunctions: ['pimcore_test_lookup' => static fn (): string => 'secret'],
+        );
+    }
+
+    /**
+     * Regression test for GHSA-9g62-2rj4-v227: $allowedClasses must actually reach the
+     * policy. Once non-empty it switches the sandbox from denylist to allowlist mode, so a
+     * class that was never blocklisted must still be denied for not being on the list.
+     */
+    public function testAllowlistModeBlocksClassNotOnTheAllowList(): void
+    {
+        $allowed = new class {
+        };
+        $other = new class {
+            public function getSecret(): string
+            {
+                return 'super-secret';
+            }
+        };
+
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate(
+            '{{ value.getSecret() }}',
+            ['value' => $other],
+            allowedClasses: [$allowed::class]
+        );
+    }
+
+    private function generate(
+        string $template,
+        array $context,
+        array $blockedClasses = [],
+        array $allowedClasses = [],
+        array $blockedFunctions = [],
+        array $hardBlockedMethods = [],
+        array $registerFunctions = [],
+    ): string {
         $twig = new Environment(new ArrayLoader());
         // The initializer expects the SandboxExtension to be present on the environment.
         $twig->addExtension(new SandboxExtension(new SecurityPolicy()));
@@ -192,6 +302,10 @@ final class TemplateGeneratorTest extends Unit
             $twig->addExtension(new IntlExtension());
         }
 
+        foreach ($registerFunctions as $name => $callable) {
+            $twig->addFunction(new TwigFunction($name, $callable));
+        }
+
         $policy = $this->getDefaultSandboxPolicy();
 
         $generator = new TemplateGenerator(
@@ -200,7 +314,11 @@ final class TemplateGeneratorTest extends Unit
                 $twig,
                 $policy['tags'],
                 $policy['filters'],
-                $policy['functions']
+                $policy['functions'],
+                $blockedClasses,
+                $allowedClasses,
+                $blockedFunctions,
+                $hardBlockedMethods,
             )
         );
 

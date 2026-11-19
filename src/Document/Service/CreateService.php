@@ -42,10 +42,6 @@ final readonly class CreateService implements CreateServiceInterface
 {
     use DocumentClassTrait;
 
-    private const array PAGE_SNIPPET_TYPES = [
-        DocumentTypes::PAGE->value, DocumentTypes::SNIPPET->value, DocumentTypes::EMAIL->value,
-    ];
-
     public function __construct(
         private DocumentResolverInterface $documentResolver,
         private DocTypeResolverInterface $docTypeResolver,
@@ -53,7 +49,8 @@ final readonly class CreateService implements CreateServiceInterface
         private ElementSaveServiceInterface $elementSaveService,
         private ResolverInterface $classResolver,
         private ServiceResolverInterface $serviceResolver,
-        private string $defaultController
+        private string $defaultController,
+        private array $defaultControllers = []
     ) {
     }
 
@@ -146,7 +143,7 @@ final readonly class CreateService implements CreateServiceInterface
         }
 
         if ($this->requiresDefaultController($parameters)) {
-            $data['controller'] = $this->defaultController;
+            $data['controller'] = $this->getDefaultController($parameters->getType());
         }
 
         return $data;
@@ -173,7 +170,12 @@ final readonly class CreateService implements CreateServiceInterface
 
     private function requiresDefaultController(DocumentAddParameters $parameters): bool
     {
-        return in_array($parameters->getType(), self::PAGE_SNIPPET_TYPES, true);
+        return in_array($parameters->getType(), DocumentTypes::pageSnippetValues(), true);
+    }
+
+    private function getDefaultController(string $type): string
+    {
+        return $this->defaultControllers[$type] ?? $this->defaultController;
     }
 
     private function getBaseTranslationDocument(DocumentAddParameters $parameters): ?Document

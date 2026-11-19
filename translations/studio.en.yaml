@@ -48,6 +48,7 @@ studio_ee_job_recycle_bin_delete: Delete Items from Recycle Bin
 studio_ee_job_recycle_bin_restore: Restore Items from Recycle Bin
 studio_ee_job_step_zip_creation: Zip Download Creation
 studio_ee_job_step_asset_cloning: Asset Cloning
+studio_ee_job_step_asset_folder_cloning: Asset Folder Cloning
 studio_ee_job_step_csv_file_not_found: CSV file not found
 studio_ee_jop_step_zip_uploading: Zip Uploading
 studio_ee_job_step_asset_uploading: Asset Uploading

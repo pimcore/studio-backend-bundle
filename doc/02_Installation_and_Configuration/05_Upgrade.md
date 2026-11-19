@@ -2,6 +2,48 @@
 
 The following steps are necessary during updating to newer versions.
 
+## Upgrade to 2025.4.20
+- [Users] Security (GHSA-x3pq-323g-f95v): a user who may manage users (`users` permission) can no longer hand out more
+  privilege than they hold themselves. This changes the behavior of the following endpoints for non-admin user
+  managers (admins are not affected):
+  - Saving a user or role (`PUT /user/{id}`, `PUT /role/{id}`) returns `403` if the submitted permissions contain one
+    the caller does not hold (directly or through a role). The full submitted set is checked, so re-saving a user or
+    role that carries a permission the caller lacks fails until it is reduced first.
+  - Assigning a role the caller does not hold returns `403`. Clearing roles stays allowed. Role ids that are unknown or
+    not integers return `404`.
+  - Changing the password (`PUT /user/{id}/password`) or the email (`PUT /user/{id}`) of another user is admin-only
+    and returns `403` otherwise. Users can still change their own password and email.
+  - Login token links for another user (`POST /user/token-link/{id}`) are admin-only and return `403` otherwise. A
+    link for the caller's own account still works.
+- [Users] Changed: the login token link is built on the server as
+  `<scheme>://<host><base url><pimcore_studio_ui.url_path>/login/?token=...`. A `tokenLink` request body is ignored;
+  `TokenLinkRequestBody` and `TokenLink` are deprecated and without effect. Scheme, host and port come from the
+  request context, so behind a reverse proxy configure `framework.trusted_proxies` (and `trusted_headers`), otherwise
+  the link may point to a different origin than the one the browser uses.
+- [Studio UI] The "login as different user" action and the role options in the user form should be limited to what the
+  backend now allows (admins only for login links, the caller's own roles for non-admins). Until then, non-admin user
+  managers see `403` errors for these actions.
+
+## Upgrade to 2025.4.16
+- [Documents] Added: `pimcore_studio_backend.documents.default_controllers` sets the controller of new page, snippet
+  and email documents per document type (for documents created without a predefined document type). Types without an
+  entry keep using `pimcore.documents.default_controller`, so existing installations are unaffected.
+
+## Upgrade to 2025.4.15
+- [Translations] Fixed: website translations for locales that are not admin UI languages (e.g. `fr_BE`, `nl_BE`) could not be maintained. `POST /translations/list` only returned values for the available admin UI languages, so these columns stayed empty, and sorting by such a locale failed. The list now returns the languages the user is allowed to view for the requested domain (admin UI languages for the `admin` and `studio` domains), as in the classic admin UI.
+
+> **Note:** this comes with the following behavioral changes for the translation list (`POST /translations/list`) and, where noted, the CSV export (`POST /translations/export`) and import:
+> - Users with restricted website translation languages only receive values for their allowed languages, also for requests without `filters`.
+> - Website translation languages configured on a user or role that are not valid system languages are ignored. A user without any valid website translation language left receives `403` for list, export and import (previously an empty result).
+> - All `translationLike` column filters of a request are applied (previously only the first one). A `translationLike` filter on a language that is not available to the user returns `422`. The filter only applies to translation listings.
+> - Additional sort filters on a locale are supported (previously failed with a database error).
+> - The translation list no longer uses the core translation listing cache for the list of keys, as that cache does not take the requested languages into account. Translation values are still cached per key and language.
+
+## Upgrade to 2025.4.13
+- [Data Objects] Fixed: `POST /data-objects/select-options` failed with `Call to a member function getDataFromEditmode() on null` as soon as `changedData` contained unsaved localized fields. The endpoint decoded `changedData` with the classic editmode format (localized fields as language → attribute) while Studio sends its own data format (attribute → language). `changedData` is now applied through the same data adapters as a regular save, so it expects the Studio data format for every field type. Language edit permissions of non-admin users are now respected per language as well, instead of being matched against attribute names.
+
+> **Note:** the internal `ApplyChangesHelper` (`DataObject\Legacy`) and its interface are deprecated and will be removed in 2027.1.0, since the select-options endpoint was their only consumer. They still expect the classic editmode data format; use `DataServiceInterface::updateEditableData()` with the Studio data format instead.
+
 ## Upgrade to 2025.4.7
 - [User Management] Fixed: `GET /user/{id}` could time out or run out of memory when the user was referenced by a very large number of DataObjects (e.g. via a `User`-type class field), because the full, unbounded list of referencing objects was hydrated and embedded in every response. The `objectDependencies.dependencies` array on the `User` schema is now capped at 20 entries, and a new paginated `GET /user/{id}/object-dependencies` endpoint was added to browse the full list.
 

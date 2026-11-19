@@ -36,6 +36,9 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use function count;
 
+/**
+ * @internal
+ */
 final class EditorCollectionController extends AbstractApiController
 {
     use PaginatedResponseTrait;

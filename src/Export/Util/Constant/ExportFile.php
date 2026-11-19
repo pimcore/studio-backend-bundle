@@ -26,4 +26,6 @@ enum ExportFile: string
     case CSV_FOLDER_NAME = 'download-csv-{id}';
     case XLSX_FILE_NAME = 'download-xlsx-{id}.xlsx';
     case XLSX_FOLDER_NAME = 'download-xlsx-{id}';
+    case DATA_FOLDER_NAME = 'export-data-{id}';
+    case DATA_BATCH_FILE_NAME = 'batch-%08d.json';
 }

@@ -17,6 +17,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -35,6 +36,9 @@ use function is_null;
  * Copied from old admin-ui-classic-bundle
  * https://github.com/pimcore/admin-ui-classic-bundle/blob/e71ee902ab1274a64d6b80d56af28f1855944dfd/src/Controller/Admin/DataObject/DataObjectController.php#L597
  * Use with caution, this is a copy from the admin-ui-classic-bundle
+ *
+ * @deprecated since 2025.4.13, will be removed in 2027.1.0. It expects the classic editmode data format,
+ *             use {@see DataServiceInterface::updateEditableData()} with the Studio data format instead.
  *
  * @internal
  */
@@ -55,6 +59,14 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
      */
     public function applyChanges(Concrete $object, array $changes): void
     {
+        trigger_deprecation(
+            'pimcore/studio-backend-bundle',
+            '2025.4.13',
+            'The "%s" class is deprecated and will be removed in 2027.1.0. Use "%s::updateEditableData()" instead.',
+            self::class,
+            DataServiceInterface::class
+        );
+
         foreach ($changes as $key => $value) {
             try {
                 $fd = $object->getClass()->getFieldDefinition($key);

@@ -29,6 +29,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
+/**
+ * @internal
+ */
 final class GetIdentifierController extends AbstractApiController
 {
     private const string ROUTE = '/class/custom-layout/identifier-data/{classDefinitionId}';
@@ -45,7 +48,7 @@ final class GetIdentifierController extends AbstractApiController
         name: 'pimcore_studio_api_class_custom_layout_get_identifier_data',
         methods: ['GET']
     )]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'class_custom_layout_get_identifier_data',

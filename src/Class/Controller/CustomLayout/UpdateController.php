@@ -54,7 +54,7 @@ final class UpdateController extends AbstractApiController
         name: 'pimcore_studio_api_class_custom_layout_update',
         methods: ['PUT'])
     ]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Put(
         path: self::PREFIX . '/class/custom-layout/{customLayoutId}',
         operationId: 'class_custom_layout_update',

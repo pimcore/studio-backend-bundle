@@ -19,6 +19,7 @@ use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Service\CreateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentTypeServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
@@ -43,6 +44,7 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Service\AdminLanguageServiceI
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserLoginServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapper;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -116,6 +118,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition = $container->getDefinition(CsvExportService::class);
         $definition->setArgument('$defaultDelimiter', $config['csv_settings']['default_delimiter']);
 
+        $definition = $container->getDefinition(CreateServiceInterface::class);
+        $definition->setArgument('$defaultControllers', $config['documents']['default_controllers']);
+
         $definition = $container->getDefinition(XlsxExportService::class);
         $definition->setArgument('$defaultDelimiter', $config['csv_settings']['default_delimiter']);
 
@@ -157,6 +162,13 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(MailServiceInterface::class);
         $definition->setArgument('$fromEmail', $config['studio_from_default_email']);
+
+        // Studio UI base path for the login token links; default it since studio-ui isn't a hard dependency.
+        if (!$container->hasParameter('pimcore_studio_ui.url_path')) {
+            $container->setParameter('pimcore_studio_ui.url_path', '/pimcore-studio');
+        }
+        $container->getDefinition(UserLoginServiceInterface::class)
+            ->setArgument('$studioPath', '%pimcore_studio_ui.url_path%');
 
         $definition = $container->getDefinition(WidgetServiceInterface::class);
         $definition->setArgument('$widgetTypes', $config['widget_types']);
@@ -364,6 +376,25 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition->setArgument(
             '$allowedFunctions',
             $config['twig']['sandbox_security_policy']['functions']
+        );
+
+        // Reuse core's own object/function protection lists instead of re-declaring them here,
+        // so this sandbox cannot silently drift from the one Pimcore core configures.
+        $definition->setArgument(
+            '$blockedClasses',
+            '%pimcore.templating.twig.sandbox_security_policy.blocked_classes%'
+        );
+        $definition->setArgument(
+            '$allowedClasses',
+            '%pimcore.templating.twig.sandbox_security_policy.allowed_classes%'
+        );
+        $definition->setArgument(
+            '$blockedFunctions',
+            '%pimcore.templating.twig.sandbox_security_policy.blocked_functions%'
+        );
+        $definition->setArgument(
+            '$hardBlockedMethods',
+            '%pimcore.templating.twig.sandbox_security_policy.hard_blocked_methods%'
         );
     }
 

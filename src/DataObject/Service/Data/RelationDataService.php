@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Element\Repository\RelatedElementRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
@@ -28,6 +29,8 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ElementMetadata;
 use Pimcore\Model\DataObject\Data\ObjectMetadata;
 use Pimcore\Model\Element\ElementInterface;
+use function array_unique;
+use function array_values;
 use function is_array;
 
 /**
@@ -39,7 +42,8 @@ final readonly class RelationDataService implements RelationDataServiceInterface
 
     public function __construct(
         private ElementDataServiceInterface $elementDataService,
-        private PatchServiceInterface $patchService
+        private PatchServiceInterface $patchService,
+        private RelatedElementRepositoryInterface $relatedElementRepository
     ) {
     }
 
@@ -68,6 +72,44 @@ final readonly class RelationDataService implements RelationDataServiceInterface
             'columns' => $relation->getColumns(),
             'data' => $relation->getData(),
         ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAdvancedRelationElementsData(array $relations): array
+    {
+        $idsByType = [];
+        foreach ($relations as $relation) {
+            [$type, $id] = $this->getTargetReference($relation);
+            $idsByType[$type][] = $id;
+        }
+
+        $elementsByType = [];
+        foreach ($idsByType as $type => $ids) {
+            $elementsByType[$type] = $this->relatedElementRepository->getRelatedElementsData(
+                $type,
+                array_values(array_unique($ids))
+            );
+        }
+
+        $data = [];
+        foreach ($relations as $relation) {
+            [$type, $id] = $this->getTargetReference($relation);
+            $element = $elementsByType[$type][$id] ?? null;
+            if ($element === null) {
+                continue;
+            }
+
+            $data[] = [
+                'element' => $element,
+                'fieldName' => $relation->getFieldname(),
+                'columns' => $relation->getColumns(),
+                'data' => $relation->getData(),
+            ];
+        }
+
+        return $data;
     }
 
     public function getSetterData(
@@ -99,6 +141,18 @@ final readonly class RelationDataService implements RelationDataServiceInterface
             $existingValues,
             $isAdvanced ? ElementTypes::TYPE_ELEMENT : null
         );
+    }
+
+    /**
+     * @return array{0: string, 1: int} core element type and id of the relation target
+     */
+    private function getTargetReference(ElementMetadata|ObjectMetadata $relation): array
+    {
+        if ($relation instanceof ObjectMetadata) {
+            return [ElementTypes::TYPE_OBJECT, $relation->getObjectId()];
+        }
+
+        return [(string) $relation->getElementType(), (int) $relation->getElementId()];
     }
 
     private function isPatchAction(?string $action = null): bool

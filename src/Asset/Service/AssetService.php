@@ -81,6 +81,7 @@ final readonly class AssetService implements AssetServiceInterface
             ElementTypes::TYPE_ASSET
         );
 
+        $assetQuery->orderFoldersFirst();
         $assetQuery->orderByPath('asc');
         $assetQuery->setUser($this->securityService->getCurrentUser());
 

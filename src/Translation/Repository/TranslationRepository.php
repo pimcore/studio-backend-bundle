@@ -146,14 +146,15 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
                         continue;
                     }
 
-                    $select->addSelect($join . '.text AS ' . $join);
+                    $alias = $db->quoteIdentifier($join);
+                    $select->addSelect($alias . '.text AS ' . $alias);
                     $select->leftJoin(
                         $tableName,
                         $tableName,
-                        $join,
+                        $alias,
                         '('
-                        . $join . '.key = ' . $tableName . '.key'
-                        . ' and ' . $join . '.language = ' . $db->quote($join)
+                        . $alias . '.key = ' . $tableName . '.key'
+                        . ' and ' . $alias . '.language = ' . $db->quote($join)
                         . ')'
                     );
                     $alreadyJoined[] = $join;

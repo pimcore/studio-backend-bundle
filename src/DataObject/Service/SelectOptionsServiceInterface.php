@@ -14,9 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\SelectOptionsParameter;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 
 /**
  * @internal
@@ -24,9 +25,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 interface SelectOptionsServiceInterface
 {
     /**
-     * @throws DatabaseException
+     * @throws ElementSavingFailedException
      * @throws NotFoundException
      * @throws InvalidArgumentException
+     * @throws UserNotFoundException
      */
     public function getSelectOptions(SelectOptionsParameter $selectOptionsParameter): array;
 }

@@ -59,7 +59,7 @@ final readonly class MultiSelectAdapter implements SetterDataInterface
         string $key,
         array $newData,
         ?FieldContextData $contextData = null
-    ): array {
+    ): ?array {
         $action = $newData[PatchDataKeys::ACTION->value];
         $fieldData = $newData[PatchDataKeys::DATA->value];
         if ($action === null || $action === PatcherActions::REPLACE->value) {
