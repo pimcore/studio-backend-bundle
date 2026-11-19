@@ -3,6 +3,12 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2025.4.20
+- [Documents] Security (GHSA): updating a document (`PUT /documents/{id}`) now checks the per-element workspace
+  permissions. This changes the behavior for users who relied on the `documents` permission alone:
+  - The caller needs the `save` permission on the document (not required for the `publish`/`unpublish` tasks, which
+    keep their own checks), otherwise the request returns `403` and nothing is changed.
+  - Moving a document to a different parent (`parentId`) additionally requires the `create` permission on the
+    destination document and returns `403` otherwise. A non-existent destination returns `404`.
 - [Users] Security (GHSA-x3pq-323g-f95v): a user who may manage users (`users` permission) can no longer hand out more
   privilege than they hold themselves. This changes the behavior of the following endpoints for non-admin user
   managers (admins are not affected):
