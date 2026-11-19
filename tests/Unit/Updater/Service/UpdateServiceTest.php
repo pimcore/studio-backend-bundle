@@ -110,18 +110,28 @@ final class UpdateServiceTest extends Unit
         $document = $this->documentMock(2, 1);
         $target = $this->documentMock(5, 1);
         $this->resolve([2 => $document, 5 => $target]);
+        $createCheckedOn = [];
         $this->securityService->method('hasElementPermission')
-            ->willReturnCallback(static function (ElementInterface $element, $user, string $permission): void {
-                if ($permission === 'create') {
-                    throw new ForbiddenException('denied');
+            ->willReturnCallback(
+                static function (ElementInterface $element, $user, string $permission) use ($target, &$createCheckedOn): void {
+                    if ($permission === 'create') {
+                        $createCheckedOn[] = $element;
+                        if ($element === $target) {
+                            throw new ForbiddenException('denied');
+                        }
+                    }
                 }
-            });
+            );
 
         $this->adapterLoader->expects($this->never())->method('loadAdapters');
         $this->saveService->expects($this->never())->method('save');
 
-        $this->expectException(ForbiddenException::class);
-        $this->service->update('document', 2, ['parentId' => 5, 'task' => 'save']);
+        try {
+            $this->service->update('document', 2, ['parentId' => 5, 'task' => 'save']);
+            $this->fail('Expected ForbiddenException');
+        } catch (ForbiddenException) {
+            $this->assertSame([$target], $createCheckedOn);
+        }
     }
 
     public function testDocumentWithUnchangedParentNeedsNoCreatePermission(): void
