@@ -50,10 +50,15 @@ final class TreeQueryTest extends Unit
             return $query;
         });
 
+        $user = $this->createMock(UserInterface::class);
+        // The query must carry the viewing user before filters run - otherwise the GDI
+        // workspace permission restrictions never apply to the search (PEES-2058 follow-up).
+        $query->expects($this->once())->method('setUser')->with($user)->willReturnSelf();
+
         $result = $this->createTreeQuery($query)->get(
             $this->createAssetWidget(),
             $this->createFilterService(),
-            $this->createMock(UserInterface::class),
+            $user,
             1
         );
 
@@ -89,12 +94,15 @@ final class TreeQueryTest extends Unit
         $dataObjectService = $this->createMock(DataObjectServiceInterface::class);
         $dataObjectService->expects($this->once())->method('setTreeSorting')->with($folder, $query, false);
 
+        $user = $this->createMock(UserInterface::class);
+        $query->expects($this->once())->method('setUser')->with($user)->willReturnSelf();
+
         $treeQuery = new TreeQuery($queryFactory, $settingsService, $dataObjectService, $elementService);
 
         $result = $treeQuery->get(
             $this->createDataObjectWidget($rootPath),
             $this->createFilterService(),
-            $this->createMock(UserInterface::class),
+            $user,
             101242
         );
 
