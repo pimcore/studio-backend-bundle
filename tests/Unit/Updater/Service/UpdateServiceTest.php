@@ -152,6 +152,24 @@ final class UpdateServiceTest extends Unit
         $this->assertNotContains('create', $permissions);
     }
 
+    public function testDocumentWithNullParentNeedsNoDestinationLookupOrCreatePermission(): void
+    {
+        $document = $this->documentMock(2, 1);
+        $this->resolve([2 => $document]);
+        $permissions = [];
+        $this->securityService->method('hasElementPermission')
+            ->willReturnCallback(static function ($element, $user, string $permission) use (&$permissions): void {
+                $permissions[] = $permission;
+            });
+        $this->adapterLoader->method('loadAdapters')->willReturn([]);
+        $this->saveService->expects($this->once())->method('save');
+
+        $this->service->update('document', 2, ['parentId' => null, 'task' => 'save']);
+
+        $this->assertContains('save', $permissions);
+        $this->assertNotContains('create', $permissions);
+    }
+
     public function testConcreteStillRequiresSavePermission(): void
     {
         $object = $this->createMock(Concrete::class);
