@@ -19,6 +19,7 @@ use Mcp\Capability\Registry\ReferenceHandlerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContextInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Model\Version\CoauthorContextInterface;
+use function sprintf;
 
 /**
  * The one stamping point of a configured MCP server: decorates the SDK's reference handler so that every
