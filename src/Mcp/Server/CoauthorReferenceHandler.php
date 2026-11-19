@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Server;
 
+use InvalidArgumentException;
 use Mcp\Capability\Registry\ElementReference;
 use Mcp\Capability\Registry\ReferenceHandlerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContextInterface;
@@ -41,6 +42,15 @@ final readonly class CoauthorReferenceHandler implements ReferenceHandlerInterfa
      */
     public function handle(ElementReference $reference, array $arguments): mixed
     {
+        // A server saved before the slug length limit existed can carry a slug the version column cannot hold.
+        // Refuse the call instead of letting the save fail or truncate the coauthor.
+        if (mb_strlen($this->serverSlug) > VersionCoauthor::MAX_COAUTHOR_LENGTH) {
+            throw new InvalidArgumentException(sprintf(
+                'The MCP server slug is longer than %d characters and cannot be stamped as version coauthor.',
+                VersionCoauthor::MAX_COAUTHOR_LENGTH
+            ));
+        }
+
         return $this->mcpCallContext->run(
             fn (): mixed => $this->coauthorContext->withCoauthor(
                 VersionCoauthor::TYPE_MCP_SERVER,

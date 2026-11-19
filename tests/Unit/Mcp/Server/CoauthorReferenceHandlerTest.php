@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mcp\Server;
 
 use Codeception\Test\Unit;
+use InvalidArgumentException;
 use Mcp\Capability\Registry\ElementReference;
 use Mcp\Capability\Registry\ReferenceHandlerInterface;
 use Mcp\Schema\Request\CallToolRequest;
@@ -113,6 +114,26 @@ final class CoauthorReferenceHandlerTest extends Unit
         $handler->handle(new ElementReference(['T', 'm']), []);
 
         $this->assertSame([false], $active);
+    }
+
+    public function testALegacyOverlongSlugRefusesTheCallBeforeTheToolRuns(): void
+    {
+        $called = false;
+        $handler = $this->handler(str_repeat('a', 256), static function () use (&$called): null {
+            $called = true;
+
+            return null;
+        });
+
+        try {
+            $handler->handle(new ElementReference(['T', 'm']), []);
+            $this->fail('Expected InvalidArgumentException');
+        } catch (InvalidArgumentException) {
+            // expected
+        }
+
+        $this->assertFalse($called);
+        $this->assertFalse($this->coauthorContext->isActive());
     }
 
     private function handler(string $slug, callable $tool): CoauthorReferenceHandler
