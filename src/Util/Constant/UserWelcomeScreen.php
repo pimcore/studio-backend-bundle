@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
  *
  * @internal
  */
-final class UserWelcomeScreen
+interface UserWelcomeScreen
 {
     public const int MAX_TARGET_LENGTH = 255;
 }
