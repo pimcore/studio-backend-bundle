@@ -47,6 +47,12 @@ The following steps are necessary during updating to newer versions.
   `oauth.client_credentials.access_token_ttl` seconds (default 900, minimum 60) and carry no refresh token. Nothing
   changes until the switch is turned on. The guarantee that every token acts for a logged-in human no longer holds
   once it is on. See [OAuth Server](./06_OAuth_Server.md#service-user-clients-client-credentials).
+- [User] Added: `welcomeScreenTarget`, the page Studio opens after login when the welcome screen is on, as
+  `<provider>:<id>` (e.g. `studio-dashboards:<dashboard id>`). The user (`GET /pimcore-studio/api/user/{id}`) and the
+  login user info (`GET /pimcore-studio/api/user/current-user-information`) always return it (`null` when nothing is
+  chosen); `PUT /pimcore-studio/api/user/{id}` and `PUT /pimcore-studio/api/user/update-profile` accept it. A missing
+  (or `null`) value keeps the stored target and an empty string clears it; more than 255 characters answer `422`.
+  Needs `pimcore/pimcore` with `User::getWelcomeScreenTarget()` (column `users.welcomeScreenTarget`).
 - [Elements] Changed: the `422` response of a failed element validation (`PUT /pimcore-studio/api/assets/{id}`,
   `.../data-objects/{id}`, `.../documents/{id}` and the synchronous `POST .../assets/add/{parentId}` and
   `POST .../assets/{id}/replace`) now carries `validationErrors` next to `message` and `errorKey`, one entry per failed

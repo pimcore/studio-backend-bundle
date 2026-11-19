@@ -99,7 +99,7 @@ final readonly class UpdateUser
         #[Property(description: 'Theme of the User', type: 'string', example: 'default')]
         private string $theme = 'default',
         #[Property(
-            description: 'Welcome screen opened after login, as <provider>:<id>. '
+            description: 'Welcome screen opened after login, as `<provider>:<id>`. '
                 . 'Omitted or null keeps the stored target, an empty string clears it',
             type: 'string',
             maxLength: UserWelcomeScreen::MAX_TARGET_LENGTH,

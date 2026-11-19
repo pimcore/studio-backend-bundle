@@ -43,6 +43,11 @@ final class UpdateUserProfileTest extends Unit
         $this->assertCount(0, $this->validator->validate($profile));
     }
 
+    public function testEmptyWelcomeScreenTargetIsValidBecauseItClearsTheTarget(): void
+    {
+        $this->assertCount(0, $this->validator->validate($this->createProfile('')));
+    }
+
     public function testOverlongWelcomeScreenTargetIsRejected(): void
     {
         $violations = $this->validator->validate(

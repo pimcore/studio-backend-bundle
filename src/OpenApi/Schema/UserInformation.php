@@ -129,7 +129,7 @@ final class UserInformation implements AdditionalAttributesInterface
         ]
         private readonly array $perspectives = [],
         #[Property(
-            description: 'Welcome screen opened after login, as <provider>:<id>',
+            description: 'Welcome screen opened after login, as `<provider>:<id>`',
             type: 'string',
             example: 'studio-dashboards:019c7555_49f6_712b_af5f_bd0c22b3d1f7',
             nullable: true
