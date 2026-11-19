@@ -21,8 +21,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use function str_repeat;
 
 /**
- * The profile payload is mapped straight onto this schema, so it carries the length limit of
- * the welcome screen dashboard ID column itself.
+ * The profile payload maps straight onto this schema, so it carries the target column's length limit.
  *
  * @internal
  */
@@ -37,31 +36,24 @@ final class UpdateUserProfileTest extends Unit
             ->getValidator();
     }
 
-    public function testWelcomeScreenDashboardIdDefaultsToNull(): void
+    public function testWelcomeScreenTargetAtTheLengthLimitIsAccepted(): void
     {
-        $this->assertNull($this->createProfile()->getWelcomeScreenDashboardId());
-    }
-
-    public function testWelcomeScreenDashboardIdAtTheLengthLimitIsAccepted(): void
-    {
-        $dashboardId = str_repeat('a', UserWelcomeScreen::MAX_DASHBOARD_ID_LENGTH);
-        $profile = $this->createProfile($dashboardId);
+        $profile = $this->createProfile(str_repeat('a', UserWelcomeScreen::MAX_TARGET_LENGTH));
 
         $this->assertCount(0, $this->validator->validate($profile));
-        $this->assertSame($dashboardId, $profile->getWelcomeScreenDashboardId());
     }
 
-    public function testOverlongWelcomeScreenDashboardIdIsRejected(): void
+    public function testOverlongWelcomeScreenTargetIsRejected(): void
     {
         $violations = $this->validator->validate(
-            $this->createProfile(str_repeat('a', UserWelcomeScreen::MAX_DASHBOARD_ID_LENGTH + 1))
+            $this->createProfile(str_repeat('a', UserWelcomeScreen::MAX_TARGET_LENGTH + 1))
         );
 
         $this->assertCount(1, $violations);
-        $this->assertSame('welcomeScreenDashboardId', $violations->get(0)->getPropertyPath());
+        $this->assertSame('welcomeScreenTarget', $violations->get(0)->getPropertyPath());
     }
 
-    private function createProfile(?string $welcomeScreenDashboardId = null): UpdateUserProfile
+    private function createProfile(?string $welcomeScreenTarget = null): UpdateUserProfile
     {
         return new UpdateUserProfile(
             firstname: null,
@@ -73,7 +65,7 @@ final class UpdateUserProfileTest extends Unit
             memorizeTabs: false,
             contentLanguages: [],
             keyBindings: [],
-            welcomeScreenDashboardId: $welcomeScreenDashboardId,
+            welcomeScreenTarget: $welcomeScreenTarget,
         );
     }
 }

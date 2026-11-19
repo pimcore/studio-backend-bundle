@@ -34,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'language', 'dateTimeLocale', 'theme', 'welcomeScreen', 'memorizeTabs', 'allowDirtyClose', 'hasImage',
         'contentLanguages', 'keyBindings', 'twoFactorAuthentication', 'activePerspective', 'perspectives',
         'allowedLanguagesForEditingWebsiteTranslations', 'allowedLanguagesForViewingWebsiteTranslations',
+        'welcomeScreenTarget',
     ],
     type: 'object'
 )]
@@ -128,12 +129,12 @@ final class UserInformation implements AdditionalAttributesInterface
         ]
         private readonly array $perspectives = [],
         #[Property(
-            description: 'ID of the dashboard opened as welcome screen',
+            description: 'Welcome screen opened after login, as <provider>:<id>',
             type: 'string',
-            example: '019c7555_49f6_712b_af5f_bd0c22b3d1f7',
+            example: 'studio-dashboards:019c7555_49f6_712b_af5f_bd0c22b3d1f7',
             nullable: true
         )]
-        private readonly ?string $welcomeScreenDashboardId = null,
+        private readonly ?string $welcomeScreenTarget = null,
     ) {
     }
 
@@ -261,8 +262,8 @@ final class UserInformation implements AdditionalAttributesInterface
         return $this->allowedLanguagesForViewingWebsiteTranslations;
     }
 
-    public function getWelcomeScreenDashboardId(): ?string
+    public function getWelcomeScreenTarget(): ?string
     {
-        return $this->welcomeScreenDashboardId;
+        return $this->welcomeScreenTarget;
     }
 }

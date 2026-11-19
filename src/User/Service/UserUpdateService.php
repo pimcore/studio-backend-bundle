@@ -46,7 +46,6 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         private UserRepositoryInterface $userRepository,
         private UpdateServiceInterface $updateService,
         private UserPerspectiveServiceInterface $userPerspectiveService,
-        private UserSettingsServiceInterface $userSettingsService,
         private ValidatorInterface $validator,
     ) {
     }
@@ -92,9 +91,8 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         if ($user instanceof User) {
             $user->setDatetimeLocale($updateUserParameter->getDatetimeLocale());
             $user->setTheme($updateUserParameter->getTheme());
+            $this->updateWelcomeScreenTarget($user, $updateUserParameter->getWelcomeScreenTarget());
         }
-
-        $this->updateWelcomeScreenDashboardId($updateUserParameter->getWelcomeScreenDashboardId(), $user);
 
         $user = $this->updateService->updatePermissions($updateUserParameter->getPermissions(), $user);
         $user = $this->updateService->updateRoles($updateUserParameter->getRoles(), $user);
@@ -130,7 +128,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         $user->setKeyBindings(
             $this->getKeyBindingsString($params->getKeyBindings())
         );
-        $this->updateWelcomeScreenDashboardId($params->getWelcomeScreenDashboardId(), $user);
+        $this->updateWelcomeScreenTarget($user, $params->getWelcomeScreenTarget());
 
         $this->userRepository->updateUser($user);
     }
@@ -185,14 +183,12 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         $this->userPerspectiveService->updateActivePerspective($perspectiveId, $user);
     }
 
-    private function updateWelcomeScreenDashboardId(?string $welcomeScreenDashboardId, UserInterface $user): void
+    private function updateWelcomeScreenTarget(User $user, ?string $welcomeScreenTarget): void
     {
-        // null (field omitted) keeps the stored path, an empty string clears it
-        if ($welcomeScreenDashboardId === null) {
-            return;
+        // an omitted field arrives as null and keeps the stored target
+        if ($welcomeScreenTarget !== null) {
+            $user->setWelcomeScreenTarget($welcomeScreenTarget === '' ? null : $welcomeScreenTarget);
         }
-
-        $this->userSettingsService->updateWelcomeScreenDashboardId($welcomeScreenDashboardId, $user);
     }
 
     /**

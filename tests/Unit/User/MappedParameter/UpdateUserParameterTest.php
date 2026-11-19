@@ -21,8 +21,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use function str_repeat;
 
 /**
- * The welcome screen dashboard ID is stored in a VARCHAR(255) column, so overlong input has to be
- * rejected by `PUT /user/{id}` instead of failing or being truncated during the save.
+ * The welcome screen target column is VARCHAR(255): `PUT /user/{id}` rejects longer input.
  *
  * @internal
  */
@@ -37,36 +36,29 @@ final class UpdateUserParameterTest extends Unit
             ->getValidator();
     }
 
-    public function testWelcomeScreenDashboardIdDefaultsToNull(): void
+    public function testWelcomeScreenTargetAtTheLengthLimitIsAccepted(): void
     {
-        $this->assertNull($this->createParameter()->getWelcomeScreenDashboardId());
-    }
-
-    public function testWelcomeScreenDashboardIdAtTheLengthLimitIsAccepted(): void
-    {
-        $dashboardId = str_repeat('a', UserWelcomeScreen::MAX_DASHBOARD_ID_LENGTH);
-        $parameter = $this->createParameter($dashboardId);
+        $parameter = $this->createParameter(str_repeat('a', UserWelcomeScreen::MAX_TARGET_LENGTH));
 
         $this->assertCount(0, $this->validator->validate($parameter));
-        $this->assertSame($dashboardId, $parameter->getWelcomeScreenDashboardId());
     }
 
-    public function testEmptyWelcomeScreenDashboardIdIsValidBecauseItClearsTheId(): void
+    public function testEmptyWelcomeScreenTargetIsValidBecauseItClearsTheTarget(): void
     {
         $this->assertCount(0, $this->validator->validate($this->createParameter('')));
     }
 
-    public function testOverlongWelcomeScreenDashboardIdIsRejected(): void
+    public function testOverlongWelcomeScreenTargetIsRejected(): void
     {
         $violations = $this->validator->validate(
-            $this->createParameter(str_repeat('a', UserWelcomeScreen::MAX_DASHBOARD_ID_LENGTH + 1))
+            $this->createParameter(str_repeat('a', UserWelcomeScreen::MAX_TARGET_LENGTH + 1))
         );
 
         $this->assertCount(1, $violations);
-        $this->assertSame('welcomeScreenDashboardId', $violations->get(0)->getPropertyPath());
+        $this->assertSame('welcomeScreenTarget', $violations->get(0)->getPropertyPath());
     }
 
-    private function createParameter(?string $welcomeScreenDashboardId = null): UpdateUserParameter
+    private function createParameter(?string $welcomeScreenTarget = null): UpdateUserParameter
     {
         return new UpdateUserParameter(
             email: null,
@@ -93,7 +85,7 @@ final class UpdateUserParameterTest extends Unit
             assetWorkspaces: [],
             dataObjectWorkspaces: [],
             documentWorkspaces: [],
-            welcomeScreenDashboardId: $welcomeScreenDashboardId,
+            welcomeScreenTarget: $welcomeScreenTarget,
         );
     }
 }

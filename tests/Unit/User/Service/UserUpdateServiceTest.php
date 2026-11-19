@@ -31,7 +31,6 @@ use Pimcore\Bundle\StudioBackendBundle\User\Schema\UpdateUserProfile;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateService;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\UserSettingsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateService;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
@@ -44,7 +43,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class UserUpdateServiceTest extends Unit
 {
-    private const string WELCOME_SCREEN_DASHBOARD_ID = '019c7555_49f6_712b_af5f_bd0c22b3d1f7';
+    private const string WELCOME_SCREEN_TARGET = 'studio-dashboards:019c7555_49f6_712b_af5f_bd0c22b3d1f7';
 
     public function testNonAdminCannotUpdateAdminUser(): void
     {
@@ -179,64 +178,45 @@ final class UserUpdateServiceTest extends Unit
         );
     }
 
-    public function testUpdateUserStoresTheWelcomeScreenDashboardId(): void
-    {
-        $targetUser = $this->createTargetUser(isAdmin: false);
-        $service = $this->createService(
-            targetUser: $targetUser,
-            currentUser: $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
-            userSettingsService: $this->createUserSettingsService(self::WELCOME_SCREEN_DASHBOARD_ID, $targetUser)
-        );
+    /**
+     * @dataProvider welcomeScreenTargetProvider
+     */
+    public function testUpdateUserAppliesTheWelcomeScreenTarget(
+        ?string $stored,
+        ?string $sent,
+        ?string $expected
+    ): void {
+        $targetUser = $this->createTargetUser(isAdmin: false)->setWelcomeScreenTarget($stored);
+        $service = $this->createService($targetUser, $this->makeEmpty(UserInterface::class, ['isAdmin' => true]));
 
-        $service->updateUserById($this->createUpdateParams(welcomeScreenDashboardId: self::WELCOME_SCREEN_DASHBOARD_ID), 42);
+        $service->updateUserById($this->createUpdateParams(welcomeScreenTarget: $sent), 42);
+
+        $this->assertSame($expected, $targetUser->getWelcomeScreenTarget());
     }
 
-    public function testUpdateUserPassesAnEmptyWelcomeScreenDashboardIdOnToClearIt(): void
-    {
-        $targetUser = $this->createTargetUser(isAdmin: false);
-        $service = $this->createService(
-            targetUser: $targetUser,
-            currentUser: $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
-            userSettingsService: $this->createUserSettingsService('', $targetUser)
-        );
+    /**
+     * @dataProvider welcomeScreenTargetProvider
+     */
+    public function testUpdateProfileAppliesTheWelcomeScreenTarget(
+        ?string $stored,
+        ?string $sent,
+        ?string $expected
+    ): void {
+        $user = $this->createTargetUser(isAdmin: false)->setWelcomeScreenTarget($stored);
+        $service = $this->createService($user, $user);
 
-        $service->updateUserById($this->createUpdateParams(welcomeScreenDashboardId: ''), 42);
+        $service->updateUserProfile($user, $this->createProfileParams($sent));
+
+        $this->assertSame($expected, $user->getWelcomeScreenTarget());
     }
 
-    public function testUpdateUserWithoutWelcomeScreenDashboardIdKeepsTheStoredDashboard(): void
+    public static function welcomeScreenTargetProvider(): array
     {
-        $targetUser = $this->createTargetUser(isAdmin: false);
-        $service = $this->createService(
-            targetUser: $targetUser,
-            currentUser: $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
-            userSettingsService: $this->createUserSettingsService(null, $targetUser)
-        );
-
-        $service->updateUserById($this->createUpdateParams(), 42);
-    }
-
-    public function testUpdateProfileStoresTheWelcomeScreenDashboardId(): void
-    {
-        $user = $this->createTargetUser(isAdmin: false);
-        $service = $this->createService(
-            targetUser: $user,
-            currentUser: $user,
-            userSettingsService: $this->createUserSettingsService(self::WELCOME_SCREEN_DASHBOARD_ID, $user)
-        );
-
-        $service->updateUserProfile($user, $this->createProfileParams(self::WELCOME_SCREEN_DASHBOARD_ID));
-    }
-
-    public function testUpdateProfileWithoutWelcomeScreenDashboardIdKeepsTheStoredDashboard(): void
-    {
-        $user = $this->createTargetUser(isAdmin: false);
-        $service = $this->createService(
-            targetUser: $user,
-            currentUser: $user,
-            userSettingsService: $this->createUserSettingsService(null, $user)
-        );
-
-        $service->updateUserProfile($user, $this->createProfileParams());
+        return [
+            'a new target is stored' => [null, self::WELCOME_SCREEN_TARGET, self::WELCOME_SCREEN_TARGET],
+            'an empty string clears it' => [self::WELCOME_SCREEN_TARGET, '', null],
+            'an omitted field keeps it' => [self::WELCOME_SCREEN_TARGET, null, self::WELCOME_SCREEN_TARGET],
+        ];
     }
 
     private function createValidator(int $violations): ValidatorInterface
@@ -401,7 +381,6 @@ final class UserUpdateServiceTest extends Unit
                 $securityService,
             ),
             $this->makeEmpty(UserPerspectiveServiceInterface::class),
-            $this->makeEmpty(UserSettingsServiceInterface::class),
             $this->makeEmpty(ValidatorInterface::class),
         );
     }
@@ -421,7 +400,7 @@ final class UserUpdateServiceTest extends Unit
     private function createUpdateParams(
         bool $admin = false,
         string $email = 'test@example.com',
-        ?string $welcomeScreenDashboardId = null
+        ?string $welcomeScreenTarget = null
     ): UpdateUserParameter {
         return new UpdateUserParameter(
             email: $email,
@@ -448,25 +427,11 @@ final class UserUpdateServiceTest extends Unit
             assetWorkspaces: [],
             dataObjectWorkspaces: [],
             documentWorkspaces: [],
-            welcomeScreenDashboardId: $welcomeScreenDashboardId,
+            welcomeScreenTarget: $welcomeScreenTarget,
         );
     }
 
-    private function createUserSettingsService(?string $expectedDashboardId, User $expectedUser): UserSettingsServiceInterface
-    {
-        $update = $expectedDashboardId === null
-            ? Expected::never()
-            : Expected::once(function (?string $dashboardId, UserInterface $user) use ($expectedDashboardId, $expectedUser): void {
-                $this->assertSame($expectedDashboardId, $dashboardId);
-                $this->assertSame($expectedUser, $user);
-            });
-
-        return $this->makeEmpty(UserSettingsServiceInterface::class, [
-            'updateWelcomeScreenDashboardId' => $update,
-        ]);
-    }
-
-    private function createProfileParams(?string $welcomeScreenDashboardId = null): UpdateUserProfile
+    private function createProfileParams(?string $welcomeScreenTarget): UpdateUserProfile
     {
         return new UpdateUserProfile(
             firstname: 'Test',
@@ -478,7 +443,7 @@ final class UserUpdateServiceTest extends Unit
             memorizeTabs: false,
             contentLanguages: [],
             keyBindings: [],
-            welcomeScreenDashboardId: $welcomeScreenDashboardId,
+            welcomeScreenTarget: $welcomeScreenTarget,
         );
     }
 
@@ -486,8 +451,7 @@ final class UserUpdateServiceTest extends Unit
         User $targetUser,
         UserInterface $currentUser,
         ?AuthenticationResolverInterface $authenticationResolver = null,
-        ?ValidatorInterface $validator = null,
-        ?UserSettingsServiceInterface $userSettingsService = null
+        ?ValidatorInterface $validator = null
     ): UserUpdateService {
         $updateService = $this->makeEmpty(UpdateServiceInterface::class, [
             'updatePermissions' => $targetUser,
@@ -510,7 +474,6 @@ final class UserUpdateServiceTest extends Unit
             ]),
             $updateService,
             $this->makeEmpty(UserPerspectiveServiceInterface::class),
-            $userSettingsService ?? $this->makeEmpty(UserSettingsServiceInterface::class),
             $validator ?? $this->makeEmpty(ValidatorInterface::class),
         );
     }

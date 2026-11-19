@@ -66,15 +66,15 @@ final readonly class UpdateUserProfile
         #[Property(description: 'Theme of the User', type: 'string', example: 'default')]
         private string $theme = 'default',
         #[Property(
-            description: 'ID of the dashboard opened as welcome screen. '
-                . 'Omitted or null keeps the stored dashboard, an empty string clears it',
+            description: 'Welcome screen opened after login, as <provider>:<id>. '
+                . 'Omitted or null keeps the stored target, an empty string clears it',
             type: 'string',
-            maxLength: UserWelcomeScreen::MAX_DASHBOARD_ID_LENGTH,
-            example: '019c7555_49f6_712b_af5f_bd0c22b3d1f7',
+            maxLength: UserWelcomeScreen::MAX_TARGET_LENGTH,
+            example: 'studio-dashboards:019c7555_49f6_712b_af5f_bd0c22b3d1f7',
             nullable: true
         )]
-        #[Length(max: UserWelcomeScreen::MAX_DASHBOARD_ID_LENGTH)]
-        private ?string $welcomeScreenDashboardId = null,
+        #[Length(max: UserWelcomeScreen::MAX_TARGET_LENGTH)]
+        private ?string $welcomeScreenTarget = null,
     ) {
     }
 
@@ -131,8 +131,8 @@ final readonly class UpdateUserProfile
         return $this->keyBindings;
     }
 
-    public function getWelcomeScreenDashboardId(): ?string
+    public function getWelcomeScreenTarget(): ?string
     {
-        return $this->welcomeScreenDashboardId;
+        return $this->welcomeScreenTarget;
     }
 }
