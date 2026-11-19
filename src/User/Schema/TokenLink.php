@@ -18,6 +18,9 @@ use OpenApi\Attributes\Schema;
 
 /**
  * @internal
+ *
+ * @deprecated since 2026.3.5 and without effect, only kept for the deprecated TokenLinkRequestBody.
+ *             Will be removed in the next major version.
  */
 #[Schema(
     title: 'TokenLink',

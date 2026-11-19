@@ -15,9 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Repository;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\EmailLogResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Email\MappedParameter\EmailLogParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Model\Tool\Email\Log;
 use Pimcore\Model\Tool\Email\Log\Listing;
 use function in_array;
@@ -37,7 +37,7 @@ final readonly class EmailLogRepository implements EmailLogRepositoryInterface
     }
 
     public function getListing(
-        CollectionParameters $parameters,
+        EmailLogParameters $parameters,
         ?string $email = null,
     ): Listing {
         $limit = $parameters->getPageSize();
@@ -46,6 +46,15 @@ final readonly class EmailLogRepository implements EmailLogRepositoryInterface
         $listing->setOffset(($parameters->getPage() - 1) * $limit);
         $listing->setOrderKey(self::DEFAULT_ORDER_KEY);
         $listing->setOrder('DESC');
+
+        return $this->applyDocumentFilter($listing, $parameters);
+    }
+
+    private function applyDocumentFilter(Listing $listing, EmailLogParameters $parameters): Listing
+    {
+        if ($parameters->getDocumentId() !== null) {
+            $listing->setCondition('documentId = ?', [$parameters->getDocumentId()]);
+        }
 
         return $listing;
     }

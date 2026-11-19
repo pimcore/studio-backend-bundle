@@ -18,12 +18,15 @@ use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\CloneData;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\ExecutionEngine\CloneService;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Folder;
 use Pimcore\Model\UserInterface;
+use ReflectionMethod;
 
 /**
  * @internal
@@ -60,6 +63,28 @@ final class CloneServiceTest extends Unit
         );
 
         $this->assertSame($expectedLookupPath, $lookedUpPath);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testEnvironmentDataMapsTheOriginalRootToTheCopiedRoot(): void
+    {
+        $service = $this->getCloneService('/source', '/target/source', $lookedUpPath);
+        $getEnvironmentData = new ReflectionMethod($service, 'getEnvironmentData');
+
+        $environmentData = $getEnvironmentData->invoke(
+            $service,
+            $this->makeEmpty(Document::class, ['getId' => self::ORIGINAL_PARENT_ID]),
+            $this->makeEmpty(Document::class, ['getId' => self::NEW_PARENT_ID]),
+            new CloneData('fr', false, true)
+        );
+
+        // the root is copied before the job starts, so the job would not know it otherwise
+        $this->assertSame(
+            [self::ORIGINAL_PARENT_ID => self::NEW_PARENT_ID],
+            $environmentData[EnvironmentVariables::REWRITE_CONFIGURATION->value]
+        );
     }
 
     /**

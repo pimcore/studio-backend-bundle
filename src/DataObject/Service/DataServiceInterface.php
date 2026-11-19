@@ -72,9 +72,16 @@ interface DataServiceInterface
     public function getPreviewFieldName(Data $fieldDefinition): string;
 
     /**
+     * @param bool $applyRemoteChanges false skips fields that persist other elements (e.g. reverse relations)
+     *
      * @throws ElementSavingFailedException|FieldValidationFailedException|ForbiddenException
      */
-    public function updateEditableData(Concrete $element, array $editableData, UserInterface $user): void;
+    public function updateEditableData(
+        Concrete $element,
+        array $editableData,
+        UserInterface $user,
+        bool $applyRemoteChanges = true
+    ): void;
 
     /**
      * @throws DatabaseException|NotFoundException

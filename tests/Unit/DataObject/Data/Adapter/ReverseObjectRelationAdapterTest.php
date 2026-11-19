@@ -43,6 +43,7 @@ use Psr\Log\LoggerInterface;
 use function array_map;
 use function in_array;
 use function is_array;
+use function is_subclass_of;
 
 require_once __DIR__ . '/../../../../Support/Fixture/ReverseRelationOwnerTestObject.php';
 
@@ -640,7 +641,8 @@ final class ReverseObjectRelationAdapterTest extends Unit
     public function testAdapterIsMarkedAsRemoteStorage(): void
     {
         $this->assertTrue(
-            is_subclass_of(ReverseObjectRelationAdapter::class, RemoteStorageDataInterface::class)
+            is_subclass_of(ReverseObjectRelationAdapter::class, RemoteStorageDataInterface::class),
+            'select options lookup and draft saves skip the reverse relation only through this marker'
         );
     }
 

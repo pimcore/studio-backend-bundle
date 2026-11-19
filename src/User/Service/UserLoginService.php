@@ -25,13 +25,15 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\TokenLink;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use function in_array;
+use function rtrim;
+use function sprintf;
+use function urlencode;
 
 /**
  * @internal
@@ -50,6 +52,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         private SecurityServiceInterface $securityService,
         private SettingsProviderInterface $settingsProvider,
         private SiteRepositoryInterface $siteRepository,
+        private string $studioPath = '/pimcore-studio',
     ) {
     }
 
@@ -81,10 +84,20 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         }
     }
 
-    public function getLoginTokenUrl(int $id, TokenLink $parameter): string
+    public function getLoginTokenUrl(int $id): string
     {
         $user = $this->userRepository->getUserById($id);
-        if ($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
+        $currentUser = $this->securityService->getCurrentUser();
+
+        if ($user->isAdmin() && !$currentUser->isAdmin()) {
+            throw new ForbiddenException(
+                'Cannot generate login token URL for this user',
+                HttpResponseErrorKeys::LOGIN_TOKEN_NON_ADMIN->value
+            );
+        }
+
+        // only superusers may log in as somebody else; everyone else only gets a link for their own account
+        if (!$currentUser->isAdmin() && $user->getId() !== $currentUser->getId()) {
             throw new ForbiddenException(
                 'Cannot generate login token URL for this user',
                 HttpResponseErrorKeys::LOGIN_TOKEN_NON_ADMIN->value
@@ -101,14 +114,35 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         /** @var User $user */
         $token = $this->authenticationResolver->generateTokenByUser($user);
 
-        if ($parameter->getTokenLoginUrl() !== '') {
-            return $parameter->getTokenLoginUrl() . '?token=' . $token;
-        }
+        return sprintf(
+            '%s%s%s/login/?token=%s',
+            $this->getOrigin(),
+            $this->urlGenerator->getContext()->getBaseUrl(),
+            rtrim($this->studioPath, '/'),
+            urlencode($token)
+        );
+    }
 
-        return $this->urlGenerator->generate(
+    /**
+     * Scheme, host and port the Studio is served from, taken from the router context
+     * (the same origin the absolute API URLs are generated for). The application base URL
+     * (e.g. /cms) is added separately by the caller.
+     */
+    private function getOrigin(): string
+    {
+        $apiUrl = $this->urlGenerator->generate(
             TokenLoginController::ROUTE_NAME,
-            ['token' => $token],
+            [],
             UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
+        $parts = parse_url($apiUrl);
+
+        return sprintf(
+            '%s://%s%s',
+            $parts['scheme'] ?? 'https',
+            $parts['host'] ?? '',
+            isset($parts['port']) ? ':' . $parts['port'] : ''
         );
     }
 

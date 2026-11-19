@@ -17,9 +17,9 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Email\Controller\CollectionController;
+use Pimcore\Bundle\StudioBackendBundle\Email\MappedParameter\EmailLogParameters;
 use Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailLogServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Voter\HasOneOfUserPermissionVoter;
@@ -136,6 +136,6 @@ final class CollectionControllerTest extends Unit
             }
         }
 
-        return $controller->getEmailLogEntries(new CollectionParameters());
+        return $controller->getEmailLogEntries(new EmailLogParameters());
     }
 }

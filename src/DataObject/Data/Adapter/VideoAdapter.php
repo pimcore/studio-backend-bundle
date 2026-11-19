@@ -66,8 +66,14 @@ final readonly class VideoAdapter implements SetterDataInterface, DataNormalizer
         $type = $adapterData['type'] ?? null;
         $poster = $adapterData['poster'] ?? null;
         if ($type === ElementTypes::TYPE_ASSET) {
-            $adapterData['data'] = $this->resolveAssetIfNeeded($type, $adapterData['data']['id']);
+            $adapterData['data'] = $this->resolveAssetIfNeeded($type, $adapterData['data']['id'] ?? null);
             $adapterData['poster'] = $this->getAssetById($poster ? $poster['id'] : null);
+        }
+
+        // Mirror Video::getDataFromEditmode(): without an actual video there is no value, so that a
+        // mandatory video field is still reported as empty after confirming the settings dialog.
+        if (empty($adapterData['data'])) {
+            return null;
         }
 
         return $this->createVideoObject($adapterData);
