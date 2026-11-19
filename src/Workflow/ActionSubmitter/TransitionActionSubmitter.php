@@ -24,6 +24,7 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Workflow\Manager;
+use Pimcore\Workflow\Transition;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 /**
@@ -66,10 +67,26 @@ final readonly class TransitionActionSubmitter implements TransitionActionSubmit
             );
         } catch (Exception $e) {
             throw new WorkflowActionSubmissionException(
-                $transitionName,
+                $this->getTransitionLabel($workflow, $transitionName),
                 $e->getMessage()
             );
         }
+    }
+
+    /**
+     * The label shown to the user for the transition, falling back to its name.
+     */
+    private function getTransitionLabel(WorkflowInterface $workflow, string $transitionName): string
+    {
+        foreach ($workflow->getDefinition()->getTransitions() as $transition) {
+            if ($transition->getName() !== $transitionName) {
+                continue;
+            }
+
+            return $transition instanceof Transition ? $transition->getLabel() : $transitionName;
+        }
+
+        return $transitionName;
     }
 
     private function validateElementType(ElementInterface $element): Asset|Concrete|PageSnippet
