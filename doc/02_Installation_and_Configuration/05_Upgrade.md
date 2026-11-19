@@ -3,6 +3,10 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Elements] Deprecated: `coauthorType` and `coauthor` in the bodies of the element patch and update endpoints
+  and of `PUT /pimcore-studio/api/versions/{id}`. They still work, are marked `deprecated` in the OpenAPI schema and
+  raise a deprecation notice. They are removed in 2027.1 (https://github.com/pimcore/platform-version/issues/814).
+  The coauthor is set by the server.
 - [Authentication] Deprecated: static MCP personal access tokens (`pimcore_studio_backend.mcp.authentication.tokens`,
   handled by `PatAuthenticator`). They keep working on 2026.x; configuring them and each request they authenticate
   raise a deprecation. They are removed in 2027.1. Migrate integrations to MCP access tokens issued for a dedicated

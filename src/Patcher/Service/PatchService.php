@@ -136,7 +136,7 @@ final readonly class PatchService implements PatchServiceInterface
                 ),
             ],
             [new ElementDescriptor($elementType, $folderId)],
-            [$folderId => $patchFolderParameter->getData()],
+            [$folderId => $this->coauthorService->withoutPayloadCoauthorInMcpCall($patchFolderParameter->getData())],
         );
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(
@@ -419,7 +419,12 @@ final readonly class PatchService implements PatchServiceInterface
                 ),
                 $patchData
             ),
-            environmentData: array_column($patchData, null, 'id'),
+            // The worker runs outside the MCP call: a coauthor claimed in the payload must not reach it.
+            environmentData: array_column(
+                array_map($this->coauthorService->withoutPayloadCoauthorInMcpCall(...), $patchData),
+                null,
+                'id'
+            ),
         );
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(

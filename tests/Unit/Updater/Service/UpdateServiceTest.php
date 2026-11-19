@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterfa
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContext;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\AdapterLoaderInterface;
@@ -53,10 +54,13 @@ final class UpdateServiceTest extends Unit
 
     private CoauthorContext $coauthorContext;
 
+    private McpCallContext $mcpCallContext;
+
     protected function _before(): void
     {
         $this->element = $this->makeEmpty(Asset::class);
         $this->coauthorContext = new CoauthorContext();
+        $this->mcpCallContext = new McpCallContext();
     }
 
     public function testUpdateActivatesCoauthorContextDuringSaveAndRestoresAfter(): void
@@ -117,6 +121,38 @@ final class UpdateServiceTest extends Unit
         $this->assertSame(['type' => 'automation', 'coauthor' => 'import-job'], $captured[0]);
         $this->assertSame('agent', $this->coauthorContext->getType());
         $this->assertSame('data-management', $this->coauthorContext->getCoauthor());
+    }
+
+    public function testUpdateInsideMcpCallIgnoresPayloadCoauthorAndKeepsTheMcpCoauthor(): void
+    {
+        $captured = [];
+        $service = $this->createService(function () use (&$captured): void {
+            $captured[] = [$this->coauthorContext->getType(), $this->coauthorContext->getCoauthor()];
+        });
+
+        $this->coauthorContext->withCoauthor('mcp-server', 'pme-test', function () use ($service): void {
+            $this->mcpCallContext->run(fn () => $service->update(ElementTypes::TYPE_ASSET, self::ELEMENT_ID, [
+                'coauthorType' => 'agent',
+                'coauthor' => 'claimed-by-the-payload',
+            ]));
+        });
+
+        $this->assertSame([['mcp-server', 'pme-test']], $captured);
+    }
+
+    public function testUpdateInsideMcpCallWithoutStampSavesWithoutCoauthor(): void
+    {
+        $captured = [];
+        $service = $this->createService(function () use (&$captured): void {
+            $captured[] = $this->coauthorContext->isActive();
+        });
+
+        $this->mcpCallContext->run(fn () => $service->update(ElementTypes::TYPE_ASSET, self::ELEMENT_ID, [
+            'coauthorType' => 'agent',
+            'coauthor' => 'claimed-by-the-payload',
+        ]));
+
+        $this->assertSame([false], $captured);
     }
 
     public function testUpdateRestoresContextWhenSaveThrows(): void
@@ -345,7 +381,7 @@ final class UpdateServiceTest extends Unit
             elementSaveService: $this->makeEmpty(ElementSaveServiceInterface::class, [
                 'save' => $onSave,
             ]),
-            coauthorService: new CoauthorService($this->coauthorContext),
+            coauthorService: new CoauthorService($this->coauthorContext, $this->mcpCallContext),
             languageService: $this->makeEmpty(LanguageServiceInterface::class, [
                 'getUserAllowedLanguagesWithLanguageIndependentValue' => static function ($o, $u, string $permission): array {
                     self::assertSame(ElementPermissions::LANGUAGE_VIEW_PERMISSIONS, $permission);

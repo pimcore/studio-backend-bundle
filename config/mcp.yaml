@@ -90,6 +90,10 @@ services:
         class: Symfony\Component\Cache\Psr16Cache
         arguments: ['@pimcore_studio_backend.mcp.session']
 
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContext: ~
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContextInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContext
+
     Pimcore\Bundle\StudioBackendBundle\Mcp\Server\McpServerFactory:
         arguments:
             $sessionCache: '@pimcore_studio_backend.mcp.session_cache'
