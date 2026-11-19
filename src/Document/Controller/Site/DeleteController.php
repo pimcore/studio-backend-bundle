@@ -49,7 +49,7 @@ final class DeleteController extends AbstractApiController
      * @throws ForbiddenException|UserNotFoundException|NotFoundException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_documents_site_delete', methods: ['DELETE'])]
-    #[IsGranted(UserPermissions::DOCUMENTS->value)]
+    #[IsGranted(UserPermissions::SITES->value)]
     #[Delete(
         path: self::PREFIX . self::ROUTE,
         operationId: 'document_delete_site',
