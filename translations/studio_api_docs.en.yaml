@@ -2036,6 +2036,17 @@ class_select_option_get_usages_description: |
     Get the list of class definitions and fields that use a specific select option configuration.
 class_select_option_get_usages_summary: Get usages of a select option configuration
 class_select_option_get_usages_success_response: List of classes and fields using the select option configuration
+class_select_option_export_description: |
+    Export a select option configuration as JSON for the given <strong>{id}</strong>.
+    The <strong>{id}</strong> must be an ID of an existing select option configuration.
+class_select_option_export_summary: Export a select option configuration as JSON
+class_select_option_export_success_response: Exported select option configuration as JSON
+class_select_option_import_description: |
+    Import a select option configuration from a previously exported JSON file for the given <strong>{id}</strong>.
+    Replaces the configuration data and keeps the <strong>{id}</strong>; an ID inside the file is ignored.
+    Admin-only configurations require admin access.
+class_select_option_import_summary: Import a select option configuration from JSON file
+class_select_option_import_success_response: Successfully imported select option configuration
 class_custom_layout_get: Get custom layout by given id
 class_custom_layout_get_description: Get custom layout by given id
 class_custom_layout_get_summary: Get custom layout by given id
