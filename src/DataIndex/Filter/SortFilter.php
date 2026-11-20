@@ -19,6 +19,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolve
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ClassIdParametersInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ClassNameParametersInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter as SortFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParameterInterface;
@@ -82,16 +83,26 @@ final class SortFilter implements FilterInterface
         SortFilterParameterInterface $parameters,
         QueryInterface $query
     ): ?ClassDefinition {
-        if (!$query instanceof DataObjectQueryInterface || !$parameters instanceof ClassNameParametersInterface) {
+        if (!$query instanceof DataObjectQueryInterface) {
             return null;
         }
 
-        $className = $parameters->getClassName();
-        if ($className === null || $className === '') {
-            return null;
+        if ($parameters instanceof ClassNameParametersInterface) {
+            $className = $parameters->getClassName();
+            if ($className !== null && $className !== '') {
+                return $this->classDefinitionResolver->getByName($className);
+            }
         }
 
-        return $this->classDefinitionResolver->getByName($className);
+        // The folder export and batch edit pass only the class id.
+        if ($parameters instanceof ClassIdParametersInterface) {
+            $classId = $parameters->getClassId();
+            if ($classId !== null && $classId !== '') {
+                return $this->classDefinitionResolver->getById($classId);
+            }
+        }
+
+        return null;
     }
 
     private function getIndexField(SortFilterParameter $sortFilter, ?ClassDefinition $classDefinition): string

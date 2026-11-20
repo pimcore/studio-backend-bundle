@@ -205,11 +205,37 @@ final class SortFilterTest extends Unit
         ];
     }
 
-    public function testDataObjectSortWithoutClassNameKeepsTheKey(): void
+    public function testDataObjectSortWithOnlyAClassIdUsesTheClassDefinition(): void
     {
         $sortFilter = $this->createSortFilter(
             $this->makeEmpty(ClassDefinitionResolverInterface::class, [
                 'getByName' => Expected::never(),
+                'getById' => Expected::once(function (string $id) {
+                    $this->assertSame('CAR', $id);
+
+                    return $this->createClassDefinition();
+                }),
+            ])
+        );
+        $query = $this->makeEmpty(DataObjectQueryInterface::class, [
+            'orderByField' => Expected::once(function ($field) {
+                $this->assertSame('price.value', $field);
+
+                return $this->makeEmpty(DataObjectQueryInterface::class);
+            }),
+        ]);
+        $parameter = $this->createFilterParameter('price', null, null);
+        $parameter->setClassId('CAR');
+
+        $sortFilter->apply($parameter, $query);
+    }
+
+    public function testDataObjectSortWithoutClassNameOrIdKeepsTheKey(): void
+    {
+        $sortFilter = $this->createSortFilter(
+            $this->makeEmpty(ClassDefinitionResolverInterface::class, [
+                'getByName' => Expected::never(),
+                'getById' => Expected::never(),
             ])
         );
         $query = $this->makeEmpty(DataObjectQueryInterface::class, [
