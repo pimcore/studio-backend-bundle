@@ -124,6 +124,9 @@ final class SelectOptionServiceTest extends Unit
         $this->createService($repository)->importSelectOptionFromJson('EventStatus', '{not json');
     }
 
+    /**
+     * @dataProvider notAnExportProvider
+     */
     #[DataProvider('notAnExportProvider')]
     public function testImportRejectsFilesThatAreNotASelectOptionsExport(string $json): void
     {
@@ -149,6 +152,9 @@ final class SelectOptionServiceTest extends Unit
         ];
     }
 
+    /**
+     * @dataProvider malformedImportProvider
+     */
     #[DataProvider('malformedImportProvider')]
     public function testImportRejectsMalformedValuesWithoutSaving(string $json, string $expectedMessage): void
     {
