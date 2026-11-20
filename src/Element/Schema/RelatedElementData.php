@@ -27,17 +27,27 @@ use OpenApi\Attributes\Schema;
 )]
 final readonly class RelatedElementData
 {
+    #[Property(description: 'Subtype of the element', type: 'string', example: 'Product')]
+    private string $subtype;
+
+    #[Property(description: 'Full path of the element', type: 'string', example: '/path/to/element')]
+    private string $fullPath;
+
+    #[Property(description: 'Is the element published', type: 'boolean', example: true)]
+    private ?bool $isPublished;
+
+    /**
+     * Subtype, full path and publish state are withheld whenever the current user has no
+     * view permission on the element.
+     */
     public function __construct(
         #[Property(description: 'ID', type: 'integer', example: 83)]
         private int $id,
         #[Property(description: 'Type of the element', type: 'string', example: 'object')]
         private string $type,
-        #[Property(description: 'Subtype of the element', type: 'string', example: 'Product')]
-        private string $subtype,
-        #[Property(description: 'Full path of the element', type: 'string', example: '/path/to/element')]
-        private string $fullPath,
-        #[Property(description: 'Is the element published', type: 'boolean', example: true)]
-        private ?bool $isPublished = null,
+        string $subtype,
+        string $fullPath,
+        ?bool $isPublished = null,
         #[Property(
             description: 'Whether the current user is allowed to view the element',
             type: 'boolean',
@@ -45,6 +55,9 @@ final readonly class RelatedElementData
         )]
         private bool $hasViewAccess = true,
     ) {
+        $this->subtype = $this->hasViewAccess ? $subtype : '';
+        $this->fullPath = $this->hasViewAccess ? $fullPath : '';
+        $this->isPublished = $this->hasViewAccess ? $isPublished : null;
     }
 
     public function getId(): int
