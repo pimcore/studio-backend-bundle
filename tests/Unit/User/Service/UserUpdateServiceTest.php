@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParame
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UpdateUserProfile;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateService;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
@@ -42,6 +43,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class UserUpdateServiceTest extends Unit
 {
+    private const string WELCOME_SCREEN_TARGET = 'studio-dashboards:019c7555_49f6_712b_af5f_bd0c22b3d1f7';
+
     public function testNonAdminCannotUpdateAdminUser(): void
     {
         $targetUser = $this->createTargetUser(isAdmin: true);
@@ -173,6 +176,47 @@ final class UserUpdateServiceTest extends Unit
             new UpdatePasswordParameter('new-password-1', 'new-password-1', 'wrong-password'),
             42
         );
+    }
+
+    /**
+     * @dataProvider welcomeScreenTargetProvider
+     */
+    public function testUpdateUserAppliesTheWelcomeScreenTarget(
+        ?string $stored,
+        ?string $sent,
+        ?string $expected
+    ): void {
+        $targetUser = $this->createTargetUser(isAdmin: false)->setWelcomeScreenTarget($stored);
+        $service = $this->createService($targetUser, $this->makeEmpty(UserInterface::class, ['isAdmin' => true]));
+
+        $service->updateUserById($this->createUpdateParams(welcomeScreenTarget: $sent), 42);
+
+        $this->assertSame($expected, $targetUser->getWelcomeScreenTarget());
+    }
+
+    /**
+     * @dataProvider welcomeScreenTargetProvider
+     */
+    public function testUpdateProfileAppliesTheWelcomeScreenTarget(
+        ?string $stored,
+        ?string $sent,
+        ?string $expected
+    ): void {
+        $user = $this->createTargetUser(isAdmin: false)->setWelcomeScreenTarget($stored);
+        $service = $this->createService($user, $user);
+
+        $service->updateUserProfile($user, $this->createProfileParams($sent));
+
+        $this->assertSame($expected, $user->getWelcomeScreenTarget());
+    }
+
+    public static function welcomeScreenTargetProvider(): array
+    {
+        return [
+            'a new target is stored' => [null, self::WELCOME_SCREEN_TARGET, self::WELCOME_SCREEN_TARGET],
+            'an empty string clears it' => [self::WELCOME_SCREEN_TARGET, '', null],
+            'an omitted field keeps it' => [self::WELCOME_SCREEN_TARGET, null, self::WELCOME_SCREEN_TARGET],
+        ];
     }
 
     private function createValidator(int $violations): ValidatorInterface
@@ -353,8 +397,11 @@ final class UserUpdateServiceTest extends Unit
         return $user;
     }
 
-    private function createUpdateParams(bool $admin = false, string $email = 'test@example.com'): UpdateUserParameter
-    {
+    private function createUpdateParams(
+        bool $admin = false,
+        string $email = 'test@example.com',
+        ?string $welcomeScreenTarget = null
+    ): UpdateUserParameter {
         return new UpdateUserParameter(
             email: $email,
             firstname: 'Test',
@@ -380,6 +427,23 @@ final class UserUpdateServiceTest extends Unit
             assetWorkspaces: [],
             dataObjectWorkspaces: [],
             documentWorkspaces: [],
+            welcomeScreenTarget: $welcomeScreenTarget,
+        );
+    }
+
+    private function createProfileParams(?string $welcomeScreenTarget): UpdateUserProfile
+    {
+        return new UpdateUserProfile(
+            firstname: 'Test',
+            lastname: 'User',
+            email: 'test@example.com',
+            language: 'en',
+            dateTimeLocale: null,
+            welcomeScreen: true,
+            memorizeTabs: false,
+            contentLanguages: [],
+            keyBindings: [],
+            welcomeScreenTarget: $welcomeScreenTarget,
         );
     }
 

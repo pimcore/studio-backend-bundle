@@ -61,7 +61,8 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
             keyBindings: $this->keyBindingService->hydrateKeyBindings($user->getKeyBindings()),
             twoFactorAuthentication: $this->twoFactorAuthHydrator->hydrate($user),
             activePerspective: $this->userPerspectiveService->getActivePerspective($user),
-            perspectives: $this->userPerspectiveService->getAllowedPerspectives($user)
+            perspectives: $this->userPerspectiveService->getAllowedPerspectives($user),
+            welcomeScreenTarget: $user instanceof User ? $user->getWelcomeScreenTarget() : null,
         );
     }
 }

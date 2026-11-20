@@ -29,7 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'keyBindings', 'language', 'theme', 'memorizeTabs', 'parentId', 'permissions', 'roles',
         'twoFactorAuthentication', 'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView',
         'welcomeScreen', 'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'objectDependencies',
-        'perspectives',
+        'perspectives', 'welcomeScreenTarget',
     ],
     type: 'object'
 )]
@@ -124,6 +124,13 @@ final class User implements AdditionalAttributesInterface
             items: new Items(ref: PerspectiveConfig::class))
         ]
         private readonly array $perspectives = [],
+        #[Property(
+            description: 'Welcome screen opened after login, as `<provider>:<id>`',
+            type: 'string',
+            example: 'studio-dashboards:019c7555_49f6_712b_af5f_bd0c22b3d1f7',
+            nullable: true
+        )]
+        private readonly ?string $welcomeScreenTarget = null,
     ) {
     }
 
@@ -295,5 +302,10 @@ final class User implements AdditionalAttributesInterface
     public function getPerspectives(): array
     {
         return $this->perspectives;
+    }
+
+    public function getWelcomeScreenTarget(): ?string
+    {
+        return $this->welcomeScreenTarget;
     }
 }
