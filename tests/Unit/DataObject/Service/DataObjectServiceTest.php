@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMerger;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateServiceInterface;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\User;
@@ -206,7 +207,8 @@ final class DataObjectServiceTest extends Unit
             $securityService,
             $serviceResolver,
             $this->createMock(ElementSaveServiceInterface::class),
-            new WorkflowPermissionMerger($manager)
+            new WorkflowPermissionMerger($manager),
+            $this->makeEmpty(WorkflowStateServiceInterface::class),
         );
     }
 

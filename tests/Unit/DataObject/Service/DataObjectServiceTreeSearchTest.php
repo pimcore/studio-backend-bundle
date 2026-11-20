@@ -13,11 +13,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataObject\Service;
 
+use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
@@ -29,6 +33,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMergerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateServiceInterface;
+use Pimcore\Model\DataObject\Folder;
 use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -77,6 +84,7 @@ final class DataObjectServiceTreeSearchTest extends Unit
             $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => null]),
             $this->makeEmpty(ElementSaveServiceInterface::class),
             $this->makeEmpty(WorkflowPermissionMergerInterface::class),
+            $this->makeEmpty(WorkflowStateServiceInterface::class),
         );
 
         try {
@@ -85,5 +93,43 @@ final class DataObjectServiceTreeSearchTest extends Unit
         } catch (NotFoundException) {
             $this->assertSame(['setUser', 'applyFilters'], $events);
         }
+    }
+
+    public function testAppliesWorkflowStatesToTheTreeItems(): void
+    {
+        $query = new DataObjectQuery(new DataObjectSearch(), $this->makeEmpty(ClassDefinitionResolverInterface::class));
+        $items = [];
+
+        $service = new DataObjectService(
+            $this->makeEmpty(ClassDefinitionResolverInterface::class),
+            $this->makeEmpty(DataServiceInterface::class),
+            $this->makeEmpty(DataObjectQueryProviderInterface::class, ['createDataObjectQuery' => $query]),
+            $this->makeEmpty(DataObjectSearchServiceInterface::class, [
+                'searchDataObjects' => new DataObjectSearchResult($items, 1, 10, 0),
+            ]),
+            $this->makeEmpty(DataObjectServiceResolverInterface::class),
+            $this->makeEmpty(FactoryInterface::class),
+            $this->makeEmpty(FilterServiceProviderInterface::class, [
+                'create' => $this->makeEmpty(SearchIndexFilterInterface::class, ['applyFilters' => $query]),
+            ]),
+            $this->makeEmpty(EventDispatcherInterface::class),
+            $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => new User()]),
+            $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => $this->makeEmpty(Folder::class, [
+                    'getChildrenSortBy' => 'key',
+                    'getChildrenSortOrder' => 'ASC',
+                ]),
+            ]),
+            $this->makeEmpty(ElementSaveServiceInterface::class),
+            $this->makeEmpty(WorkflowPermissionMergerInterface::class),
+            $this->makeEmpty(WorkflowStateServiceInterface::class, [
+                'applyVisibleStates' => Expected::once(function (iterable $elements, string $elementType) use ($items) {
+                    $this->assertSame($items, $elements);
+                    $this->assertSame(ElementTypes::TYPE_DATA_OBJECT, $elementType);
+                }),
+            ]),
+        );
+
+        $service->getDataObjects(new DataObjectParameters(parentId: 1));
     }
 }
