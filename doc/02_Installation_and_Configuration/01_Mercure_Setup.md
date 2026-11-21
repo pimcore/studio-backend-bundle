@@ -164,8 +164,8 @@ or Direct Edit events) are not delivered while the hub is down. Notifications th
 published, so they still show up after the next reload.
 
 If the hub itself needs to be highly available, Mercure offers clustered editions (Mercure Enterprise with a shared
-transport, or Mercure Cloud; both are licensed by Mercure, not by Pimcore). Note that these are Mercure 1.x hubs, while
-this page is written for hub 0.24 (see the warning at the top), and their compatibility with this bundle's setup has not
+transport, or Mercure Cloud; both are licensed by Mercure, not by Pimcore). Note that these are Mercure 1.x hubs, which need
+the compatibility mode described at the top of this page, and their compatibility with this bundle's setup has not
 been verified. Alternatively, restart the single hub quickly with a process supervisor or your orchestrator.
 
 > The legacy Direct Edit path (`FileEditControllerTrait` of `pimcore/direct-edit`, deprecated since 2026.3, removal
