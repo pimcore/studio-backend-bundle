@@ -31,4 +31,12 @@ interface ColumnConfigurationForRelationServiceInterface
         string $relationField,
         UserInterface $user
     ): array;
+
+    /**
+     * The data object adapter column configurations of a class the user may see, by key. These describe
+     * the class fields shown as visible fields of the generic relation types.
+     *
+     * @return array<string, ColumnConfiguration>
+     */
+    public function getVisibleFieldClassColumnConfiguration(string $className, UserInterface $user): array;
 }
