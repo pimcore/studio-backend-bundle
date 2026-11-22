@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -38,7 +39,7 @@ interface ScheduleRepositoryInterface
     public function listSchedules(string $elementType, int $id): array;
 
     /**
-     * @throws DatabaseException|InvalidArgumentException
+     * @throws DatabaseException|InvalidArgumentException|ForbiddenException
      */
     public function updateSchedules(
         string $elementType,

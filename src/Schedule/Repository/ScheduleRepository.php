@@ -20,6 +20,7 @@ use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Schedule\TaskResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -93,6 +94,9 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         return $this->checkElementPermissions($elementType, $id)->getScheduledTasks();
     }
 
+    /**
+     * @throws ForbiddenException
+     */
     public function updateSchedules(
         string $elementType,
         int $id,
@@ -101,12 +105,17 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         $this->checkElementPermissions($elementType, $id);
 
         $schedules = $updateElementSchedules->getSchedules();
+        $currentUserId = $this->securityService->getCurrentUser()->getId();
 
         $currentTasks = [];
         foreach ($schedules as $schedule) {
 
             if ($schedule->getId()) {
                 $task = $this->taskResolver->getById($schedule->getId());
+
+                if ($task && ($task->getCid() !== $id || $task->getCtype() !== $elementType)) {
+                    throw new ForbiddenException('You are not allowed to update this schedule');
+                }
             } else {
                 $task = $this->createSchedule($elementType, $id);
             }
@@ -123,10 +132,11 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
             $task->setAction($schedule->getAction());
             $task->setVersion($schedule->getVersion());
             $task->setActive($schedule->isActive());
+            $task->setUserId($currentUserId);
             $task->save();
         }
 
-        $this->deleteObsoleteTasks($currentTasks, $id);
+        $this->deleteObsoleteTasks($currentTasks, $id, $elementType);
     }
 
     public function deleteSchedule(int $id): void
@@ -151,14 +161,15 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
     /**
      * @throws DatabaseException
      */
-    private function deleteObsoleteTasks(array $currentTasks, int $cid): void
+    private function deleteObsoleteTasks(array $currentTasks, int $cid, string $ctype): void
     {
         $queryBuilder = $this->dbResolver->get()->createQueryBuilder();
 
         $queryBuilder->delete('schedule_tasks')
-            ->where('id NOT IN (:ids) AND cid = :cid')
+            ->where('id NOT IN (:ids) AND cid = :cid AND ctype = :ctype')
             ->setParameter('ids', $currentTasks, ArrayParameterType::INTEGER)
-            ->setParameter('cid', $cid);
+            ->setParameter('cid', $cid)
+            ->setParameter('ctype', $ctype);
 
         try {
             $queryBuilder->executeStatement();
