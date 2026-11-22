@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Schedule\Repository\ScheduleRepository;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Request\UpdateElementSchedules;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Document;
 use Pimcore\Model\Schedule\Task;
 use Pimcore\Model\UserInterface;
 
@@ -164,7 +164,7 @@ final class ScheduleRepositoryTest extends Unit
 
     private function createRepository(Task $resolvedTask): ScheduleRepository
     {
-        $element = $this->makeEmpty(ElementInterface::class, ['getId' => 7]);
+        $element = $this->makeEmpty(Document::class, ['getId' => 7]);
 
         $serviceResolver = $this->makeEmpty(ServiceResolverInterface::class, [
             'getElementById' => $element,
