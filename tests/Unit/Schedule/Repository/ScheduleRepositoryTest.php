@@ -102,12 +102,17 @@ final class ScheduleRepositoryTest extends Unit
         $this->queryBuilder->method('where')->willReturnSelf();
         $this->queryBuilder->method('setParameter')->willReturnSelf();
 
+        $assignedUserId = null;
+        $task = null;
         $task = $this->makeEmpty(Task::class, [
             'getId' => 3,
             'getCid' => 7,
             'getCtype' => ElementTypes::TYPE_DOCUMENT,
-            'setUserId' => Expected::once(function (?int $userId): void {
-                $this->assertSame(self::CURRENT_USER_ID, $userId);
+            // setUserId() is fluent (returns static), so the stub has to hand back the task itself
+            'setUserId' => Expected::once(function (?int $userId) use (&$assignedUserId, &$task): Task {
+                $assignedUserId = $userId;
+
+                return $task;
             }),
             'save' => Expected::once(),
         ]);
@@ -119,6 +124,8 @@ final class ScheduleRepositoryTest extends Unit
             7,
             $this->schedulesPayload(3, 'publish')
         );
+
+        $this->assertSame(self::CURRENT_USER_ID, $assignedUserId);
     }
 
     public function testDeleteObsoleteTasksOnlyRemovesTasksOfTheSameElementType(): void
