@@ -39,6 +39,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_cache_description',
 )]
 #[Tag(
+    name: Tags::IndexSync->value,
+    description: 'tag_index_sync_description'
+)]
+#[Tag(
     name: Tags::Mcp->value,
     description: 'tag_mcp_description',
 )]
@@ -215,6 +219,7 @@ enum Tags: string
     case Emails = 'E-Mails';
     case Export = 'Export';
     case GDPR = 'GDPR Data Extractor';
+    case IndexSync = 'Index Sync';
     case MaintenanceMode = 'Maintenance Mode';
     case Mercure = 'Mercure';
     case Metadata = 'Metadata';
