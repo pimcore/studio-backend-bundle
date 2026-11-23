@@ -609,6 +609,10 @@ element_get_subtype_description: |
   Get the subtype of the element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing ID of an element of the provided <strong>{elementType}</strong>.
 element_get_subtype_success_response: Subtype of the element
 element_get_subtype_summary: Get subtype of the element by id and element type path parameter
+element_get_published_state_description: |
+  Get the published state of the element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing ID of an element of the provided <strong>{elementType}</strong>. <br> The state is read from the element itself and only returned if the user may view the element. Assets have no published state and report <strong>null</strong>.
+element_get_published_state_success_response: Published state of the element
+element_get_published_state_summary: Get published state of the element by id and element type path parameter
 element_get_tree_location_description: |
   Get the location data of the element based on the given <strong>{elementType}</strong>, <strong>{id}</strong> and <strong>{perspectiveId}</strong>. <br> 
   The <strong>{ids}</strong> must be an existing ID of an element of the provided <strong>{elementType}</strong> and existing perspective ID.
