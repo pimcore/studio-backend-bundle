@@ -36,7 +36,7 @@ final class Version20261123120000 extends AbstractMigration
 
     public function isTransactional(): bool
     {
-        // Newer release lines require every migration outside their data-only list to opt out.
+        // Single INSERT, nothing to roll back. Also satisfies MigrationTransactionTest on 2026.3 and newer.
         return false;
     }
 
@@ -61,7 +61,8 @@ final class Version20261123120000 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        // The definition belongs to Pimcore core and stays.
+        // Deliberately not reverted: the definition belongs to Pimcore core, and the migration cannot
+        // know whether it added the row. Removing it would break the site endpoints again.
     }
 
     public function postUp(Schema $schema): void

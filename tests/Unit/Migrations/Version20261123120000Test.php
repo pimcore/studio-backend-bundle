@@ -48,6 +48,11 @@ final class Version20261123120000Test extends Unit
         $this->assertSame([], $migration->getSql());
     }
 
+    public function testIsNotTransactional(): void
+    {
+        $this->assertFalse($this->createMigration(false)->isTransactional());
+    }
+
     public function testDownKeepsTheSitesDefinition(): void
     {
         $migration = $this->createMigration('sites');
@@ -59,8 +64,12 @@ final class Version20261123120000Test extends Unit
 
     private function createMigration(string|false $existingKey): Version20261123120000
     {
-        $connection = $this->createStub(Connection::class);
-        $connection->method('fetchOne')->willReturn($existingKey);
+        $connection = $this->createMock(Connection::class);
+        $connection
+            ->expects($this->atMost(1))
+            ->method('fetchOne')
+            ->with($this->stringContains('users_permission_definitions'), ['sites'])
+            ->willReturn($existingKey);
 
         return new Version20261123120000($connection, new NullLogger());
     }
