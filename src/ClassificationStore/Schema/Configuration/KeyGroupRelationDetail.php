@@ -118,6 +118,32 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
             nullable: true
         )]
         private readonly ?KeyUnits $units = null,
+        #[Property(
+            description: 'The key\'s own option vocabulary, as the key configuration resolves it, not narrowed by'
+                . ' this assignment\'s definitionOverride: the options an editor of the assignment can choose'
+                . ' from, where options is the subset chosen. Null where the key is not a select or multiselect,'
+                . ' and where keyOptionsUnavailableReason says why not.',
+            type: 'array',
+            items: new Items(ref: SelectOption::class),
+            nullable: true
+        )]
+        private readonly ?array $keyOptions = null,
+        #[Property(
+            description: 'Why keyOptions is null for a select or multiselect key, with the values of'
+                . ' optionsUnavailableReason. Null means nothing failed.',
+            type: 'string',
+            example: 'providerNotStatic',
+            nullable: true
+        )]
+        private readonly ?string $keyOptionsUnavailableReason = null,
+        #[Property(
+            description: 'The unit vocabulary of the key\'s own definition, without this assignment\'s'
+                . ' definitionOverride applied: the units an editor of the assignment can choose from, where'
+                . ' units is the subset chosen. Null where its type holds no units.',
+            ref: KeyUnits::class,
+            nullable: true
+        )]
+        private readonly ?KeyUnits $keyUnits = null,
     ) {
     }
 
@@ -197,5 +223,23 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
     public function getKeyType(): ?string
     {
         return $this->keyType;
+    }
+
+    /**
+     * @return SelectOption[]|null
+     */
+    public function getKeyOptions(): ?array
+    {
+        return $this->keyOptions;
+    }
+
+    public function getKeyOptionsUnavailableReason(): ?string
+    {
+        return $this->keyOptionsUnavailableReason;
+    }
+
+    public function getKeyUnits(): ?KeyUnits
+    {
+        return $this->keyUnits;
     }
 }

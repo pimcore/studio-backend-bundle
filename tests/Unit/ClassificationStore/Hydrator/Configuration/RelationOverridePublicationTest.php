@@ -62,10 +62,49 @@ final class RelationOverridePublicationTest extends Unit
         $this->assertSame(['kg'], $quantity->getUnits()?->getValidUnits());
     }
 
-    private function keyConfig(): KeyConfig
+    /**
+     * Beside the narrowed set, an assignment publishes the key's own vocabulary, so an option or unit the
+     * override left out can still be offered and ticked back in.
+     */
+    public function testAnAssignmentAlsoPublishesTheKeysOwnOptionsAndUnits(): void
+    {
+        $hydrator = new KeyGroupRelationHydrator($this->resolver());
+
+        $select = $hydrator->hydrateKeyGroupRelationDetail(
+            $this->relation('select', ['options' => self::STORED_OPTIONS], ['options' => [self::STORED_OPTIONS[1]]]),
+            keyConfig: $this->keyConfig('select', ['options' => self::STORED_OPTIONS])
+        );
+        $quantity = $hydrator->hydrateKeyGroupRelationDetail(
+            $this->relation(
+                'quantityValue',
+                ['defaultUnit' => 'm', 'validUnits' => ['m', 'kg']],
+                ['validUnits' => ['kg'], 'defaultUnit' => 'kg']
+            ),
+            keyConfig: $this->keyConfig('quantityValue', ['defaultUnit' => 'm', 'validUnits' => ['m', 'kg']])
+        );
+
+        $this->assertSame(
+            ['A'],
+            array_map(static fn (SelectOption $option): string => $option->getKey(), (array) $select->getOptions())
+        );
+        $this->assertSame(
+            ['B', 'A'],
+            array_map(static fn (SelectOption $option): string => $option->getKey(), (array) $select->getKeyOptions())
+        );
+        $this->assertNull($select->getKeyOptionsUnavailableReason());
+        $this->assertSame(['kg'], $quantity->getUnits()?->getValidUnits());
+        $this->assertSame('m', $quantity->getKeyUnits()?->getDefaultUnit());
+        $this->assertSame(['m', 'kg'], $quantity->getKeyUnits()?->getValidUnits());
+    }
+
+    /**
+     * @param array<string, mixed> $definition
+     */
+    private function keyConfig(string $type = 'input', array $definition = []): KeyConfig
     {
         $keyConfig = new KeyConfig();
-        $keyConfig->setType('input');
+        $keyConfig->setType($type);
+        $keyConfig->setDefinition((string) json_encode($definition));
 
         return $keyConfig;
     }
