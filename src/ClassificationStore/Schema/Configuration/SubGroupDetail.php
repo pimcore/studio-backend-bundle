@@ -64,8 +64,7 @@ final class SubGroupDetail implements AdditionalAttributesInterface
         )]
         private readonly ?string $identifier = null,
         #[Property(
-            description: 'Free-form pairs the sub group carries, reported as stored. Pimcore reads no member of'
-                . ' it, and null where the sub group holds none.',
+            description: 'Free-form pairs the sub group carries, as stored; null where it holds none',
             type: 'object',
             example: ['source' => 'erp'],
             nullable: true
