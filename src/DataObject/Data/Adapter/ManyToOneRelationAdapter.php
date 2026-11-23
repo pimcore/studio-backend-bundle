@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Normalizer\NormalizerInterface;
@@ -71,7 +72,7 @@ final readonly class ManyToOneRelationAdapter implements SetterDataInterface, Da
         $data = $fieldDefinition->normalize($value);
         $published = null;
 
-        if ($value instanceof Concrete) {
+        if ($value instanceof Concrete || $value instanceof Document) {
             $published = $value->isPublished();
         }
 

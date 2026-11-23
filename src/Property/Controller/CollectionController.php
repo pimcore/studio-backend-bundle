@@ -25,10 +25,12 @@ use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParame
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -46,6 +48,7 @@ final class CollectionController extends AbstractApiController
     }
 
     #[Route('/properties', name: 'pimcore_studio_api_properties', methods: ['GET'])]
+    #[IsGranted(UserPermissions::PREDEFINED_PROPERTIES->value)]
     #[Get(
         path: self::PREFIX . '/properties',
         operationId: 'property_get_collection',
@@ -61,6 +64,7 @@ final class CollectionController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::FORBIDDEN,
     ])]
     public function getProperties(
         #[MapQueryString] PropertiesParameters $parameters = new PropertiesParameters()
