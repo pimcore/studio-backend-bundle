@@ -453,8 +453,7 @@ final class GridService implements GridServiceInterface
         Column $column,
         ElementInterface $databaseElement,
         bool $isStoreColumn,
-    ): ColumnData
-    {
+    ): ColumnData {
         $deniedResolver = $isStoreColumn ? ($this->getColumnResolvers()[$column->getType()] ?? null) : null;
         if ($deniedResolver instanceof DeniedColumnDataResolverInterface) {
             $denied = $deniedResolver->resolveDeniedForCoreElement($column, $databaseElement);
