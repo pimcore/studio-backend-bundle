@@ -27,34 +27,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 final class PropertyServiceListingTest extends Unit
 {
-    /**
-     * @param array<int, string> $permissions
-     */
-    private function buildService(array $permissions, int $expectedListCalls): PropertyService
-    {
-        $user = $this->getMockBuilder(User::class)->onlyMethods(['isAllowed'])->getMock();
-        $user->method('isAllowed')->willReturnCallback(
-            static fn (string $permission): bool => in_array($permission, $permissions, true)
-        );
-
-        $security = $this->createMock(SecurityServiceInterface::class);
-        $security->method('getCurrentUser')->willReturn($user);
-
-        $listing = $this->getMockBuilder(Listing::class)->onlyMethods(['load'])->getMock();
-        $listing->method('load')->willReturn([]);
-
-        $repository = $this->createMock(PropertyRepositoryInterface::class);
-        $repository->expects($this->exactly($expectedListCalls))->method('listProperties')->willReturn($listing);
-
-        return new PropertyService(
-            $repository,
-            $this->createMock(PropertyHydratorInterface::class),
-            $security,
-            $this->createMock(ServiceResolverInterface::class),
-            $this->createMock(EventDispatcherInterface::class)
-        );
-    }
-
     public function testUnfilteredListingDeniedWithoutPermission(): void
     {
         $service = $this->buildService(['objects'], 0);
@@ -68,10 +40,25 @@ final class PropertyServiceListingTest extends Unit
         $this->assertSame([], $service->getPredefinedProperties(new PropertiesParameters()));
     }
 
+    public function testUnfilteredListingAllowedForAdmin(): void
+    {
+        $service = $this->buildService([], 1, true);
+        $this->assertSame([], $service->getPredefinedProperties(new PropertiesParameters()));
+    }
+
     public function testObjectFilteredListingAllowedWithObjectsPermission(): void
     {
         $service = $this->buildService(['objects'], 1);
         $this->assertSame([], $service->getPredefinedProperties(new PropertiesParameters(elementType: 'object')));
+    }
+
+    public function testDataObjectFilteredListingAllowedWithObjectsPermission(): void
+    {
+        $service = $this->buildService(['objects'], 1);
+        $this->assertSame(
+            [],
+            $service->getPredefinedProperties(new PropertiesParameters(elementType: 'data-object'))
+        );
     }
 
     public function testAssetFilteredListingDeniedWithOnlyObjectsPermission(): void
@@ -79,5 +66,53 @@ final class PropertyServiceListingTest extends Unit
         $service = $this->buildService(['objects'], 0);
         $this->expectException(ForbiddenException::class);
         $service->getPredefinedProperties(new PropertiesParameters(elementType: 'asset'));
+    }
+
+    public function testDocumentFilteredListingDeniedWithOnlyObjectsPermission(): void
+    {
+        $service = $this->buildService(['objects'], 0);
+        $this->expectException(ForbiddenException::class);
+        $service->getPredefinedProperties(new PropertiesParameters(elementType: 'document'));
+    }
+
+    public function testUnknownElementTypeListingDeniedWithoutPermission(): void
+    {
+        $service = $this->buildService(['objects', 'assets', 'documents'], 0);
+        $this->expectException(ForbiddenException::class);
+        $service->getPredefinedProperties(new PropertiesParameters(elementType: 'unknown'));
+    }
+
+    /**
+     * @param array<int, string> $permissions
+     */
+    private function buildService(array $permissions, int $expectedListCalls, bool $admin = false): PropertyService
+    {
+        $user = new User();
+        $user->setName('testuser');
+        $user->setAdmin($admin);
+        $user->setPermissions($permissions);
+
+        $security = $this->createMock(SecurityServiceInterface::class);
+        $security->method('getCurrentUser')->willReturn($user);
+
+        $listing = new class() extends Listing {
+            public function load(): array
+            {
+                return [];
+            }
+        };
+
+        $repository = $this->createMock(PropertyRepositoryInterface::class);
+        $repository->expects($this->exactly($expectedListCalls))
+            ->method('listProperties')
+            ->willReturn($listing);
+
+        return new PropertyService(
+            $repository,
+            $this->createMock(PropertyHydratorInterface::class),
+            $security,
+            $this->createMock(ServiceResolverInterface::class),
+            $this->createMock(EventDispatcherInterface::class)
+        );
     }
 }
