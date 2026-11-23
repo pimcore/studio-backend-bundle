@@ -105,7 +105,6 @@ final class ImportReport implements AdditionalAttributesInterface
         )]
         private readonly array $targetOnlyEntries,
         #[Property(
-            // A refused import answers with 409 and names the conflicts in the error message instead.
             description: 'Conflicts of the import; always empty on a successful one',
             type: 'array',
             items: new Items(type: 'string'),
@@ -113,8 +112,6 @@ final class ImportReport implements AdditionalAttributesInterface
         )]
         private readonly array $conflicts,
         #[Property(
-            // Skipped because the store holds their name under another identifier than the file gives them; the
-            // stored rows are left as they are.
             description: 'Number of entries skipped for a name the store holds under another identifier',
             type: 'integer',
             example: 1,
@@ -130,8 +127,6 @@ final class ImportReport implements AdditionalAttributesInterface
         )]
         private readonly ?array $skippedEntries = null,
         #[Property(
-            // Imported as a duplicate: every member identifier was regenerated and the configuration the store held
-            // was replaced by the file's.
             description: 'Whether the file describes another store and replaced this store\'s configuration',
             type: 'boolean',
             example: false,
@@ -139,9 +134,6 @@ final class ImportReport implements AdditionalAttributesInterface
         )]
         private readonly ?bool $replaced = null,
         #[Property(
-            // Removed from the store before writing the file into it; zero unless the import replaced the
-            // configuration. Removing a group removes every stored Classification Store value under it, on both
-            // storage engines, and importing the file again does not bring those values back.
             description: 'Number of entries removed before writing the file; a removed group loses its stored values',
             type: 'integer',
             example: 0,
@@ -149,8 +141,6 @@ final class ImportReport implements AdditionalAttributesInterface
         )]
         private readonly ?int $removed = null,
         #[Property(
-            // Entities before the relations. A removed group takes the stored values of every object using it with
-            // it, which re-importing the file does not restore.
             description: 'The removed entries by name, the last element naming how many more there are',
             type: 'array',
             items: new Items(type: 'string'),
@@ -159,11 +149,6 @@ final class ImportReport implements AdditionalAttributesInterface
         )]
         private readonly ?array $removedEntries = null,
         #[Property(
-            // Removing a group removes every stored Classification Store value under it, on both storage engines,
-            // through the cascade of the value tables, and importing the file again does not bring those values
-            // back. A statement about this import, not a count: nothing is measured of the values the store holds.
-            // False for an import that removed no group, including every import that did not replace the
-            // configuration.
             description: 'Whether the import removed, or a dry run would remove, a group and with it stored values',
             type: 'boolean',
             example: true,

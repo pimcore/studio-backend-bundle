@@ -46,11 +46,6 @@ final readonly class CollectionUpdate
         )]
         private ?string $description = null,
         #[Property(
-            // Pimcore reads no member of it and no member is reserved. A supplied object replaces the stored one
-            // whole rather than merging into it - so one rebuilt from a form without a member drops that member.
-            // A JSON array is refused, the member being an object, and so is the one object an array cannot be
-            // told apart from once decoded - whose member names are the consecutive integers from zero, such as
-            // {"0": "a"} - because the stored form cannot carry that distinction either.
             description: 'Free-form pairs; omit to keep them, an object replaces them whole, null clears them',
             type: 'object',
             example: ['source' => 'erp'],

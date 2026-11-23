@@ -66,11 +66,6 @@ final readonly class KeyGroupRelationCreate
         )]
         private mixed $mandatory = AbsentValue::ABSENT,
         #[Property(
-            // Omitting it leaves a stored one alone, a supplied object replaces it whole rather than merging into
-            // it, and an explicit null clears it. A JSON array is refused, the member being an object, and so is
-            // the one object an array cannot be told apart from once decoded - whose member names are the
-            // consecutive integers from zero, such as {"0": "a"} - because the stored form cannot carry that
-            // distinction either.
             description: 'Partial field definition overriding the key\'s own for this assignment',
             type: 'object',
             example: ['defaultUnit' => 'kg'],
@@ -78,7 +73,6 @@ final readonly class KeyGroupRelationCreate
         )]
         private mixed $definitionOverride = AbsentValue::ABSENT,
         #[Property(
-            // Omitting it leaves a stored one alone, a supplied value replaces it, and an explicit null clears it.
             description: 'Sub group of the store this assignment belongs to',
             type: 'string',
             example: 'dimensions',
@@ -86,12 +80,6 @@ final readonly class KeyGroupRelationCreate
         )]
         private mixed $subGroup = AbsentValue::ABSENT,
         #[Property(
-            // No member is reserved. Omitting it keeps a stored object alone, a supplied object replaces it whole
-            // rather than merging into it - so one rebuilt from a form without a member drops that member - and an
-            // explicit null clears it altogether. A JSON array is refused, the member being an object, and so is
-            // the one object an array cannot be told apart from once decoded - whose member names are the
-            // consecutive integers from zero, such as {"0": "a"} - because the stored form cannot carry that
-            // distinction either.
             description: 'Free-form metadata carried by this assignment',
             type: 'object',
             example: ['source' => 'erp'],

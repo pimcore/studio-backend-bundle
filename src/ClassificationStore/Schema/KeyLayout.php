@@ -53,9 +53,6 @@ final readonly class KeyLayout
         )]
         private ?string $subGroup = null,
         #[Property(
-            // Whether the key holds a value per language, as the key stores it: true, false, or null where the
-            // key states nothing and the `localized` flag of the class definition field the key is rendered in
-            // decides.
             description: 'Per language; null defers to the class definition field.'
                 . ' It is not resolved against that field here.',
             type: 'boolean',
@@ -64,8 +61,6 @@ final readonly class KeyLayout
         )]
         private ?bool $localized = null,
         #[Property(
-            // In the order the key declares them, each a name and an optional label. A value carrying no variant
-            // addresses the default variant, which is never one of these names.
             description: 'Variants a `multiValue` key permits; null for a key of any other type',
             type: 'array',
             items: new Items(ref: VariantLayout::class),
@@ -74,7 +69,6 @@ final readonly class KeyLayout
         )]
         private ?array $variants = null,
         #[Property(
-            // It is published, not enforced by this endpoint.
             description: 'Whether a `multiValue` key permits a value with no variant; null for any other type',
             type: 'boolean',
             example: true,

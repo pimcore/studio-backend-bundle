@@ -64,7 +64,6 @@ final class GroupDetail implements AdditionalAttributesInterface
         )]
         private readonly ?string $identifier = null,
         #[Property(
-            // Pimcore reads no member of it.
             description: 'Free-form pairs the group carries, as stored; null where it holds none',
             type: 'object',
             example: ['source' => 'erp'],
