@@ -43,7 +43,6 @@ use Pimcore\Model\DataObject\Objectbrick\Definition;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use function array_key_exists;
-use function count;
 
 /**
  * @internal
@@ -348,18 +347,9 @@ final class ObjectBrickResolver implements
      */
     private function mapObjectBrickKey(string $key): ObjectBrickKey
     {
-        $split = explode('.', $key);
-        if (count($split) !== 3) {
-            throw new InvalidArgumentException(
-                'invalid key structure for object brick.
+        return ObjectBrickKey::fromColumnKey($key) ?? throw new InvalidArgumentException(
+            'invalid key structure for object brick.
                           Is has to be in the format of <field>.<brickname>.<attributeofbrick>'
-            );
-        }
-
-        return new ObjectBrickKey(
-            field: $split[0],
-            brickName: $split[1],
-            attribute: $split[2]
         );
     }
 }

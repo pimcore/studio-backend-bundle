@@ -21,17 +21,15 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ClassIdParametersInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ClassNameParametersInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ObjectBrickKey;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter as SortFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParameterInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Data\QuantityValue;
-use Pimcore\Model\DataObject\Objectbrick\Definition as ObjectBrickDefinition;
-use function count;
-use function explode;
 use function in_array;
+use function str_contains;
 
 /**
  * @internal
@@ -120,48 +118,25 @@ final class SortFilter implements FilterInterface
         return $indexField;
     }
 
-    /**
-     * Grid columns name a class field <field> and an object brick field <field>.<brick>.<attribute>.
-     */
     private function getFieldDefinition(ClassDefinition $classDefinition, string $key): ?Data
     {
-        $keyParts = explode('.', $key);
-        if (count($keyParts) === 1) {
-            return $this->getContainerFieldDefinition($classDefinition, $key);
+        if (!str_contains($key, '.')) {
+            return $classDefinition->getFieldDefinition($key);
         }
 
-        if (count($keyParts) !== 3) {
+        $objectBrickKey = ObjectBrickKey::fromColumnKey($key);
+        if ($objectBrickKey === null) {
             return null;
         }
 
-        [$field, $brickKey, $attribute] = $keyParts;
-        $bricksField = $classDefinition->getFieldDefinition($field);
-        if (!$bricksField instanceof Objectbricks || !in_array($brickKey, $bricksField->getAllowedTypes(), true)) {
+        $brickName = $objectBrickKey->getBrickName();
+        $bricksField = $classDefinition->getFieldDefinition($objectBrickKey->getField());
+        if (!$bricksField instanceof Objectbricks || !in_array($brickName, $bricksField->getAllowedTypes(), true)) {
             return null;
         }
 
-        $objectBrick = $this->objectBrickDefinitionResolver->getByKey($brickKey);
-        if ($objectBrick === null) {
-            return null;
-        }
-
-        return $this->getContainerFieldDefinition($objectBrick, $attribute);
-    }
-
-    private function getContainerFieldDefinition(
-        ClassDefinition|ObjectBrickDefinition $container,
-        string $name
-    ): ?Data {
-        $fieldDefinition = $container->getFieldDefinition($name);
-        if ($fieldDefinition !== null) {
-            return $fieldDefinition;
-        }
-
-        $localizedFields = $container->getFieldDefinition('localizedfields');
-        if (!$localizedFields instanceof Localizedfields) {
-            return null;
-        }
-
-        return $localizedFields->getFieldDefinition($name);
+        return $this->objectBrickDefinitionResolver
+            ->getByKey($brickName)
+            ?->getFieldDefinition($objectBrickKey->getAttribute());
     }
 }

@@ -303,16 +303,12 @@ final class SortFilterTest extends Unit
 
     private function createObjectBrickDefinition(): ObjectBrickDefinition
     {
-        $power = $this->createField(new QuantityValue(), 'power');
-        $localizedFields = $this->createLocalizedFields('torque');
+        $objectBrick = new ObjectBrickDefinition();
+        $objectBrick->setKey('Engine');
+        $objectBrick->addFieldDefinition('power', $this->createField(new QuantityValue(), 'power'));
+        $objectBrick->addFieldDefinition('localizedfields', $this->createLocalizedFields('torque'));
 
-        return $this->makeEmpty(ObjectBrickDefinition::class, [
-            'getFieldDefinition' => static fn (string $key) => match ($key) {
-                'power' => $power,
-                'localizedfields' => $localizedFields,
-                default => null,
-            },
-        ]);
+        return $objectBrick;
     }
 
     private function createLocalizedFields(string $quantityValueName): Localizedfields
