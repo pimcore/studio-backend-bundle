@@ -84,12 +84,6 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     private const string GROUP_EXCLUSION_CONDITION = 'NOT EXISTS (SELECT 1 FROM `%s`'
         . ' WHERE `%s`.`keyId` = `%s`.`id` AND `%s`.`groupId` = :' . self::GROUP_EXCLUSION_PARAMETER . ')';
 
-    private const string IDENTIFIER_QUERY =
-        'SELECT `id`, `identifier` FROM `%s` WHERE `storeId` = ? AND `identifier` IN (?)';
-
-    private const string ID_QUERY =
-        'SELECT `id`, `identifier` FROM `%s` WHERE `storeId` = ? AND `id` IN (?) AND `identifier` IS NOT NULL';
-
     public function __construct(
         private KeyConfigResolverInterface $keyConfigResolver,
         private KeyLocalizationResolverInterface $keyLocalizationResolver,
@@ -144,64 +138,6 @@ final readonly class KeyRepository implements KeyRepositoryInterface
         }
 
         return $config;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIdsByIdentifiers(int $storeId, array $identifiers): array
-    {
-        $identifiers = array_values(array_unique($identifiers));
-
-        if (empty($identifiers)) {
-            return [];
-        }
-
-        try {
-            $rows = $this->connection->fetchAllAssociative(
-                sprintf(self::IDENTIFIER_QUERY, KeyConfigDao::TABLE_NAME_KEYS),
-                [$storeId, $identifiers],
-                [ParameterType::INTEGER, ArrayParameterType::STRING]
-            );
-        } catch (DBALException $e) {
-            throw new DatabaseException('Failed to read the keys by identifier: ' . $e->getMessage(), $e);
-        }
-
-        $resolved = [];
-        foreach ($rows as $row) {
-            $resolved[(string) $row['identifier']] = (int) $row['id'];
-        }
-
-        return $resolved;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIdentifiersByIds(int $storeId, array $ids): array
-    {
-        $ids = array_values(array_unique($ids));
-
-        if (empty($ids)) {
-            return [];
-        }
-
-        try {
-            $rows = $this->connection->fetchAllAssociative(
-                sprintf(self::ID_QUERY, KeyConfigDao::TABLE_NAME_KEYS),
-                [$storeId, $ids],
-                [ParameterType::INTEGER, ArrayParameterType::INTEGER]
-            );
-        } catch (DBALException $e) {
-            throw new DatabaseException('Failed to read the key identifiers: ' . $e->getMessage(), $e);
-        }
-
-        $identifiers = [];
-        foreach ($rows as $row) {
-            $identifiers[(int) $row['id']] = (string) $row['identifier'];
-        }
-
-        return $identifiers;
     }
 
     /**

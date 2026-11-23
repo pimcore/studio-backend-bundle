@@ -191,6 +191,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepository
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\IdentifierMapRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\IdentifierMapRepository
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepository
 

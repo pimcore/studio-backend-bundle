@@ -14,8 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\IdentifierMapRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ClassificationStoreConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
@@ -71,8 +70,7 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
 
     public function __construct(
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
-        private readonly GroupRepositoryInterface $groupRepository,
-        private readonly KeyRepositoryInterface $keyRepository,
+        private readonly IdentifierMapRepositoryInterface $identifierMap,
         private readonly ColumnReferenceLocatorInterface $locator,
     ) {
     }
@@ -154,11 +152,11 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
                 fn (array $reference) => $this->locator->configAt($columns, $reference),
                 $storeReferences
             );
-            $groupIdentifiers[$storeId] = $this->groupRepository->getIdentifiersByIds(
+            $groupIdentifiers[$storeId] = $this->identifierMap->getGroupIdentifiersByIds(
                 $storeId,
                 array_map(static fn (array $config) => $config[self::GROUP_ID], $configs)
             );
-            $keyIdentifiers[$storeId] = $this->keyRepository->getIdentifiersByIds(
+            $keyIdentifiers[$storeId] = $this->identifierMap->getKeyIdentifiersByIds(
                 $storeId,
                 array_map(static fn (array $config) => $config[self::KEY_ID], $configs)
             );
@@ -302,13 +300,13 @@ final class ColumnReferenceService implements ColumnReferenceServiceInterface, R
         $missingGroups = $this->notMemoised($this->groupIds[$storeId] ?? [], $groupIdentifiers);
         if ($missingGroups !== []) {
             $this->groupIds[$storeId] = ($this->groupIds[$storeId] ?? [])
-                + $this->groupRepository->getIdsByIdentifiers($storeId, $missingGroups);
+                + $this->identifierMap->getGroupIdsByIdentifiers($storeId, $missingGroups);
         }
 
         $missingKeys = $this->notMemoised($this->keyIds[$storeId] ?? [], $keyIdentifiers);
         if ($missingKeys !== []) {
             $this->keyIds[$storeId] = ($this->keyIds[$storeId] ?? [])
-                + $this->keyRepository->getIdsByIdentifiers($storeId, $missingKeys);
+                + $this->identifierMap->getKeyIdsByIdentifiers($storeId, $missingKeys);
         }
 
         return [$this->groupIds[$storeId] ?? [], $this->keyIds[$storeId] ?? []];

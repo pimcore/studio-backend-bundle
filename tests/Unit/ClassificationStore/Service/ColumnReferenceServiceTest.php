@@ -15,8 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Serv
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\IdentifierMapRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceLocator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceService;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -535,13 +534,11 @@ final class ColumnReferenceServiceTest extends Unit
                     : $classDefinition,
                 'getByName' => $maker,
             ]),
-            $this->makeEmpty(GroupRepositoryInterface::class, [
-                'getIdsByIdentifiers' => fn (int $storeId, array $identifiers) => $this->idsOf($this->groups, $storeId, $identifiers),
-                'getIdentifiersByIds' => fn (int $storeId, array $ids) => $this->identifiersOf($this->groups, $storeId, $ids),
-            ]),
-            $this->makeEmpty(KeyRepositoryInterface::class, [
-                'getIdsByIdentifiers' => fn (int $storeId, array $identifiers) => $this->idsOf($this->keys, $storeId, $identifiers),
-                'getIdentifiersByIds' => fn (int $storeId, array $ids) => $this->identifiersOf($this->keys, $storeId, $ids),
+            $this->makeEmpty(IdentifierMapRepositoryInterface::class, [
+                'getGroupIdsByIdentifiers' => fn (int $storeId, array $identifiers) => $this->idsOf($this->groups, $storeId, $identifiers),
+                'getGroupIdentifiersByIds' => fn (int $storeId, array $ids) => $this->identifiersOf($this->groups, $storeId, $ids),
+                'getKeyIdsByIdentifiers' => fn (int $storeId, array $identifiers) => $this->idsOf($this->keys, $storeId, $identifiers),
+                'getKeyIdentifiersByIds' => fn (int $storeId, array $ids) => $this->identifiersOf($this->keys, $storeId, $ids),
             ]),
             new ColumnReferenceLocator(),
         );

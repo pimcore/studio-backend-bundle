@@ -50,12 +50,6 @@ final readonly class GroupRepository implements GroupRepositoryInterface
 
     private const string STORE_SCOPE_CONDITION = '`storeId` = :' . self::STORE_SCOPE_PARAMETER;
 
-    private const string IDENTIFIER_QUERY =
-        'SELECT `id`, `identifier` FROM `%s` WHERE `storeId` = ? AND `identifier` IN (?)';
-
-    private const string ID_QUERY =
-        'SELECT `id`, `identifier` FROM `%s` WHERE `storeId` = ? AND `id` IN (?) AND `identifier` IS NOT NULL';
-
     public function __construct(
         private GroupConfigResolverInterface $groupConfigResolver,
         private ListingFilterInterface $listingFilter,
@@ -90,64 +84,6 @@ final readonly class GroupRepository implements GroupRepositoryInterface
         }
 
         return $config;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIdsByIdentifiers(int $storeId, array $identifiers): array
-    {
-        $identifiers = array_values(array_unique($identifiers));
-
-        if (empty($identifiers)) {
-            return [];
-        }
-
-        try {
-            $rows = $this->connection->fetchAllAssociative(
-                sprintf(self::IDENTIFIER_QUERY, GroupConfigDao::TABLE_NAME_GROUPS),
-                [$storeId, $identifiers],
-                [ParameterType::INTEGER, ArrayParameterType::STRING]
-            );
-        } catch (DBALException $e) {
-            throw new DatabaseException('Failed to read the groups by identifier: ' . $e->getMessage(), $e);
-        }
-
-        $resolved = [];
-        foreach ($rows as $row) {
-            $resolved[(string) $row['identifier']] = (int) $row['id'];
-        }
-
-        return $resolved;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIdentifiersByIds(int $storeId, array $ids): array
-    {
-        $ids = array_values(array_unique($ids));
-
-        if (empty($ids)) {
-            return [];
-        }
-
-        try {
-            $rows = $this->connection->fetchAllAssociative(
-                sprintf(self::ID_QUERY, GroupConfigDao::TABLE_NAME_GROUPS),
-                [$storeId, $ids],
-                [ParameterType::INTEGER, ArrayParameterType::INTEGER]
-            );
-        } catch (DBALException $e) {
-            throw new DatabaseException('Failed to read the group identifiers: ' . $e->getMessage(), $e);
-        }
-
-        $identifiers = [];
-        foreach ($rows as $row) {
-            $identifiers[(int) $row['id']] = (string) $row['identifier'];
-        }
-
-        return $identifiers;
     }
 
     /**
