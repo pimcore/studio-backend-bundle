@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Request\UpdateElementSchedules;
+use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\UpdateSchedule;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ScheduleActions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
@@ -95,7 +96,7 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
     }
 
     /**
-     * @throws ForbiddenException
+     * @throws DatabaseException|InvalidArgumentException|ForbiddenException
      */
     public function updateSchedules(
         string $elementType,
@@ -107,36 +108,60 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         $schedules = $updateElementSchedules->getSchedules();
         $currentUserId = $this->securityService->getCurrentUser()->getId();
 
-        $currentTasks = [];
-        foreach ($schedules as $schedule) {
+        // Everything is checked before the first write, so a rejected request leaves no partial
+        // changes behind: every action has to be valid and every submitted task has to belong to
+        // this element already.
+        $existingTasks = [];
+        foreach ($schedules as $index => $schedule) {
+            $this->validateAction($elementType, $schedule->getAction());
 
-            if ($schedule->getId()) {
-                $task = $this->taskResolver->getById($schedule->getId());
-
-                if ($task && ($task->getCid() !== $id || $task->getCtype() !== $elementType)) {
-                    throw new ForbiddenException('You are not allowed to update this schedule');
-                }
-            } else {
-                $task = $this->createSchedule($elementType, $id);
+            if (!$schedule->getId()) {
+                continue;
             }
+
+            $task = $this->taskResolver->getById($schedule->getId());
+            if ($task && ($task->getCid() !== $id || $task->getCtype() !== $elementType)) {
+                throw new ForbiddenException('You are not allowed to update this schedule');
+            }
+
+            $existingTasks[$index] = $task;
+        }
+
+        $currentTasks = [];
+        foreach ($schedules as $index => $schedule) {
+            $isNew = !$schedule->getId();
+            $task = $isNew ? $this->createSchedule($elementType, $id) : $existingTasks[$index];
 
             if (!$task) {
                 continue;
+            }
+
+            // A task is executed with the permissions of its owner. Whoever creates or changes a
+            // task becomes its owner; a task that is submitted unchanged keeps the user it was
+            // scheduled by.
+            if ($isNew || $this->isScheduleChanged($task, $schedule)) {
+                $task->setUserId($currentUserId);
             }
 
             $currentTasks[] = $task->getId();
             $task->setCid($id);
             $task->setCtype($elementType);
             $task->setDate($schedule->getDate());
-            $this->validateAction($elementType, $schedule->getAction());
             $task->setAction($schedule->getAction());
             $task->setVersion($schedule->getVersion());
             $task->setActive($schedule->isActive());
-            $task->setUserId($currentUserId);
             $task->save();
         }
 
         $this->deleteObsoleteTasks($currentTasks, $id, $elementType);
+    }
+
+    private function isScheduleChanged(Task $task, UpdateSchedule $schedule): bool
+    {
+        return $task->getDate() !== $schedule->getDate()
+            || $task->getAction() !== $schedule->getAction()
+            || $task->getVersion() !== $schedule->getVersion()
+            || $task->getActive() !== $schedule->isActive();
     }
 
     public function deleteSchedule(int $id): void

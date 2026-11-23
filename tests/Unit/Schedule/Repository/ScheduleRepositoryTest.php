@@ -22,6 +22,7 @@ use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Schedule\TaskResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Repository\ScheduleRepository;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Request\UpdateElementSchedules;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -97,8 +98,9 @@ final class ScheduleRepositoryTest extends Unit
         );
     }
 
-    public function testUpdateSchedulesResetsTheOwnerWhenEditingAnExistingTaskOfTheSameElement(): void
+    public function testUpdateSchedulesMakesTheEditorTheOwnerOfAChangedTask(): void
     {
+        // the stored task has another date than the submitted one, so it counts as changed
         $this->queryBuilder->method('where')->willReturnSelf();
         $this->queryBuilder->method('setParameter')->willReturnSelf();
 
@@ -108,6 +110,9 @@ final class ScheduleRepositoryTest extends Unit
             'getId' => 3,
             'getCid' => 7,
             'getCtype' => ElementTypes::TYPE_DOCUMENT,
+            'getDate' => 1500000000,
+            'getAction' => 'publish',
+            'getActive' => true,
             // setUserId() is fluent (returns static), so the stub has to hand back the task itself
             'setUserId' => Expected::once(function (?int $userId) use (&$assignedUserId, &$task): Task {
                 $assignedUserId = $userId;
@@ -126,6 +131,129 @@ final class ScheduleRepositoryTest extends Unit
         );
 
         $this->assertSame(self::CURRENT_USER_ID, $assignedUserId);
+    }
+
+    public function testUpdateSchedulesKeepsTheOwnerOfAnUnchangedTask(): void
+    {
+        $this->queryBuilder->method('where')->willReturnSelf();
+        $this->queryBuilder->method('setParameter')->willReturnSelf();
+
+        // submitted exactly as stored: the task keeps running with the rights of the user who scheduled it
+        $task = $this->makeEmpty(Task::class, [
+            'getId' => 3,
+            'getCid' => 7,
+            'getCtype' => ElementTypes::TYPE_DOCUMENT,
+            'getDate' => 1600000000,
+            'getAction' => 'publish',
+            'getVersion' => null,
+            'getActive' => true,
+            'setUserId' => Expected::never(),
+            'save' => Expected::once(),
+        ]);
+
+        $this->createRepository($task)->updateSchedules(
+            ElementTypes::TYPE_DOCUMENT,
+            7,
+            $this->schedulesPayload(3, 'publish')
+        );
+    }
+
+    /**
+     * @dataProvider changedScheduleProvider
+     */
+    public function testUpdateSchedulesMakesTheEditorTheOwnerWhenAnyValueChanges(array $stored): void
+    {
+        $this->queryBuilder->method('where')->willReturnSelf();
+        $this->queryBuilder->method('setParameter')->willReturnSelf();
+
+        $assignedUserId = null;
+        $task = null;
+        $task = $this->makeEmpty(Task::class, $stored + [
+            'getId' => 3,
+            'getCid' => 7,
+            'getCtype' => ElementTypes::TYPE_DOCUMENT,
+            'getDate' => 1600000000,
+            'getAction' => 'publish',
+            'getVersion' => null,
+            'getActive' => true,
+            'setUserId' => function (?int $userId) use (&$assignedUserId, &$task): Task {
+                $assignedUserId = $userId;
+
+                return $task;
+            },
+        ]);
+
+        $this->createRepository($task)->updateSchedules(
+            ElementTypes::TYPE_DOCUMENT,
+            7,
+            $this->schedulesPayload(3, 'publish')
+        );
+
+        $this->assertSame(self::CURRENT_USER_ID, $assignedUserId);
+    }
+
+    /**
+     * The stored value that differs from the submitted schedule
+     * (date 1600000000, action "publish", no version, active).
+     *
+     * @return array<string, array{array<string, mixed>}>
+     */
+    public function changedScheduleProvider(): array
+    {
+        return [
+            'date' => [['getDate' => 1700000000]],
+            'action' => [['getAction' => 'unpublish']],
+            'version' => [['getVersion' => 12]],
+            're-activated' => [['getActive' => false]],
+        ];
+    }
+
+    public function testARejectedTaskLeavesTheSchedulesSubmittedBeforeItUnwritten(): void
+    {
+        // Task 5 belongs to the element and is submitted first, task 3 belongs to another element.
+        $ownTask = $this->makeEmpty(Task::class, [
+            'getId' => 5,
+            'getCid' => 7,
+            'getCtype' => ElementTypes::TYPE_DOCUMENT,
+            'setUserId' => Expected::never(),
+            'save' => Expected::never(),
+        ]);
+        $foreignTask = $this->makeEmpty(Task::class, [
+            'getId' => 3,
+            'getCid' => 4,
+            'getCtype' => ElementTypes::TYPE_DOCUMENT,
+            'save' => Expected::never(),
+        ]);
+        $this->queryBuilder->expects($this->never())->method('executeStatement');
+
+        $repository = $this->createRepository([5 => $ownTask, 3 => $foreignTask]);
+
+        $this->expectException(ForbiddenException::class);
+
+        $repository->updateSchedules(ElementTypes::TYPE_DOCUMENT, 7, new UpdateElementSchedules([
+            ['id' => 5, 'date' => 1900000000, 'action' => 'unpublish', 'version' => null, 'active' => true],
+            ['id' => 3, 'date' => 1600000000, 'action' => 'publish', 'version' => null, 'active' => true],
+        ]));
+    }
+
+    public function testAnInvalidActionLeavesTheSchedulesSubmittedBeforeItUnwritten(): void
+    {
+        $ownTask = $this->makeEmpty(Task::class, [
+            'getId' => 5,
+            'getCid' => 7,
+            'getCtype' => ElementTypes::TYPE_DOCUMENT,
+            'save' => Expected::never(),
+        ]);
+        $this->queryBuilder->expects($this->never())->method('executeStatement');
+
+        $repository = $this->createRepository([5 => $ownTask]);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $repository->updateSchedules(ElementTypes::TYPE_DOCUMENT, 7, new UpdateElementSchedules([
+            ['id' => 5, 'date' => 1900000000, 'action' => 'unpublish', 'version' => null, 'active' => true],
+            ['id' => 5, 'date' => 1900000000, 'action' => 'not-an-action', 'version' => null, 'active' => true],
+        ]));
     }
 
     public function testDeleteObsoleteTasksOnlyRemovesTasksOfTheSameElementType(): void
@@ -169,7 +297,10 @@ final class ScheduleRepositoryTest extends Unit
         ]);
     }
 
-    private function createRepository(Task $resolvedTask): ScheduleRepository
+    /**
+     * @param Task|array<int, Task> $resolvedTasks the task every id resolves to, or the tasks by id
+     */
+    private function createRepository(Task|array $resolvedTasks): ScheduleRepository
     {
         $element = $this->makeEmpty(Document::class, ['getId' => 7]);
 
@@ -178,7 +309,9 @@ final class ScheduleRepositoryTest extends Unit
         ]);
 
         $taskResolver = $this->makeEmpty(TaskResolverInterface::class, [
-            'getById' => $resolvedTask,
+            'getById' => static fn (int $id): ?Task => $resolvedTasks instanceof Task
+                ? $resolvedTasks
+                : ($resolvedTasks[$id] ?? null),
         ]);
 
         $currentUser = $this->makeEmpty(UserInterface::class, [
