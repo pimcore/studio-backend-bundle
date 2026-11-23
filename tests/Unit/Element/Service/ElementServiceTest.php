@@ -181,6 +181,8 @@ final class ElementServiceTest extends Unit
         $state = $service->getElementPublishedState(new ElementParameters(ElementTypes::TYPE_DATA_OBJECT, 7221));
 
         $this->assertTrue($state->getIsPublished());
+        // The response echoes the type of the request path, not the core type ("object") it is resolved with
+        $this->assertSame(ElementTypes::TYPE_DATA_OBJECT, $state->getElementType());
     }
 
     /**

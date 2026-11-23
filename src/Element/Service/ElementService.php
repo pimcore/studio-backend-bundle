@@ -170,7 +170,7 @@ final readonly class ElementService implements ElementServiceInterface
             default => null,
         };
 
-        return new PublishedState($parameters->getId(), $parameters->getType(), $published);
+        return new PublishedState($parameters->getId(), $parameters->getRequestedType(), $published);
     }
 
     /**
