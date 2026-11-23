@@ -36,6 +36,8 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\SubTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -329,6 +331,30 @@ final class PatchServiceTest extends Unit
         $this->expectExceptionMessage('field is mandatory');
 
         $service->patchElement($this->element, ElementTypes::TYPE_ASSET, [], $this->user);
+    }
+
+    /**
+     * The sibling of the case above, on the same boundary: a refusal that already carries its own
+     * status and error key - which is how the Classification Store refuses a value the key's
+     * declaration does not permit - reaches the client as that, and is not masked as a 500 with the
+     * generic error key.
+     */
+    public function testPatchKeepsTheStatusAndErrorKeyOfAValidationRefusal(): void
+    {
+        $service = $this->createService(static function (): void {
+            throw new InvalidArgumentException(
+                'The value names a variant the key does not declare.',
+                errorKey: HttpResponseErrorKeys::UNDECLARED_VARIANT->value
+            );
+        });
+
+        try {
+            $service->patchElement($this->element, ElementTypes::TYPE_ASSET, [], $this->user);
+            $this->fail('Expected the refusal to reach the caller');
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(HttpResponseCodes::UNPROCESSABLE_CONTENT->value, $exception->getStatusCode());
+            $this->assertSame(HttpResponseErrorKeys::UNDECLARED_VARIANT->value, $exception->getErrorKey());
+        }
     }
 
     public function testPatchRestoresOuterContextWhenSaveThrows(): void

@@ -22,32 +22,47 @@ use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing as GroupCon
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Listing as KeyConfigListing;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing as KeyGroupRelationListing;
+use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig\Listing as SubGroupConfigListing;
+use function sprintf;
 
 /**
  * @internal
  */
 final readonly class SearchHelperService implements SearchHelperServiceInterface
 {
+    /**
+     * Prefixed so that it can never be the name a generic column filter binds under, which is the
+     * filtered column's own name.
+     */
+    private const string SEARCH_PARAMETER_PREFIX = 'searchTerm';
+
     public function __construct(
         private TranslationRepositoryInterface $translationRepository,
         private SecurityServiceInterface $securityService
     ) {
     }
 
-    public function applySearchTermFilter(GroupConfigListing|CollectionConfigListing $list, ?string $searchTerm): void
-    {
+    public function applySearchTermFilter(
+        GroupConfigListing|CollectionConfigListing|SubGroupConfigListing $list,
+        ?string $searchTerm
+    ): void {
         if ($searchTerm === null || trim($searchTerm) === '') {
             return;
         }
 
         $searchTerms = $this->getTranslatedSearchFilterTerms($searchTerm);
 
+        // Named, one parameter per term: the listings this runs on bind their store restriction and
+        // their generic column filters by name, and DBAL cannot bind named and positional
+        // placeholders in the same statement.
         $conditions = [];
         $preparedSearchTerms = [];
+        $index = 0;
         foreach ($searchTerms as $term) {
-            $conditions[] = 'name LIKE ? OR description LIKE ?';
-            $preparedSearchTerms[] = '%' . $term . '%';
-            $preparedSearchTerms[] = '%' . $term . '%';
+            // counted, not keyed off the term array: the name has to be a valid placeholder
+            $parameter = self::SEARCH_PARAMETER_PREFIX . $index++;
+            $conditions[] = sprintf('name LIKE :%1$s OR description LIKE :%1$s', $parameter);
+            $preparedSearchTerms[$parameter] = '%' . $term . '%';
         }
 
         $list->addConditionParam('(' . implode(' OR ', $conditions) . ')', $preparedSearchTerms);
@@ -59,9 +74,13 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
             return;
         }
 
+        // named for the same reason as applySearchTermFilter(): the key listing restricts the store
+        // and applies its column filters by name
+        $parameter = self::SEARCH_PARAMETER_PREFIX . '0';
+
         $listing->addConditionParam(
-            '(name LIKE ? OR description LIKE ?)',
-            ['%' . $searchTerm . '%', '%' . $searchTerm . '%']
+            sprintf('(name LIKE :%1$s OR description LIKE :%1$s)', $parameter),
+            [$parameter => '%' . $searchTerm . '%']
         );
     }
 

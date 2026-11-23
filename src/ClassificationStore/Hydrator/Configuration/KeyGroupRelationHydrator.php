@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationDetail;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyOptionsResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\GroupInfoResolverTrait;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 
 /**
@@ -24,11 +26,18 @@ final readonly class KeyGroupRelationHydrator implements KeyGroupRelationHydrato
 {
     use GroupInfoResolverTrait;
 
+    public function __construct(
+        private KeyOptionsResolverInterface $keyOptionsResolver,
+    ) {
+    }
+
     public function hydrateKeyGroupRelationDetail(
         KeyGroupRelation $relation,
         ?string $keyName = null,
         ?string $keyDescription = null,
         ?string $groupName = null,
+        ?bool $keyLocalized = null,
+        ?KeyConfig $keyConfig = null,
     ): KeyGroupRelationDetail {
 
         return new KeyGroupRelationDetail(
@@ -39,6 +48,21 @@ final readonly class KeyGroupRelationHydrator implements KeyGroupRelationHydrato
             $keyName,
             $keyDescription,
             $groupName,
+            $relation->getSubGroup(),
+            $relation->getDefinitionOverride(),
+            $relation->getMetadata(),
+            $keyLocalized,
+            $keyConfig?->getType(),
+            $keyConfig !== null ? $this->keyOptionsResolver->getRelationOptions($relation) : null,
+            $keyConfig !== null
+                ? $this->keyOptionsResolver->getRelationOptionsUnavailableReason($relation)?->value
+                : null,
+            $keyConfig !== null ? $this->keyOptionsResolver->getRelationUnits($relation) : null,
+            $keyConfig !== null ? $this->keyOptionsResolver->getOptions($keyConfig) : null,
+            $keyConfig !== null
+                ? $this->keyOptionsResolver->getOptionsUnavailableReason($keyConfig)?->value
+                : null,
+            $keyConfig !== null ? $this->keyOptionsResolver->getUnits($keyConfig) : null,
         );
     }
 }

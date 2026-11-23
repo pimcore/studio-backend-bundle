@@ -14,12 +14,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\SearchIndexAdapter\MappingProperty;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Cache\RuntimeCacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnVariantExpanderInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
@@ -32,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\DeniedColumnDataResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDataEvent;
@@ -50,6 +55,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Localization\LocaleServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
@@ -61,6 +67,7 @@ use TypeError;
 use function array_key_exists;
 use function in_array;
 use function is_array;
+use function is_string;
 
 /**
  * @internal
@@ -100,6 +107,9 @@ final class GridService implements GridServiceInterface
         private readonly ToolResolverInterface $toolResolver,
         private readonly LocaleServiceInterface $localeService,
         private readonly RuntimeCacheResolverInterface $runtimeCacheResolver,
+        private readonly ColumnReferenceServiceInterface $columnReferenceService,
+        private readonly ColumnVariantExpanderInterface $columnVariantExpander,
+        private readonly KeyLocalizationResolverInterface $keyLocalizationResolver,
     ) {
     }
 
@@ -149,22 +159,33 @@ final class GridService implements GridServiceInterface
             return false;
         }
 
-        // An empty value for an allowed locale can silently fall back to the default language
-        // (LocalizedValueTrait::getLocalizedValue()). If that fallback language isn't permitted,
-        // the column must be treated as not viewable - otherwise a denied language's value could
-        // still leak out through the fallback.
-        if ($this->localizedFieldResolver->doGetFallbackValues()) {
-            $defaultLanguage = $this->toolResolver->getDefaultLanguage();
-            $fallbackLanguageIsDenied = $defaultLanguage !== null
-                && $defaultLanguage !== $locale
-                && !array_key_exists($defaultLanguage, $allowedView);
-
-            if ($fallbackLanguageIsDenied) {
-                return false;
-            }
+        // the language independent bucket has no fallback language
+        if ($locale === MappingProperty::NOT_LOCALIZED_KEY) {
+            return true;
         }
 
-        return true;
+        return !$this->isFallbackLanguageDenied($locale, $allowedView);
+    }
+
+    /**
+     * An empty value for an allowed locale can silently fall back to the default language
+     * (LocalizedValueTrait::getLocalizedValue()). If that fallback language isn't permitted,
+     * the column must be treated as not viewable - otherwise a denied language's value could
+     * still leak out through the fallback.
+     *
+     * @param array<string, mixed> $allowedView
+     */
+    private function isFallbackLanguageDenied(string $locale, array $allowedView): bool
+    {
+        if (!$this->localizedFieldResolver->doGetFallbackValues()) {
+            return false;
+        }
+
+        $defaultLanguage = $this->toolResolver->getDefaultLanguage();
+
+        return $defaultLanguage !== null
+            && $defaultLanguage !== $locale
+            && !array_key_exists($defaultLanguage, $allowedView);
     }
 
     /**
@@ -212,6 +233,9 @@ final class GridService implements GridServiceInterface
             }
 
             $filter->setClassName($classDefinition->getName());
+            // The classification store column filters resolve their identifiers in the store of the field of
+            // this class, so the filter has to carry the id as well as the name.
+            $filter->setClassId($classId);
         }
 
         $result = $this->gridSearch->searchDataObjects($gridParameter);
@@ -223,7 +247,8 @@ final class GridService implements GridServiceInterface
             return $this->getCollectionFromSearchResult(
                 $result,
                 $gridParameter,
-                ElementTypes::TYPE_OBJECT
+                ElementTypes::TYPE_OBJECT,
+                $classId
             );
         } finally {
             $this->localizedFieldResolver->setGetFallbackValues($fallbackBackup);
@@ -293,6 +318,11 @@ final class GridService implements GridServiceInterface
             );
         }
 
+        $classId = $databaseElement instanceof Concrete ? $databaseElement->getClassId() : null;
+        if ($classId !== null) {
+            $this->columnReferenceService->prime($classId, $columnCollection);
+        }
+
         $permissions = $this->resolvePermissions($element, $databaseElement, $elementType, $elementId, $coreElement);
 
         foreach ($columnCollection->getColumns() as $column) {
@@ -333,7 +363,17 @@ final class GridService implements GridServiceInterface
         string $elementType,
     ): Collection {
         $user = $this->securityService->getCurrentUser();
-        $columns = $this->getConfigurationFromArray($gridParameter->getColumns());
+        // the class the provided objects are of, so a column referenced by identifier expands as in the listing
+        $classId = null;
+        foreach ($elements as $providedElement) {
+            if ($providedElement->getElement() instanceof Concrete) {
+                $classId = $providedElement->getElement()->getClassId();
+
+                break;
+            }
+        }
+
+        $columns = $this->getConfigurationFromArray($gridParameter->getColumns(), $classId);
 
         $fallbackBackup = $this->localizedFieldResolver->getGetFallbackValues();
         $this->localizedFieldResolver->setGetFallbackValues($gridParameter->getApplyFallbackLanguages());
@@ -371,19 +411,25 @@ final class GridService implements GridServiceInterface
         bool $isExport,
         ?UserInterface $user,
     ): ColumnData {
-        $isLocalizedField = $column->getLocale() === null
+        $gateLocale = $column->getLocale();
+        $isLocalizedField = $gateLocale === null
             && $databaseElement !== null
             && $this->isLocalizedClassField($databaseElement, $column->getKey());
 
+        $storeGate = null;
+        if ($databaseElement !== null) {
+            $storeGate = $this->resolveClassificationStoreGate($databaseElement, $column);
+        }
+
+        if ($storeGate !== null) {
+            // the language the read resolves to decides the permission, not the column's raw locale
+            [$gateLocale, $isLocalizedField] = $storeGate;
+        }
+
         if ($databaseElement !== null
-            && !$this->isLocaleViewableForElement($databaseElement, $column->getLocale(), $user, $isLocalizedField)
+            && !$this->isLocaleViewableForElement($databaseElement, $gateLocale, $user, $isLocalizedField)
         ) {
-            return new ColumnData(
-                key: $column->getKey(),
-                locale: $column->getLocale(),
-                value: null,
-                fieldType: $column->getType(),
-            );
+            return $this->resolveDeniedColumnData($column, $databaseElement, $storeGate !== null);
         }
 
         $resolver = $this->getColumnResolvers()[$column->getType()];
@@ -403,12 +449,36 @@ final class GridService implements GridServiceInterface
         };
     }
 
+    private function resolveDeniedColumnData(
+        Column $column,
+        ElementInterface $databaseElement,
+        bool $isStoreColumn,
+    ): ColumnData
+    {
+        $deniedResolver = $isStoreColumn ? ($this->getColumnResolvers()[$column->getType()] ?? null) : null;
+        if ($deniedResolver instanceof DeniedColumnDataResolverInterface) {
+            $denied = $deniedResolver->resolveDeniedForCoreElement($column, $databaseElement);
+            if ($denied !== null) {
+                return $denied;
+            }
+        }
+
+        $variant = $column->getConfig()['variant'] ?? null;
+
+        return new ColumnData(
+            key: $column->getKey() . (is_string($variant) && $variant !== '' ? '#' . $variant : ''),
+            locale: $column->getLocale(),
+            value: null,
+            fieldType: $column->getType(),
+        );
+    }
+
     /**
      * The locale core actually reads when a localized getter is called without an explicit
      * locale - the current request locale if it is a configured language, otherwise the
      * default language. Mirrors Localizedfield::getLanguage().
      */
-    private function getImplicitReadLocale(): ?string
+    public function getImplicitReadLocale(): ?string
     {
         $currentLocale = $this->localeService->getLocale();
         if ($currentLocale !== null && $this->toolResolver->isValidLanguage($currentLocale)) {
@@ -416,6 +486,66 @@ final class GridService implements GridServiceInterface
         }
 
         return $this->toolResolver->getDefaultLanguage();
+    }
+
+    /**
+     * The language gate of a Classification Store column, as [locale, localized]: the key decides its own
+     * language, so a key that is not localized is read from the language independent bucket and needs no
+     * language permission whatever locale the column carries, while a localized one is gated on the
+     * column's locale or, without one, the implicit read locale. A column naming no key falls back to
+     * the field: localized when any key of its store is. Null when the column is no Classification Store
+     * column of the element's class.
+     *
+     * @return array{0: ?string, 1: bool}|null
+     */
+    private function resolveClassificationStoreGate(ElementInterface $element, Column $column): ?array
+    {
+        if (!$element instanceof Concrete || $column->getType() !== 'dataobject.classificationstore') {
+            return null;
+        }
+
+        $definition = $element->getClass()->getFieldDefinition($column->getKey());
+        if (!$definition instanceof Classificationstore) {
+            return null;
+        }
+
+        $keyId = $this->resolveColumnKeyId($element, $column);
+        // asked every time: the key's localized flag is configuration that can change while a worker lives
+        $localized = $keyId !== null
+            ? $this->keyLocalizationResolver->isKeyLocalized($keyId, $definition)
+            : $this->keyLocalizationResolver->hasLocalizedKey($definition);
+
+        if (!$localized) {
+            // read from the language independent bucket, which is itself a permission: the export
+            // resolver does not intersect with the permitted languages the way the adapter does
+            return [MappingProperty::NOT_LOCALIZED_KEY, false];
+        }
+
+        // an empty locale is no locale, as the resolver reads it
+        $locale = $column->getLocale() === '' ? null : $column->getLocale();
+
+        return [$locale, $locale === null];
+    }
+
+    private function resolveColumnKeyId(Concrete $element, Column $column): ?int
+    {
+        try {
+            $reference = $this->columnReferenceService->resolve(
+                $element->getClassId(),
+                $column->getKey(),
+                $column->getConfig()
+            );
+        } catch (Exception) {
+            $reference = null;
+        }
+
+        if ($reference !== null) {
+            return $reference->getKeyId();
+        }
+
+        $keyId = $column->getConfig()['keyId'] ?? null;
+
+        return is_numeric($keyId) ? (int)$keyId : null;
     }
 
     private function isLocalizedClassField(ElementInterface $element, string $key): bool
@@ -494,7 +624,8 @@ final class GridService implements GridServiceInterface
      */
     public function getConfigurationForExport(
         array $config,
-        array $columnsDefinitions
+        array $columnsDefinitions,
+        ?string $classId = null
     ): ColumnCollection {
         $exportableColumns = [];
         foreach ($config as $column) {
@@ -511,31 +642,39 @@ final class GridService implements GridServiceInterface
             $exportableColumns[] = $column;
         }
 
-        return $this->getConfigurationFromArray($exportableColumns);
+        return $this->getConfigurationFromArray($exportableColumns, $classId);
     }
 
     public function getColumnKeys(ColumnCollection $columnCollection, bool $withGroup = false): array
     {
         return array_map(
-            function (Column $column) use ($withGroup) {
+            function (Column $column) use ($withGroup): string {
                 if ($withGroup === true && !$column->getGroup()) {
                     throw new InvalidArgumentException('Group must be set when withGroup is true');
                 }
-                $firstGroup = $column->getGroup()[0] ?? '';
-                $fd = $column->getConfig()['fieldDefinition'] ?? null;
 
-                if ($withGroup) {
-                    $key = $fd ? ($fd['name'] ?? $column->getKey()) : $column->getKey();
-                } else {
-                    $key = $fd ? ($fd['title'] ?? $column->getKey()) : $column->getKey();
-                }
+                $key = $this->appendLocale($this->getColumnKeyName($column, $withGroup), $column);
 
-                $key = $this->appendLocale($key, $column);
-
-                return ($withGroup ? $firstGroup . '~' : '') . $key;
+                return ($withGroup ? ($column->getGroup()[0] ?? '') . '~' : '') . $key;
             },
             $columnCollection->getColumns()
         );
+    }
+
+    /**
+     * The column's name as an export header carries it, a variant column addressing its variant as `#variant`.
+     */
+    private function getColumnKeyName(Column $column, bool $withGroup): string
+    {
+        $fd = $column->getConfig()['fieldDefinition'] ?? null;
+        $field = $withGroup ? 'name' : 'title';
+        $key = $fd ? ($fd[$field] ?? $column->getKey()) : $column->getKey();
+
+        if ($column->getType() === 'dataobject.classificationstore' && isset($column->getConfig()['variant'])) {
+            $key .= '#' . $column->getConfig()['variant'];
+        }
+
+        return $key;
     }
 
     private function appendLocale(string $key, Column $column): string
@@ -552,7 +691,8 @@ final class GridService implements GridServiceInterface
      * @throws InvalidArgumentException
      */
     private function getConfigurationFromArray(
-        array $config
+        array $config,
+        ?string $classId = null
     ): ColumnCollection {
 
         $columns = [];
@@ -572,7 +712,7 @@ final class GridService implements GridServiceInterface
             }
         }
 
-        return new ColumnCollection($columns);
+        return new ColumnCollection($this->columnVariantExpander->expand($columns, $classId));
     }
 
     private function supports(Column $column, string $elementType): bool
@@ -632,7 +772,8 @@ final class GridService implements GridServiceInterface
     private function getCollectionFromSearchResult(
         SearchResultItemInterface $searchResultItem,
         GridParameter $gridParameter,
-        string $elementType
+        string $elementType,
+        ?string $classId = null
     ): Collection {
         $items = $searchResultItem->getItems();
 
@@ -641,7 +782,7 @@ final class GridService implements GridServiceInterface
         }
 
         $data = [];
-        $columns = $this->getConfigurationFromArray($gridParameter->getColumns());
+        $columns = $this->getConfigurationFromArray($gridParameter->getColumns(), $classId);
         foreach ($items as $item) {
             $rowCacheKey = $this->getRowObjectCacheKey($elementType, $item->getId());
 

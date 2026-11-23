@@ -62,6 +62,12 @@ interface GridServiceInterface
     ): bool;
 
     /**
+     * The language a localized field read without an explicit locale resolves to: the request locale
+     * when it is a configured language, otherwise the default language.
+     */
+    public function getImplicitReadLocale(): ?string;
+
+    /**
      * A caller that already holds the core element (one built from another state than the
      * database, say) passes it as $coreElement; for every element type it is then used instead
      * of loading it by id, and columns whose resolver reads core elements take their values from it.
@@ -113,7 +119,8 @@ interface GridServiceInterface
      */
     public function getConfigurationForExport(
         array $config,
-        array $columnsDefinitions
+        array $columnsDefinitions,
+        ?string $classId = null
     ): ColumnCollection;
 
     /**

@@ -1,0 +1,6 @@
+# Rides the existing pimcore_core transport so the standard worker picks the remap up and a store
+# whose keys reach a large class never rebuilds its index inside the writing request.
+framework:
+    messenger:
+        routing:
+            Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Messenger\SearchIndexRemapMessage: pimcore_core

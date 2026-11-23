@@ -1,0 +1,399 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer;
+
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollectionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyTypeEngineFitResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use function array_diff;
+use function array_keys;
+use function implode;
+use function in_array;
+use function is_array;
+use function is_string;
+use function json_decode;
+use function mb_strtolower;
+use function sprintf;
+
+/**
+ * @internal
+ */
+final readonly class ApplyRefusals implements ApplyRefusalsInterface
+{
+    /**
+     * What a `definitionOverride` may carry, mirroring the closed list the model enforces
+     * ({@see KeyGroupRelation::setDefinitionOverride()}). It is restated here because a reconcile
+     * has to name every property it refuses rather than stop at the first one the model throws on.
+     *
+     * The reserved `indexed` member is deliberately not one of them: that flag belongs to the key,
+     * in its own `definition` ({@see SearchIndexFlagResolverInterface}), and no assignment overrides
+     * it.
+     */
+    private const array OVERRIDABLE_PROPERTIES = ['options', 'defaultUnit', 'validUnits'];
+
+    public function __construct(
+        private CollectionRepositoryInterface $collectionRepository,
+        private GroupRepositoryInterface $groupRepository,
+        private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
+        private KeyTypeEngineFitResolverInterface $keyTypeEngineFitResolver,
+        private SubGroupRepositoryInterface $subGroupRepository,
+    ) {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function refuseTakenName(
+        ApplyContext $context,
+        ArtifactSection $section,
+        ApplyOutcome $outcome,
+        string $name,
+        ?MatchedRow $matched,
+        string $label,
+        string $identifier,
+    ): bool {
+        $exceptId = $matched?->getId();
+        $storedName = $matched?->getName();
+
+        // the run answers for the names it is writing: a file naming one twice is a broken file, and
+        // every entry carrying the name once the apply is done claims it - one the store already
+        // matched as much as one it creates - so the second of two is a conflict whichever of them
+        // is the new one
+        if (!$context->claimName($section, $name, $outcome === ApplyOutcome::MATCHED_UNCHANGED)) {
+            $context->record(
+                ApplyOutcome::CONFLICT,
+                sprintf('%s: the name is already another entry\'s in this store', $label)
+            );
+
+            return true;
+        }
+
+        if ($outcome === ApplyOutcome::MATCHED_UNCHANGED) {
+            return false;
+        }
+
+        // the store answers for the rows that are there - on a rename and on an adoption as much as on a
+        // creation, whatever the level's own ::update() would let through, because a file entry landing on
+        // a name another identifier holds is the guess this refusal exists to prevent - and a store this
+        // run created or emptied has none; a name the run is renaming a row away from is free once that
+        // is written, which a dry run never does
+        if ($context->holdsNoPriorRows()
+            || $context->isNameVacated($section, $name)
+            || !$this->nameIsTaken($section, (int) $context->getStoreId(), $name, $exceptId)) {
+            $this->vacate($context, $section, $name, $storedName);
+
+            return false;
+        }
+
+        // skipped: adopting the stored row or writing a sibling beside it would be a guess
+        $context->record(
+            ApplyOutcome::SKIPPED,
+            sprintf('%s: the target holds the name under another identifier than the file gives it', $label)
+        );
+
+        if ($outcome === ApplyOutcome::UPDATED && $exceptId !== null) {
+            // only the rename was ambiguous: the row is there under the identifier the file gives it
+            $context->register($section, $identifier, $exceptId);
+        } else {
+            // no row carries the identifier - a creation has none, an adoption leaves the stored row
+            // nameless - so what refers to it is skipped with the entry
+            $context->skip($section, $identifier);
+        }
+
+        return true;
+    }
+
+    private function vacate(ApplyContext $context, ArtifactSection $section, string $name, ?string $storedName): void
+    {
+        if ($storedName !== null && mb_strtolower($storedName) !== mb_strtolower($name)) {
+            $context->vacateName($section, $storedName);
+        }
+    }
+
+    /**
+     * Writing `enabled = 0` deletes every assignment of the key
+     * ({@see \Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao::update()}), so a file
+     * that disables a key the target still assigns would untag groups it says nothing about.
+     * Refused, naming those groups.
+     *
+     * A real run reads the assignments under a lock rather than from its own snapshot, and then
+     * writes under that answer: an assignment committed after the apply's transaction began would
+     * otherwise be invisible to the probe and deleted by the disable a moment later, which is the
+     * one loss the refusal exists to prevent. The locking read is exclusive against the assignment
+     * writers because the apply holds the store's group rows first
+     * ({@see GroupRepositoryInterface::holdGroupsOfStore()}). A dry run writes nothing and asks
+     * without the lock.
+     */
+    public function refuseDisablingAnAssignedKey(ApplyContext $context, KeyConfig $target, string $name): bool
+    {
+        $groups = $this->keyGroupRelationRepository->getGroupNamesByKeyId(
+            (int) $target->getId(),
+            !$context->isDryRun()
+        );
+
+        if ($groups === []) {
+            return false;
+        }
+
+        $context->record(
+            ApplyOutcome::CONFLICT,
+            sprintf(
+                'key "%s" is disabled by the file but still assigned to the group(s) "%s"',
+                $name,
+                implode('", "', $groups)
+            )
+        );
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function refuseWithdrawnKeyType(
+        ApplyContext $context,
+        ?KeyConfig $target,
+        ArtifactKeyEntry $keyEntry,
+        string $label,
+    ): bool {
+        $introduced = array_diff(
+            $this->keyTypeEngineFitResolver->findWithdrawnTypes(
+                $this->collectTypeNames($keyEntry->getType(), $this->readDelegateType($keyEntry))
+            ),
+            $target === null ? [] : $this->keyTypeEngineFitResolver->findWithdrawnTypes(
+                $this->collectTypeNames($target->getType(), $this->readStoredDelegateType($target))
+            )
+        );
+
+        if ($introduced === []) {
+            return false;
+        }
+
+        $context->record(
+            ApplyOutcome::CONFLICT,
+            sprintf(
+                '%s: the field type "%s" has been withdrawn as a key type',
+                $label,
+                implode('", "', $introduced)
+            )
+        );
+
+        $context->skip(ArtifactSection::KEYS, $keyEntry->getIdentifier());
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function refuseDelegateThatIsNotAKeyType(
+        ApplyContext $context,
+        ArtifactKeyEntry $keyEntry,
+        string $label,
+    ): bool {
+        $delegateType = $this->keyTypeEngineFitResolver->findDelegateThatIsNotAKeyType(
+            $this->readDelegateType($keyEntry)
+        );
+
+        if ($delegateType === null) {
+            return false;
+        }
+
+        $context->record(
+            ApplyOutcome::CONFLICT,
+            sprintf('%s: a key cannot wrap the field type "%s", which no key is defined with', $label, $delegateType)
+        );
+
+        $context->skip(ArtifactSection::KEYS, $keyEntry->getIdentifier());
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function refuseKeyTypeTheEngineCannotHold(
+        ApplyContext $context,
+        ArtifactKeyEntry $keyEntry,
+        string $label,
+    ): bool {
+        $engine = $this->keyTypeEngineFitResolver->findRefusingEngine(
+            $keyEntry->getType(),
+            $this->readDelegateType($keyEntry),
+            $context->getStoreId()
+        );
+
+        if ($engine === null) {
+            return false;
+        }
+
+        $context->record(
+            ApplyOutcome::CONFLICT,
+            sprintf(
+                '%s: the field type "%s" cannot be held by the "%s" storage engine of the store',
+                $label,
+                $keyEntry->getType(),
+                $engine
+            )
+        );
+
+        // nothing registers a refused key, so what refers to it is skipped with it, in a dry run as in an apply
+        $context->skip(ArtifactSection::KEYS, $keyEntry->getIdentifier());
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function refuseDeclarationTheEngineCannotAddress(
+        ApplyContext $context,
+        ?KeyConfig $target,
+        ArtifactKeyEntry $keyEntry,
+        string $label,
+    ): bool {
+        $refusal = $this->keyTypeEngineFitResolver->findEngineRefusingDeclaration(
+            $keyEntry->getType(),
+            $keyEntry->getDefinition(),
+            $context->getStoreId()
+        );
+
+        if ($refusal === null) {
+            return false;
+        }
+
+        $carried = $target === null ? [] : ($this->keyTypeEngineFitResolver->findEngineRefusingDeclaration(
+            $target->getType(),
+            $this->readStoredDefinition($target),
+            $context->getStoreId()
+        )['capabilities'] ?? []);
+
+        $introduced = array_diff($refusal['capabilities'], $carried);
+        if ($introduced === []) {
+            return false;
+        }
+
+        $context->record(
+            ApplyOutcome::CONFLICT,
+            sprintf(
+                '%s: the declaration of a "%s" key needs %s, which the "%s" storage engine of the store'
+                . ' does not offer',
+                $label,
+                $keyEntry->getType(),
+                implode(', ', $introduced),
+                $refusal['engine']
+            )
+        );
+
+        $context->skip(ArtifactSection::KEYS, $keyEntry->getIdentifier());
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function refuseAssignment(
+        ApplyContext $context,
+        ArtifactAssignmentEntry $assignment,
+        string $label,
+    ): bool {
+        $refusals = [];
+
+        if ($context->isKeyDisabled($assignment->getKeyIdentifier())) {
+            $refusals[] = sprintf(
+                'key "%s" is disabled by the file and assigned by it as well',
+                $assignment->getKeyIdentifier()
+            );
+        } elseif ($context->isKeyDisabledInTarget($assignment->getKeyIdentifier())) {
+            $refusals[] = sprintf(
+                'key "%s" is disabled in the target and the file does not enable it',
+                $assignment->getKeyIdentifier()
+            );
+        }
+
+        foreach (array_keys($assignment->getDefinitionOverride() ?? []) as $property) {
+            if (!in_array($property, self::OVERRIDABLE_PROPERTIES, true)) {
+                $refusals[] = sprintf('"%s" cannot be overridden per key assignment', $property);
+            }
+        }
+
+        $subGroup = $assignment->getSubGroup();
+        if ($subGroup !== null && !$context->isKnown(ArtifactSection::SUB_GROUPS, $subGroup)) {
+            $refusals[] = sprintf('the sub group "%s" exists neither in the file nor in the store', $subGroup);
+        }
+
+        foreach ($refusals as $refusal) {
+            $context->record(ApplyOutcome::CONFLICT, sprintf('%s: %s', $label, $refusal));
+        }
+
+        return $refusals !== [];
+    }
+
+    private function readDelegateType(ArtifactKeyEntry $keyEntry): ?string
+    {
+        $delegateType = $keyEntry->getDefinition()['delegateDatatype'] ?? null;
+
+        return is_string($delegateType) && $delegateType !== '' ? $delegateType : null;
+    }
+
+    private function readStoredDelegateType(KeyConfig $target): ?string
+    {
+        $delegateType = $this->readStoredDefinition($target)['delegateDatatype'] ?? null;
+
+        return is_string($delegateType) && $delegateType !== '' ? $delegateType : null;
+    }
+
+    /**
+     * The stored definition blob of the key the entry was matched to, decoded, or null for a blob
+     * that does not decode to an array.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function readStoredDefinition(KeyConfig $target): ?array
+    {
+        $definition = json_decode($target->getDefinition(), true);
+
+        return is_array($definition) ? $definition : null;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function collectTypeNames(string $type, ?string $delegateType): array
+    {
+        return $delegateType === null ? [$type] : [$type, $delegateType];
+    }
+
+    /**
+     * @throws DatabaseException
+     */
+    private function nameIsTaken(ArtifactSection $section, int $storeId, string $name, ?int $exceptId): bool
+    {
+        return match ($section) {
+            ArtifactSection::SUB_GROUPS => $this->subGroupRepository->isNameTaken($storeId, $name, $exceptId),
+            ArtifactSection::COLLECTIONS => $this->collectionRepository->isNameTaken($storeId, $name, $exceptId),
+            ArtifactSection::GROUPS => $this->groupRepository->isNameTaken($storeId, $name, $exceptId),
+            default => false,
+        };
+    }
+}

@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;
@@ -37,7 +37,7 @@ final class ClassificationStoreResolver extends AbstractResolver
 {
     public function __construct(
         private readonly GroupConfigRepositoryInterface $groupConfigRepository,
-        private readonly KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
+        private readonly KeyRelationResolverInterface $keyRelationResolver,
         private readonly ServiceResolverInterface $classificationStoreServiceResolver,
     ) {
     }
@@ -101,7 +101,7 @@ final class ClassificationStoreResolver extends AbstractResolver
         }
 
         try {
-            $keyGroupRelation = $this->keyGroupRelationRepository->getByKeyGroupId((int) $keyId, (int) $groupId);
+            $keyGroupRelation = $this->keyRelationResolver->getByGroupAndKey((int) $groupId, (int) $keyId);
         } catch (NotFoundException $exception) {
             throw new ParseException(
                 sprintf('Key "%s" does not exist in classification store group "%s"', $keyId, $groupId),
@@ -109,7 +109,12 @@ final class ClassificationStoreResolver extends AbstractResolver
             );
         }
 
-        $fd = $this->classificationStoreServiceResolver->getFieldDefinitionFromKeyConfig($keyGroupRelation);
+        // Rebuilt from the assignment's effective definition: core memoises getFieldDefinitionFromKeyConfig()
+        // under the key id, which would serve the first group's override to every later group
+        $fd = $this->classificationStoreServiceResolver->getFieldDefinitionFromJson(
+            $keyGroupRelation->getEffectiveDefinitionData(),
+            $keyGroupRelation->getType()
+        );
 
         if ($fd === null) {
             throw new ParseException(sprintf('Classification store key "%s" has no field definition', $keyId));

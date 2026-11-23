@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configur
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\AbsentValue;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\JsonObjectShapeTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 
 /**
@@ -23,11 +25,13 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 #[Schema(
     schema: 'ClassificationStoreConfigurationKeyUpdate',
     title: 'Classification Store Configuration Key Update',
-    required: ['name', 'title', 'description', 'type', 'definition'],
+    required: ['name', 'type', 'definition'],
     type: 'object'
 )]
 final readonly class KeyUpdate
 {
+    use JsonObjectShapeTrait;
+
     /**
      * @throws InvalidArgumentException
      */
@@ -46,10 +50,12 @@ final readonly class KeyUpdate
         )]
         private ?string $type = null,
         #[Property(
-            description: 'Values for object brick definition metadata',
+            description: 'Replaces the stored definition; "indexed" flags search indexing,'
+                . ' "variants" is for "multiValue" keys',
             type: 'object',
             example: [
                 'name' => 'weight',
+                'indexed' => false,
                 'datatype' => 'data',
                 'fieldtype' => 'quantityValue',
                 'title' => 'Weight',
@@ -81,9 +87,40 @@ final readonly class KeyUpdate
             nullable: true
         )]
         private ?array $definition = null,
+        #[Property(
+            description: 'Per-language flag; omit to keep the stored value,'
+                . ' null defers to the class definition field',
+            type: 'boolean',
+            example: true,
+            nullable: true
+        )]
+        private ?bool $localized = null,
+        #[Property(
+            description: 'Free-form pairs; omit to keep them, an object replaces them whole, null clears them',
+            type: 'object',
+            example: ['source' => 'erp'],
+            nullable: true
+        )]
+        private ?array $customMetadata = null,
+        // Set by KeyUpdateDenormalizer: an absent field leaves the stored value alone, a present empty one clears it.
+        private bool $titleSupplied = false,
+        private bool $descriptionSupplied = false,
+        private bool $localizedSupplied = false,
+        private bool $customMetadataSupplied = false,
+        // only refused here, never a property of this schema; the default stands for an absent key
+        mixed $identifier = AbsentValue::ABSENT,
     ) {
         if (empty($this->name)) {
             throw new InvalidArgumentException('Name cannot be empty.');
+        }
+
+        // the `?array` type stops a scalar, not a JSON list; the member's contract is an object
+        if ($this->customMetadata !== null && !$this->isJsonObject($this->customMetadata)) {
+            throw new InvalidArgumentException('customMetadata has to be an object or null.');
+        }
+
+        if ($identifier !== AbsentValue::ABSENT) {
+            throw new InvalidArgumentException('Identifier is assigned by the system and cannot be set.');
         }
     }
 
@@ -110,5 +147,63 @@ final readonly class KeyUpdate
     public function getDefinition(): ?array
     {
         return $this->definition;
+    }
+
+    public function getLocalized(): ?bool
+    {
+        return $this->localized;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function getCustomMetadata(): ?array
+    {
+        return $this->customMetadata;
+    }
+
+    /**
+     * A non-null title counts as supplied on its own, so constructing this DTO directly — without
+     * the denormalizer that sets the flag — cannot silently drop the value. The flag is what tells
+     * a title supplied as null apart from an omitted one, which inference cannot recover.
+     */
+    public function isTitleSupplied(): bool
+    {
+        return $this->titleSupplied || $this->title !== null;
+    }
+
+    public function isDescriptionSupplied(): bool
+    {
+        return $this->descriptionSupplied || $this->description !== null;
+    }
+
+    public function isLocalizedSupplied(): bool
+    {
+        return $this->localizedSupplied || $this->localized !== null;
+    }
+
+    public function isCustomMetadataSupplied(): bool
+    {
+        return $this->customMetadataSupplied || $this->customMetadata !== null;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function withDefinition(array $definition): self
+    {
+        return new self(
+            name: $this->name,
+            title: $this->title,
+            description: $this->description,
+            type: $this->type,
+            definition: $definition,
+            localized: $this->localized,
+            customMetadata: $this->customMetadata,
+            titleSupplied: $this->titleSupplied,
+            descriptionSupplied: $this->descriptionSupplied,
+            localizedSupplied: $this->localizedSupplied,
+            customMetadataSupplied: $this->customMetadataSupplied,
+        );
     }
 }

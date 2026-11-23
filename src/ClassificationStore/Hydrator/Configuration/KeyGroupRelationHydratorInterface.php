@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationDetail;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 
 /**
@@ -26,5 +27,7 @@ interface KeyGroupRelationHydratorInterface
         ?string $keyName = null,
         ?string $keyDescription = null,
         ?string $groupName = null,
+        ?bool $keyLocalized = null,
+        ?KeyConfig $keyConfig = null,
     ): KeyGroupRelationDetail;
 }

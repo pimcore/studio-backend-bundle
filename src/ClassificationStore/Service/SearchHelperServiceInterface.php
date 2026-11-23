@@ -17,13 +17,17 @@ use Pimcore\Model\DataObject\Classificationstore\CollectionConfig\Listing as Col
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing as GroupConfigListing;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Listing as KeyConfigListing;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing as KeyGroupRelationListing;
+use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig\Listing as SubGroupConfigListing;
 
 /**
  * @internal
  */
 interface SearchHelperServiceInterface
 {
-    public function applySearchTermFilter(GroupConfigListing|CollectionConfigListing $list, ?string $searchTerm): void;
+    public function applySearchTermFilter(
+        GroupConfigListing|CollectionConfigListing|SubGroupConfigListing $list,
+        ?string $searchTerm
+    ): void;
 
     public function applyKeySearchFilter(KeyConfigListing $listing, ?string $searchTerm): void;
 

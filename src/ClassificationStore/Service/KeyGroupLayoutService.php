@@ -14,17 +14,27 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\VariantLayout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
+use Pimcore\Model\DataObject\ClassDefinition\Data\FieldDefinitionEnrichmentInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\LayoutDefinitionEnrichmentInterface;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelationCache;
+use Pimcore\Model\DataObject\Classificationstore\LabelEntityType;
+use Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface;
 use Pimcore\Model\DataObject\Concrete;
+use Psr\Log\LoggerInterface;
+use Throwable;
+use function array_map;
+use function sprintf;
 
 /**
  * @internal
@@ -33,8 +43,15 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
 {
     public function __construct(
         private ServiceResolverInterface $serviceResolver,
-        private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
+        private KeyRelationResolverInterface $keyRelationResolver,
         private ConcreteObjectResolver $concreteObjectResolver,
+        private KeyConfigResolverInterface $keyConfigResolver,
+        private LabelResolverInterface $labelResolver,
+        private LabelLanguageResolverInterface $labelLanguageResolver,
+        private KeyLocalizationResolverInterface $keyLocalizationResolver,
+        private KeyQualifierResolverInterface $keyQualifierResolver,
+        private ProvidedOptionNarrowerInterface $providedOptionNarrower,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -46,15 +63,28 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
         string $fieldName,
         ?Concrete $object = null,
     ): EncryptedField|Data {
-        $definition = json_decode($keyGroupRelation->getDefinition(), true);
         $definition = $this->serviceResolver->getFieldDefinitionFromJson(
-            $definition,
+            $keyGroupRelation->getEffectiveDefinitionData(),
             $keyGroupRelation->getType()
         );
+
+        // The two members the object path adds and this one used to leave alone, in core's own order
+        // ({@see Classificationstore::enrichLayoutDefinition()}): a key laid out here answered with no
+        // tooltip and without the mandatory flag its assignment carries, so an editor that replaced an
+        // open layout with this one lost the help marker of every key and could hide a mandatory one
+        // as empty. Both read members already in hand - no query and no resolver.
+        $fallbackTooltip = $definition->getName();
+        if (!empty($keyGroupRelation->getDescription())) {
+            $fallbackTooltip .= ' - ' . $keyGroupRelation->getDescription();
+        }
+
+        $definition->setTooltip($definition->getTooltip() ?: $fallbackTooltip);
 
         if (method_exists($definition, '__wakeup')) {
             $definition->__wakeup();
         }
+
+        $definition->setMandatory($definition->getMandatory() || $keyGroupRelation->isMandatory());
 
         if ($definition instanceof LayoutDefinitionEnrichmentInterface && $object) {
             $context['object'] = $object;
@@ -66,9 +96,57 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             $context['keyDefinition'] = $definition;
 
             $definition = $definition->enrichLayoutDefinition($object, $context);
+
+            // the provider has just replaced the list wholesale, so the subset is applied to what it handed over
+            $this->providedOptionNarrower->narrow($definition, $keyGroupRelation);
+        } elseif ($definition instanceof LayoutDefinitionEnrichmentInterface) {
+            // the grid's field-filter panel asks without an object, and the stored blob carries no list
+            $this->enrichWithoutObject($definition, $fieldName, $keyGroupRelation);
         }
 
         return $definition;
+    }
+
+    /**
+     * Core's object-less entry point, {@see FieldDefinitionEnrichmentInterface::enrichFieldDefinition()},
+     * followed by the same subset the object branch applies - so an endpoint called without an object
+     * offers the editor the list it offers with one.
+     *
+     * It is the type that answers for the value which implements it: a wrapper forwards the layout
+     * enrichment to its delegate and has no object-less counterpart of its own.
+     */
+    private function enrichWithoutObject(
+        Data $definition,
+        string $fieldName,
+        KeyGroupRelation $keyGroupRelation,
+    ): void {
+        $answering = KeyGroupRelationCache::getAnsweringDefinition($definition);
+
+        if ($answering instanceof FieldDefinitionEnrichmentInterface) {
+            $context = [
+                'ownerType' => 'classificationstore',
+                'ownerName' => $fieldName,
+                // the purpose the object branch hands the provider, so the two ask the same question
+                'purpose' => 'layout',
+                'keyId' => $keyGroupRelation->getKeyId(),
+                'groupId' => $keyGroupRelation->getGroupId(),
+                'keyDefinition' => $definition,
+            ];
+
+            try {
+                $answering->enrichFieldDefinition($context);
+            } catch (Throwable $e) {
+                // a provider that cannot answer leaves the list as it stands rather than failing the
+                // request; logged because a swallowed Error is a bug, not an unresolvable key
+                $this->logger->warning(sprintf(
+                    'Classification store key %d could not enrich its options without an object: %s',
+                    $keyGroupRelation->getKeyId(),
+                    $e->getMessage()
+                ));
+            }
+        }
+
+        $this->providedOptionNarrower->narrow($definition, $keyGroupRelation);
     }
 
     /**
@@ -81,7 +159,9 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
     ): KeyLayout {
 
         $object = null;
-        if ($layoutParameter->getObjectId()) {
+        // `!== null`, not truthiness: only an omitted objectId is served without an object in
+        // context. An objectId of 0 was supplied and does not resolve, so it is still a 404.
+        if ($layoutParameter->getObjectId() !== null) {
             $object = $this->concreteObjectResolver->getById($layoutParameter->getObjectId());
 
             if (!$object) {
@@ -89,14 +169,122 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             }
         }
 
-        $key = $this->keyGroupRelationRepository->getByKeyGroupId($keyId, $groupId);
+        $key = $this->keyRelationResolver->getByGroupAndKey($groupId, $keyId);
         $definition = $this->getLayoutDefinition($key, $layoutParameter->getFieldName(), $object);
 
         return new KeyLayout(
             id: $key->getKeyId(),
             name: $key->getName(),
             description: $key->getDescription(),
-            definition: $definition
+            definition: $definition,
+            title: $this->getKeyTitle($key->getKeyId(), $this->labelLanguageResolver->getLabelLanguage()),
+            subGroup: $key->getSubGroup(),
+            localized: $this->getKeyLocalized($key->getKeyId()),
+            variants: $this->getKeyVariants($key->getKeyId()),
+            defaultVariant: $this->getKeyDefaultVariant($key->getKeyId()),
+            defaultVariantLabel: $this->getKeyDefaultVariantLabel($key->getKeyId()),
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function preloadKeyTitles(array $keyIds, string $language): void
+    {
+        $this->labelResolver->preload(LabelEntityType::Key, $keyIds, $language);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getKeyTitle(int $keyId, string $language): ?string
+    {
+        $keyConfig = $this->keyConfigResolver->getById($keyId);
+
+        if (!$keyConfig instanceof KeyConfig) {
+            return null;
+        }
+
+        return $this->labelResolver->getStoredTitle($keyConfig, $language);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getKeyLocalized(int $keyId): ?bool
+    {
+        $keyConfig = $this->keyConfigResolver->getById($keyId);
+
+        if (!$keyConfig instanceof KeyConfig) {
+            return null;
+        }
+
+        return $this->keyLocalizationResolver->getLocalized($keyConfig);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getKeyQualifiers(KeyConfig $keyConfig): KeyQualifiers
+    {
+        $defaultVariant = $this->keyQualifierResolver->getDefaultVariant($keyConfig);
+
+        return new KeyQualifiers(
+            variants: $this->resolveVariants($keyConfig),
+            defaultVariant: $defaultVariant?->isPermitted(),
+            defaultVariantLabel: $defaultVariant?->getLabel(),
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getKeyVariants(int $keyId): ?array
+    {
+        return $this->resolveKeyQualifiers($keyId)?->getVariants();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getKeyDefaultVariant(int $keyId): ?bool
+    {
+        return $this->resolveKeyQualifiers($keyId)?->getDefaultVariant();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getKeyDefaultVariantLabel(int $keyId): ?string
+    {
+        return $this->resolveKeyQualifiers($keyId)?->getDefaultVariantLabel();
+    }
+
+    private function resolveKeyQualifiers(int $keyId): ?KeyQualifiers
+    {
+        $keyConfig = $this->keyConfigResolver->getById($keyId);
+
+        if (!$keyConfig instanceof KeyConfig) {
+            return null;
+        }
+
+        return $this->getKeyQualifiers($keyConfig);
+    }
+
+    /**
+     * @return VariantLayout[]|null
+     */
+    private function resolveVariants(KeyConfig $keyConfig): ?array
+    {
+        $variants = $this->keyQualifierResolver->getVariantDeclarations($keyConfig);
+
+        if ($variants === null) {
+            return null;
+        }
+
+        return array_map(
+            static fn (array $variant): VariantLayout => new VariantLayout($variant['name'], $variant['label'] ?? null),
+            $variants
         );
     }
 }

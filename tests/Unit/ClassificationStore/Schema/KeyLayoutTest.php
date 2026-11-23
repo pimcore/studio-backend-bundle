@@ -1,0 +1,148 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Schema;
+
+use Codeception\Test\Unit;
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\VariantLayout;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
+use ReflectionClass;
+
+/**
+ * @internal
+ */
+final class KeyLayoutTest extends Unit
+{
+    public function testTitleIsOptionalAndNullable(): void
+    {
+        $definition = new Input();
+
+        $this->assertNull((new KeyLayout(42, 'weight', 'The weight', $definition))->getTitle());
+        $this->assertSame(
+            'Weight',
+            (new KeyLayout(42, 'weight', 'The weight', $definition, 'Weight'))->getTitle()
+        );
+
+        $attributes = (new ReflectionClass(KeyLayout::class))->getAttributes(Schema::class);
+
+        $this->assertSame(
+            ['id', 'name', 'description', 'definition'],
+            $attributes[0]->getArguments()['required']
+        );
+    }
+
+    /**
+     * The flag is optional and nullable, so a key that states nothing serialises as null rather
+     * than being left out of the layout a client renders a language control from.
+     *
+     * @dataProvider localizedProvider
+     */
+    public function testLocalizedIsOptionalAndNullable(?bool $localized): void
+    {
+        $definition = new Input();
+
+        $this->assertNull((new KeyLayout(42, 'weight', 'The weight', $definition))->getLocalized());
+        $this->assertSame(
+            $localized,
+            (new KeyLayout(42, 'weight', 'The weight', $definition, null, null, $localized))->getLocalized()
+        );
+    }
+
+    /**
+     * @return array<string, array{0: ?bool}>
+     */
+    public static function localizedProvider(): array
+    {
+        return [
+            'a key flagged localized' => [true],
+            'a key flagged not localized' => [false],
+            'a key stating nothing' => [null],
+        ];
+    }
+
+    /**
+     * The member is optional and nullable, and a key declaring none reports null rather than an
+     * empty list - which a client would read as a key that permits no variant, a decision the key
+     * has not taken.
+     */
+    public function testTheQualifiedValueDeclarationIsOptionalAndNullable(): void
+    {
+        $definition = new Input();
+
+        $declaringNothing = new KeyLayout(42, 'weight', 'The weight', $definition);
+
+        $this->assertNull($declaringNothing->getVariants());
+
+        $variants = [new VariantLayout('metric', 'Metric'), new VariantLayout('imperial')];
+        $declaring = new KeyLayout(42, 'weight', 'The weight', $definition, null, null, null, $variants);
+
+        $this->assertSame($variants, $declaring->getVariants());
+        $this->assertSame('Metric', $declaring->getVariants()[0]->getLabel());
+        $this->assertNull($declaring->getVariants()[1]->getLabel());
+    }
+
+    /**
+     * None of the three members joined the required list, so a client built against the previous document keeps
+     * deserializing a layout that carries neither.
+     */
+    public function testNoneOfTheQualifiedMembersIsRequired(): void
+    {
+        $attributes = (new ReflectionClass(KeyLayout::class))->getAttributes(Schema::class);
+
+        $this->assertSame(
+            ['id', 'name', 'description', 'definition'],
+            $attributes[0]->getArguments()['required']
+        );
+    }
+
+    /**
+     * The default variant members are optional and nullable, and the `localized` description no longer
+     * says the flag is not honoured by the object data endpoints.
+     */
+    public function testTheDefaultVariantMembersAreOptionalAndTheLocalizedDescriptionIsCurrent(): void
+    {
+        $layout = new KeyLayout(42, 'weight', 'The weight', new Input());
+        $this->assertNull($layout->getDefaultVariant());
+        $this->assertNull($layout->getDefaultVariantLabel());
+
+        $declaring = new KeyLayout(
+            42,
+            'weight',
+            'The weight',
+            new Input(),
+            defaultVariant: false,
+            defaultVariantLabel: 'Standard'
+        );
+        $this->assertFalse($declaring->getDefaultVariant());
+        $this->assertSame('Standard', $declaring->getDefaultVariantLabel());
+
+        $description = $this->getPropertyDescription('localized');
+        $this->assertStringNotContainsString('not yet honoured', $description);
+        $this->assertStringContainsString('It is not resolved against that field here.', $description);
+    }
+
+    private function getPropertyDescription(string $member): string
+    {
+        $parameter = (new ReflectionClass(KeyLayout::class))->getConstructor()->getParameters();
+        foreach ($parameter as $candidate) {
+            if ($candidate->getName() === $member) {
+                return $candidate->getAttributes(Property::class)[0]->getArguments()['description'];
+            }
+        }
+
+        return '';
+    }
+}

@@ -36,10 +36,11 @@ final class NumberFilterTest extends Unit
 
         $this->assertCount(1, $calls);
         $this->assertSame(self::FIELD_NAME, $calls[0]['fieldName']);
-        $this->assertSame(self::GROUP_NAME, $calls[0]['group']);
+        $this->assertSame(self::GROUP_SEGMENT, $calls[0]['group']);
+        $this->assertSame(self::NON_LOCALIZED_NODE, $calls[0]['locale']);
         $filter = $calls[0]['filter'];
         $this->assertInstanceOf(IntegerFilter::class, $filter);
-        $this->assertSame(self::KEY_NAME, $filter->getFieldName());
+        $this->assertSame(self::KEY_SEGMENT, $filter->getFieldName());
         $this->assertSame(5, $filter->getSearchTerm());
     }
 
@@ -111,7 +112,7 @@ final class NumberFilterTest extends Unit
         $this->assertCount(1, $calls);
         $filter = $calls[0]['filter'];
         $this->assertInstanceOf(NumberRangeFilter::class, $filter);
-        $this->assertSame(self::KEY_NAME, $filter->getField());
+        $this->assertSame(self::KEY_SEGMENT, $filter->getField());
 
         return $filter;
     }
@@ -119,5 +120,30 @@ final class NumberFilterTest extends Unit
     private function applyNumberFilter(array $value): array
     {
         return $this->applyFilter(NumberFilter::class, ColumnType::CLASSIFICATION_STORE_NUMBER->value, $value);
+    }
+
+    public function testALocalizedKeyIsFilteredUnderTheColumnLanguage(): void
+    {
+        $calls = $this->applyFilter(
+            NumberFilter::class,
+            ColumnType::CLASSIFICATION_STORE_NUMBER->value,
+            ['setting' => 'is', 'is' => 5],
+            columnLocale: self::COLUMN_LANGUAGE,
+            keyLocalized: true
+        );
+
+        $this->assertSame(self::COLUMN_LANGUAGE, $calls[0]['locale']);
+    }
+
+    public function testANonLocalizedKeyIsFilteredUnderTheDefaultNodeDespiteTheColumnLanguage(): void
+    {
+        $calls = $this->applyFilter(
+            NumberFilter::class,
+            ColumnType::CLASSIFICATION_STORE_NUMBER->value,
+            ['setting' => 'between', 'from' => 3, 'to' => 10],
+            columnLocale: self::COLUMN_LANGUAGE
+        );
+
+        $this->assertSame(self::NON_LOCALIZED_NODE, $calls[0]['locale']);
     }
 }

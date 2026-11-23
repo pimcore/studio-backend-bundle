@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\StoreCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\StoreDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\StoreUpdate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -30,6 +31,7 @@ final readonly class StoreService implements StoreServiceInterface
 {
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
+        private KeyRelationResolverInterface $keyRelationResolver,
         private StoreRepositoryInterface $storeConfigurationRepository,
         private StoreHydratorInterface $storeHydrator,
     ) {
@@ -40,7 +42,11 @@ final readonly class StoreService implements StoreServiceInterface
      */
     public function createStore(StoreCreate $parameters): StoreDetail
     {
-        $storeConfig = $this->storeConfigurationRepository->create($parameters->getName());
+        try {
+            $storeConfig = $this->storeConfigurationRepository->create($parameters->getName());
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
 
         return $this->getHydratedStoreDetail($storeConfig);
     }
@@ -50,11 +56,15 @@ final readonly class StoreService implements StoreServiceInterface
      */
     public function updateStore(int $id, StoreUpdate $parameters): StoreDetail
     {
-        $storeConfig = $this->storeConfigurationRepository->update(
-            $id,
-            $parameters->getName(),
-            $parameters->getDescription(),
-        );
+        try {
+            $storeConfig = $this->storeConfigurationRepository->update(
+                $id,
+                $parameters->getName(),
+                $parameters->getDescription(),
+            );
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
 
         return $this->getHydratedStoreDetail($storeConfig);
     }

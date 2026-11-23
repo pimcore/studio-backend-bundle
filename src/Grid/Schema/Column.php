@@ -52,7 +52,8 @@ final readonly class Column
         )]
         private ?array $group,
         #[Property(
-            description: 'Config',
+            description: 'Config; a classification store column names its key by ID or identifier'
+                . ' and may name a variant',
             type: 'array',
             items: new Items(
                 anyOf: [
@@ -111,6 +112,8 @@ final readonly class Column
                     field: $advancedColumn['config']['field'],
                     groupId: $advancedColumn['config']['groupId'] ?? null,
                     keyId: $advancedColumn['config']['keyId'] ?? null,
+                    groupIdentifier: $advancedColumn['config']['groupIdentifier'] ?? null,
+                    keyIdentifier: $advancedColumn['config']['keyIdentifier'] ?? null,
                 );
 
                 continue;
@@ -129,6 +132,8 @@ final readonly class Column
                     field: $advancedColumn['config']['field'],
                     groupId: $advancedColumn['config']['groupId'] ?? null,
                     keyId: $advancedColumn['config']['keyId'] ?? null,
+                    groupIdentifier: $advancedColumn['config']['groupIdentifier'] ?? null,
+                    keyIdentifier: $advancedColumn['config']['keyIdentifier'] ?? null,
                 );
 
                 continue;

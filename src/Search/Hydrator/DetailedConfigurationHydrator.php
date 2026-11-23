@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Search\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DetailedConfiguration;
 
@@ -21,11 +22,24 @@ use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DetailedConfiguration;
  */
 final readonly class DetailedConfigurationHydrator implements DetailedConfigurationHydratorInterface
 {
+    public function __construct(
+        private ColumnReferenceServiceInterface $columnReferenceService,
+    ) {
+    }
+
     public function hydrate(
         SavedSearchConfiguration $data,
         array $users,
         array $roles
     ): DetailedConfiguration {
+        $classId = $data->getClassId();
+        $columns = $data->getColumns();
+        $filter = $data->getFilter();
+        if ($classId !== null) {
+            $columns = $this->columnReferenceService->deriveIds($classId, $columns);
+            $filter = $filter === null ? null : $this->columnReferenceService->deriveFilterIds($classId, $filter);
+        }
+
         return new DetailedConfiguration(
             id: $data->getId(),
             ownerId: $data->getOwner(),
@@ -36,10 +50,10 @@ final readonly class DetailedConfigurationHydrator implements DetailedConfigurat
             sharedRoles: $roles,
             createMenuShortcut: $data->isCreateMenuShortcut(),
             menuShortcutGroup: $data->getMenuShortcutGroup(),
-            classId: $data->getClassId(),
+            classId: $classId,
             elementType: $data->getElementType(),
-            columns: $data->getColumns(),
-            filter: $data->getFilter(),
+            columns: $columns,
+            filter: $filter,
             modificationDate: $data->getModificationDate()->getTimestamp(),
             creationDate: $data->getCreationDate()->getTimestamp(),
         );

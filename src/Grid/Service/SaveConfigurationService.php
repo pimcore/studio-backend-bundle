@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolver;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\Service\ConfigurationShareServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\ConfigurationParameter as DataObjectConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
@@ -41,7 +42,8 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
         private SecurityServiceInterface $securityService,
         private ConfigurationHydratorInterface $configurationHydrator,
         private EventDispatcherInterface $eventDispatcher,
-        private ClassDefinitionResolver $classDefinitionResolver
+        private ClassDefinitionResolver $classDefinitionResolver,
+        private ColumnReferenceServiceInterface $columnReferenceService,
     ) {
     }
 
@@ -87,6 +89,14 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
         $gridConfiguration = new GridConfiguration();
         $gridConfiguration = $this->setDefaultGridConfigurationData($gridConfiguration, $configuration);
         $gridConfiguration->setClassId($classId);
+        $gridConfiguration->setColumns(
+            $this->columnReferenceService->addIdentifiers($classId, $gridConfiguration->getColumns())
+        );
+
+        $filter = $gridConfiguration->getFilter();
+        if ($filter !== null) {
+            $gridConfiguration->setFilter($this->columnReferenceService->addFilterIdentifiers($classId, $filter));
+        }
 
         if ($configuration->setAsFavorite()) {
             $gridConfiguration = $this->favoriteService

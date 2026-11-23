@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedCollectionRelation;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
@@ -29,6 +31,21 @@ interface CollRelationRepositoryInterface
      * @throws InvalidArgumentException
      */
     public function getListing(FilterParameter $parameters, int $colId): Listing;
+
+    /**
+     * One page of the store's collection to group relations, ordered by the identifier pair and taken after the last
+     * row handed back, so that a configuration transfer never holds a whole store at once.
+     *
+     * A cursor rather than an offset: a transfer is a read per page, and a relation deleted between
+     * two of them shifts every later one towards the start - which an offset then resumes past,
+     * leaving the shifted row out of an export that reports success. Null for `$after` is the first
+     * page.
+     *
+     * @return ScopedCollectionRelation[]
+     *
+     * @throws DatabaseException
+     */
+    public function getChunkAfter(int $storeId, ?ScopedCollectionRelation $after, int $limit): array;
 
     /**
      * @throws ElementSavingFailedException

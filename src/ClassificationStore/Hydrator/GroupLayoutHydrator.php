@@ -21,13 +21,16 @@ use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
  */
 final class GroupLayoutHydrator implements GroupLayoutHydratorInterface
 {
-    public function hydrate(array $keys, GroupConfig $group): GroupLayout
+    public function hydrate(array $keys, GroupConfig $group, array $subGroups = []): GroupLayout
     {
+        // classificationstore_groups has no title column: the title is the group name until package 16 lands.
         return new GroupLayout(
             id: $group->getId(),
             name: $group->getName(),
             description: $group->getDescription(),
             keys: $keys,
+            title: $group->getName(),
+            subGroups: $subGroups,
         );
     }
 }

@@ -22,5 +22,9 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation as CoreKeyGrou
  */
 interface KeyGroupRelationHydratorInterface
 {
-    public function hydrate(CoreKeyGroupRelation $keyGroupRelation, GroupConfig $groupConfig): KeyGroupRelation;
+    public function hydrate(
+        CoreKeyGroupRelation $keyGroupRelation,
+        GroupConfig $groupConfig,
+        ?bool $keyLocalized = null,
+    ): KeyGroupRelation;
 }
