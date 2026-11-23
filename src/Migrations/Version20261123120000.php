@@ -34,6 +34,12 @@ final class Version20261123120000 extends AbstractMigration
         return 'Add the "' . UserPermissions::SITES->value . '" user permission definition if it is missing';
     }
 
+    public function isTransactional(): bool
+    {
+        // Newer release lines require every migration outside their data-only list to opt out.
+        return false;
+    }
+
     public function up(Schema $schema): void
     {
         $table = UserPermissions::DEFINITIONS_TABLE->value;
