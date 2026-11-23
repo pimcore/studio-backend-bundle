@@ -51,155 +51,81 @@ The following steps are necessary during updating to newer versions.
   `oauth.client_credentials.access_token_ttl` seconds (default 900, minimum 60) and carry no refresh token. Nothing
   changes until the switch is turned on. The guarantee that every token acts for a logged-in human no longer holds
   once it is on. See [OAuth Server](./06_OAuth_Server.md#service-user-clients-client-credentials).
-- [Classification Store] Changed: a store created through Studio or by a configuration import is now created on the
-  `document` storage engine instead of being left with an empty `engine` column, which means the EAV engine and is
-  what every store created so far landed on. Existing stores are untouched - an empty column keeps meaning EAV, and
-  changing a store's engine stays `pimcore:classificationstore:flip`. The `engine` member of the store tree and the
-  store detail now reports the RESOLVED engine, so a store that stores none reports `eav` rather than `null`; `null`
-  is left for the case where the engine cannot be asked for at all, which is the case that also reports no
-  `engineCapabilities`.
-- [Classification Store] Changed: a configuration import no longer registers a `multiValue` key in a store whose
-  engine cannot address its qualifiers, since core refuses such a key at definition time. It is reported as a
-  conflict and skipped, in a dry run as in an apply. A key the store already carries that way is not refused, so
-  re-applying a file that describes it keeps working; only a capability the stored key does not already need is.
-- [Classification Store] Changed: an `imageGallery` or `encryptedField` key now exports its value in the grid export,
-  where it previously produced an empty cell.
-- [Classification Store] Added: disabled keys can be listed and re-enabled. Re-enabling restores the key
-  configuration; this endpoint neither deletes nor re-creates any group assignment — whether a key's assignments
-  survive being disabled is decided by the disable itself.
-- [Classification Store] Added: the key and key-group assignment configuration reads now carry a key's resolved select
-  options and its unit vocabulary, so a configuration screen no longer needs the object editor to learn them.
-- [Classification Store] Added: a saved grid column that shows a classification store attribute now also records the
-  stable identifier of its group and key, and configurations saved earlier keep working as they are.
-- [Classification Store] Changed: a classification store column filter addresses the search index by the group's and
-  the key's identifier, as the index now writes them, instead of by their names; it needs the mandatory
-  `generic-data-index:deployment:reindex` and finds nothing on an index built before it.
-- [Classification Store] Fixed: a classification store column filter searches the language the key itself is kept in -
-  the grid column's language only for a key that is localized - instead of the column's language for every key, which
-  returned no row for a key that is not localized.
-- [Classification Store] Changed: a classification store filter the grid cannot apply is now refused with a `422`
+- [Classification Store] Changed: a store created through Studio or by a configuration import is created on the
+  `document` engine instead of EAV. Existing stores are untouched, and `pimcore:classificationstore:flip` still
+  changes a store's engine. `engine` now reports the resolved engine, so a store that stores none reports `eav`.
+- [Classification Store] Changed: a configuration import refuses a `multiValue` key in a store whose engine cannot
+  address qualifiers, reporting it as a conflict and skipping it. A key the store already carries is not refused.
+- [Classification Store] Changed: an `imageGallery` or `encryptedField` key now exports its value in the grid
+  export, where it previously produced an empty cell.
+- [Classification Store] Added: disabled keys can be listed and re-enabled.
+- [Classification Store] Added: the key and key-group assignment reads carry a key's resolved select options and
+  unit vocabulary, so a configuration screen no longer needs the object editor to learn them.
+- [Classification Store] Added: a saved grid column showing a classification store attribute also records the
+  identifiers of its group and key. Configurations saved earlier keep working.
+- [Classification Store] Changed: a classification store column filter addresses the search index by group and key
+  identifier instead of by name. It needs `generic-data-index:deployment:reindex` and finds nothing on an index
+  built before that.
+- [Classification Store] Fixed: a classification store column filter searches the language the key is kept in — the
+  column's language only for a localized key — where it previously returned no row for a non-localized key.
+- [Classification Store] Changed: a classification store filter the grid cannot apply is refused with a `422`
   naming the key, instead of returning every row.
-- [Classification Store] Added: collections, groups, sub groups and keys carry free-form custom metadata that can be
-  read, edited and exported with the store configuration; Pimcore itself reads none of it.
-- [Classification Store] Changed: the key relations of a group are loaded once per request and shared by every
-  consumer (the layout endpoints, the data object detail and search preview, the grid column resolver and the
-  classification store grid filters), instead of each one running its own listing. The memo is dropped after every
-  configuration write and between messages of a long-running worker, so a read after a write in the same request
-  reflects the write.
-
-> **Note:** the within-group key order of the data object detail (`objectData` of a classification store field) and
-> of the search preview is now deterministic — the configured `sorter` ascending, then `id` ascending, the order the
-> layout endpoints use. It previously was whatever the database returned, as those two payloads were loaded without
-> an `ORDER BY`. Clients
-> that relied on the previous, unspecified order see a different order; clients that key by the key id are
-> unaffected. The `@internal` `KeyGroupRelationRepositoryInterface` (`ClassificationStore\Repository`) replaces
-> `getByGroupId()` and `getByKeyGroupId()` with `getByGroupIds(array $groupIds)`; the new `@internal`
-> `KeyRelationResolverInterface` (`ClassificationStore\Service`) is the way in for cached reads.
-
-- [Classification Store] Added: every key of the three layout responses (`GET /classification-store/layout-by-key/{keyId}/{groupId}`,
-  `GET /classification-store/layout-by-group/{groupId}` and `GET /classification-store/layout-by-collection/{collectionId}`) carries
-  an optional `title`, holding the label of the key configuration resolved for the requesting user's language. The chain is that
-  language, the languages it falls back to, the installation's default language, and last the key's own `title` column; when none
-  of them carries a title the field is `null`, and the key's technical `name` is never substituted for it. The label is resolved
-  server-side, so clients must **not** treat the field as a translation key and must not translate it themselves; they can keep
-  falling back to `name` for display. A key whose `title` column is the empty string now publishes `null` rather than `''`, as the
-  column is `NOT NULL DEFAULT ''` and an empty title counts as no title. Without a resolvable user the installation's default
-  language is used, so the field is never left unresolved for want of one. The `@internal`
-  `KeyGroupLayoutServiceInterface::getKeyTitle()` got the argument `$language` and the interface gained `preloadKeyTitles()`,
-  which reads a whole group's labels with one statement; the new `@internal` `LabelLanguageResolverInterface`
-  (`ClassificationStore\Service`) is where that language is decided.
-- [Classification Store] Added: the key configuration responses (`POST /classification-store/configuration/stores/{storeId}/keys`
-  and `POST /classification-store/configuration/keys/add`) carry an optional `title`, holding the stored title of the key
-  configuration. It is the raw stored string, is not translated and does not fall back to `name`. `POST
-  /classification-store/configuration/keys/add` accepts an optional `title`; when it is sent, it is stored as the key's title
-  and as `definition.title`, instead of the name used for both so far. Sending no `title`, or `null`, keeps writing the name
-  to both, so clients that do not send the new field are unaffected. An empty `title` (`""`) is treated like an
-  absent one and writes the name to both as well. The `@internal`
-  `KeyRepositoryInterface::create()` got the optional argument `$title`.
-- [Classification Store] Changed: a `title` or `description` sent as `null` to
-  `PUT /classification-store/configuration/keys/{id}` now clears the stored value, where it previously left it alone. An
-  empty string (`""`) clears it as it already did, and leaving the field out of the request keeps the stored value.
-- [Classification Store] Changed: three endpoints return their items in a new order, unconditionally and without a
-  configuration option. `GET /classification-store/layout-by-group/{groupId}` returns `keys` ordered by the configured
-  `sorter` ascending, then by key id ascending, instead of by key id alone.
-  `GET /classification-store/layout-by-collection/{collectionId}` returns `groups` ordered by the configured `sorter`
-  ascending, then by group id ascending; it applied no order before, so the previous order was whatever the database
-  returned. `GET /classification-store/key-group-relations` is ordered by group id ascending, then `sorter` ascending,
-  then key id ascending, so that the keys of a group stay together; it was ordered by `sorter` alone across the whole
-  store before, which means a client that pages this endpoint gets different relations on a given page than before.
-  The order is conveyed by array position only — no response schema changed. The two configuration listing endpoints
-  (`POST /classification-store/configuration/groups/{groupId}/key-relations` and
-  `POST /classification-store/configuration/collections/{colId}/relations`) are unchanged.
-- [Classification Store] Added: the three object layout responses (`GET /data-objects/{id}/layout`,
-  `GET /class/field-collection/{objectId}/object/layout` and `GET /class/object-brick/{objectId}/object/layout`) carry a
-  `title` on every already-active group of a classification store field and on every key of such a group. The key title is the
-  label of the key configuration resolved for the requesting user's language — the same chain the three classification store
-  layout responses publish, down to the key's own `title` column — and falls back to the key's `name` as a last resort, so the
-  editor never renders a blank label. It is not read from the key's enriched field definition, and it is resolved server-side,
-  so clients must **not** treat the field as a translation key. That last resort is the only deliberate difference from the key
-  titles of `GET /classification-store/layout-by-key/{keyId}/{groupId}` and `GET /classification-store/layout-by-group/{groupId}`,
-  which stay `null` when nothing is stored in any language of the chain, so the configuration UI can still tell "no title set"
-  apart from "title equals name". The group title is the group's `name`, because `classificationstore_groups` has no title
-  column.
-- [Classification Store] Added: `GroupLayout` (`GET /classification-store/layout-by-group/{groupId}` and
-  `GET /classification-store/layout-by-collection/{collectionId}`) carries an optional, nullable `title`, holding the
-  group's `name` for the same reason, so a group added in the session reports the same shape as a pre-loaded one.
-  `CollectionLayout` is unchanged and still carries only `groups`.
-- [Classification Store] Added: sub groups, the per-store vocabulary a key's assignment to a group can be tagged with.
-- [Classification Store] Added: a key now reports its own `localized` flag wherever a key is described and accepts it on
-  update, where no value means the class field decides. The flag is stored and published but not yet honoured by the
-  object data endpoints.
-- [Classification Store] Added: a key's assignment to a group can now be written and read with its own per-assignment
-  options — the definition override, the sub group and free-form metadata — through the configuration API, and the
-  generated identifier of a store, collection, group and key is published alongside them. The definition override is
-  stored and published but not yet applied to the field definitions the object editor renders. A collection-group
-  relation has no in-place update endpoint because its add endpoint already creates or updates.
-- [Classification Store] Changed: adding a key's assignment to a group no longer resets its sort order and mandatory
-  flag when the payload leaves them out — an assignment keeps what it has stored, and only a new one starts unsorted
-  and optional. Two payloads that used to pass are also refused now: a store, collection, group or key create or
-  update that carries an identifier is rejected rather than ignored, because the identifier is assigned by the
-  system; and adding a key's assignment to a group is rejected when the key id names no key configuration, rather
-  than writing an assignment that points at nothing.
-- [Classification Store] Added: `indexed`, a reserved member of a key's own definition and no longer anything an
-  assignment's `metadata` reserves. Studio stores it, publishes it, and enqueues a deferred remap of every search index
-  the key's store reaches when it changes; whether a key marked `false` is then left out of an index is the search
-  index's own answer, not this bundle's.
-- [Classification Store] Added: a key declares qualified values - one value per variant - by being of type
-  `multiValue`, and the object data endpoints then read and write that key through the core store's own qualified API,
-  with its `variants` published as objects carrying a `name` and an optional `label`.
-  `variants` or `multiValue` written into the definition of a key of any other type are ignored, not migrated: such a
-  key keeps holding one value of its own type, and a value already stored for it is left as it is.
-- [Classification Store] Added: a store's whole configuration can be exported and imported again as one file, from the
-  store editor, from the store-scoped import endpoint and from the console commands
-  `studio-backend-bundle:classificationstore:export` and `studio-backend-bundle:classificationstore:apply` (the command
-  targets the store the file itself names, creating it when the installation does not carry it yet, which is the
-  deployment case). Importing a file that describes the store it is sent to creates and updates but never deletes, so
-  un-assigning a key from a group stays a manual step in the Studio UI; an entry whose identifier is absent is created,
-  an entry whose name already belongs to another identifier is skipped and named in the report. Importing a file that
-  describes a *different* store duplicates it instead: every sub group, collection, group and key gets a freshly
-  generated identifier, the store keeps its own identifier and name, and the configuration it held is removed and
-  replaced by the file's - which also removes the stored values under every removed group, and importing the file
-  again does not bring them back - so importing the same file twice gives the same store rather than a second copy.
-  Send `dryRun` with the import to get the report - what would be removed included - without writing anything. The report
-  naming what was created, updated, adopted, skipped, removed and left in place is the command's and the API
-  response's.
-- [Classification Store] Changed: a key's own `localized` flag is now honoured by the object data endpoints, where the
-  class field's flag alone used to decide, so a key localized inside a non-localized field is read and written per
-  language.
-- [Classification Store] Changed: a Classification Store grid column now reads the language its key decides, and may
-  now be offered a language where the field itself is not localized.
-- [Classification Store] Changed: a store configuration export now refuses when the configuration changed while it was
-  being written, and must be run again. Over HTTP that arrives as a truncated download, on the console as a failed
-  command.
-- [Listing] Changed: a collection request body that omits `filters` is now paged with the documented defaults instead of
-  returning every row. A client that sends `{}` and treats the answer as the complete collection now gets only the first
-  page, and has to send `filters.page` and `filters.pageSize` and walk the pages until it has as many items as
-  `totalItems` reports.
-- [Listing] Fixed: a client-supplied `equals` filter on the column a route-scoped listing is already scoped by now
-  narrows that scope instead of replacing it. A client that relied on reaching another scope's rows that way gets an
-  empty collection, and has to address that scope through its own route.
-- [Listing] Fixed: a `date` filter on a date column stored as a Unix timestamp now selects the window it names, instead
-  of matching nothing or everything. A client that sent such a filter gets different rows than before.
+- [Classification Store] Added: collections, groups, sub groups and keys carry free-form custom metadata, readable,
+  editable and exportable with the store configuration. Pimcore itself reads none of it.
+- [Classification Store] Changed: a group's key relations are loaded once per request and shared by every consumer,
+  and the within-group key order of `objectData` and the search preview is now deterministic (`sorter` ascending,
+  then id), where it was whatever the database returned.
+- [Classification Store] Added: every key of the three layout responses carries an optional `title`, the key
+  configuration's label resolved for the requesting user's language, or `null` when no language of the chain holds
+  one. It is resolved server-side: do not treat it as a translation key, and keep falling back to `name` for display.
+- [Classification Store] Added: the key configuration responses carry the raw stored `title`, untranslated and with
+  no fallback to `name`. `POST /classification-store/configuration/keys/add` accepts an optional `title`; sending
+  none, `null` or `""` keeps writing the name.
+- [Classification Store] Changed: `title` or `description` sent as `null` to
+  `PUT /classification-store/configuration/keys/{id}` now clears the stored value instead of leaving it alone.
+  Leaving the field out still keeps it.
+- [Classification Store] Changed: `layout-by-group`, `layout-by-collection` and `key-group-relations` return their
+  items in a new order (`sorter` then id; relations grouped by group id first). A client that pages
+  `key-group-relations` gets different relations on a given page than before. No response schema changed.
+- [Classification Store] Added: the three object layout responses carry a `title` on every active group and key of a
+  classification store field. The key title falls back to the key's `name` as a last resort, so the editor never
+  renders a blank label; the group title is the group's `name`.
+- [Classification Store] Added: `GroupLayout` carries an optional `title` holding the group's `name`, so a group
+  added in the session reports the same shape as a pre-loaded one.
+- [Classification Store] Added: sub groups, the per-store vocabulary a key's assignment to a group can be tagged
+  with.
+- [Classification Store] Added: a key reports and accepts its own `localized` flag; no value means the class field
+  decides.
+- [Classification Store] Added: a key's assignment to a group can be written and read with its own per-assignment
+  options — definition override, sub group and metadata — and the generated identifiers are published alongside.
+  The definition override is stored and published but not yet applied to the rendered field definitions.
+- [Classification Store] Changed: adding a key's assignment no longer resets its sort order and mandatory flag when
+  the payload omits them. Two payloads that used to pass are now refused: a create or update carrying an identifier,
+  and an assignment naming a key id that does not exist.
+- [Classification Store] Added: `indexed`, a reserved member of a key's own definition rather than of an
+  assignment's `metadata`. Changing it enqueues a deferred remap of every search index the key's store reaches.
+- [Classification Store] Added: a key of type `multiValue` declares one value per variant, and the object data
+  endpoints read and write it through the core store's qualified API. `variants` or `multiValue` written into the
+  definition of any other type are ignored, not migrated.
+- [Classification Store] Added: a store's whole configuration can be exported and imported as one file, from the
+  store editor, the store-scoped import endpoint and the commands
+  `studio-backend-bundle:classificationstore:export` and `:apply`. Importing a file describing the same store
+  creates and updates but never deletes, so un-assigning a key stays a manual step. Importing a file describing a
+  *different* store duplicates it: the configuration the target held is replaced, **which removes the stored values
+  under every removed group, and importing again does not bring them back**. Send `dryRun` for the report without
+  writing.
+- [Classification Store] Changed: a key's own `localized` flag is honoured by the object data endpoints, so a key
+  localized inside a non-localized field is read and written per language.
+- [Classification Store] Changed: a classification store grid column reads the language its key decides, and may be
+  offered a language where the field itself is not localized.
+- [Classification Store] Changed: a store configuration export refuses when the configuration changed while it was
+  being written, and must be run again — a truncated download over HTTP, a failed command on the console.
+- [Listing] Changed: a collection request body that omits `filters` is paged with the documented defaults instead of
+  returning every row. Send `filters.page` and `filters.pageSize` and walk the pages until you have `totalItems`.
+- [Listing] Fixed: a client-supplied `equals` filter on the column a route-scoped listing is already scoped by
+  narrows that scope instead of replacing it. Reach another scope through its own route.
+- [Listing] Fixed: a `date` filter on a date column stored as a Unix timestamp selects the window it names, instead
+  of matching nothing or everything. Such a filter returns different rows than before.
 - [Elements] Changed: the `422` response of a failed element validation (`PUT /pimcore-studio/api/assets/{id}`,
   `.../data-objects/{id}`, `.../documents/{id}` and the synchronous `POST .../assets/add/{parentId}` and
   `POST .../assets/{id}/replace`) now carries `validationErrors` next to `message` and `errorKey`, one entry per failed
