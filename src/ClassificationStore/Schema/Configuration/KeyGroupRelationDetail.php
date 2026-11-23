@@ -68,56 +68,75 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
         )]
         private readonly ?array $metadata = null,
         #[Property(
-            description: 'Whether the key holds a value per language, as the key stores it: true, false, or null'
-                . ' where the key states nothing and the `localized` flag of the class definition field the key'
-                . ' is rendered in decides. It belongs to the key, not to this assignment, and is not resolved'
-                . ' against that field here. The flag is not yet honoured by the object data endpoints, which'
-                . ' still read and write a classification store field under the language set of the class'
-                . ' definition field alone.',
+            // Null means the key states nothing and the class definition field's own `localized` flag
+            // decides. The flag belongs to the key, is not resolved against that field here, and the object
+            // data endpoints do not honour it yet: they read and write under the field's language set alone.
+            description: 'Whether the key holds a value per language; null lets the class definition field decide',
             type: 'boolean',
             example: true,
             nullable: true
         )]
         private readonly ?bool $localized = null,
         #[Property(
-            description: 'Data type of the key, as the key configuration stores it, or null where the key'
-                . ' configuration is gone',
+            description: 'Data type of the key as stored, or null where the key configuration is gone',
             type: 'string',
             example: 'quantityValue',
             nullable: true
         )]
         private readonly ?string $keyType = null,
         #[Property(
-            description: 'The resolved view of this assignment\'s option vocabulary for this request, whatever its'
-                . ' source: the stored options, or the options of an options provider that reports static options,'
-                . ' in the order they are resolved, narrowed to the option subset of the assignment\'s'
-                . ' definitionOverride. Null where the key is not a select or multiselect, and where'
-                . ' optionsUnavailableReason says why not. The stored definition remains authoritative for'
-                . ' storage.',
+            // Stored options or a static provider's, in resolution order, narrowed by definitionOverride.
+            // Null for a key that is no select or multiselect; optionsUnavailableReason says why otherwise.
+            // The stored definition stays authoritative for storage.
+            description: 'This assignment\'s resolved option vocabulary, narrowed by its definitionOverride',
             type: 'array',
             items: new Items(ref: SelectOption::class),
+            example: [['key' => 'Alloy', 'value' => 'alloy']],
             nullable: true
         )]
         private readonly ?array $options = null,
         #[Property(
-            description: 'Why options is null for a select or multiselect key: "providerNotStatic" where its'
-                . ' options provider reports options that depend on a data object, "resolutionFailed" where the'
-                . ' provider could not be resolved or raised, for instance for a deleted select options'
-                . ' configuration. Null means nothing failed.',
+            // providerNotStatic: the options provider's options depend on a data object. resolutionFailed:
+            // the provider could not be resolved or raised, for instance a deleted select options configuration.
+            description: 'Why options is null for a select or multiselect key; null means nothing failed',
             type: 'string',
             example: 'providerNotStatic',
             nullable: true
         )]
         private readonly ?string $optionsUnavailableReason = null,
         #[Property(
-            description: 'The unit vocabulary of this assignment: the key\'s own definition with the assignment\'s'
-                . ' definitionOverride applied, and null where its type'
-                . ' holds no units. Where validUnits is null the definition restricts nothing; the type tells that'
-                . ' apart from a type with no units at all.',
+            // The key's own definition with definitionOverride applied; null where its type holds no units.
+            // A null validUnits restricts nothing, which the type tells apart from having no units at all.
+            description: 'This assignment\'s unit vocabulary, or null where the key\'s type holds no units',
             ref: KeyUnits::class,
             nullable: true
         )]
         private readonly ?KeyUnits $units = null,
+        #[Property(
+            // What an editor of the assignment offers, where `options` is the subset chosen. Null for a key
+            // that is no select or multiselect; keyOptionsUnavailableReason says why otherwise.
+            description: 'The key\'s own option vocabulary, not narrowed by this assignment',
+            type: 'array',
+            items: new Items(ref: SelectOption::class),
+            example: [['key' => 'Alloy', 'value' => 'alloy']],
+            nullable: true
+        )]
+        private readonly ?array $keyOptions = null,
+        #[Property(
+            // The values of optionsUnavailableReason.
+            description: 'Why keyOptions is null for a select or multiselect key; null means nothing failed',
+            type: 'string',
+            example: 'providerNotStatic',
+            nullable: true
+        )]
+        private readonly ?string $keyOptionsUnavailableReason = null,
+        #[Property(
+            // What an editor of the assignment offers, where `units` is the subset chosen.
+            description: 'The key\'s own unit vocabulary, or null where its type holds no units',
+            ref: KeyUnits::class,
+            nullable: true
+        )]
+        private readonly ?KeyUnits $keyUnits = null,
     ) {
     }
 
@@ -197,5 +216,23 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
     public function getKeyType(): ?string
     {
         return $this->keyType;
+    }
+
+    /**
+     * @return SelectOption[]|null
+     */
+    public function getKeyOptions(): ?array
+    {
+        return $this->keyOptions;
+    }
+
+    public function getKeyOptionsUnavailableReason(): ?string
+    {
+        return $this->keyOptionsUnavailableReason;
+    }
+
+    public function getKeyUnits(): ?KeyUnits
+    {
+        return $this->keyUnits;
     }
 }

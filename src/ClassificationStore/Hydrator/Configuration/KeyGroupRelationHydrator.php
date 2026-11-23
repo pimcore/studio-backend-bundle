@@ -58,6 +58,11 @@ final readonly class KeyGroupRelationHydrator implements KeyGroupRelationHydrato
                 ? $this->keyOptionsResolver->getRelationOptionsUnavailableReason($relation)?->value
                 : null,
             $keyConfig !== null ? $this->keyOptionsResolver->getRelationUnits($relation) : null,
+            $keyConfig !== null ? $this->keyOptionsResolver->getOptions($keyConfig) : null,
+            $keyConfig !== null
+                ? $this->keyOptionsResolver->getOptionsUnavailableReason($keyConfig)?->value
+                : null,
+            $keyConfig !== null ? $this->keyOptionsResolver->getUnits($keyConfig) : null,
         );
     }
 }

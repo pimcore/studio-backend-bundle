@@ -70,6 +70,7 @@ final class KeyGroupRelationSchemaTest extends Unit
                 'keyId', 'groupId', 'sorter', 'mandatory', 'keyName', 'keyDescription', 'groupName',
                 self::COLUMN_SUB_GROUP, self::COLUMN_DEFINITION_OVERRIDE, self::COLUMN_METADATA,
                 self::COLUMN_LOCALIZED, 'keyType', 'options', 'optionsUnavailableReason', 'units',
+                'keyOptions', 'keyOptionsUnavailableReason', 'keyUnits',
             ],
             $this->getConstructorParameterNames(KeyGroupRelationDetail::class)
         );
