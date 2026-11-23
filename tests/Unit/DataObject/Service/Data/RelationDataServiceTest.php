@@ -43,6 +43,7 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ElementMetadata;
 use Pimcore\Model\DataObject\Data\ObjectMetadata;
 use Pimcore\Model\DataObject\LightweightRelationTestObject;
+use Pimcore\Model\Element\ElementInterface;
 use function array_column;
 use function array_map;
 use function get_class;
@@ -257,6 +258,102 @@ final class RelationDataServiceTest extends Unit
     /**
      * @throws Exception
      */
+    /**
+     * GHSA-pg5f-74vr-w237: the lightweight path hands out nothing but id and type of a target the
+     * user may not view.
+     *
+     * @throws Exception
+     */
+    public function testLightweightRelationTargetsWithoutViewAccessAreWithheld(): void
+    {
+        $service = $this->createServiceWithViewAccess(static fn (int $id): bool => $id !== 2);
+
+        $data = $service->getLightweightRelationData(
+            $this->makeObject(lazyKeyLoaded: false, allowInherit: false),
+            $this->makeField(optimized: true, summaries: [$this->makeSummary(1), $this->makeSummary(2)]),
+            'objects'
+        );
+
+        $this->assertSame(['Product', ''], array_map(static fn (RelatedElementData $d) => $d->getSubtype(), $data));
+        $this->assertNotSame('', $data[0]->getFullPath());
+        $this->assertSame('', $data[1]->getFullPath());
+        $this->assertNull($data[1]->getIsPublished());
+        $this->assertFalse($data[1]->getHasViewAccess());
+        $this->assertSame(2, $data[1]->getId());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testLoadedRelationTargetsWithoutViewAccessAreWithheld(): void
+    {
+        $service = $this->createServiceWithViewAccess(static fn (int $id): bool => $id !== 2);
+
+        $data = $service->getRelationElementsData([
+            $this->makeEmpty(Concrete::class, ['getId' => 1]),
+            $this->makeEmpty(Concrete::class, ['getId' => 2]),
+        ]);
+
+        $this->assertSame('/objects/1', $data[0]->getFullPath());
+        $this->assertTrue($data[0]->getHasViewAccess());
+        $this->assertSame('', $data[1]->getFullPath());
+        $this->assertSame('', $data[1]->getSubtype());
+        $this->assertNull($data[1]->getIsPublished());
+        $this->assertFalse($data[1]->getHasViewAccess());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAdvancedRelationTargetWithoutViewAccessIsWithheld(): void
+    {
+        $service = $this->createServiceWithViewAccess(static fn (int $id): bool => false);
+        $metadata = $this->makeEmpty(ObjectMetadata::class, [
+            'getElement' => $this->makeEmpty(Concrete::class, ['getId' => 2]),
+            'getFieldname' => 'items',
+            'getColumns' => ['theme'],
+            'getData' => ['theme' => 'B'],
+        ]);
+
+        $row = $service->getAdvancedRelationElementData($metadata);
+
+        $this->assertSame('', $row['element']->getFullPath());
+        $this->assertSame('', $row['element']->getSubtype());
+        $this->assertFalse($row['element']->getHasViewAccess());
+        $this->assertSame(['theme' => 'B'], $row['data']);
+    }
+
+    /**
+     * An element data service that describes loaded elements and summaries alike and decides view
+     * access by the element id.
+     *
+     * @param callable(int): bool $hasViewAccess
+     *
+     * @throws Exception
+     */
+    private function createServiceWithViewAccess(callable $hasViewAccess): RelationDataService
+    {
+        $describe = static fn (int $id): RelatedElementData => new RelatedElementData(
+            $id,
+            'object',
+            'Product',
+            '/objects/' . $id,
+            true,
+            $hasViewAccess($id)
+        );
+        $elementDataService = $this->makeEmpty(ElementSummaryDataServiceInterface::class, [
+            'getRelatedElementData' => static fn (ElementInterface $element) => $describe($element->getId()),
+            'getRelatedElementDataFromSummary' => static fn (array $summary) => $describe($summary['id']),
+        ]);
+
+        return new RelationDataService(
+            $elementDataService,
+            $this->makeEmpty(PatchServiceInterface::class),
+            $this->makeEmpty(ConcreteObjectResolverInterface::class),
+            $this->makeEmpty(RelatedElementRepositoryInterface::class)
+        );
+    }
+
     public function testNoRelationsYieldAnEmptyListWithoutInheritance(): void
     {
         $service = $this->lightweightCreateService($built);

@@ -66,10 +66,6 @@ final class ElementDataServiceTest extends Unit
 
         $this->assertFalse($data->getHasViewAccess());
         $this->assertSame([[ElementPermissions::VIEW_PERMISSION, true]], $calls);
-        // GHSA-pg5f-74vr-w237: path/subtype/publish state must not leak for a denied target.
-        $this->assertSame('', $data->getFullPath());
-        $this->assertSame('', $data->getSubtype());
-        $this->assertNull($data->getIsPublished());
     }
 
     /**
@@ -118,9 +114,8 @@ final class ElementDataServiceTest extends Unit
         $this->assertFalse($data->getHasViewAccess());
         $this->assertSame(83, $data->getId());
         $this->assertSame('object', $data->getType());
-        // GHSA-pg5f-74vr-w237: subtype/path must not leak when hasViewAccess is false.
-        $this->assertSame('', $data->getSubtype());
-        $this->assertSame('', $data->getFullPath());
+        $this->assertSame('folder', $data->getSubtype());
+        $this->assertSame('/path/to/element', $data->getFullPath());
         $this->assertNull($data->getIsPublished());
     }
 
@@ -176,19 +171,14 @@ final class ElementDataServiceTest extends Unit
         $this->assertSame('element.jpg', $image->getFilename());
         $this->assertSame('/path/to/', $image->getPath());
         $this->assertSame('asset', $data->getType());
-        $this->assertFalse($data->getHasViewAccess());
-        // GHSA-pg5f-74vr-w237: subtype must not leak when hasViewAccess is false.
-        $this->assertSame('', $data->getSubtype());
+        $this->assertSame('image', $data->getSubtype());
         $this->assertNull($data->getIsPublished());
     }
 
     /**
-     * GHSA-pg5f-74vr-w237: the published state is part of the information that must be
-     * withheld for a target the current user has no view access to, same as subtype/path.
-     *
      * @throws Exception
      */
-    public function testDocumentSummaryWithholdsPublishedStateWhenViewIsDenied(): void
+    public function testDocumentSummaryKeepsThePublishedState(): void
     {
         $service = $this->createService(securityService: $this->securityServiceWithoutUser());
 
@@ -197,9 +187,8 @@ final class ElementDataServiceTest extends Unit
         );
 
         $this->assertSame('document', $data->getType());
-        $this->assertFalse($data->getHasViewAccess());
-        $this->assertSame('', $data->getSubtype());
-        $this->assertNull($data->getIsPublished());
+        $this->assertSame('page', $data->getSubtype());
+        $this->assertFalse($data->getIsPublished());
     }
 
     /**
@@ -402,9 +391,8 @@ final class ElementDataServiceTest extends Unit
         );
 
         $this->assertFalse($data->getHasViewAccess());
-        // GHSA-pg5f-74vr-w237: subtype/path must not leak when hasViewAccess is false.
-        $this->assertSame('', $data->getSubtype());
-        $this->assertSame('', $data->getFullPath());
+        $this->assertSame('ClassThatDoesNotExistAnymore', $data->getSubtype());
+        $this->assertSame('/path/to/element', $data->getFullPath());
     }
 
     /**

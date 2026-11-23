@@ -27,27 +27,17 @@ use OpenApi\Attributes\Schema;
 )]
 final readonly class RelatedElementData
 {
-    #[Property(description: 'Subtype of the element', type: 'string', example: 'Product')]
-    private string $subtype;
-
-    #[Property(description: 'Full path of the element', type: 'string', example: '/path/to/element')]
-    private string $fullPath;
-
-    #[Property(description: 'Is the element published', type: 'boolean', example: true)]
-    private ?bool $isPublished;
-
-    /**
-     * Subtype, full path and publish state are withheld whenever the current user has no
-     * view permission on the element.
-     */
     public function __construct(
         #[Property(description: 'ID', type: 'integer', example: 83)]
         private int $id,
         #[Property(description: 'Type of the element', type: 'string', example: 'object')]
         private string $type,
-        string $subtype,
-        string $fullPath,
-        ?bool $isPublished = null,
+        #[Property(description: 'Subtype of the element', type: 'string', example: 'Product')]
+        private string $subtype,
+        #[Property(description: 'Full path of the element', type: 'string', example: '/path/to/element')]
+        private string $fullPath,
+        #[Property(description: 'Is the element published', type: 'boolean', example: true)]
+        private ?bool $isPublished = null,
         #[Property(
             description: 'Whether the current user is allowed to view the element',
             type: 'boolean',
@@ -55,9 +45,24 @@ final readonly class RelatedElementData
         )]
         private bool $hasViewAccess = true,
     ) {
-        $this->subtype = $this->hasViewAccess ? $subtype : '';
-        $this->fullPath = $this->hasViewAccess ? $fullPath : '';
-        $this->isPublished = $this->hasViewAccess ? $isPublished : null;
+    }
+
+    /**
+     * The reference as it may be handed out as the target of a relation: without view permission on the
+     * element only its id and type remain (the user supplied both), while subtype, full path and publish
+     * state are withheld. With view permission the reference is returned as it is.
+     *
+     * Not applied by the constructor on purpose: a reference that is part of a configuration (the root
+     * folder of a tree widget, an error page of the system settings) has to keep its path for users who
+     * can only navigate through the element.
+     */
+    public function withoutRestrictedData(): self
+    {
+        if ($this->hasViewAccess) {
+            return $this;
+        }
+
+        return new self($this->id, $this->type, '', '', null, false);
     }
 
     public function getId(): int

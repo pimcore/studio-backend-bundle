@@ -21,37 +21,14 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
  */
 final class RelatedElementDataTest extends Unit
 {
-    public function testFieldsAreKeptWhenUserHasViewAccess(): void
-    {
-        $data = new RelatedElementData(
-            83,
-            'object',
-            'Product',
-            '/path/to/element',
-            true,
-            true
-        );
-
-        $this->assertSame('Product', $data->getSubtype());
-        $this->assertSame('/path/to/element', $data->getFullPath());
-        $this->assertTrue($data->getIsPublished());
-        $this->assertTrue($data->getHasViewAccess());
-    }
-
     /**
-     * GHSA-pg5f-74vr-w237: subtype, full path and publish state must be withheld once
-     * hasViewAccess is false.
+     * GHSA-pg5f-74vr-w237: as the target of a relation, an element the user may not view is only
+     * identified by the id and type the user supplied.
      */
-    public function testSensitiveFieldsAreWithheldWhenUserHasNoViewAccess(): void
+    public function testRestrictedDataIsWithheldWithoutViewAccess(): void
     {
-        $data = new RelatedElementData(
-            83,
-            'object',
-            'Product',
-            '/restricted/confidential/element',
-            true,
-            false
-        );
+        $data = (new RelatedElementData(83, 'object', 'Product', '/restricted/confidential/element', true, false))
+            ->withoutRestrictedData();
 
         $this->assertSame('', $data->getSubtype());
         $this->assertSame('', $data->getFullPath());
@@ -61,12 +38,35 @@ final class RelatedElementDataTest extends Unit
         $this->assertSame('object', $data->getType());
     }
 
-    public function testHasViewAccessDefaultsToTrueAndKeepsFields(): void
+    public function testDataIsKeptWithViewAccess(): void
+    {
+        $data = new RelatedElementData(83, 'object', 'Product', '/path/to/element', true, true);
+
+        $this->assertSame($data, $data->withoutRestrictedData());
+        $this->assertSame('Product', $data->getSubtype());
+        $this->assertSame('/path/to/element', $data->getFullPath());
+        $this->assertTrue($data->getIsPublished());
+    }
+
+    /**
+     * The constructor itself withholds nothing: a reference that belongs to a configuration (the root
+     * folder of a tree widget, an error page) must keep its path for a user who can only navigate
+     * through the element.
+     */
+    public function testConstructorKeepsDataWithoutViewAccess(): void
+    {
+        $data = new RelatedElementData(83, 'object', 'folder', '/Products/Chucking Equipment', null, false);
+
+        $this->assertFalse($data->getHasViewAccess());
+        $this->assertSame('folder', $data->getSubtype());
+        $this->assertSame('/Products/Chucking Equipment', $data->getFullPath());
+    }
+
+    public function testHasViewAccessDefaultsToTrue(): void
     {
         $data = new RelatedElementData(83, 'object', 'folder', '/');
 
         $this->assertTrue($data->getHasViewAccess());
-        $this->assertSame('folder', $data->getSubtype());
         $this->assertSame('/', $data->getFullPath());
     }
 }
