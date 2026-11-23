@@ -775,8 +775,9 @@ final class RelationDataServiceTest extends Unit
         $this->assertSame(['theme' => 'A'], $result[0]['data']);
         $this->assertSame('items', $result[0]['fieldName']);
         $this->assertSame(['theme'], $result[0]['columns']);
-        $this->assertSame('/products/b', $result[1]['element']->getFullPath());
         $this->assertFalse($result[1]['element']->getHasViewAccess(), 'view access from the summary service');
+        // GHSA-pg5f-74vr-w237: the path of a target without view access is withheld.
+        $this->assertSame('', $result[1]['element']->getFullPath());
     }
 
     public function testAdvancedRelationsOfMixedElementTypesUseOneQueryPerType(): void
