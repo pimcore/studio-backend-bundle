@@ -61,6 +61,25 @@ final class PropertyServiceListingTest extends Unit
         );
     }
 
+    public function testAssetFilteredListingAllowedWithAssetsPermission(): void
+    {
+        $service = $this->buildService(['assets'], 1);
+        $this->assertSame([], $service->getPredefinedProperties(new PropertiesParameters(elementType: 'asset')));
+    }
+
+    public function testDocumentFilteredListingAllowedWithDocumentsPermission(): void
+    {
+        $service = $this->buildService(['documents'], 1);
+        $this->assertSame([], $service->getPredefinedProperties(new PropertiesParameters(elementType: 'document')));
+    }
+
+    public function testAssetFilteredListingAllowedWithOnlyAssetsPermissionNotDocuments(): void
+    {
+        $service = $this->buildService(['assets'], 0);
+        $this->expectException(ForbiddenException::class);
+        $service->getPredefinedProperties(new PropertiesParameters(elementType: 'document'));
+    }
+
     public function testAssetFilteredListingDeniedWithOnlyObjectsPermission(): void
     {
         $service = $this->buildService(['objects'], 0);
