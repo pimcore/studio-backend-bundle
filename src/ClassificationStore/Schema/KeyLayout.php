@@ -53,34 +53,37 @@ final readonly class KeyLayout
         )]
         private ?string $subGroup = null,
         #[Property(
-            description: 'Whether the key holds a value per language, as the key stores it: true, false, or null'
-                . ' where the key states nothing and the `localized` flag of the class definition field the key'
-                . ' is rendered in decides. It is not resolved against that field here.',
+            // Whether the key holds a value per language, as the key stores it: true, false, or null where the
+            // key states nothing and the `localized` flag of the class definition field the key is rendered in
+            // decides.
+            description: 'Per language; null defers to the class definition field.'
+                . ' It is not resolved against that field here.',
             type: 'boolean',
             example: true,
             nullable: true
         )]
         private ?bool $localized = null,
         #[Property(
-            description: 'The variants a key of type `multiValue` permits, in the order it declares them, each a name'
-                . ' and an optional label; null for a key of any other type. A value carrying no variant addresses'
-                . ' the default variant, which is never one of these names.',
+            // In the order the key declares them, each a name and an optional label. A value carrying no variant
+            // addresses the default variant, which is never one of these names.
+            description: 'Variants a `multiValue` key permits; null for a key of any other type',
             type: 'array',
             items: new Items(ref: VariantLayout::class),
+            example: [['name' => 'metric', 'label' => 'Metric']],
             nullable: true
         )]
         private ?array $variants = null,
         #[Property(
-            description: 'Whether a key of type `multiValue` permits a value carrying no variant; null for a key of'
-                . ' any other type. It is published, not enforced by this endpoint.',
+            // It is published, not enforced by this endpoint.
+            description: 'Whether a `multiValue` key permits a value with no variant; null for any other type',
             type: 'boolean',
             example: true,
             nullable: true
         )]
         private ?bool $defaultVariant = null,
         #[Property(
-            description: 'Label of the default variant of a key of type `multiValue`; null where it declares none'
-                . ' and for a key of any other type.',
+            description: 'Default variant label of a `multiValue` key;'
+                . ' null where it declares none or for other types',
             type: 'string',
             example: 'Standard',
             nullable: true

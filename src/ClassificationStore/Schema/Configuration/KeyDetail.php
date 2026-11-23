@@ -47,16 +47,19 @@ final class KeyDetail implements AdditionalAttributesInterface
         #[Property(description: 'Description of the key', type: 'string', example: 'Key description', nullable: true)]
         private readonly ?string $description = null,
         #[Property(
-            description: 'Definition of the key, reported as it is stored. The member "indexed" is reserved: it is'
-                . ' this key\'s own search index flag, where false asks for the key to be left out of the search'
-                . ' index wherever it is used and anything else leaves it indexed. Studio stores the flag and queues'
-                . ' a remap when it changes; honouring it is the search index\'s own. The member "variants"'
-                . ' declares something only in the definition of a key of type "multiValue": there it is the'
-                . ' ordered list of variants the key permits, each a name and an optional label, the key holds one'
-                . ' value in each of them, and it carries those values in the object data payload as a list of'
-                . ' entries rather than as a single value. In the definition of a key of any other type it is'
-                . ' stored and published as written and declares nothing: such a key carries one value, unchanged.',
+            // Reported as it is stored. The member "indexed" is reserved: it is this key's own search index flag,
+            // where false asks for the key to be left out of the search index wherever it is used and anything
+            // else leaves it indexed. Studio stores the flag and queues a remap when it changes; honouring it is
+            // the search index's own. The member "variants" declares something only in the definition of a key
+            // of type "multiValue": there it is the ordered list of variants the key permits, each a name and an
+            // optional label, the key holds one value in each of them, and it carries those values in the object
+            // data payload as a list of entries rather than as a single value. In the definition of a key of any
+            // other type it is stored and published as written and declares nothing: such a key carries one
+            // value, unchanged.
+            description: 'Stored key definition; "indexed" is its search index flag,'
+                . ' "variants" applies to "multiValue" keys',
             type: 'object',
+            example: ['fieldtype' => 'input', 'name' => 'weight', 'title' => 'Weight', 'indexed' => true],
             nullable: true
         )]
         private readonly ?array $definition = [],
@@ -84,49 +87,52 @@ final class KeyDetail implements AdditionalAttributesInterface
         )]
         private readonly ?string $identifier = null,
         #[Property(
-            description: 'Whether the key holds a value per language, reported as the key stores it: true, false,'
-                . ' or null where the key states nothing and the `localized` flag of the class definition field'
-                . ' the key is rendered in decides. It is not resolved against that field here. The flag is not'
-                . ' yet honoured by the object data endpoints, which still read and write a classification store'
-                . ' field under the language set of that field alone.',
+            // Whether the key holds a value per language, reported as the key stores it: true, false, or null
+            // where the key states nothing and the `localized` flag of the class definition field the key is
+            // rendered in decides. It is not resolved against that field here. The flag is not yet honoured by
+            // the object data endpoints, which still read and write a classification store field under the
+            // language set of that field alone.
+            description: 'Per-language flag as the key stores it; null defers to the class definition field',
             type: 'boolean',
             example: true,
             nullable: true
         )]
         private readonly ?bool $localized = null,
         #[Property(
-            description: 'Free-form pairs the key carries, reported as stored. Pimcore reads no member of'
-                . ' it, and null where the key holds none.',
+            // Pimcore reads no member of it.
+            description: 'Free-form pairs the key carries, as stored; null where it holds none',
             type: 'object',
             example: ['source' => 'erp'],
             nullable: true
         )]
         private readonly ?array $customMetadata = null,
         #[Property(
-            description: 'The resolved view of this key\'s option vocabulary for this request, whatever its source:'
-                . ' its own stored options, or the options of an options provider that reports static options,'
-                . ' in the order they are resolved. Null where the key is not a select or multiselect, and where'
-                . ' optionsUnavailableReason says why not. The stored definition remains authoritative for'
-                . ' storage.',
+            // Whatever its source: its own stored options, or the options of an options provider that reports
+            // static options, in the order they are resolved. Null where the key is not a select or multiselect,
+            // and where optionsUnavailableReason says why not. The stored definition remains authoritative for
+            // storage.
+            description: 'Resolved options of a select or multiselect key for this request; null otherwise',
             type: 'array',
             items: new Items(ref: SelectOption::class),
+            example: [['key' => 'Red', 'value' => 'red']],
             nullable: true
         )]
         private readonly ?array $options = null,
         #[Property(
-            description: 'Why options is null for a select or multiselect key: "providerNotStatic" where its'
-                . ' options provider reports options that depend on a data object, "resolutionFailed" where the'
-                . ' provider could not be resolved or raised, for instance for a deleted select options'
-                . ' configuration. Null means nothing failed.',
+            // "providerNotStatic" where its options provider reports options that depend on a data object,
+            // "resolutionFailed" where the provider could not be resolved or raised, for instance for a deleted
+            // select options configuration.
+            description: 'Why options is null for a select key: providerNotStatic or resolutionFailed;'
+                . ' null if nothing failed',
             type: 'string',
             example: 'providerNotStatic',
             nullable: true
         )]
         private readonly ?string $optionsUnavailableReason = null,
         #[Property(
-            description: 'The unit vocabulary of the key\'s own definition, never of an assignment override, and'
-                . ' null where its type holds no units. Where validUnits is null the definition restricts nothing;'
-                . ' the type tells that apart from a type with no units at all.',
+            // Never of an assignment override. Where validUnits is null the definition restricts nothing; the
+            // type tells that apart from a type with no units at all.
+            description: 'Unit vocabulary of the key\'s own definition; null where its type holds no units',
             ref: KeyUnits::class,
             nullable: true
         )]

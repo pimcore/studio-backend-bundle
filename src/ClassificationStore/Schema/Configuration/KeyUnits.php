@@ -41,8 +41,9 @@ final class KeyUnits implements AdditionalAttributesInterface
         )]
         private readonly ?string $defaultUnit = null,
         #[Property(
-            description: 'IDs of the units the key permits, as stored and in the order the key declares them,'
-                . ' or null where the key restricts nothing and every unit is permitted',
+            // IDs are as stored and in the order the key declares them.
+            description: 'IDs of the units the key permits,'
+                . ' or null where it restricts nothing and every unit is permitted',
             type: 'array',
             items: new Items(type: 'string'),
             example: ['kg', 'g'],

@@ -48,11 +48,12 @@ final class KeyGroupRelation implements AdditionalAttributesInterface
         #[Property(description: 'Key Description', type: 'string', example: 'value', nullable: true)]
         private readonly ?string $groupDescription,
         #[Property(
-            description: 'Whether the key holds a value per language, as the key stores it: true, false, or null'
-                . ' where the key states nothing and the `localized` flag of the class definition field the key'
-                . ' is rendered in decides. It is not resolved against that field here. The flag is not yet'
-                . ' honoured by the object data endpoints, which still read and write a classification store'
-                . ' field under the language set of the class definition field alone.',
+            // Whether the key holds a value per language, as the key stores it: true, false, or null where the
+            // key states nothing and the `localized` flag of the class definition field the key is rendered in
+            // decides. It is not resolved against that field here. The flag is not yet honoured by the object
+            // data endpoints, which still read and write a classification store field under the language set of
+            // the class definition field alone.
+            description: 'Per-language flag as the key stores it; null defers to the class definition field',
             type: 'boolean',
             example: true,
             nullable: true
@@ -66,18 +67,20 @@ final class KeyGroupRelation implements AdditionalAttributesInterface
         )]
         private readonly ?string $keyType = null,
         #[Property(
-            description: 'Whether a grid filter can be applied to this key: false where filterUnavailableReason'
-                . ' says why not; null where the relation states no type or definition to tell.',
+            // false where filterUnavailableReason says why not; null where the relation states no type or
+            // definition to tell.
+            description: 'Whether a grid filter can be applied to this key',
             type: 'boolean',
             example: true,
             nullable: true
         )]
         private readonly ?bool $filterable = null,
         #[Property(
-            description: 'Why the key cannot be filtered: "indexExcluded" where its definition leaves it out of'
-                . ' the search index, "typeUnsupported" where no filter supports its type,'
-                . ' "resolutionFailed" where its definition cannot be read. Null means it can be'
-                . ' filtered, or that the relation states no type or definition to tell.',
+            // "indexExcluded" where its definition leaves it out of the search index, "typeUnsupported" where no
+            // filter supports its type, "resolutionFailed" where its definition cannot be read. Null means it can
+            // be filtered, or that the relation states no type or definition to tell.
+            description: 'Why the key cannot be filtered:'
+                . ' indexExcluded, typeUnsupported or resolutionFailed; null otherwise',
             type: 'string',
             example: 'indexExcluded',
             nullable: true

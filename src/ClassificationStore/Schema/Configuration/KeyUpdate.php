@@ -50,20 +50,19 @@ final readonly class KeyUpdate
         )]
         private ?string $type = null,
         #[Property(
-            description: 'Values for object brick definition metadata. The member "indexed" is reserved: it is this'
-                . ' key\'s own search index flag, where false asks for the key to be left out of the search index'
-                . ' wherever it is used and anything else leaves it indexed. Changing it queues a remap of every'
-                . ' search index the key\'s store reaches, which converges in the background; honouring the flag is'
-                . ' the search index\'s own. The member "variants"'
-                . ' declares something only in the definition of a key of type "multiValue": there it is the'
-                . ' ordered list of variants the key permits, each a name and an optional label, the key holds one'
-                . ' value in each of them, and it carries those values in the object data payload as a list of'
-                . ' entries rather than as a single value. In the definition of a key of any other type it is'
-                . ' stored as written and declares nothing.'
-                . ' Declaring it is accepted whatever the engine of the key\'s store reports. The whole object'
-                . ' replaces the stored one, so a client that rebuilds it from a form has to send the member back to'
-                . ' keep it. It is unrelated to the "index" member below,'
-                . ' which is about the object query tables.',
+            // The member "indexed" is reserved: it is this key's own search index flag, where false asks for the
+            // key to be left out of the search index wherever it is used and anything else leaves it indexed.
+            // Changing it queues a remap of every search index the key's store reaches, which converges in the
+            // background; honouring the flag is the search index's own. The member "variants" declares something
+            // only in the definition of a key of type "multiValue": there it is the ordered list of variants the
+            // key permits, each a name and an optional label, the key holds one value in each of them, and it
+            // carries those values in the object data payload as a list of entries rather than as a single value.
+            // In the definition of a key of any other type it is stored as written and declares nothing.
+            // Declaring it is accepted whatever the engine of the key's store reports. The whole object replaces
+            // the stored one, so a client that rebuilds it from a form has to send the member back to keep it.
+            // It is unrelated to the "index" member below, which is about the object query tables.
+            description: 'Replaces the stored definition; "indexed" flags search indexing,'
+                . ' "variants" is for "multiValue" keys',
             type: 'object',
             example: [
                 'name' => 'weight',
@@ -100,24 +99,25 @@ final readonly class KeyUpdate
         )]
         private ?array $definition = null,
         #[Property(
-            description: 'Whether the key holds a value per language: true, false, or null to state nothing and'
-                . ' let the `localized` flag of the class definition field the key is rendered in decide. Leaving'
-                . ' the member out of the request keeps the stored value, sending it as null stores null. The'
-                . ' flag is not yet honoured by the object data endpoints, which still read and write a'
-                . ' classification store field under the language set of the class definition field alone.',
+            // Whether the key holds a value per language: true, false, or null to state nothing and let the
+            // `localized` flag of the class definition field the key is rendered in decide. Leaving the member
+            // out of the request keeps the stored value, sending it as null stores null. The flag is not yet
+            // honoured by the object data endpoints, which still read and write a classification store field
+            // under the language set of the class definition field alone.
+            description: 'Per-language flag; omit to keep the stored value,'
+                . ' null defers to the class definition field',
             type: 'boolean',
             example: true,
             nullable: true
         )]
         private ?bool $localized = null,
         #[Property(
-            description: 'Free-form pairs of the key. Pimcore reads no member of it and no member is reserved.'
-                . ' Omitting it keeps a stored object alone, a supplied object replaces it whole rather than'
-                . ' merging into it - so one rebuilt from a form without a member drops that member - and an'
-                . ' explicit null clears it altogether. A JSON array is refused, the member being an object, and'
-                . ' so is the one object an array cannot be told apart from once decoded - whose member names are'
-                . ' the consecutive integers from zero, such as {"0": "a"} - because the stored form cannot carry'
-                . ' that distinction either.',
+            // Pimcore reads no member of it and no member is reserved. A supplied object replaces the stored one
+            // whole rather than merging into it - so one rebuilt from a form without a member drops that member.
+            // A JSON array is refused, the member being an object, and so is the one object an array cannot be
+            // told apart from once decoded - whose member names are the consecutive integers from zero, such as
+            // {"0": "a"} - because the stored form cannot carry that distinction either.
+            description: 'Free-form pairs; omit to keep them, an object replaces them whole, null clears them',
             type: 'object',
             example: ['source' => 'erp'],
             nullable: true

@@ -64,8 +64,8 @@ final class CollectionDetail implements AdditionalAttributesInterface
         )]
         private readonly ?string $identifier = null,
         #[Property(
-            description: 'Free-form pairs the collection carries, reported as stored. Pimcore reads no member of'
-                . ' it, and null where the collection holds none.',
+            // Pimcore reads no member of it.
+            description: 'Free-form pairs the collection carries, as stored; null where it holds none',
             type: 'object',
             example: ['source' => 'erp'],
             nullable: true

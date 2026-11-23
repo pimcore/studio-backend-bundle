@@ -66,33 +66,33 @@ final readonly class KeyGroupRelationCreate
         )]
         private mixed $mandatory = AbsentValue::ABSENT,
         #[Property(
-            description: 'Partial field definition overriding the one of the key for this assignment. Omitting it'
-                . ' leaves a stored one alone, a supplied object replaces it whole rather than merging into it, and'
-                . ' an explicit null clears it. A JSON array is refused, the member being an object, and so is the'
-                . ' one object an array cannot be told apart from once decoded - whose member names are the'
-                . ' consecutive integers from zero, such as {"0": "a"} - because the stored form cannot carry that'
-                . ' distinction either.',
+            // Omitting it leaves a stored one alone, a supplied object replaces it whole rather than merging into
+            // it, and an explicit null clears it. A JSON array is refused, the member being an object, and so is
+            // the one object an array cannot be told apart from once decoded - whose member names are the
+            // consecutive integers from zero, such as {"0": "a"} - because the stored form cannot carry that
+            // distinction either.
+            description: 'Partial field definition overriding the key\'s own for this assignment',
             type: 'object',
             example: ['defaultUnit' => 'kg'],
             nullable: true
         )]
         private mixed $definitionOverride = AbsentValue::ABSENT,
         #[Property(
-            description: 'Sub group of the store this assignment belongs to. Omitting it leaves a stored one alone, a'
-                . ' supplied value replaces it, and an explicit null clears it.',
+            // Omitting it leaves a stored one alone, a supplied value replaces it, and an explicit null clears it.
+            description: 'Sub group of the store this assignment belongs to',
             type: 'string',
             example: 'dimensions',
             nullable: true
         )]
         private mixed $subGroup = AbsentValue::ABSENT,
         #[Property(
-            description: 'Free-form metadata carried by this assignment. No member is reserved. Omitting it keeps a'
-                . ' stored object alone, a supplied object replaces it whole rather than merging into it - so one'
-                . ' rebuilt from a form without a member drops that member - and an explicit null clears it'
-                . ' altogether. A JSON array is refused, the member being an object, and so is the one object an'
-                . ' array cannot be told apart from once decoded - whose member names are the consecutive'
-                . ' integers from zero, such as {"0": "a"} - because the stored form cannot carry that'
-                . ' distinction either.',
+            // No member is reserved. Omitting it keeps a stored object alone, a supplied object replaces it whole
+            // rather than merging into it - so one rebuilt from a form without a member drops that member - and an
+            // explicit null clears it altogether. A JSON array is refused, the member being an object, and so is
+            // the one object an array cannot be told apart from once decoded - whose member names are the
+            // consecutive integers from zero, such as {"0": "a"} - because the stored form cannot carry that
+            // distinction either.
+            description: 'Free-form metadata carried by this assignment',
             type: 'object',
             example: ['source' => 'erp'],
             nullable: true
