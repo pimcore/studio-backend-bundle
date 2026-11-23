@@ -26,8 +26,12 @@ use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_key_exists;
+use function sprintf;
 
 /**
  * @internal
@@ -35,6 +39,12 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 final readonly class PropertyService implements PropertyServiceInterface
 {
     use ElementProviderTrait;
+
+    private const array ELEMENT_TYPE_TO_PERMISSION = [
+        ElementTypes::TYPE_ASSET => UserPermissions::ASSETS->value,
+        ElementTypes::TYPE_DOCUMENT => UserPermissions::DOCUMENTS->value,
+        ElementTypes::TYPE_OBJECT => UserPermissions::DATA_OBJECTS->value,
+    ];
 
     public function __construct(
         private PropertyRepositoryInterface $propertyRepository,
@@ -73,10 +83,14 @@ final readonly class PropertyService implements PropertyServiceInterface
     }
 
     /**
+     * @throws ForbiddenException
+     *
      * @return array<int, PredefinedProperty>
      */
     public function getPredefinedProperties(PropertiesParameters $parameters): array
     {
+        $this->checkListingPermission($parameters->getElementType());
+
         $properties = $this->propertyRepository->listProperties($parameters);
         $hydratedProperties = [];
         foreach ($properties->load() as $property) {
@@ -142,5 +156,31 @@ final readonly class PropertyService implements PropertyServiceInterface
     public function deletePredefinedProperty(string $id): void
     {
         $this->propertyRepository->deletePredefinedProperty($id);
+    }
+
+    /**
+     * The unfiltered listing requires the predefined properties permission. A listing filtered by element type is
+     * also available to users holding the permission for that element type.
+     *
+     * @throws ForbiddenException
+     */
+    private function checkListingPermission(?string $elementType): void
+    {
+        $user = $this->securityService->getCurrentUser();
+        if ($user->isAllowed(UserPermissions::PREDEFINED_PROPERTIES->value)) {
+            return;
+        }
+
+        if (
+            $elementType !== null &&
+            array_key_exists($elementType, self::ELEMENT_TYPE_TO_PERMISSION) &&
+            $user->isAllowed(self::ELEMENT_TYPE_TO_PERMISSION[$elementType])
+        ) {
+            return;
+        }
+
+        throw new ForbiddenException(
+            sprintf('User does not have permission: %s', UserPermissions::PREDEFINED_PROPERTIES->value)
+        );
     }
 }

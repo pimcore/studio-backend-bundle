@@ -61,6 +61,7 @@ final class CollectionController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::FORBIDDEN,
     ])]
     public function getProperties(
         #[MapQueryString] PropertiesParameters $parameters = new PropertiesParameters()

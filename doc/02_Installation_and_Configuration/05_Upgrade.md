@@ -9,6 +9,10 @@ The following steps are necessary during updating to newer versions.
     keep their own checks), otherwise the request returns `403` and nothing is changed.
   - Moving a document to a different parent (`parentId`) additionally requires the `create` permission on the
     destination document and returns `403` otherwise. A non-existent destination returns `404`.
+- [Properties] Security: listing predefined properties (`GET /properties`) now checks permissions. Without an
+  `elementType` filter it requires the `predefined_properties` permission. With an `elementType` filter it also
+  succeeds for users holding the matching element permission (`assets`, `documents` or `objects`). Otherwise the
+  request returns `403`.
 
 ## Upgrade to 2025.4.20
 - [Users] Security (GHSA-x3pq-323g-f95v): a user who may manage users (`users` permission) can no longer hand out more

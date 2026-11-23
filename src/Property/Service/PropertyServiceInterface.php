@@ -37,6 +37,8 @@ interface PropertyServiceInterface
     public function getPredefinedProperty(string $id): PredefinedProperty;
 
     /**
+     * @throws ForbiddenException
+     *
      * @return array<int, PredefinedProperty>
      */
     public function getPredefinedProperties(PropertiesParameters $parameters): array;
