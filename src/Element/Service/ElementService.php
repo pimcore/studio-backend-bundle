@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResolve\ElementResolveEv
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementSubtypeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Request\SearchTermParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\PublishedState;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Subtype;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
@@ -154,6 +155,22 @@ final readonly class ElementService implements ElementServiceInterface
         $this->eventDispatcher->dispatch(new ElementSubtypeEvent($subtype), ElementSubtypeEvent::EVENT_NAME);
 
         return $subtype;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getElementPublishedState(ElementParameters $parameters): PublishedState
+    {
+        $user = $this->securityService->getCurrentUser();
+        $element = $this->getAllowedElementById($parameters->getType(), $parameters->getId(), $user);
+
+        $published = match (true) {
+            $element instanceof DataObject\Concrete, $element instanceof Document => $element->getPublished(),
+            default => null,
+        };
+
+        return new PublishedState($parameters->getId(), $parameters->getType(), $published);
     }
 
     /**
