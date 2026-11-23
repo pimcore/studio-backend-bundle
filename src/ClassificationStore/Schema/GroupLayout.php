@@ -48,7 +48,7 @@ final class GroupLayout implements AdditionalAttributesInterface
             description: 'Sub groups the keys of this group are assigned to, ordered by their first key',
             type: 'array',
             items: new Items(ref: SubGroupLayout::class),
-            example: [['identifier' => '01JBQ8X9Z0ABCDEFGHJKMNPQRS', 'name' => 'dimensions', 'description' => null]]
+            example: [['identifier' => '01JBQ8X9Z0ABCDEFGHJKMNPQRS', 'name' => 'dimensions', 'description' => 'Physical dimensions']]
         )]
         private readonly array $subGroups = [],
     ) {
