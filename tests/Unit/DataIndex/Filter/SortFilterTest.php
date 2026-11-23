@@ -288,7 +288,8 @@ final class SortFilterTest extends Unit
     private function createClassDefinition(): ClassDefinition
     {
         $bricks = $this->createField(new Objectbricks(), 'bricks');
-        $bricks->setAllowedTypes(['Engine']);
+        // setAllowedTypes() loads each brick's definition file, which a unit test does not have.
+        $bricks->allowedTypes = ['Engine'];
 
         $classDefinition = new ClassDefinition();
         $classDefinition->addFieldDefinition('price', $this->createField(new QuantityValue(), 'price'));
