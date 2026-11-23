@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
@@ -98,11 +99,19 @@ final readonly class ElementTreeWidgetConfigHydrator implements WidgetConfigHydr
     private function resolveCustomRootFolder(array $widgetData, string $elementType): ?RelatedElementData
     {
         try {
-            $folder = $this->elementService->getAllowedElementByPath(
+            // Resolved without a view-permission check, by design: the configured root is
+            // only navigated through to reach the widget's actual content, not opened itself.
+            // A user whose workspace grants access to a descendant folder only (the common
+            // case for scoped editors) must still see the widget, exactly as that same
+            // ungranted ancestor stays navigable in the default element tree; permissions on
+            // the widget's actual content are enforced per node when that content loads.
+            $user = $this->securityService->getCurrentUser();
+            $folderId = $this->elementService->getElementIdByPath(
                 $elementType,
-                $widgetData['rootFolder'],
-                $this->securityService->getCurrentUser()
+                new PathParameter($widgetData['rootFolder']),
+                $user
             );
+            $folder = $this->elementService->getElementById($elementType, $folderId);
 
             return $this->elementDataService->getRelatedElementData($folder);
         } catch (NotFoundException $exception) {

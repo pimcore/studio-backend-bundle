@@ -36,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateServiceInterface;
 use Pimcore\Model\Document as DocumentModel;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -60,6 +61,7 @@ final readonly class DocumentService implements DocumentServiceInterface
         private FilterServiceProviderInterface $filterServiceProvider,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
+        private WorkflowStateServiceInterface $workflowStateService,
     ) {
     }
 
@@ -98,6 +100,8 @@ final readonly class DocumentService implements DocumentServiceInterface
         $this->setTreeSorting($documentQuery, $parameters->getPathIncludeParent());
         $result = $this->documentSearchService->searchDocuments($documentQuery);
         $items = $result->getItems();
+
+        $this->workflowStateService->applyVisibleStates($items, ElementTypes::TYPE_DOCUMENT);
 
         foreach ($items as $item) {
             $this->dispatchDocumentEvent($item);

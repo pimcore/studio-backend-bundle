@@ -3,6 +3,10 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Elements] Deprecated: `coauthorType` and `coauthor` in the bodies of the element patch and update endpoints
+  and of `PUT /pimcore-studio/api/versions/{id}`. They still work, are marked `deprecated` in the OpenAPI schema and
+  raise a deprecation notice. They are removed in 2027.1 (https://github.com/pimcore/platform-version/issues/814).
+  The coauthor is set by the server.
 - [Authentication] Deprecated: static MCP personal access tokens (`pimcore_studio_backend.mcp.authentication.tokens`,
   handled by `PatAuthenticator`). They keep working on 2026.x; configuring them and each request they authenticate
   raise a deprecation. They are removed in 2027.1. Migrate integrations to MCP access tokens issued for a dedicated
@@ -312,6 +316,14 @@ The following steps are necessary during updating to newer versions.
 - [Studio UI] The "login as different user" action and the role options in the user form should be limited to what the
   backend now allows (admins only for login links, the caller's own roles for non-admins). Until then, non-admin user
   managers see `403` errors for these actions.
+
+## Upgrade to 2025.4.21
+- [Documents] Security (GHSA): updating a document (`PUT /documents/{id}`) now checks the per-element workspace
+  permissions. This changes the behavior for users who relied on the `documents` permission alone:
+  - The caller needs the `save` permission on the document (not required for the `publish`/`unpublish` tasks, which
+    keep their own checks), otherwise the request returns `403` and nothing is changed.
+  - Moving a document to a different parent (`parentId`) additionally requires the `create` permission on the
+    destination document and returns `403` otherwise. A non-existent destination returns `404`.
 
 ## Upgrade to 2025.4.20
 - [Users] Security (GHSA-x3pq-323g-f95v): a user who may manage users (`users` permission) can no longer hand out more
