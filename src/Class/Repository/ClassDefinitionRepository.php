@@ -117,7 +117,7 @@ readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInt
         } catch (Exception $e) {
             $exception = $e;
         }
-        if (!$cd || $exception) {
+        if (!$cd) {
             throw new NotFoundException(type: 'class definition', id: $id, previous: $exception);
         }
 
@@ -134,7 +134,7 @@ readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInt
         } catch (Exception $e) {
             $exception = $e;
         }
-        if (!$cd || $exception) {
+        if (!$cd) {
             throw new NotFoundException(
                 'class definition',
                 $dataObjectClass,
