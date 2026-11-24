@@ -139,29 +139,7 @@ final class OpenApiSpecProcessor
 
     private static function filterComponents(array $components, array $paths): array
     {
-        $keep = [];
-        $stack = [$paths];
-        while ($stack !== []) {
-            $current = array_pop($stack);
-            if (!is_array($current)) {
-                continue;
-            }
-            foreach ($current as $key => $value) {
-                if (
-                    $key === '$ref'
-                    && is_string($value)
-                    && preg_match(self::REF_PATTERN, $value, $matches) === 1
-                ) {
-                    [, $bucket, $name] = $matches;
-                    if (!isset($keep[$bucket][$name]) && isset($components[$bucket][$name])) {
-                        $keep[$bucket][$name] = true;
-                        $stack[] = $components[$bucket][$name];
-                    }
-                } elseif (is_array($value)) {
-                    $stack[] = $value;
-                }
-            }
-        }
+        $keep = self::collectReferencedComponents($paths, $components);
 
         $result = [];
         foreach ($components as $bucket => $entries) {
@@ -183,6 +161,55 @@ final class OpenApiSpecProcessor
         return $result;
     }
 
+    /**
+     * @return array<string, array<string, true>> kept component names per bucket
+     */
+    private static function collectReferencedComponents(array $paths, array $components): array
+    {
+        $keep = [];
+        $stack = [$paths];
+        while ($stack !== []) {
+            $current = array_pop($stack);
+            if (!is_array($current)) {
+                continue;
+            }
+            self::walkNodeForReferences($current, $components, $keep, $stack);
+        }
+
+        return $keep;
+    }
+
+    private static function walkNodeForReferences(array $node, array $components, array &$keep, array &$stack): void
+    {
+        foreach ($node as $key => $value) {
+            $reference = self::parseReference($key, $value);
+            if ($reference === null) {
+                if (is_array($value)) {
+                    $stack[] = $value;
+                }
+
+                continue;
+            }
+            [$bucket, $name] = $reference;
+            if (!isset($keep[$bucket][$name]) && isset($components[$bucket][$name])) {
+                $keep[$bucket][$name] = true;
+                $stack[] = $components[$bucket][$name];
+            }
+        }
+    }
+
+    /**
+     * @return array{string, string}|null bucket and name of a #/components reference
+     */
+    private static function parseReference(int|string $key, mixed $value): ?array
+    {
+        if ($key !== '$ref' || !is_string($value) || preg_match(self::REF_PATTERN, $value, $matches) !== 1) {
+            return null;
+        }
+
+        return [$matches[1], $matches[2]];
+    }
+
     private static function collectUsedTags(array $paths): array
     {
         $tags = [];
@@ -191,16 +218,19 @@ final class OpenApiSpecProcessor
                 continue;
             }
             foreach ($pathItem as $operation) {
-                if (is_array($operation) && array_key_exists('tags', $operation) && is_array($operation['tags'])) {
-                    foreach ($operation['tags'] as $tag) {
-                        if (is_string($tag) && !in_array($tag, $tags, true)) {
-                            $tags[] = $tag;
-                        }
-                    }
-                }
+                $tags = [...$tags, ...self::operationTags($operation)];
             }
         }
 
-        return $tags;
+        return array_values(array_unique($tags));
+    }
+
+    private static function operationTags(mixed $operation): array
+    {
+        if (!is_array($operation) || !isset($operation['tags']) || !is_array($operation['tags'])) {
+            return [];
+        }
+
+        return array_values(array_filter($operation['tags'], is_string(...)));
     }
 }
