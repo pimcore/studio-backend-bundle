@@ -38,4 +38,12 @@ enum HttpResponseErrorKeys: string
     case UID_ALREADY_EXISTS = 'error_uid_used';
     case RECYCLE_BIN_RESTORE  = 'error_recycle_bin_restore';
     case RECYCLE_BIN_RESTORE_MISSING_PARENT  = 'error_recycle_bin_restore_missing_parent';
+    case UNDECLARED_VARIANT = 'error_undeclared_variant';
+    case DUPLICATE_VALUE_QUALIFIER = 'error_duplicate_value_qualifier';
+    case ENGINE_CAPABILITY_MISSING = 'error_engine_capability_missing';
+    case KEY_NOT_REPEATABLE = 'error_key_not_repeatable';
+    case FILTER_TYPE_UNSUPPORTED = 'error_filter_type_unsupported';
+    case FILTER_KEY_NOT_INDEXED = 'error_filter_key_not_indexed';
+    case FILTER_VARIANT_UNDECLARED = 'error_filter_variant_undeclared';
+    case FILTER_DEFINITION_UNRESOLVABLE = 'error_filter_definition_unresolvable';
 }

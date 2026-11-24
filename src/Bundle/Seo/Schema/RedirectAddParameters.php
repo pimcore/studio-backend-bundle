@@ -35,6 +35,13 @@ final readonly class RedirectAddParameters
         public ?string $source = null,
         #[Property(description: 'Target URL', type: 'string', example: '/new-path', nullable: true)]
         public ?string $target = null,
+        #[Property(
+            description: 'Target element type: document, asset or object. Detected from the target when omitted',
+            type: 'string',
+            example: 'document',
+            nullable: true
+        )]
+        public ?string $targetType = null,
     ) {
     }
 
@@ -51,5 +58,10 @@ final readonly class RedirectAddParameters
     public function getTarget(): ?string
     {
         return $this->target;
+    }
+
+    public function getTargetType(): ?string
+    {
+        return $this->targetType;
     }
 }

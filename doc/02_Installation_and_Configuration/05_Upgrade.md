@@ -3,6 +3,10 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Elements] Deprecated: `coauthorType` and `coauthor` in the bodies of the element patch and update endpoints
+  and of `PUT /pimcore-studio/api/versions/{id}`. They still work, are marked `deprecated` in the OpenAPI schema and
+  raise a deprecation notice. They are removed in 2027.1 (https://github.com/pimcore/platform-version/issues/814).
+  The coauthor is set by the server.
 - [Authentication] Deprecated: static MCP personal access tokens (`pimcore_studio_backend.mcp.authentication.tokens`,
   handled by `PatAuthenticator`). They keep working on 2026.x; configuring them and each request they authenticate
   raise a deprecation. They are removed in 2027.1. Migrate integrations to MCP access tokens issued for a dedicated
@@ -47,6 +51,81 @@ The following steps are necessary during updating to newer versions.
   `oauth.client_credentials.access_token_ttl` seconds (default 900, minimum 60) and carry no refresh token. Nothing
   changes until the switch is turned on. The guarantee that every token acts for a logged-in human no longer holds
   once it is on. See [OAuth Server](./06_OAuth_Server.md#service-user-clients-client-credentials).
+- [Classification Store] Changed: a store created through Studio or by a configuration import is created on the
+  `document` engine instead of EAV. Existing stores are untouched, and `pimcore:classificationstore:flip` still
+  changes a store's engine. `engine` now reports the resolved engine, so a store that stores none reports `eav`.
+- [Classification Store] Changed: a configuration import refuses a `multiValue` key in a store whose engine cannot
+  address qualifiers, reporting it as a conflict and skipping it. A key the store already carries is not refused.
+- [Classification Store] Changed: an `imageGallery` or `encryptedField` key now exports its value in the grid
+  export, where it previously produced an empty cell.
+- [Classification Store] Added: disabled keys can be listed and re-enabled.
+- [Classification Store] Added: the key and key-group assignment reads carry a key's resolved select options and
+  unit vocabulary, so a configuration screen no longer needs the object editor to learn them.
+- [Classification Store] Added: a saved grid column showing a classification store attribute also records the
+  identifiers of its group and key. Configurations saved earlier keep working.
+- [Classification Store] Changed: a classification store column filter addresses the search index by group and key
+  identifier instead of by name. It needs `generic-data-index:deployment:reindex` and finds nothing on an index
+  built before that.
+- [Classification Store] Fixed: a classification store column filter searches the language the key is kept in — the
+  column's language only for a localized key — where it previously returned no row for a non-localized key.
+- [Classification Store] Changed: a classification store filter the grid cannot apply is refused with a `422`
+  naming the key, instead of returning every row.
+- [Classification Store] Added: collections, groups, sub groups and keys carry free-form custom metadata, readable,
+  editable and exportable with the store configuration. Pimcore itself reads none of it.
+- [Classification Store] Changed: a group's key relations are loaded once per request and shared by every consumer,
+  and the within-group key order of `objectData` and the search preview is now deterministic (`sorter` ascending,
+  then id), where it was whatever the database returned.
+- [Classification Store] Added: every key of the three layout responses carries an optional `title`, the key
+  configuration's label resolved for the requesting user's language, or `null` when no language of the chain holds
+  one. It is resolved server-side: do not treat it as a translation key, and keep falling back to `name` for display.
+- [Classification Store] Added: the key configuration responses carry the raw stored `title`, untranslated and with
+  no fallback to `name`. `POST /classification-store/configuration/keys/add` accepts an optional `title`; sending
+  none, `null` or `""` keeps writing the name.
+- [Classification Store] Changed: `title` or `description` sent as `null` to
+  `PUT /classification-store/configuration/keys/{id}` now clears the stored value instead of leaving it alone.
+  Leaving the field out still keeps it.
+- [Classification Store] Changed: `layout-by-group`, `layout-by-collection` and `key-group-relations` return their
+  items in a new order (`sorter` then id; relations grouped by group id first). A client that pages
+  `key-group-relations` gets different relations on a given page than before. No response schema changed.
+- [Classification Store] Added: the three object layout responses carry a `title` on every active group and key of a
+  classification store field. The key title falls back to the key's `name` as a last resort, so the editor never
+  renders a blank label; the group title is the group's `name`.
+- [Classification Store] Added: `GroupLayout` carries an optional `title` holding the group's `name`, so a group
+  added in the session reports the same shape as a pre-loaded one.
+- [Classification Store] Added: sub groups, the per-store vocabulary a key's assignment to a group can be tagged
+  with.
+- [Classification Store] Added: a key reports and accepts its own `localized` flag; no value means the class field
+  decides.
+- [Classification Store] Added: a key's assignment to a group can be written and read with its own per-assignment
+  options — definition override, sub group and metadata — and the generated identifiers are published alongside.
+  The definition override is stored and published but not yet applied to the rendered field definitions.
+- [Classification Store] Changed: adding a key's assignment no longer resets its sort order and mandatory flag when
+  the payload omits them. Two payloads that used to pass are now refused: a create or update carrying an identifier,
+  and an assignment naming a key id that does not exist.
+- [Classification Store] Added: `indexed`, a reserved member of a key's own definition rather than of an
+  assignment's `metadata`. Changing it enqueues a deferred remap of every search index the key's store reaches.
+- [Classification Store] Added: a key of type `multiValue` declares one value per variant, and the object data
+  endpoints read and write it through the core store's qualified API. `variants` or `multiValue` written into the
+  definition of any other type are ignored, not migrated.
+- [Classification Store] Added: a store's whole configuration can be exported and imported as one file, from the
+  store editor, the store-scoped import endpoint and the commands
+  `studio-backend-bundle:classificationstore:export` and `:apply`. Importing a file describing the same store
+  creates and updates but never deletes, so un-assigning a key stays a manual step. Importing a file describing a
+  *different* store duplicates it: the configuration the target held is replaced, **which removes the stored values
+  under every removed group, and importing again does not bring them back**. Send `dryRun` for the report without
+  writing.
+- [Classification Store] Changed: a key's own `localized` flag is honoured by the object data endpoints, so a key
+  localized inside a non-localized field is read and written per language.
+- [Classification Store] Changed: a classification store grid column reads the language its key decides, and may be
+  offered a language where the field itself is not localized.
+- [Classification Store] Changed: a store configuration export refuses when the configuration changed while it was
+  being written, and must be run again — a truncated download over HTTP, a failed command on the console.
+- [Listing] Changed: a collection request body that omits `filters` is paged with the documented defaults instead of
+  returning every row. Send `filters.page` and `filters.pageSize` and walk the pages until you have `totalItems`.
+- [Listing] Fixed: a client-supplied `equals` filter on the column a route-scoped listing is already scoped by
+  narrows that scope instead of replacing it. Reach another scope through its own route.
+- [Listing] Fixed: a `date` filter on a date column stored as a Unix timestamp selects the window it names, instead
+  of matching nothing or everything. Such a filter returns different rows than before.
 - [User] Added: `welcomeScreenTarget`, the page Studio opens after login when the welcome screen is on, as
   `<provider>:<id>` (e.g. `studio-dashboards:<dashboard id>`). The user (`GET /pimcore-studio/api/user/{id}`) and the
   login user info (`GET /pimcore-studio/api/user/current-user-information`) always return it (`null` when nothing is
@@ -169,6 +248,16 @@ The following steps are necessary during updating to newer versions.
 - [Studio UI] The "login as different user" action and the role options in the user form should be limited to what the
   backend now allows (admins only for login links, the caller's own roles for non-admins). Until then, non-admin user
   managers see `403` errors for these actions.
+
+## Upgrade to 2025.4.21
+- [Documents] Security (GHSA): updating a document (`PUT /documents/{id}`) now checks the per-element workspace
+  permissions. This changes the behavior for users who relied on the `documents` permission alone:
+  - The caller needs the `save` permission on the document (not required for the `publish`/`unpublish` tasks, which
+    keep their own checks), otherwise the request returns `403` and nothing is changed.
+  - Moving a document to a different parent (`parentId`) additionally requires the `create` permission on the
+    destination document and returns `403` otherwise. A non-existent destination returns `404`.
+- [Properties] Security: listing the predefined properties (`GET /properties`) now requires the
+  `predefined_properties` permission, like creating, updating and deleting them. Users without it get `403`.
 
 ## Upgrade to 2025.4.20
 - [Users] Security (GHSA-x3pq-323g-f95v): a user who may manage users (`users` permission) can no longer hand out more

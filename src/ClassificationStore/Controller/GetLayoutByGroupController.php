@@ -74,7 +74,7 @@ final class GetLayoutByGroupController extends AbstractApiController
     #[QueryIdParameter(
         description: 'object ID',
         namePrefix: 'object',
-        required: true
+        required: false
     )]
     #[PathIdParameter(
         type: 'Group ID',

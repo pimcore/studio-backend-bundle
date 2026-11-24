@@ -99,6 +99,12 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
         ElementInterface $element,
         ?User $user = null
     ): void {
+        if (!$sourceElement->isAllowed(ElementPermissions::VIEW_PERMISSION, $user)
+            || !$targetElement->isAllowed(ElementPermissions::VIEW_PERMISSION, $user)
+        ) {
+            return;
+        }
+
         // assets have no "save" workspace permission, saving an asset requires "publish"
         $permission = $element instanceof Asset
             ? ElementPermissions::PUBLISH_PERMISSION

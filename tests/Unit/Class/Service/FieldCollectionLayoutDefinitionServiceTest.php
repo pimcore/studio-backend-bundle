@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ConfigLayoutDefinitionHydr
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\FieldCollectionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\LayoutDefinitionService;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricherInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -137,6 +138,7 @@ final class FieldCollectionLayoutDefinitionServiceTest extends Unit
             $this->createMock(LayoutDefinitionHydratorInterface::class),
             $this->createMock(ConfigLayoutDefinitionHydratorInterface::class),
             $this->createMock(EventDispatcherInterface::class),
+            $this->createMock(ActiveGroupTitleEnricherInterface::class),
         );
     }
 }

@@ -29,22 +29,20 @@ use function sprintf;
 /**
  * @internal
  */
-final readonly class MailService implements MailServiceInterface
+final class MailService implements MailServiceInterface
 {
     private const string RESET_MAIL_TEXT = 'Login to pimcore and change your password using the following link. ' .
         "This temporary login link will expire in 24 hours: \r\n\r\n%s";
 
-    private string $domain;
+    private ?array $systemSettings = null;
 
     public function __construct(
-        private SettingsProviderInterface $systemSettingsProvider,
-        private RouterInterface $router,
-        private EventDispatcherInterface $eventDispatcher,
-        private ToolResolverInterface $toolResolver,
-        private string $fromEmail,
+        private readonly SettingsProviderInterface $systemSettingsProvider,
+        private readonly RouterInterface $router,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly ToolResolverInterface $toolResolver,
+        private readonly string $fromEmail,
     ) {
-        $settings = $this->systemSettingsProvider->getSettings();
-        $this->domain = $settings['main_domain'];
     }
 
     /**
@@ -52,12 +50,13 @@ final readonly class MailService implements MailServiceInterface
      */
     public function sendResetPasswordMail(UserInterface $user, string $token, ?string $loginUrl = null): void
     {
-        if (!$this->domain) {
+        $domain = $this->getMainDomain();
+        if (!$domain) {
             throw new DomainConfigurationException();
         }
 
         $context = $this->router->getContext();
-        $context->setHost($this->domain);
+        $context->setHost($domain);
 
         if ($loginUrl === null) {
             $loginUrl = $this->router->generate(
@@ -86,5 +85,16 @@ final readonly class MailService implements MailServiceInterface
                 throw new SendMailException($exception->getMessage());
             }
         }
+    }
+
+    /**
+     * Resolved on first use and memoised: the system settings cannot be read in the constructor,
+     * because they throw when a configured error document is missing.
+     */
+    private function getMainDomain(): string
+    {
+        $this->systemSettings ??= $this->systemSettingsProvider->getSettings();
+
+        return $this->systemSettings['main_domain'];
     }
 }

@@ -620,6 +620,10 @@ element_get_subtype_description: |
   Get the subtype of the element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing ID of an element of the provided <strong>{elementType}</strong>.
 element_get_subtype_success_response: Subtype of the element
 element_get_subtype_summary: Get subtype of the element by id and element type path parameter
+element_get_published_state_description: |
+  Get the published state of the element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing ID of an element of the provided <strong>{elementType}</strong>. <br> The state is read from the element itself and only returned if the user may view the element. Assets have no published state and report <strong>null</strong>.
+element_get_published_state_success_response: Published state of the element
+element_get_published_state_summary: Get published state of the element by id and element type path parameter
 element_get_tree_location_description: |
   Get the location data of the element based on the given <strong>{elementType}</strong>, <strong>{id}</strong> and <strong>{perspectiveId}</strong>. <br> 
   The <strong>{ids}</strong> must be an existing ID of an element of the provided <strong>{elementType}</strong> and existing perspective ID.
@@ -686,6 +690,14 @@ error_folder_exists: Folder already exists
 error_element_not_found: Element not found
 error_environment: Environment error
 error_invalid_argument: Invalid argument
+error_undeclared_variant: The value names a variant the key does not declare
+error_duplicate_value_qualifier: Two values of the key address the same variant and position
+error_engine_capability_missing: The engine of the key's store does not support this write
+error_key_not_repeatable: The key does not declare that it holds more than one value per variant
+error_filter_type_unsupported: No filter is supported for the type of the key
+error_filter_key_not_indexed: The key is excluded from the search index and cannot be filtered
+error_filter_variant_undeclared: The key does not declare the variant the filter names
+error_filter_definition_unresolvable: The definition of the key cannot be read, so no filter can be applied to it
 error_inconsistent_asset_type: Inconsistent asset binary type
 error_recycle_bin_restore: Cannot restore element from recycle bin
 error_recycle_bin_restore_missing_parent: Cannot restore element from recycle bin, parent element is missing
@@ -2104,6 +2116,34 @@ classification_store_configuration_store_create_success_response: Created store 
 classification_store_configuration_store_update_description: Update an existing classification store configuration by ID
 classification_store_configuration_store_update_summary: Update a store
 classification_store_configuration_store_update_success_response: Updated store configuration
+classification_store_configuration_store_export_description: |
+  Download the configuration of one classification store as a single JSON file: the store, its sub groups,
+  collections, groups and keys, and the collection-group and key-group assignments between them.
+  Every entry is named by its identifier, so the file can be applied to another installation.
+  Refused with 409 while the store, or any collection, group, sub group or key in it, carries no identifier.
+classification_store_configuration_store_export_summary: Export a store configuration
+classification_store_configuration_store_export_success_response: The store configuration as a JSON download
+classification_store_configuration_store_import_description: |
+  Apply a store configuration file to the store given in the URL, as a multipart <strong>file</strong> field.
+  A file describing the store in the URL is restored into it: entries are matched by identifier, falling back
+  to the name for a row that carries no identifier yet. An entry whose identifier the store does not carry is
+  created, an entry whose name the store holds under another identifier is skipped and named in the report,
+  and nothing is deleted - what the store carries and the file does not is left in place and named too.
+  A file describing another store is imported as a duplicate instead: every sub group, collection, group and
+  key gets a freshly generated identifier, the store keeps its own identifier and name, and the configuration
+  the store held is removed and replaced by the file's. Importing the same file again gives the same store
+  rather than a second copy. The report says which of the two happened and names what was removed.
+  A replace also deletes data: removing a group removes every stored Classification Store value under it, on
+  both storage engines, through the cascade of the value tables, and importing the file again does not bring
+  those values back. <strong>storedValuesRemoved</strong> says so - it is a statement about the import, not a
+  count of the values.
+  Send <strong>dryRun</strong> to get the same report without writing anything, which is how a replace can be
+  shown before it happens. Refused with 409 when the configuration cannot be applied - including a key whose
+  field type is withdrawn as a key type, or wraps one no key is defined with, or cannot be held by the storage
+  engine of the store - and with 422 when the file is not a parseable
+  artifact.
+classification_store_configuration_store_import_summary: Import a store configuration
+classification_store_configuration_store_import_success_response: Report of what the import created, updated, adopted, skipped, removed and left in place
 classification_store_configuration_store_tree_description: Get all classification store configurations as a flat tree list
 classification_store_configuration_store_tree_summary: Get store tree
 classification_store_configuration_store_tree_success_response: List of store tree nodes
@@ -2121,9 +2161,35 @@ classification_store_configuration_group_update_success_response: Updated group 
 classification_store_configuration_group_delete_description: Delete a classification store group configuration by ID
 classification_store_configuration_group_delete_summary: Delete a group
 classification_store_configuration_group_delete_success_response: Successfully deleted group configuration
+classification_store_configuration_sub_group_collection_description: |
+    Get a paginated list of classification store sub group configurations of a store.
+    You can specify filters, sorting and pagination in the request body.
+classification_store_configuration_sub_group_collection_summary: List sub group configurations
+classification_store_configuration_sub_group_collection_success_response: Paginated list of sub group configurations
+classification_store_configuration_sub_group_create_description: Create a new classification store sub group configuration within a store
+classification_store_configuration_sub_group_create_summary: Create a new sub group
+classification_store_configuration_sub_group_create_success_response: Created sub group configuration
+classification_store_configuration_sub_group_update_description: Update an existing classification store sub group configuration by ID
+classification_store_configuration_sub_group_update_summary: Update a sub group
+classification_store_configuration_sub_group_update_success_response: Updated sub group configuration
+classification_store_configuration_sub_group_delete_description: |
+    Delete a classification store sub group configuration by ID.
+    Refused with 409 while a key assignment of the store is still assigned to the sub group.
+classification_store_configuration_sub_group_delete_summary: Delete a sub group
+classification_store_configuration_sub_group_delete_success_response: Successfully deleted sub group configuration
 classification_store_configuration_key_collection_description: |
   Get a paginated list of classification store key configurations.
   Supports filtering, sorting, and pagination via the collection request body.
+  By default the list holds the enabled keys only. Setting `disabledOnly` to true switches the list to the
+  disabled keys only, including keys that were never enabled; it never adds them to the enabled ones.
+  Filters, sorting, paging and the total count apply within the selected list.
+  Setting `excludeKeysOfGroupId` to the id of a group leaves the keys already assigned to that group out
+  of the list, so that filters, sorting, paging and the total count all apply to the keys still available
+  for it. Omitted, the enabled or disabled selection above is left untouched.
+classification_store_configuration_key_collection_disabled_only: Return the disabled keys instead of the enabled ones
+classification_store_configuration_key_collection_exclude_keys_of_group_id: |
+  Leave out the keys already assigned to this group, from the list and from the total count.
+  Omit it to leave the enabled or disabled selection untouched.
 classification_store_configuration_key_collection_summary: List key configurations
 classification_store_configuration_key_collection_success_response: Paginated list of key configurations
 classification_store_configuration_key_create_description: Create a new classification store key configuration within a store
@@ -2137,6 +2203,16 @@ classification_store_configuration_key_delete_description: |
   The key is not permanently removed but disabled (enabled is set to false).
 classification_store_configuration_key_delete_summary: Disable a key (soft-delete)
 classification_store_configuration_key_delete_success_response: Successfully disabled key configuration
+classification_store_configuration_key_restore_description: |
+  Re-enable a disabled classification store key configuration by ID.
+  Re-enabling restores the key configuration. This endpoint neither deletes nor re-creates any group assignment —
+  whether a key's assignments survive being disabled is decided by the disable itself.
+  The endpoint writes the key's enabled flag and nothing else. A key that is already enabled is returned unchanged.
+  Note: disabling a key removes its group assignments, so a restored key belongs to no group, and its sorter,
+  mandatory flags and per-assignment overrides are gone. This endpoint creates no assignment and nothing else restores
+  them.
+classification_store_configuration_key_restore_summary: Re-enable a disabled key
+classification_store_configuration_key_restore_success_response: The re-enabled key configuration
 classification_store_configuration_collection_collection_description: |
   Get a paginated list of classification store collection configurations.
   Supports filtering, sorting, and pagination via the collection filter parameter.
@@ -2171,7 +2247,7 @@ classification_store_configuration_key_group_relation_collection_description: |
   The groupId query parameter is required. Returns key details with layout definition.
 classification_store_configuration_key_group_relation_collection_summary: List key-group relations
 classification_store_configuration_key_group_relation_collection_success_response: Paginated list of key-group relations
-classification_store_configuration_key_group_relation_create_description: Create or update a key-group relation with key ID, group ID, optional sorter and mandatory flag
+classification_store_configuration_key_group_relation_create_description: Create or update a key-group relation with key ID, group ID, optional sorter and mandatory flag, and the optional per-assignment definition override, sub group and metadata. Each of the three is left as stored when the payload omits it and cleared when the payload sends it as null
 classification_store_configuration_key_group_relation_create_summary: Create or update a key-group relation
 classification_store_configuration_key_group_relation_create_success_response: Created or updated key-group relation
 classification_store_configuration_key_group_relation_delete_description: Delete a key-group relation by key ID and group ID
@@ -2180,6 +2256,7 @@ classification_store_configuration_key_group_relation_delete_success_response: S
 classification_store_configuration_get_page_description: |
   Calculate the page number where a specific item (key or group) is located within a paginated listing.
   Useful for navigating directly to the page containing a specific item.
+classification_store_configuration_get_page_disabled_only: Locate a key in the list of disabled keys instead of the enabled ones (keys only)
 classification_store_configuration_get_page_summary: Get page number for a specific item
 classification_store_configuration_get_page_success_response: Page number where the item is located
 data_object_get_grid_preview_description: Gives you a preview of an Advanced Column Grid for a given Data Object.
@@ -2332,6 +2409,10 @@ ownership_management_delete_configurations_summary: Delete configurations
 ownership_management_delete_configurations_description: Deletes one or more configurations of the given type.
 ownership_management_delete_configurations_success_response: Configurations deleted successfully
 ownership_management_delete_configurations_created_response: A job run was created to delete the configurations asynchronously
+tag_index_sync_description: Operations to bring the search index back in line with the database.
+index_sync_start_summary: Synchronize the search index
+index_sync_start_description: Starts a background job that updates the mappings of all search indices and queues every data object, asset and document for re-indexing. Existing indices are updated in place; only an index whose changed mapping cannot be applied to the documents it already holds (e.g. after a field type change) is recreated and refilled. Requires the system settings permission.
+index_sync_start_created_response: A job run was created to synchronize the search index asynchronously
 notification_get_subscriptions_description: Get the current user's notification preferences, merged with the defaults of every registered notification type
 notification_get_subscriptions_summary: Get notification preferences for the current user
 notification_get_subscriptions_success_response: Notification preferences for the current user

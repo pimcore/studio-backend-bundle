@@ -56,6 +56,20 @@ final class GroupDetail implements AdditionalAttributesInterface
             nullable: true
         )]
         private readonly ?int $modificationDate = null,
+        #[Property(
+            description: 'Opaque identifier of the group, assigned by the system and never writable',
+            type: 'string',
+            example: '01K9T0ZQ0VX8W4S1R7J3A2B5C6',
+            nullable: true
+        )]
+        private readonly ?string $identifier = null,
+        #[Property(
+            description: 'Free-form pairs the group carries, as stored; null where it holds none',
+            type: 'object',
+            example: ['source' => 'erp'],
+            nullable: true
+        )]
+        private readonly ?array $customMetadata = null,
     ) {
     }
 
@@ -87,5 +101,18 @@ final class GroupDetail implements AdditionalAttributesInterface
     public function getModificationDate(): ?int
     {
         return $this->modificationDate;
+    }
+
+    public function getIdentifier(): ?string
+    {
+        return $this->identifier;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function getCustomMetadata(): ?array
+    {
+        return $this->customMetadata;
     }
 }

@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Email\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Email\MappedParameter\EmailLogParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Model\Tool\Email\Log;
 use Pimcore\Model\Tool\Email\Log\Listing;
 
@@ -25,7 +25,7 @@ use Pimcore\Model\Tool\Email\Log\Listing;
 interface EmailLogRepositoryInterface
 {
     public function getListing(
-        CollectionParameters $parameters,
+        EmailLogParameters $parameters,
         ?string $email = null,
     ): Listing;
 

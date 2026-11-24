@@ -43,11 +43,9 @@ final readonly class FilterMapperService implements FilterMapperServiceInterface
      */
     public function getFilterParameters(CollectionFilterParameter $parameters): FilterParameter
     {
-        $filterParameters = new FilterParameter();
-        if ($parameters->getFilters()) {
-            $filterParameters = $this->map($parameters);
-        }
-
-        return $filterParameters;
+        // Mapped unconditionally: the mapper is what turns the page and page size into the
+        // column filters PaginationFilter reads, and an omitted `filters` has to end up with
+        // the defaults rather than with no paging at all.
+        return $this->map($parameters);
     }
 }

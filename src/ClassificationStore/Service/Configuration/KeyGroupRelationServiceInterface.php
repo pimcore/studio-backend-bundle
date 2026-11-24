@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationDetail;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
@@ -35,6 +36,8 @@ interface KeyGroupRelationServiceInterface
 
     /**
      * @throws ElementSavingFailedException
+     * @throws InvalidArgumentException
+     * @throws NotFoundException
      */
     public function createOrUpdateKeyGroupRelation(
         KeyGroupRelationCreate $parameters

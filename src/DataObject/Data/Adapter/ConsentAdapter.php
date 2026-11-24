@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ConsentData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\DataObject\Consent\Service;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
@@ -32,6 +33,8 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class ConsentAdapter implements SetterDataInterface, DataNormalizerInterface
 {
+    use ValidateObjectDataTrait;
+
     public function __construct(
         private Service $service
     ) {
@@ -52,8 +55,10 @@ final readonly class ConsentAdapter implements SetterDataInterface, DataNormaliz
         $value = $data[$key] ? $data[$key]['consent'] : null;
         $noteId = null;
 
-        /** @var Consent|null $oldData */
-        $oldData = $element->get($key);
+        // inside a container (e.g. a classification store key) $key is not a class field, so the
+        // current value is read through the context, and an unreadable one counts as not given
+        $currentValue = $this->getValidFieldValue($element, $key, $contextData);
+        $oldData = $currentValue instanceof Consent ? $currentValue : null;
 
         if ($oldData?->getConsent() !== $value) {
             if ($value) {

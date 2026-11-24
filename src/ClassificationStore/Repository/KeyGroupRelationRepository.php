@@ -13,21 +13,37 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
+use Doctrine\DBAL\ArrayParameterType;
+use Doctrine\DBAL\Exception as DBALException;
+use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
-use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
+use function array_unique;
+use function array_values;
 use function count;
+use function sprintf;
 
 /**
  * @internal
  */
 final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepositoryInterface
 {
+    /**
+     * Every column, rather than `id` and `localized`: `composer.json` allows a core whose
+     * `classificationstore_keys` has no `localized` column, and naming the column would fail against
+     * one of those instead of reporting that no key states a flag. This is the single statement the
+     * per-row `KeyConfig::getById()` calls collapse into, and it reads the same rows those did.
+     */
+    private const string LOCALIZATION_QUERY = 'SELECT * FROM `%s` WHERE `id` IN (?)';
+
     public function __construct(
         private GroupConfigRepositoryInterface $groupConfigRepository,
-        private SearchHelperServiceInterface $searchHelperService
+        private SearchHelperServiceInterface $searchHelperService,
+        private DbResolverInterface $dbResolver,
     ) {
     }
 
@@ -55,33 +71,51 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
     /**
      * {@inheritdoc}
      */
-    public function getByGroupId(int $groupId): array
+    public function getByGroupIds(array $groupIds): array
     {
+        if (empty($groupIds)) {
+            return [];
+        }
+
         $listing = new Listing();
-        $listing->setOrder('ASC');
-        $listing->setOrderKey('id');
-        $listing->setCondition('groupID = ?', [$groupId]);
+        $this->applyGroupKeyOrder($listing);
+        $this->applyGroupIdsFilter($listing, $groupIds);
 
         return $listing->load();
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
-    public function getByKeyGroupId(int $keyId, int $groupId): KeyGroupRelation
+    public function getKeyLocalizationFlags(array $keyIds): array
     {
-        $listing = new Listing();
-        $listing->setOrder('ASC');
-        $listing->addConditionParam('keyId = ?', $keyId);
-        $listing->addConditionParam('groupId = ?', $groupId);
+        $keyIds = array_values(array_unique($keyIds));
 
-        $list = $listing->load();
-
-        if (count($list) !== 1) {
-            throw new NotFoundException('KeyGroupRelation', $keyId);
+        if (empty($keyIds)) {
+            return [];
         }
 
-        return $list[0];
+        try {
+            $rows = $this->dbResolver->get()->fetchAllAssociative(
+                sprintf(self::LOCALIZATION_QUERY, KeyConfigDao::TABLE_NAME_KEYS),
+                [$keyIds],
+                [ArrayParameterType::INTEGER]
+            );
+        } catch (DBALException $e) {
+            throw new DatabaseException(
+                'Failed to read the localization flags of the keys: ' . $e->getMessage(),
+                $e
+            );
+        }
+
+        $flags = [];
+
+        foreach ($rows as $row) {
+            $flag = $row[KeyLocalizationResolverInterface::LOCALIZED_COLUMN] ?? null;
+            $flags[(int) $row['id']] = $flag === null ? null : (bool) $flag;
+        }
+
+        return $flags;
     }
 
     private function getBaseListing(int $storeId, ?array $groupIds = null, ?string $searchTerm = null): Listing
@@ -92,13 +126,24 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
         );
 
         $listing = new Listing();
-        $listing->setOrder('ASC');
-        $listing->setOrderKey('sorter');
+        $this->applyStoreKeyOrder($listing);
         $this->applyGroupIdsFilter($listing, $groupIds);
 
         $this->searchHelperService->applyKeyGroupRelationSearchFilter($listing, $searchTerm);
 
         return $listing;
+    }
+
+    private function applyGroupKeyOrder(Listing $listing): void
+    {
+        $listing->setOrderKey(['sorter', 'id']);
+        $listing->setOrder(['ASC', 'ASC']);
+    }
+
+    private function applyStoreKeyOrder(Listing $listing): void
+    {
+        $listing->setOrderKey(['groupId', 'sorter', 'id']);
+        $listing->setOrder(['ASC', 'ASC', 'ASC']);
     }
 
     private function applyGroupIdsFilter(Listing $list, array $groupIds): void

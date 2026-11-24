@@ -18,10 +18,12 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowPermissionsAwareInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowStatesAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowStatesTrait;
 
 #[Schema(
     schema: 'Document',
@@ -40,10 +42,14 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
     ],
     type: 'object'
 )]
-class Document extends Element implements AdditionalAttributesInterface, WorkflowPermissionsAwareInterface
+class Document extends Element implements
+    AdditionalAttributesInterface,
+    WorkflowPermissionsAwareInterface,
+    WorkflowStatesAwareInterface
 {
     use AdditionalAttributesTrait;
     use CustomAttributesTrait;
+    use WorkflowStatesTrait;
 
     public function __construct(
         #[Property(description: 'Full path', type: 'string', example: '/path/to/document')]

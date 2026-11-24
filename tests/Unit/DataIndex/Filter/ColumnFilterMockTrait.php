@@ -21,12 +21,16 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
  */
 trait ColumnFilterMockTrait
 {
-    public function getColumnFilterMock(string $key, string $type, mixed $value): ColumnFiltersParameterInterface
-    {
+    public function getColumnFilterMock(
+        string $key,
+        string $type,
+        mixed $value,
+        ?string $locale = null
+    ): ColumnFiltersParameterInterface {
         return $this->makeEmpty(ColumnFiltersParameterInterface::class, [
-            'getColumnFilterByType' => function () use ($key, $type, $value) {
+            'getColumnFilterByType' => function () use ($key, $type, $value, $locale) {
                 return [
-                    new ColumnFilter($key, $type, $value),
+                    new ColumnFilter($key, $type, $value, $locale),
                 ];
             },
         ]);

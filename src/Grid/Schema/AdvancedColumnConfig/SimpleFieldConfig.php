@@ -33,6 +33,20 @@ final readonly class SimpleFieldConfig
         private ?int $groupId = null,
         #[Property(description: 'Classification store key id', type: 'integer', example: 1, nullable: true)]
         private ?int $keyId = null,
+        #[Property(
+            description: 'Classification store group identifier',
+            type: 'string',
+            example: 'product-data',
+            nullable: true
+        )]
+        private ?string $groupIdentifier = null,
+        #[Property(
+            description: 'Classification store key identifier',
+            type: 'string',
+            example: 'weight',
+            nullable: true
+        )]
+        private ?string $keyIdentifier = null,
     ) {
     }
 
@@ -49,5 +63,15 @@ final readonly class SimpleFieldConfig
     public function getKeyId(): ?int
     {
         return $this->keyId;
+    }
+
+    public function getGroupIdentifier(): ?string
+    {
+        return $this->groupIdentifier;
+    }
+
+    public function getKeyIdentifier(): ?string
+    {
+        return $this->keyIdentifier;
     }
 }

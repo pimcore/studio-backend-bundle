@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
@@ -24,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 interface KeyGroupRelationServiceInterface
 {
     /**
+     * @throws DatabaseException
      * @throws Exception
      * @throws NotFoundException
      */

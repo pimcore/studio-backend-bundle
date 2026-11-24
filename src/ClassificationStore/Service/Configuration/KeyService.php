@@ -16,14 +16,16 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configu
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event\Configuration\GetPageEvent;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event\Configuration\KeyDetailEvent;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\KeyCollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GetPageParameters;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GetPageResponse;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\OptionsProviderDefaultsTrait;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
@@ -39,8 +41,10 @@ final readonly class KeyService implements KeyServiceInterface
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
         private FilterMapperServiceInterface $filterMapper,
+        private KeyRelationResolverInterface $keyRelationResolver,
         private KeyRepositoryInterface $keyConfigurationRepository,
         private KeyHydratorInterface $keyHydrator,
+        private SearchIndexRemapTriggerInterface $searchIndexRemapTrigger,
     ) {
     }
 
@@ -48,12 +52,14 @@ final readonly class KeyService implements KeyServiceInterface
      * {@inheritdoc}
      */
     public function listKeys(
-        CollectionFilterParameter $parameters,
+        KeyCollectionParameters $parameters,
         int $storeId,
     ): Collection {
         $listing = $this->keyConfigurationRepository->getListing(
             $this->filterMapper->getFilterParameters($parameters),
-            $storeId
+            $storeId,
+            $parameters->isDisabledOnly(),
+            $parameters->getExcludeKeysOfGroupId()
         );
         $configs = $listing->load();
         $items = [];
@@ -73,32 +79,52 @@ final readonly class KeyService implements KeyServiceInterface
      */
     public function createKey(KeyCreate $parameters): KeyDetail
     {
-        $keyConfig = $this->keyConfigurationRepository->create(
-            $parameters->getName(),
-            $parameters->getStoreId()
-        );
+        try {
+            $keyConfig = $this->keyConfigurationRepository->create(
+                $parameters->getName(),
+                $parameters->getStoreId(),
+                $parameters->getTitle()
+            );
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
 
         return $this->getHydratedKeyDetail($keyConfig);
     }
 
     /**
      * {@inheritdoc}
+     *
+     * The search index flag lives in the `definition` blob, so only an update that carries one can
+     * change it. The blob it is compared against is the one the write answers with rather than one
+     * read here: the repository holds the key row for its write and reports the definition that row
+     * carried when the lock was taken, which is the only value a comparison can be made against
+     * without a competing writer of the same key invalidating it in between
+     * ({@see \Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyWriteResult}).
      */
     public function updateKey(int $id, KeyUpdate $parameters): KeyDetail
     {
         $definition = $parameters->getDefinition();
+
         if ($definition !== null) {
-            $definition = $this->applyOptionsProviderDefaults($definition);
+            $parameters = $parameters->withDefinition($this->applyOptionsProviderDefaults($definition));
         }
 
-        $keyConfig = $this->keyConfigurationRepository->update(
-            $id,
-            $parameters->getName(),
-            $parameters->getTitle(),
-            $parameters->getDescription(),
-            $parameters->getType(),
-            $definition,
-        );
+        try {
+            $write = $this->keyConfigurationRepository->update($id, $parameters);
+            $keyConfig = $write->getConfig();
+
+            if ($definition !== null) {
+                $this->searchIndexRemapTrigger->noteFlagChange(
+                    $keyConfig->getStoreId(),
+                    $write->getDefinitionBefore(),
+                    $keyConfig->getDefinition()
+                );
+            }
+        } finally {
+            $this->keyRelationResolver->clear();
+            $this->searchIndexRemapTrigger->flush();
+        }
 
         return $this->getHydratedKeyDetail($keyConfig);
     }
@@ -108,7 +134,25 @@ final readonly class KeyService implements KeyServiceInterface
      */
     public function softDeleteKey(int $id): void
     {
-        $this->keyConfigurationRepository->softDelete($id);
+        try {
+            $this->keyConfigurationRepository->softDelete($id);
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function restoreKey(int $id): KeyDetail
+    {
+        try {
+            $keyConfig = $this->keyConfigurationRepository->restore($id);
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
+
+        return $this->getHydratedKeyDetail($keyConfig);
     }
 
     /**
@@ -123,6 +167,7 @@ final readonly class KeyService implements KeyServiceInterface
             $parameters->getPageSize(),
             $parameters->getSortKey(),
             $parameters->getSortDir(),
+            $parameters->isDisabledOnly(),
         );
         $response = $this->keyHydrator->hydrateGetPageResponse($page);
         $this->eventDispatcher->dispatch(

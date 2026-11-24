@@ -11,10 +11,20 @@ services:
     public: true
     tags: [ 'controller.service_arguments' ]
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Command\:
+    resource: '../src/ClassificationStore/Command'
+    public: true
+    tags: [ 'console.command' ]
+
 
   #
   # Services
   #
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricherInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricher
+    arguments:
+      $labelResolver: '@Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface'
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\CollectionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\CollectionService
@@ -27,9 +37,88 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService
+    arguments:
+      $labelResolver: '@Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface'
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyFilterResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyFilterResolver
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolver
+    arguments:
+      $localizationResolver: '@?Pimcore\Model\DataObject\Classificationstore\LocalizationResolver'
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyTypeEngineFitResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyTypeEngineFitResolver
+    arguments:
+      $keyTypeSupport: '@?Pimcore\Model\DataObject\Classificationstore\KeyTypeSupport'
+      $engineResolver: '@?Pimcore\Model\DataObject\Classificationstore\Engine\EngineResolver'
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyOptionsResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyOptionsResolver
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolver
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnVariantExpanderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnVariantExpander
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceLocatorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceLocator
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceService
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParserInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueParser
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\EngineCapabilityGuardInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\EngineCapabilityGuard
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializerInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValueSerializer
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolver
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ProvidedOptionNarrowerInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ProvidedOptionNarrower
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SubGroupLayoutResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SubGroupLayoutResolver
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperService
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolver
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTargetResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTargetResolver
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapQueueInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapQueue
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTrigger
+
+  # The queued remap rides the pimcore_core transport (see config/prepend/classification_store.yaml).
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Messenger\SearchIndexRemapHandler: ~
+
+  #
+  # Event subscribers
+  #
+
+  # Hands over the remaps the write surfaces had to keep because their key writes were still inside
+  # a transaction a caller owned, which is the one case they cannot flush after themselves.
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\EventSubscriber\SearchIndexRemapFlushSubscriber: ~
+
+  # A definition write changes which classes a store reaches, so it drops the coverage claims that
+  # were made against the set of classes as it stood before.
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\EventSubscriber\SearchIndexRemapStoreCoverageSubscriber: ~
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreService
@@ -88,6 +177,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\CollectionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\CollectionService
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\SubGroupServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\SubGroupService
+
 
   #
   # Configuration Repositories
@@ -99,11 +191,17 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepository
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\IdentifierMapRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\IdentifierMapRepository
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepository
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollectionRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollectionRepository
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepository
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollRelationRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollRelationRepository
@@ -128,6 +226,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\CollectionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\CollectionHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\SubGroupHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\SubGroupHydrator
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\CollectionRelationHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\CollectionRelationHydrator
 
@@ -144,3 +245,63 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyGroupRelationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyGroupRelationService
+
+
+  #
+  # Configuration Transfer
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryMapperInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryMapper
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilder
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParserInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\IdentifierGeneratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\IdentifierGenerator
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDuplicatorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDuplicator
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreMemberPurgerInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreMemberPurger
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcherInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcher
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyDiagnosticsInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyDiagnostics
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusalsInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusals
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactRelationWriterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactRelationWriter
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryWriterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryWriter
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ReconcilerInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Reconciler
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreTransferServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreTransferService
+
+
+  #
+  # Denormalizers
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Request\Configuration\KeyUpdateDenormalizer:
+    tags: [ 'serializer.normalizer' ]
+
+  # the engine resolver is optional: `composer.json` allows a core that does not ship one, and
+  # against such a core the store reports no engine and no capabilities, and a write needing a
+  # capability is refused because none is confirmed, rather than the bundle failing to boot
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolver
+    arguments:
+      $engineResolver: '@?Pimcore\Model\DataObject\Classificationstore\Engine\EngineResolver'

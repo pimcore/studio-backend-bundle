@@ -18,14 +18,21 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Cache\RuntimeCacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnReferenceServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnVariantExpander;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnVariantExpanderInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
@@ -38,6 +45,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnDefinitionLoaderInterf
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnResolverLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridService;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMergerInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ClassificationStoreConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ProvidedGridElement;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
@@ -45,6 +53,8 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowPermissionsAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\MultiValueServiceResolver;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Cache\RuntimeCache;
@@ -53,19 +63,65 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as ClassificationstoreField;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_map;
 
 /**
  * @internal
  */
 final class GridServiceTest extends Unit
 {
+    /**
+     * A classification store column filter resolves its identifiers in the store of the field of the
+     * filtered class, which it can only find when the filter carries the class id and not just the class
+     * name: a filter whose stored integer pair is stale would otherwise search with that pair, and a filter
+     * that carries identifiers alone would fail validation for a missing groupId.
+     */
+    public function testGetDataObjectGridPutsTheClassIdOnTheFilter(): void
+    {
+        $classDefinition = new ClassDefinition();
+        $classDefinition->setId('EV');
+        $classDefinition->setName('Ev');
+
+        $filter = new FilterParameter(columnFilters: [
+            ['key' => 'cs', 'type' => 'classificationstore.string', 'filterValue' => [
+                'groupId' => 99,
+                'keyId' => 98,
+                'groupIdentifier' => 'product-data',
+                'keyIdentifier' => 'weight',
+                'value' => 'needle',
+            ]],
+            ['key' => 'cs', 'type' => 'classificationstore.number', 'filterValue' => [
+                'groupIdentifier' => 'product-data',
+                'keyIdentifier' => 'height',
+                'value' => ['setting' => 'is', 'is' => 1],
+            ]],
+        ]);
+
+        $service = $this->createService(
+            gridSearch: $this->makeEmpty(GridSearchInterface::class, [
+                'searchDataObjects' => new DataObjectSearchResult([], 1, 10, 0),
+            ]),
+            classDefinitionResolver: $this->makeEmpty(ClassDefinitionResolverInterface::class, [
+                'getById' => $classDefinition,
+            ]),
+        );
+
+        $service->getDataObjectGrid(new GridParameter(folderId: 1, columns: [], filters: $filter), 'EV');
+
+        $this->assertSame('EV', $filter->getClassId());
+        // The class name the index is filtered by stays as it was.
+        $this->assertSame('Ev', $filter->getClassName());
+    }
+
     /**
      * A stale ElasticSearch index can reference an object that no longer exists in the
      * database (sync lag). A single missing element must not break the whole grid: it
@@ -626,6 +682,185 @@ final class GridServiceTest extends Unit
     }
 
     /**
+     * A Classification Store column gates on the language when a key of its store is localized, even
+     * where the class field is not: the keys decide their own languages. Without a locale the gate
+     * is the implicit read locale, which is the language the cell is then read for.
+     */
+    public function testGetGridDataForElementGatesAClassificationStoreColumnOfALocalizedKey(): void
+    {
+        $field = new ClassificationstoreField();
+        $field->setName('cs');
+        $classDefinition = new ClassDefinition();
+        $classDefinition->addFieldDefinition('cs', $field);
+        $element = $this->makeEmpty(Concrete::class, ['getClass' => $classDefinition, 'getClassId' => 'cs-class']);
+        $column = new Column(key: 'cs', locale: null, type: 'dataobject.classificationstore', group: null, config: []);
+        $keyLocalization = new InMemoryKeyLocalizationResolver();
+        $keyLocalization->flagKeyId(1, true);
+
+        $outcomes = [];
+        foreach ([['fr' => 1], ['de' => 1]] as $allowedView) {
+            $resolver = $this->createRecordingResolver();
+            $service = $this->createService(
+                serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => $element]),
+                dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                    'getLanguagePermissions' => $allowedView,
+                ]),
+                securityService: $this->makeEmpty(SecurityServiceInterface::class),
+                columnResolverLoader: $this->makeEmpty(ColumnResolverLoaderInterface::class, [
+                    'loadColumnResolvers' => ['dataobject.classificationstore' => $resolver],
+                ]),
+                toolResolver: $this->makeEmpty(ToolResolverInterface::class, ['isValidLanguage' => true]),
+                localeService: $this->makeEmpty(LocaleServiceInterface::class, ['getLocale' => 'de']),
+                keyLocalizationResolver: $keyLocalization,
+            );
+
+            $data = $service->getGridDataForElement(
+                new ColumnCollection([$column]),
+                null,
+                ElementTypes::TYPE_OBJECT,
+                1,
+                false,
+                $this->buildUser(isAdmin: false),
+            );
+            $outcomes[] = [$data['columns'][0]->getValue(), $resolver->wasCalled];
+        }
+
+        self::assertSame([[null, false], ['LEAKED', true]], $outcomes);
+    }
+
+    /**
+     * The gate asks the column's own key: a key that is not localized is read from the language
+     * independent bucket, so no language permission applies to it even where another key of the
+     * store is localized and the column carries a locale.
+     */
+    public function testGetGridDataForElementDoesNotGateAClassificationStoreColumnOfANonLocalizedKey(): void
+    {
+        $field = new ClassificationstoreField();
+        $field->setName('cs');
+        $classDefinition = new ClassDefinition();
+        $classDefinition->addFieldDefinition('cs', $field);
+        $element = $this->makeEmpty(Concrete::class, ['getClass' => $classDefinition, 'getClassId' => 'cs-class']);
+        $keyLocalization = new InMemoryKeyLocalizationResolver();
+        $keyLocalization->flagKeyId(1, true);
+        $keyLocalization->flagKeyId(2, false);
+
+        $outcomes = [];
+        foreach ([[null, 1], ['de', 1], [null, 2], ['de', 2]] as [$locale, $keyId]) {
+            $column = new Column(
+                key: 'cs',
+                locale: $locale,
+                type: 'dataobject.classificationstore',
+                group: null,
+                config: ['keyId' => $keyId]
+            );
+            $resolver = $this->createRecordingResolver();
+            $service = $this->createService(
+                serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => $element]),
+                dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                    'getLanguagePermissions' => ['fr' => 1, 'default' => 1],
+                ]),
+                securityService: $this->makeEmpty(SecurityServiceInterface::class),
+                columnResolverLoader: $this->makeEmpty(ColumnResolverLoaderInterface::class, [
+                    'loadColumnResolvers' => ['dataobject.classificationstore' => $resolver],
+                ]),
+                toolResolver: $this->makeEmpty(ToolResolverInterface::class, ['isValidLanguage' => true]),
+                localeService: $this->makeEmpty(LocaleServiceInterface::class, ['getLocale' => 'de']),
+                keyLocalizationResolver: $keyLocalization,
+            );
+
+            $data = $service->getGridDataForElement(
+                new ColumnCollection([$column]),
+                null,
+                ElementTypes::TYPE_OBJECT,
+                1,
+                false,
+                $this->buildUser(isAdmin: false),
+            );
+            $outcomes[] = $resolver->wasCalled;
+        }
+
+        self::assertSame([false, false, true, true], $outcomes);
+    }
+
+    /**
+     * A key that is not localized is gated on the language independent bucket it is read from, so a
+     * user who may not read it is denied on the export path too, which does not intersect with the
+     * permitted languages the way the adapter does. An empty locale is no locale.
+     */
+    public function testGetGridDataForElementGatesANonLocalizedKeyOnTheLanguageIndependentPermission(): void
+    {
+        $field = new ClassificationstoreField();
+        $field->setName('cs');
+        $classDefinition = new ClassDefinition();
+        $classDefinition->addFieldDefinition('cs', $field);
+        $element = $this->makeEmpty(Concrete::class, ['getClass' => $classDefinition, 'getClassId' => 'cs-class']);
+        $keyLocalization = new InMemoryKeyLocalizationResolver();
+        $keyLocalization->flagKeyId(1, false);
+        $keyLocalization->flagKeyId(2, true);
+
+        $outcomes = [];
+        foreach ([[1, 'de', ['de' => 1]], [1, 'de', ['de' => 1, 'default' => 1]], [2, '', ['de' => 1]]] as [$keyId, $locale, $allowedView]) {
+            $column = new Column(
+                key: 'cs',
+                locale: $locale,
+                type: 'dataobject.classificationstore',
+                group: null,
+                config: ['keyId' => $keyId]
+            );
+            $resolver = $this->createRecordingResolver();
+            $service = $this->createService(
+                serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => $element]),
+                dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                    'getLanguagePermissions' => $allowedView,
+                ]),
+                securityService: $this->makeEmpty(SecurityServiceInterface::class),
+                columnResolverLoader: $this->makeEmpty(ColumnResolverLoaderInterface::class, [
+                    'loadColumnResolvers' => ['dataobject.classificationstore' => $resolver],
+                ]),
+                toolResolver: $this->makeEmpty(ToolResolverInterface::class, ['isValidLanguage' => true]),
+                localeService: $this->makeEmpty(LocaleServiceInterface::class, ['getLocale' => 'de']),
+                keyLocalizationResolver: $keyLocalization,
+            );
+
+            $service->getGridDataForElement(
+                new ColumnCollection([$column]),
+                null,
+                ElementTypes::TYPE_OBJECT,
+                1,
+                false,
+                $this->buildUser(isAdmin: false),
+            );
+            $outcomes[] = $resolver->wasCalled;
+        }
+
+        self::assertSame([false, true, true], $outcomes);
+    }
+
+    private function createRecordingResolver(): ColumnResolverInterface&CoreElementColumnResolverInterface
+    {
+        return new class implements ColumnResolverInterface, CoreElementColumnResolverInterface {
+            public bool $wasCalled = false;
+
+            public function getType(): string
+            {
+                return 'dataobject.classificationstore';
+            }
+
+            public function supportedElementTypes(): array
+            {
+                return [ElementTypes::TYPE_OBJECT];
+            }
+
+            public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
+            {
+                $this->wasCalled = true;
+
+                return new ColumnData(key: 'cs', locale: $column->getLocale(), value: 'LEAKED', fieldType: 'input');
+            }
+        };
+    }
+
+    /**
      * A caller holding the element (built from another state than the database) passes it in:
      * the columns are resolved from that element and nothing is loaded by id.
      */
@@ -1053,6 +1288,7 @@ final class GridServiceTest extends Unit
     public static function malformedColumnProvider(): array
     {
         return [
+            'null type (PEES-1995)' => [['type' => null]],
             'non numeric width' => [['width' => 'abc']],
             'non array group' => [['group' => 'data_object']],
         ];
@@ -1151,6 +1387,129 @@ final class GridServiceTest extends Unit
                 return $this->workflowFlag;
             }
         };
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function savedColumn(array $config, ?string $locale = null, ?string $title = null): array
+    {
+        return [[
+            'key' => 'cs',
+            'locale' => $locale,
+            'type' => 'dataobject.classificationstore',
+            'group' => ['data_object'],
+            'config' => $title === null ? $config : [...$config, 'fieldDefinition' => ['title' => $title]],
+        ]];
+    }
+
+    private function createVariantService(
+        string $type,
+        string $definition,
+        ?ColumnReferenceServiceInterface $reference = null
+    ): GridService {
+        $keyConfig = new KeyConfig();
+        $keyConfig->setType($type);
+        $keyConfig->setDefinition($definition);
+
+        return $this->createService(columnVariantExpander: new ColumnVariantExpander(
+            $this->makeEmpty(KeyConfigResolverInterface::class, ['getById' => $keyConfig]),
+            new KeyQualifierResolver(new MultiValueServiceResolver()),
+            $reference ?? $this->makeEmpty(ColumnReferenceServiceInterface::class)
+        ));
+    }
+
+    public function testAColumnNamingItsKeyByIdentifiersIsExpandedByTheKeyTheyResolveTo(): void
+    {
+        $service = $this->createVariantService(
+            MultiValueServiceResolver::MULTI_VALUE_TYPE,
+            '{"variants":["Metric","Imperial"]}',
+            $this->makeEmpty(ColumnReferenceServiceInterface::class, [
+                'resolve' => new ClassificationStoreConfig(3, 4802),
+            ])
+        );
+
+        // the integer pair is stale: it is not the key the identifiers name
+        $columns = $service->getConfigurationForExport(
+            $this->savedColumn(
+                ['groupId' => 1, 'keyId' => 1, 'groupIdentifier' => 'g', 'keyIdentifier' => 'k'],
+                'en',
+                'Length'
+            ),
+            [$this->createExportableColumnConfiguration()],
+            'class'
+        );
+
+        $this->assertCount(3, $columns->getColumns());
+    }
+
+    public function testAColumnNamingItsKeyByIdentifiersIsKeptWithoutAClassToResolveThemIn(): void
+    {
+        $service = $this->createVariantService(
+            MultiValueServiceResolver::MULTI_VALUE_TYPE,
+            '{"variants":["Metric","Imperial"]}'
+        );
+
+        $columns = $service->getConfigurationForExport(
+            $this->savedColumn(
+                ['groupId' => 1, 'keyId' => 1, 'groupIdentifier' => 'g', 'keyIdentifier' => 'k']
+            ),
+            [$this->createExportableColumnConfiguration()]
+        );
+
+        $this->assertCount(1, $columns->getColumns());
+    }
+
+    public function testASavedColumnNamingAMultiValueKeyIsExpandedIntoOneColumnPerVariantAndTheDefaultSlot(): void
+    {
+        $service = $this->createVariantService(
+            MultiValueServiceResolver::MULTI_VALUE_TYPE,
+            '{"variants":["Metric","Imperial"],"multiValue":false}'
+        );
+
+        $columns = $service->getConfigurationForExport(
+            $this->savedColumn(['groupId' => 3, 'keyId' => 7], 'en', 'Length'),
+            [$this->createExportableColumnConfiguration()]
+        );
+
+        $this->assertCount(3, $columns->getColumns());
+        $this->assertSame(
+            ['Length#Metric (en)', 'Length#Imperial (en)', 'Length (en)'],
+            $service->getColumnKeys($columns)
+        );
+        $this->assertSame(
+            ['Metric', 'Imperial', null],
+            array_map(static fn (Column $column): ?string => $column->getConfig()['variant'] ?? null, $columns->getColumns())
+        );
+    }
+
+    public function testAColumnSupplyingAVariantIsNotExpandedAgain(): void
+    {
+        $service = $this->createVariantService(
+            MultiValueServiceResolver::MULTI_VALUE_TYPE,
+            '{"variants":["Metric","Imperial"]}'
+        );
+
+        $columns = $service->getConfigurationForExport(
+            $this->savedColumn(['groupId' => 3, 'keyId' => 7, 'variant' => 'Metric']),
+            [$this->createExportableColumnConfiguration()]
+        );
+
+        $this->assertCount(1, $columns->getColumns());
+    }
+
+    public function testTheHeaderOfAColumnOfAKeyThatIsNotMultiValueIsUnchanged(): void
+    {
+        $service = $this->createVariantService('input', '{"fieldtype":"input","variants":["Metric"]}');
+
+        $columns = $service->getConfigurationForExport(
+            $this->savedColumn(['groupId' => 3, 'keyId' => 7], 'en', 'Length'),
+            [$this->createExportableColumnConfiguration()]
+        );
+
+        $this->assertSame(['Length (en)'], $service->getColumnKeys($columns));
     }
 
     private function createExportableColumnConfiguration(): ColumnConfiguration
@@ -1315,6 +1674,9 @@ final class GridServiceTest extends Unit
         ?LocaleServiceInterface $localeService = null,
         ?EventDispatcherInterface $eventDispatcher = null,
         ?RuntimeCacheResolverInterface $runtimeCacheResolver = null,
+        ?ClassDefinitionResolverInterface $classDefinitionResolver = null,
+        ?ColumnVariantExpanderInterface $columnVariantExpander = null,
+        ?KeyLocalizationResolverInterface $keyLocalizationResolver = null,
     ): GridService {
         return new GridService(
             $this->makeEmpty(ColumnDefinitionLoaderInterface::class),
@@ -1326,7 +1688,7 @@ final class GridServiceTest extends Unit
             ]),
             $securityService ?? $this->makeEmpty(SecurityServiceInterface::class),
             $serviceResolver ?? $this->makeEmpty(ServiceResolverInterface::class),
-            $this->makeEmpty(ClassDefinitionResolverInterface::class),
+            $classDefinitionResolver ?? $this->makeEmpty(ClassDefinitionResolverInterface::class),
             $localizedFieldResolver ?? $this->makeEmpty(LocalizedFieldResolverInterface::class),
             $workflowPermissionMerger ?? $this->makeEmpty(WorkflowPermissionMergerInterface::class, [
                 'mergeWorkflowPermissions' => static fn (Permissions $permissions): Permissions => $permissions,
@@ -1336,6 +1698,13 @@ final class GridServiceTest extends Unit
             $toolResolver ?? $this->makeEmpty(ToolResolverInterface::class),
             $localeService ?? $this->makeEmpty(LocaleServiceInterface::class),
             $runtimeCacheResolver ?? $this->makeEmpty(RuntimeCacheResolverInterface::class),
+            $this->makeEmpty(ColumnReferenceServiceInterface::class),
+            $columnVariantExpander ?? new ColumnVariantExpander(
+                $this->makeEmpty(KeyConfigResolverInterface::class),
+                new KeyQualifierResolver(new MultiValueServiceResolver()),
+                $this->makeEmpty(ColumnReferenceServiceInterface::class)
+            ),
+            $keyLocalizationResolver ?? new InMemoryKeyLocalizationResolver(),
         );
     }
 }
