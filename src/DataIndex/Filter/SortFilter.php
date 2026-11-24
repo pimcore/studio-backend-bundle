@@ -39,7 +39,7 @@ final class SortFilter implements FilterInterface
     use MapsSystemColumnFieldTrait;
 
     // The index stores a quantity value as {value, unitId}, it is sorted by the number.
-    private const string QUANTITY_VALUE_SORT_SUFFIX = '.value';
+    private const string VALUE_FIELD_SUFFIX = '.value';
 
     public function __construct(
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
@@ -112,7 +112,7 @@ final class SortFilter implements FilterInterface
 
         $fieldDefinition = $this->getFieldDefinition($classDefinition, $sortFilter->getKeyWithOutLocale());
         if ($fieldDefinition instanceof QuantityValue) {
-            return $indexField . self::QUANTITY_VALUE_SORT_SUFFIX;
+            return $indexField . self::VALUE_FIELD_SUFFIX;
         }
 
         return $indexField;
