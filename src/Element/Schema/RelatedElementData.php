@@ -47,6 +47,24 @@ final readonly class RelatedElementData
     ) {
     }
 
+    /**
+     * The reference as it may be handed out as the target of a relation: without view permission on the
+     * element only its id and type remain (the user supplied both), while subtype, full path and publish
+     * state are withheld. With view permission the reference is returned as it is.
+     *
+     * Not applied by the constructor on purpose: a reference that is part of a configuration (the root
+     * folder of a tree widget, an error page of the system settings) has to keep its path for users who
+     * can only navigate through the element.
+     */
+    public function withoutRestrictedData(): self
+    {
+        if ($this->hasViewAccess) {
+            return $this;
+        }
+
+        return new self($this->id, $this->type, '', '', null, false);
+    }
+
     public function getId(): int
     {
         return $this->id;

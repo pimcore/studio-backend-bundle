@@ -74,7 +74,7 @@ final readonly class RelationDataService implements RelationDataServiceInterface
                 continue;
             }
 
-            $data[] = $this->elementDataService->getRelatedElementData($relation);
+            $data[] = $this->elementDataService->getRelatedElementData($relation)->withoutRestrictedData();
         }
 
         return $data;
@@ -221,14 +221,21 @@ final readonly class RelationDataService implements RelationDataServiceInterface
         /** @var ElementSummaryDataServiceInterface $service */
         $service = $this->elementDataService;
 
-        return array_map($service->getRelatedElementDataFromSummary(...), $summaries);
+        return array_map(
+            static fn (array $summary): RelatedElementData => $service
+                ->getRelatedElementDataFromSummary($summary)
+                ->withoutRestrictedData(),
+            $summaries
+        );
     }
 
     public function getAdvancedRelationElementData(ElementMetadata|ObjectMetadata $relation): array
     {
 
         return [
-            'element' => $this->elementDataService->getRelatedElementData($relation->getElement()),
+            'element' => $this->elementDataService
+                ->getRelatedElementData($relation->getElement())
+                ->withoutRestrictedData(),
             'fieldName' => $relation->getFieldname(),
             'columns' => $relation->getColumns(),
             'data' => $relation->getData(),
@@ -285,10 +292,12 @@ final readonly class RelationDataService implements RelationDataServiceInterface
         ElementMetadata|ObjectMetadata $relation
     ): RelatedElementData {
         if ($this->elementDataService instanceof ElementSummaryDataServiceInterface) {
-            return $this->elementDataService->getRelatedElementDataFromSummary($summary);
+            return $this->elementDataService->getRelatedElementDataFromSummary($summary)->withoutRestrictedData();
         }
 
-        return $this->elementDataService->getRelatedElementData($relation->getElement());
+        return $this->elementDataService
+            ->getRelatedElementData($relation->getElement())
+            ->withoutRestrictedData();
     }
 
     public function getSetterData(

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Data\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Data\DataDenormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Data\DataNormalizerInterface;
@@ -39,7 +40,8 @@ final readonly class ManyToOneRelationAdapter implements
     use ElementProviderTrait;
 
     public function __construct(
-        private ServiceResolverInterface $serviceResolver
+        private ServiceResolverInterface $serviceResolver,
+        private ElementDataServiceInterface $elementDataService,
     ) {
     }
 
@@ -49,14 +51,18 @@ final readonly class ManyToOneRelationAdapter implements
             return null;
         }
 
+        // GHSA-pg5f-74vr-w237: a metadata relation can point at any element id, so path, subtype and
+        // publish state of the target are only handed out to a user who is allowed to view it.
+        $hasViewAccess = $this->elementDataService->getRelatedElementData($value)->getHasViewAccess();
+        $isPublished = ($value instanceof Concrete || $value instanceof Document) ? $value->isPublished() : null;
+
         return [
             'id' => $value->getId(),
             'type' => $this->getElementType($value, true),
-            'fullPath' => $value->getRealFullPath(),
-            'subtype' => $value->getType(),
-            'isPublished' => ($value instanceof Concrete || $value instanceof Document) ?
-                $value->isPublished() :
-                null,
+            'fullPath' => $hasViewAccess ? $value->getRealFullPath() : '',
+            'subtype' => $hasViewAccess ? $value->getType() : '',
+            'isPublished' => $hasViewAccess ? $isPublished : null,
+            'hasViewAccess' => $hasViewAccess,
         ];
     }
 

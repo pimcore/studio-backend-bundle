@@ -17,6 +17,8 @@ use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToOneRelationAdapter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToOneRelation;
 use Pimcore\Model\DataObject\Concrete;
@@ -89,11 +91,68 @@ final class ManyToOneRelationAdapterTest extends Unit
     }
 
     /**
+     * GHSA-pg5f-74vr-w237: the field can be pointed at any element id, so nothing but the id and type
+     * the user supplied is returned for a target the user may not view.
+     *
      * @throws Exception
      */
-    private function normalize(ElementInterface $element): array
+    public function testNormalizeWithholdsTargetDataWithoutViewAccess(): void
     {
-        $adapter = new ManyToOneRelationAdapter($this->makeEmpty(ServiceResolverInterface::class));
+        $document = $this->makeEmpty(Page::class, [
+            'isPublished' => true,
+            'getRealFullPath' => '/secret-docs/board',
+            'getType' => 'page',
+        ]);
+
+        $data = $this->normalize($document, hasViewAccess: false);
+
+        $this->assertSame('', $data['fullPath']);
+        $this->assertSame('', $data['subtype']);
+        $this->assertNull($data['isPublished']);
+        $this->assertFalse($data['hasViewAccess']);
+        $this->assertSame(['type' => 'document', 'id' => 7], [
+            'type' => $data['type'],
+            'id' => $data['id'],
+        ]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testNormalizeReturnsTargetDataWithViewAccess(): void
+    {
+        $document = $this->makeEmpty(Page::class, [
+            'isPublished' => true,
+            'getRealFullPath' => '/en/about',
+            'getType' => 'page',
+        ]);
+
+        $data = $this->normalize($document);
+
+        $this->assertSame('/en/about', $data['fullPath']);
+        $this->assertSame('page', $data['subtype']);
+        $this->assertTrue($data['isPublished']);
+        $this->assertTrue($data['hasViewAccess']);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function normalize(ElementInterface $element, bool $hasViewAccess = true): array
+    {
+        $adapter = new ManyToOneRelationAdapter(
+            $this->makeEmpty(ServiceResolverInterface::class),
+            $this->makeEmpty(ElementDataServiceInterface::class, [
+                'getRelatedElementData' => new RelatedElementData(
+                    7,
+                    'document',
+                    'page',
+                    '/en/about',
+                    null,
+                    $hasViewAccess
+                ),
+            ])
+        );
 
         return $adapter->normalize(
             $element,
