@@ -118,6 +118,7 @@ asset_get_tree_description: |
   Listing of all assets and asset folders in the system. <br>
   Returns only data which are relevant for the tree <br>
   You can use different query parameters to filter the assets and it is possible to exclude folders from the result completely
+asset_get_tree_success_description: Paginated assets with total count as header param as JSON
 asset_get_tree_success_response: Paginated assets with total count as header param as JSON
 asset_get_tree_summary: Get all asset data for the tree
 asset_get_video_types_description: |
@@ -461,11 +462,11 @@ document_add_translation_success_response: Successfully linked translation docum
 document_add_translation_summary: Link a new translation document to the existing document
 document_available_controllers_list_description: |
   List all available controllers for documents.
-document_available_controllers_list_response: List of available document controllers
+document_available_controllers_list_success_response: List of available document controllers
 document_available_controllers_list_summary: List document controllers
 document_available_templates_list_description: |
   List all available templates for documents.
-document_available_templates_list_response: List of available document templates
+document_available_templates_list_success_response: List of available document templates
 document_available_templates_list_summary: List document templates
 document_clone_created_response: Successfully copied parent document and created
   <strong>jobRun</strong> for copying children
@@ -882,6 +883,7 @@ metadata_predefined_update_success_response: Updated predefined metadata entry
 metadata_predefined_update_summary: Update predefined metadata entry by id
 note_delete_by_id_description: |
   Delete the note with the given <strong>{id}</strong>
+note_delete_by_id_success_description: Successfully deleted note
 note_delete_by_id_success_response: Successfully deleted note
 note_delete_by_id_summary: Delete note with given id
 note_element_create_description: |
@@ -1243,6 +1245,7 @@ tag_bundle_custom_reports_description: Custom reports bundle operations to e.g. 
 tag_bundle_seo_description: Seo bundle related operations (e.g. add/remove/list redirects)
 tag_create_description: |
   Create a new tag. <br> See the full description of request fields with the schema <strong>Create Tag Parameters</strong>
+tag_create_success_description: Created tag data as JSON
 tag_create_success_response: Created tag data as JSON
 tag_create_summary: Create a new tag
 tag_dataobjects_description: DataObject operations to get/update/create/delete data
@@ -1392,6 +1395,7 @@ translation_cleanup_by_domain_description: Cleanup translations for the given do
 translation_cleanup_by_domain_summary: Cleanup translations for the given domain
 translation_cleanup_by_domain_success_description: Translation cleaned up successfully
 translation_delete_by_key_description: Delete translations for given translation key
+translation_delete_by_key_success_description: Successfully deleted translations
 translation_delete_by_key_success_response: Successfully deleted translations
 translation_delete_by_key_summary: Delete translations
 translation_determine_csv_settings_for_import_description: |

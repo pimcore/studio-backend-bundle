@@ -62,7 +62,7 @@ final class GetSearchResultController extends AbstractApiController
     )]
     #[SearchGridRequestBody]
     #[SuccessResponse(
-        description: 'dcocument_get_search_success_response',
+        description: 'document_get_search_success_response',
         content: new CollectionJson(
             collection: new GridCollection()
         )

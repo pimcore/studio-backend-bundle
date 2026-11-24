@@ -44,7 +44,7 @@ final class VideoAdapterController extends AbstractApiController
         methods: ['GET']
     )]
     #[Get(
-        path: self::ROUTE,
+        path: self::PREFIX . self::ROUTE,
         operationId: 'settings_video_adapter_check',
         description: 'settings_video_adapter_check_description',
         summary: 'settings_video_adapter_check_summary',
