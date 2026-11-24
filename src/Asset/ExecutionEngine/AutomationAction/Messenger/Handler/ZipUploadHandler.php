@@ -44,7 +44,7 @@ final class ZipUploadHandler extends AbstractHandler
     private const LOCAL_ZIP_FOLDER_NAME = 'studio-backend-local';
 
     public function __construct(
-        private readonly FileSystem $fileSystem,
+        private readonly Filesystem $fileSystem,
         private readonly PublishServiceInterface $publishService,
         private readonly StorageServiceInterface $storageService,
         private readonly UserResolverInterface $userResolver,
