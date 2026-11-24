@@ -107,6 +107,52 @@ final class ElementUsageServiceTest extends Unit
     }
 
     /**
+     * GHSA-pg5f-74vr-w237: the rewrite must not happen without view access on the source.
+     *
+     * @throws Exception
+     */
+    public function testReplaceElementUsageSkipsRewriteWhenSourceIsNotViewable(): void
+    {
+        $user = new User();
+        $asset = $this->makeElement(Asset::class, $user, true, $calls, $saved);
+
+        $service = $this->createService(
+            assetServiceResolver: $this->makeEmpty(AssetServiceResolverInterface::class, [
+                'rewriteIds' => static function (): never {
+                    self::fail('rewriteIds must not be called without view access on the source');
+                },
+            ]),
+        );
+
+        $service->replaceElementUsage($this->makeObject(14, viewAllowed: false), $this->makeObject(13), $asset, $user);
+
+        $this->assertSame([], $calls);
+        $this->assertFalse($saved);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testReplaceElementUsageSkipsRewriteWhenTargetIsNotViewable(): void
+    {
+        $user = new User();
+        $asset = $this->makeElement(Asset::class, $user, true, $calls, $saved);
+
+        $service = $this->createService(
+            assetServiceResolver: $this->makeEmpty(AssetServiceResolverInterface::class, [
+                'rewriteIds' => static function (): never {
+                    self::fail('rewriteIds must not be called without view access on the target');
+                },
+            ]),
+        );
+
+        $service->replaceElementUsage($this->makeObject(14), $this->makeObject(13, viewAllowed: false), $asset, $user);
+
+        $this->assertSame([], $calls);
+        $this->assertFalse($saved);
+    }
+
+    /**
      * @throws Exception
      */
     private function createService(
@@ -128,9 +174,12 @@ final class ElementUsageServiceTest extends Unit
     /**
      * @throws Exception
      */
-    private function makeObject(int $id): Concrete
+    private function makeObject(int $id, bool $viewAllowed = true): Concrete
     {
-        return $this->makeEmpty(Concrete::class, ['getId' => $id]);
+        return $this->makeEmpty(Concrete::class, [
+            'getId' => $id,
+            'isAllowed' => static fn (string $type): bool => $viewAllowed,
+        ]);
     }
 
     /**
