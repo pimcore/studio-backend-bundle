@@ -722,6 +722,34 @@ final class RelationDataServiceTest extends Unit
     }
 
     /**
+     * Regression test: a version keeps a null for a related element that was deleted afterwards
+     * (pimcore/service-operations#1286); it must be skipped instead of failing the whole version.
+     *
+     * @throws Exception
+     */
+    public function testRelationElementsDataSkipsElementsThatCanNotBeLoaded(): void
+    {
+        $element = $this->makeEmpty(Concrete::class, ['getId' => 7]);
+        $service = new RelationDataService(
+            $this->makeEmpty(ElementDataServiceInterface::class, [
+                'getRelatedElementData' => static fn (Concrete $element) => new RelatedElementData(
+                    $element->getId(),
+                    'object',
+                    'Car',
+                    '/cars/seven'
+                ),
+            ]),
+            $this->makeEmpty(PatchServiceInterface::class),
+            $this->makeEmpty(ConcreteObjectResolverInterface::class),
+            $this->makeEmpty(RelatedElementRepositoryInterface::class)
+        );
+
+        $data = $service->getRelationElementsData([null, $element, null]);
+
+        $this->assertSame([7], array_map(static fn (RelatedElementData $d) => $d->getId(), $data));
+    }
+
+    /**
      * @throws Exception
      */
     private function createService(): RelationDataService

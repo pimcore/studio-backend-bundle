@@ -30,7 +30,9 @@ use Pimcore\Model\Element\ElementInterface;
 interface RelationDataServiceInterface
 {
     /**
-     * @param ElementInterface[] $relations
+     * Entries that are no element are skipped: a version keeps null for a related element deleted afterwards.
+     *
+     * @param array<ElementInterface|null> $relations
      *
      * @return RelatedElementData[]
      */

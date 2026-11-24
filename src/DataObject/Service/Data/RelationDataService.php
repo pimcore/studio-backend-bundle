@@ -59,7 +59,9 @@ final readonly class RelationDataService implements RelationDataServiceInterface
     }
 
     /**
-     * @param ElementInterface[] $relations
+     * Entries that are no element are skipped: a version keeps null for a related element deleted afterwards.
+     *
+     * @param array<ElementInterface|null> $relations
      *
      * @return RelatedElementData[]
      */
@@ -68,6 +70,10 @@ final readonly class RelationDataService implements RelationDataServiceInterface
         $data = [];
 
         foreach ($relations as $relation) {
+            if (!$relation instanceof ElementInterface) {
+                continue;
+            }
+
             $data[] = $this->elementDataService->getRelatedElementData($relation);
         }
 
