@@ -22,7 +22,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     schema: 'RelatedElementData',
     title: 'RelatedElementData',
-    required: ['id', 'type', 'subtype', 'fullPath', 'isPublished'],
+    required: ['id', 'type', 'subtype', 'fullPath', 'isPublished', 'hasViewAccess'],
     type: 'object'
 )]
 final readonly class RelatedElementData
@@ -38,7 +38,31 @@ final readonly class RelatedElementData
         private string $fullPath,
         #[Property(description: 'Is the element published', type: 'boolean', example: true)]
         private ?bool $isPublished = null,
+        #[Property(
+            description: 'Whether the current user is allowed to view the element',
+            type: 'boolean',
+            example: true
+        )]
+        private bool $hasViewAccess = true,
     ) {
+    }
+
+    /**
+     * The reference as it may be handed out as the target of a relation: without view permission on the
+     * element only its id and type remain (the user supplied both), while subtype, full path and publish
+     * state are withheld. With view permission the reference is returned as it is.
+     *
+     * Not applied by the constructor on purpose: a reference that is part of a configuration (the root
+     * folder of a tree widget, an error page of the system settings) has to keep its path for users who
+     * can only navigate through the element.
+     */
+    public function withoutRestrictedData(): self
+    {
+        if ($this->hasViewAccess) {
+            return $this;
+        }
+
+        return new self($this->id, $this->type, '', '', null, false);
     }
 
     public function getId(): int
@@ -64,5 +88,10 @@ final readonly class RelatedElementData
     public function getIsPublished(): ?bool
     {
         return $this->isPublished;
+    }
+
+    public function getHasViewAccess(): bool
+    {
+        return $this->hasViewAccess;
     }
 }

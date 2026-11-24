@@ -19,7 +19,9 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataT
 use Pimcore\Bundle\StudioBackendBundle\Element\Repository\RelatedElementRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\FieldKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
@@ -43,7 +45,10 @@ final readonly class RelationDataService implements RelationDataServiceInterface
     public function __construct(
         private ElementDataServiceInterface $elementDataService,
         private PatchServiceInterface $patchService,
-        private RelatedElementRepositoryInterface $relatedElementRepository
+        private RelatedElementRepositoryInterface $relatedElementRepository,
+        private SecurityServiceInterface $securityService,
+        /** @var array<string, array<string, mixed>> the workflow configuration, keyed by workflow name */
+        private array $workflowConfigs,
     ) {
     }
 
@@ -57,7 +62,7 @@ final readonly class RelationDataService implements RelationDataServiceInterface
         $data = [];
 
         foreach ($relations as $relation) {
-            $data[] = $this->elementDataService->getRelatedElementData($relation);
+            $data[] = $this->elementDataService->getRelatedElementData($relation)->withoutRestrictedData();
         }
 
         return $data;
@@ -67,7 +72,9 @@ final readonly class RelationDataService implements RelationDataServiceInterface
     {
 
         return [
-            'element' => $this->elementDataService->getRelatedElementData($relation->getElement()),
+            'element' => $this->elementDataService
+                ->getRelatedElementData($relation->getElement())
+                ->withoutRestrictedData(),
             'fieldName' => $relation->getFieldname(),
             'columns' => $relation->getColumns(),
             'data' => $relation->getData(),
@@ -79,6 +86,21 @@ final readonly class RelationDataService implements RelationDataServiceInterface
      */
     public function getAdvancedRelationElementsData(array $relations): array
     {
+        // GHSA-pg5f-74vr-w237: the rows of the repository carry no permission information, so they are
+        // only used for a user who may view every element. For everybody else the target is checked.
+        if (!$this->currentUserMayViewAllElements()) {
+            $data = [];
+            foreach ($relations as $relation) {
+                if ($relation->getElement() === null) {
+                    continue;
+                }
+
+                $data[] = $this->getAdvancedRelationElementData($relation);
+            }
+
+            return $data;
+        }
+
         $idsByType = [];
         foreach ($relations as $relation) {
             [$type, $id] = $this->getTargetReference($relation);
@@ -110,6 +132,38 @@ final readonly class RelationDataService implements RelationDataServiceInterface
         }
 
         return $data;
+    }
+
+    /**
+     * Like AbstractElement::isAllowed(): an admin may view every element, unless a workflow place denies
+     * the permission. Without a user nothing counts as viewable.
+     */
+    private function currentUserMayViewAllElements(): bool
+    {
+        try {
+            $user = $this->securityService->getCurrentUser();
+        } catch (UserNotFoundException) {
+            return false;
+        }
+
+        return $user->isAdmin() && !$this->hasWorkflowPermissions();
+    }
+
+    private function hasWorkflowPermissions(): bool
+    {
+        foreach ($this->workflowConfigs as $config) {
+            if (($config['enabled'] ?? true) === false) {
+                continue;
+            }
+
+            foreach ($config['places'] ?? [] as $place) {
+                if (!empty($place['permissions'])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public function getSetterData(
