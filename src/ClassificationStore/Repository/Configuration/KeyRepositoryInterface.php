@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Conf
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -162,5 +161,4 @@ interface KeyRepositoryInterface
         string $sortDir,
         bool $disabledOnly = false,
     ): int;
-
 }

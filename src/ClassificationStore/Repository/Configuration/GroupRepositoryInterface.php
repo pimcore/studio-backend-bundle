@@ -141,5 +141,4 @@ interface GroupRepositoryInterface
      * @throws NotFoundException
      */
     public function delete(int $id): void;
-
 }

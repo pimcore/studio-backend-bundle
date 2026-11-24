@@ -92,7 +92,7 @@ final class IdentifierLookupsTest extends Unit
             ['id' => '6', 'identifier' => self::SECOND_IDENTIFIER],
         ]));
 
-        $resolved = $this->idsByIdentifiers($repository, $entity, 
+        $resolved = $this->idsByIdentifiers($repository, $entity,
             self::STORE_ID,
             [self::FIRST_IDENTIFIER, self::SECOND_IDENTIFIER, self::FIRST_IDENTIFIER]
         );
