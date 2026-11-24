@@ -65,6 +65,36 @@ final class ElementTreeWidgetConfigHydratorTest extends Unit
         $this->assertSame(101242, $config->getRootFolder()->getId());
     }
 
+    /**
+     * The element data service reports "no view access" for a root the user can only navigate through.
+     * Its path still has to reach the widget: the tree is scoped by it (TreeQuery, parent path filter).
+     */
+    public function testCustomRootFolderKeepsItsPathWithoutViewAccess(): void
+    {
+        $rootPath = '/Products/Chucking Equipment';
+        $elementService = $this->makeEmpty(ElementServiceInterface::class, [
+            'getElementIdByPath' => 101242,
+            'getElementById' => $this->makeEmpty(ElementInterface::class),
+        ]);
+
+        $hydrator = $this->createHydrator($elementService, [
+            'getRelatedElementData' => new RelatedElementData(
+                101242,
+                ElementTypes::TYPE_OBJECT,
+                'folder',
+                $rootPath,
+                null,
+                false
+            ),
+        ]);
+
+        $rootFolder = $hydrator->hydrate($this->widgetData($rootPath))->getRootFolder();
+
+        $this->assertFalse($rootFolder->getHasViewAccess());
+        $this->assertSame($rootPath, $rootFolder->getFullPath());
+        $this->assertSame('folder', $rootFolder->getSubtype());
+    }
+
     public function testResolveCustomRootFolderFallsBackToDefaultRootWhenPathIsGone(): void
     {
         $throwNotFound = function () {
