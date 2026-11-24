@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\AssetVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\DataObjectVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\DocumentVersionEvent;
+use Pimcore\Bundle\StudioBackendBundle\Version\Model\DeletedRelationReference;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
@@ -157,7 +158,16 @@ final readonly class VersionDetailService implements VersionDetailServiceInterfa
             return;
         }
 
-        $references = $version->getUnresolvedReferences();
+        $references = array_map(
+            static fn (object $reference) => new DeletedRelationReference(
+                $reference->getFieldName(),
+                $reference->getLanguage(),
+                $reference->getIndex(),
+                $reference->getElementType(),
+                $reference->getElementId()
+            ),
+            $version->getUnresolvedReferences()
+        );
         if ($references === []) {
             return;
         }

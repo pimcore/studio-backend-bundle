@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Version\Model\DeletedRelationReference;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
-use Pimcore\Model\Version\UnresolvedReference;
 use function array_key_exists;
 use function count;
 use function in_array;
@@ -40,7 +40,7 @@ final readonly class DeletedRelationService implements DeletedRelationServiceInt
     {
         usort(
             $references,
-            static fn (UnresolvedReference $a, UnresolvedReference $b) => $a->getIndex() <=> $b->getIndex()
+            static fn (DeletedRelationReference $a, DeletedRelationReference $b) => $a->getIndex() <=> $b->getIndex()
         );
 
         foreach ($references as $reference) {
@@ -53,7 +53,7 @@ final readonly class DeletedRelationService implements DeletedRelationServiceInt
     private function addDeletedRelation(
         array $objectData,
         ClassDefinition $class,
-        UnresolvedReference $reference
+        DeletedRelationReference $reference
     ): array {
         $fieldName = $reference->getFieldName();
         $language = $reference->getLanguage();
@@ -102,7 +102,7 @@ final readonly class DeletedRelationService implements DeletedRelationServiceInt
         return $fieldType === self::SINGLE_RELATION || in_array($fieldType, self::MULTIPLE_RELATIONS, true);
     }
 
-    private function addEntry(mixed $value, Data $fieldDefinition, UnresolvedReference $reference): mixed
+    private function addEntry(mixed $value, Data $fieldDefinition, DeletedRelationReference $reference): mixed
     {
         $entry = $this->createEntry($reference);
 
@@ -117,7 +117,7 @@ final readonly class DeletedRelationService implements DeletedRelationServiceInt
         return $relations;
     }
 
-    private function createEntry(UnresolvedReference $reference): array
+    private function createEntry(DeletedRelationReference $reference): array
     {
         return [
             'id' => $reference->getElementId(),

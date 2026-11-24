@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Version\Service;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
+use Pimcore\Bundle\StudioBackendBundle\Version\Model\DeletedRelationReference;
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\DeletedRelationService;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyRelation;
@@ -23,7 +24,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToManyObjectRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToManyRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToOneRelation;
-use Pimcore\Model\Version\UnresolvedReference;
 
 /**
  * Relations of a version to elements deleted afterwards are shown as deleted entries
@@ -38,7 +38,7 @@ final class DeletedRelationServiceTest extends Unit
         $result = (new DeletedRelationService())->addDeletedRelations(
             ['asset' => null, 'title' => 'Title'],
             $this->createClass(),
-            [new UnresolvedReference('asset', null, null, 'asset', 12)]
+            [new DeletedRelationReference('asset', null, null, 'asset', 12)]
         );
 
         $this->assertSame(
@@ -56,9 +56,9 @@ final class DeletedRelationServiceTest extends Unit
             ['relations' => [$first, $third], 'objects' => null],
             $this->createClass(),
             [
-                new UnresolvedReference('relations', null, 1, 'document', 2),
-                new UnresolvedReference('relations', null, 3, 'asset', 4),
-                new UnresolvedReference('objects', null, 0, 'object', 5),
+                new DeletedRelationReference('relations', null, 1, 'document', 2),
+                new DeletedRelationReference('relations', null, 3, 'asset', 4),
+                new DeletedRelationReference('objects', null, 0, 'object', 5),
             ]
         );
 
@@ -76,7 +76,7 @@ final class DeletedRelationServiceTest extends Unit
         $result = (new DeletedRelationService())->addDeletedRelations(
             ['localizedfields' => ['lrelation' => ['en' => null, 'de' => null]]],
             $this->createClass(),
-            [new UnresolvedReference('lrelation', 'de', null, 'object', 7)]
+            [new DeletedRelationReference('lrelation', 'de', null, 'object', 7)]
         );
 
         $this->assertSame(
@@ -93,10 +93,10 @@ final class DeletedRelationServiceTest extends Unit
             $objectData,
             $this->createClass(),
             [
-                new UnresolvedReference('advanced', null, 0, 'object', 1),
-                new UnresolvedReference('title', null, null, 'object', 2),
-                new UnresolvedReference('removedField', null, null, 'object', 3),
-                new UnresolvedReference('lrelation', 'fr', null, 'object', 4),
+                new DeletedRelationReference('advanced', null, 0, 'object', 1),
+                new DeletedRelationReference('title', null, null, 'object', 2),
+                new DeletedRelationReference('removedField', null, null, 'object', 3),
+                new DeletedRelationReference('lrelation', 'fr', null, 'object', 4),
             ]
         );
 

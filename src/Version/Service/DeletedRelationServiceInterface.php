@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Version\Model\DeletedRelationReference;
 use Pimcore\Model\DataObject\ClassDefinition;
-use Pimcore\Model\Version\UnresolvedReference;
 
 /**
  * @internal
@@ -26,7 +26,7 @@ interface DeletedRelationServiceInterface
      * as entries marked with "isDeleted". Supports many-to-one, many-to-many and many-to-many object relations
      * of the class and of its localized fields.
      *
-     * @param UnresolvedReference[] $references
+     * @param DeletedRelationReference[] $references
      */
     public function addDeletedRelations(array $objectData, ClassDefinition $class, array $references): array;
 }
