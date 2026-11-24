@@ -18,21 +18,14 @@ use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\ParameterType;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\GroupConfigResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepository;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepository;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\IdentifierMapRepository;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\IdentifierMapRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
-use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use function sprintf;
 use function str_contains;
 
 /**
- * The two identifier lookups of the group and key configuration repositories, asserted on the
+ * The two identifier lookups of the identifier map repository, for groups and keys, asserted on the
  * statement that reaches the database and on what the repository makes of the rows it gets back.
  *
  * The caller these serve - the grid and saved-search column references - reads them per store and
@@ -99,7 +92,7 @@ final class IdentifierLookupsTest extends Unit
             ['id' => '6', 'identifier' => self::SECOND_IDENTIFIER],
         ]));
 
-        $resolved = $repository->getIdsByIdentifiers(
+        $resolved = $this->idsByIdentifiers($repository, $entity, 
             self::STORE_ID,
             [self::FIRST_IDENTIFIER, self::SECOND_IDENTIFIER, self::FIRST_IDENTIFIER]
         );
@@ -132,7 +125,7 @@ final class IdentifierLookupsTest extends Unit
             ['id' => '6', 'identifier' => self::SECOND_IDENTIFIER],
         ]));
 
-        $identifiers = $repository->getIdentifiersByIds(self::STORE_ID, [5, 6, 5]);
+        $identifiers = $this->identifiersByIds($repository, $entity, self::STORE_ID, [5, 6, 5]);
 
         $statement = $this->getSingleStatement();
         $this->assertTrue(
@@ -155,7 +148,7 @@ final class IdentifierLookupsTest extends Unit
     {
         $repository = $this->createRepository($entity, $this->createConnection([]));
 
-        $repository->getIdentifiersByIds(self::STORE_ID, [5]);
+        $this->identifiersByIds($repository, $entity, self::STORE_ID, [5]);
 
         $statement = $this->getSingleStatement();
         $this->assertTrue(str_contains($statement['query'], '`identifier` IS NOT NULL'), $statement['query']);
@@ -171,7 +164,7 @@ final class IdentifierLookupsTest extends Unit
     {
         $repository = $this->createRepository($entity, $this->createConnection([]));
 
-        $repository->getIdsByIdentifiers(self::STORE_ID, [self::FIRST_IDENTIFIER]);
+        $this->idsByIdentifiers($repository, $entity, self::STORE_ID, [self::FIRST_IDENTIFIER]);
 
         $statement = $this->getSingleStatement();
         $this->assertFalse(str_contains($statement['query'], '`identifier` IS NOT NULL'), $statement['query']);
@@ -189,8 +182,8 @@ final class IdentifierLookupsTest extends Unit
             ['id' => '5', 'identifier' => self::FIRST_IDENTIFIER],
         ]));
 
-        $this->assertSame([], $repository->getIdsByIdentifiers(self::STORE_ID, []));
-        $this->assertSame([], $repository->getIdentifiersByIds(self::STORE_ID, []));
+        $this->assertSame([], $this->idsByIdentifiers($repository, $entity, self::STORE_ID, []));
+        $this->assertSame([], $this->identifiersByIds($repository, $entity, self::STORE_ID, []));
         $this->assertSame([], $this->statements);
     }
 
@@ -203,7 +196,7 @@ final class IdentifierLookupsTest extends Unit
 
         $this->expectException(DatabaseException::class);
 
-        $repository->getIdsByIdentifiers(self::STORE_ID, [self::FIRST_IDENTIFIER]);
+        $this->idsByIdentifiers($repository, $entity, self::STORE_ID, [self::FIRST_IDENTIFIER]);
     }
 
     /**
@@ -215,29 +208,46 @@ final class IdentifierLookupsTest extends Unit
 
         $this->expectException(DatabaseException::class);
 
-        $repository->getIdentifiersByIds(self::STORE_ID, [5]);
+        $this->identifiersByIds($repository, $entity, self::STORE_ID, [5]);
     }
 
     private function createRepository(
         string $entity,
         Connection $connection
-    ): GroupRepositoryInterface|KeyRepositoryInterface {
-        if ($entity === self::GROUP) {
-            return new GroupRepository(
-                $this->makeEmpty(GroupConfigResolverInterface::class),
-                $this->makeEmpty(ListingFilterInterface::class),
-                $this->makeEmpty(SearchHelperServiceInterface::class),
-                $connection
-            );
-        }
+    ): IdentifierMapRepositoryInterface {
+        return new IdentifierMapRepository($connection);
+    }
 
-        return new KeyRepository(
-            $this->makeEmpty(KeyConfigResolverInterface::class),
-            new InMemoryKeyLocalizationResolver(),
-            $this->makeEmpty(ListingFilterInterface::class),
-            $this->makeEmpty(SearchHelperServiceInterface::class),
-            $connection
-        );
+    /**
+     * @param string[] $identifiers
+     *
+     * @return array<string, int>
+     */
+    private function idsByIdentifiers(
+        IdentifierMapRepositoryInterface $repository,
+        string $entity,
+        int $storeId,
+        array $identifiers
+    ): array {
+        return $entity === self::GROUP
+            ? $repository->getGroupIdsByIdentifiers($storeId, $identifiers)
+            : $repository->getKeyIdsByIdentifiers($storeId, $identifiers);
+    }
+
+    /**
+     * @param int[] $ids
+     *
+     * @return array<int, string>
+     */
+    private function identifiersByIds(
+        IdentifierMapRepositoryInterface $repository,
+        string $entity,
+        int $storeId,
+        array $ids
+    ): array {
+        return $entity === self::GROUP
+            ? $repository->getGroupIdentifiersByIds($storeId, $ids)
+            : $repository->getKeyIdentifiersByIds($storeId, $ids);
     }
 
     /**

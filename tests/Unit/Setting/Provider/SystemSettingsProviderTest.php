@@ -18,6 +18,7 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\ConfigResolver;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider;
 use Pimcore\Model\Document;
 use ReflectionClass;
@@ -79,6 +80,26 @@ final class SystemSettingsProviderTest extends Unit
         $this->assertSame($resolvedElementData, $documents['error_pages']['default']);
         $this->assertSame($resolvedElementData, $documents['error_pages']['localized']['en']);
         $this->assertSame('', $documents['error_pages']['localized']['de']);
+    }
+
+    /**
+     * A configured error document that no longer exists is surfaced as a not-found error, so the
+     * settings screen reports it. Consumers must therefore never resolve the settings eagerly
+     * (pimcore/platform-version#864).
+     */
+    public function testGetDocumentSettingsThrowsWhenAConfiguredErrorPageIsMissing(): void
+    {
+        $provider = $this->createProvider(
+            documents: [
+                'error_pages' => ['default' => '/en/missing-error-page'],
+            ],
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class),
+            elementDataService: $this->makeEmpty(ElementDataServiceInterface::class)
+        );
+
+        $this->expectException(NotFoundException::class);
+
+        $this->invokeGetDocumentSettings($provider);
     }
 
     private function createProvider(
