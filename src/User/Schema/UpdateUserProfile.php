@@ -16,6 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserWelcomeScreen;
+use Symfony\Component\Validator\Constraints\Length;
 
 /**
  * @internal
@@ -63,6 +65,16 @@ final readonly class UpdateUserProfile
         private array $keyBindings,
         #[Property(description: 'Theme of the User', type: 'string', example: 'default')]
         private string $theme = 'default',
+        #[Property(
+            description: 'Welcome screen opened after login, as `<provider>:<id>`. '
+                . 'Omitted or null keeps the stored target, an empty string clears it',
+            type: 'string',
+            maxLength: UserWelcomeScreen::MAX_TARGET_LENGTH,
+            example: 'studio-dashboards:019c7555_49f6_712b_af5f_bd0c22b3d1f7',
+            nullable: true
+        )]
+        #[Length(max: UserWelcomeScreen::MAX_TARGET_LENGTH)]
+        private ?string $welcomeScreenTarget = null,
     ) {
     }
 
@@ -117,5 +129,10 @@ final readonly class UpdateUserProfile
     public function getKeyBindings(): array
     {
         return $this->keyBindings;
+    }
+
+    public function getWelcomeScreenTarget(): ?string
+    {
+        return $this->welcomeScreenTarget;
     }
 }

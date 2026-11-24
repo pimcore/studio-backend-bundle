@@ -91,6 +91,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         if ($user instanceof User) {
             $user->setDatetimeLocale($updateUserParameter->getDatetimeLocale());
             $user->setTheme($updateUserParameter->getTheme());
+            $this->updateWelcomeScreenTarget($user, $updateUserParameter->getWelcomeScreenTarget());
         }
 
         $user = $this->updateService->updatePermissions($updateUserParameter->getPermissions(), $user);
@@ -127,6 +128,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         $user->setKeyBindings(
             $this->getKeyBindingsString($params->getKeyBindings())
         );
+        $this->updateWelcomeScreenTarget($user, $params->getWelcomeScreenTarget());
 
         $this->userRepository->updateUser($user);
     }
@@ -179,6 +181,14 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
     {
         $user = $this->securityService->getCurrentUser();
         $this->userPerspectiveService->updateActivePerspective($perspectiveId, $user);
+    }
+
+    private function updateWelcomeScreenTarget(User $user, ?string $welcomeScreenTarget): void
+    {
+        // an omitted field arrives as null and keeps the stored target
+        if ($welcomeScreenTarget !== null) {
+            $user->setWelcomeScreenTarget($welcomeScreenTarget === '' ? null : $welcomeScreenTarget);
+        }
     }
 
     /**
