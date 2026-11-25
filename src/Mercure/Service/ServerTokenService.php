@@ -13,9 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 
+use DateTimeImmutable;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Model\TopicCollection;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TopicLoaderInterface;
-use Symfony\Component\Mercure\Jwt\TokenFactoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant\Mercure;
 use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
 
 /**
@@ -23,17 +24,26 @@ use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
  */
 final readonly class ServerTokenService implements TokenProviderInterface
 {
+    private const int LIFETIME = 3600;
+
     public function __construct(
         private TopicLoaderInterface $topicLoader,
-        private TokenFactoryInterface $tokenFactory
+        private AccessTokenFactoryInterface $tokenFactory,
+        private AudienceServiceInterface $audienceService
     ) {
     }
 
     public function getJwt(): string
     {
+        $topics = $this->getTopicCollection();
+
+        // Minted per publish, see PublishService
         return $this->tokenFactory->create(
-            $this->getTopicCollection()->getServerSubscribableTopics(),
-            $this->getTopicCollection()->getServerPublishableTopics(),
+            $topics->getServerSubscribableTopics(),
+            $topics->getServerPublishableTopics(),
+            Mercure::CLIENT_ID->value,
+            [$this->audienceService->getResourceIdentifier()],
+            new DateTimeImmutable('+' . self::LIFETIME . ' seconds')
         );
     }
 

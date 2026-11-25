@@ -3,6 +3,12 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Mercure] Changed: Studio works with Mercure 0.x and 1.x hubs (with or without `protocol_version_compatibility 8`)
+  and detects the hub's protocol (`mercure_settings.protocol_version`, default `auto`).
+  See [Mercure Setup](./01_Mercure_Setup.md).
+  - Restart the Messenger workers after updating.
+  - Fixed: long-running workers no longer publish with an expired token.
+  - The 0.x protocol is removed in the next major (https://github.com/pimcore/platform-version/issues/889).
 - [Elements] Deprecated: `coauthorType` and `coauthor` in the bodies of the element patch and update endpoints
   and of `PUT /pimcore-studio/api/versions/{id}`. They still work, are marked `deprecated` in the OpenAPI schema and
   raise a deprecation notice. They are removed in 2027.1 (https://github.com/pimcore/platform-version/issues/814).

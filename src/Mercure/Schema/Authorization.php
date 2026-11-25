@@ -23,6 +23,7 @@ use OpenApi\Attributes\Schema;
     title: 'MercureAuthorization',
     required: [
         'cookieLifetime',
+        'protocolVersion',
     ],
     type: 'object'
 )]
@@ -38,12 +39,25 @@ final readonly class Authorization
             type: 'integer',
             example: 3600
         )]
-        private int $cookieLifetime
+        private int $cookieLifetime,
+        #[Property(
+            description: 'Mercure protocol to subscribe with: "topic" and "lastEventID" for 0.x, ' .
+                '"match" and "last_event_id" for 1.0',
+            type: 'string',
+            enum: ['0.x', '1.0'],
+            example: '1.0'
+        )]
+        private string $protocolVersion
     ) {
     }
 
     public function getCookieLifetime(): int
     {
         return $this->cookieLifetime;
+    }
+
+    public function getProtocolVersion(): string
+    {
+        return $this->protocolVersion;
     }
 }

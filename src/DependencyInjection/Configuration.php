@@ -17,6 +17,7 @@ use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant\ProtocolVersion;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepository;
@@ -34,6 +35,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 use function array_diff;
 use function array_filter;
 use function array_keys;
+use function array_map;
 use function implode;
 use function in_array;
 use function is_array;
@@ -360,6 +362,42 @@ class Configuration implements ConfigurationInterface
                         ->info('The key used to sign the JWT token. Must be longer than 256 bits.')
                         ->isRequired()
                         ->defaultValue('some-secret-default')
+                    ->end()
+                    ->scalarNode('issuer')
+                        ->info('Issuer ("iss" claim) of the Mercure access tokens. A 1.x hub without ' .
+                            'compatibility mode must trust it, ' .
+                            'e.g. with its MERCURE_TRUSTED_ISSUERS environment variable. ' .
+                            'The default matches the default of the hub, which only suits development.'
+                        )
+                        ->defaultValue('https://localhost')
+                    ->end()
+                    ->enumNode('protocol_version')
+                        ->info('Mercure protocol the clients subscribe with: "0.x" for 0.x hubs, "1.0" for 1.x hubs, ' .
+                            'or "auto" to detect it on hub_url_server. Tokens and cookies always serve both ' .
+                            'protocols. The 0.x protocol is removed in the next major version.'
+                        )
+                        ->values(array_map(
+                            static fn (ProtocolVersion $version): string => $version->value,
+                            ProtocolVersion::cases()
+                        ))
+                        ->defaultValue(ProtocolVersion::AUTO->value)
+                    ->end()
+                    ->scalarNode('resource_identifier')
+                        ->info('Audience ("aud" claim) of the Mercure access tokens: ' .
+                            'the resource identifier of the hub. ' .
+                            'If it is not set, the tokens are valid for hub_url_server and for the origin of ' .
+                            'hub_url_client. Set it, and the same "resource_identifier" directive on the hub, when ' .
+                            'a proxy exposes the hub under another host.'
+                        )
+                        ->defaultNull()
+                    ->end()
+                    ->scalarNode('cookie_name')
+                        ->info('Name of the Mercure 1.0 authorization cookie, next to the 0.x "mercureAuthorization" ' .
+                            'cookie. If it is not set, ' .
+                            '"__Secure-mercure_access_token" is used for an https hub_url_client and ' .
+                            '"mercure_access_token" otherwise. Must match the "cookie_name" directive of the hub.'
+                        )
+                        ->defaultNull()
                     ->end()
                      ->integerNode('cookie_lifetime')
                         ->info('Lifetime of the mercure cookie in seconds. Default is one hour.')
