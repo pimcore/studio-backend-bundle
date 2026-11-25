@@ -34,6 +34,8 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupRelationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupRelationService
+    arguments:
+      $labelResolver: '@Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface'
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService
@@ -153,6 +155,8 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\KeyGroupRelationHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\KeyGroupRelationHydrator
+    arguments:
+      $labelResolver: '@Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface'
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupLayoutHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupLayoutHydrator

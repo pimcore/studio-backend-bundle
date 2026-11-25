@@ -76,6 +76,14 @@ final class KeyGroupRelation implements AdditionalAttributesInterface
             nullable: true
         )]
         private readonly ?string $filterUnavailableReason = null,
+        #[Property(
+            description: 'Resolved label of the key in the label language, falling back to its name;'
+                . ' null where the key configuration is gone',
+            type: 'string',
+            example: 'Height',
+            nullable: true
+        )]
+        private readonly ?string $keyTitle = null,
     ) {
     }
 
@@ -127,5 +135,10 @@ final class KeyGroupRelation implements AdditionalAttributesInterface
     public function getFilterUnavailableReason(): ?string
     {
         return $this->filterUnavailableReason;
+    }
+
+    public function getKeyTitle(): ?string
+    {
+        return $this->keyTitle;
     }
 }

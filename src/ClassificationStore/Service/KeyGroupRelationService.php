@@ -20,6 +20,8 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListC
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use Pimcore\Model\DataObject\Classificationstore\LabelEntityType;
+use Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_map;
 use function count;
@@ -36,6 +38,8 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         private GroupConfigResolverInterface $groupConfigResolver,
         private EventDispatcherInterface $eventDispatcher,
         private KeyLocalizationResolverInterface $keyLocalizationResolver,
+        private LabelResolverInterface $labelResolver,
+        private LabelLanguageResolverInterface $labelLanguageResolver,
     ) {
     }
 
@@ -59,6 +63,7 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         );
 
         $localizationFlags = $this->resolveKeyLocalizationFlags($keyGroupRelations);
+        $this->preloadKeyTitles($keyGroupRelations);
 
         foreach ($keyGroupRelations as $keyGroupRelation) {
             $groupConfig = $this->groupConfigResolver->getById($keyGroupRelation->getGroupId());
@@ -84,6 +89,27 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
                 $parameter->getSearchTerm()
             ),
             $hydratedKeyGroupRelations
+        );
+    }
+
+    /**
+     * The labels of every key on the page in one statement, so the hydrator's title lookups cost nothing.
+     *
+     * @param KeyGroupRelation[] $keyGroupRelations
+     */
+    private function preloadKeyTitles(array $keyGroupRelations): void
+    {
+        if ($keyGroupRelations === []) {
+            return;
+        }
+
+        $this->labelResolver->preload(
+            LabelEntityType::Key,
+            array_map(
+                static fn (KeyGroupRelation $keyGroupRelation): int => $keyGroupRelation->getKeyId(),
+                $keyGroupRelations
+            ),
+            $this->labelLanguageResolver->getLabelLanguage()
         );
     }
 
