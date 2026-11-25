@@ -27,8 +27,8 @@ Pin the image to `v1` or `v0.24`, not `latest`. For details see the
   `mercure_settings.protocol_version`: `auto` (default) detects the protocol, `0.x` or `1.0` skip the detection.
 - `auto` sends `GET <origin of hub_url_server>/.well-known/oauth-protected-resource<path of hub_url_server>` from PHP,
   e.g. `http://mercure/.well-known/oauth-protected-resource/.well-known/mercure`. Let it through any proxy between
-  Pimcore and the hub. A 1.x hub answers `200`, a 0.x hub `404`; the result is cached for ten minutes. Any other answer
-  falls back to 0.x, logs a warning and is retried after a minute.
+  Pimcore and the hub. A 1.x hub answers `200`, a 0.x hub `404`; any other answer falls back to 0.x and logs a warning.
+  The result is cached for a minute, so a hub switched to the other protocol is picked up when the UI re-authorizes.
 
 ### Mercure configuration
 - Add the same JWT key to `MERCURE_PUBLISHER_JWT_KEY` and `MERCURE_SUBSCRIBER_JWT_KEY`

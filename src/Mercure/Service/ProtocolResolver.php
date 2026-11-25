@@ -35,10 +35,8 @@ final readonly class ProtocolResolver implements ProtocolResolverInterface
 {
     private const string CACHE_KEY_PREFIX = 'pimcore_studio_backend_mercure_protocol_';
 
-    private const int CACHE_TTL = 600;
-
-    // Short, so a hub that was down is probed again soon
-    private const int FAILURE_CACHE_TTL = 60;
+    // Short, so a hub switched to the other protocol is noticed when a client whose subscription failed re-authorizes
+    private const int CACHE_TTL = 60;
 
     private const int HTTP_STATUS_OK = 200;
 
@@ -77,16 +75,13 @@ final readonly class ProtocolResolver implements ProtocolResolverInterface
             }
         }
 
-        [$detected, $ttl] = $this->detect($hubUrl);
-        $this->cache->save($item->set($detected->value)->expiresAfter($ttl));
+        $detected = $this->detect($hubUrl);
+        $this->cache->save($item->set($detected->value)->expiresAfter(self::CACHE_TTL));
 
         return $detected;
     }
 
-    /**
-     * @return array{0: ProtocolVersion, 1: int}
-     */
-    private function detect(?string $hubUrl): array
+    private function detect(?string $hubUrl): ProtocolVersion
     {
         if ($hubUrl === null) {
             // Nothing is published without hub_url_server, so there is no hub to ask
@@ -95,7 +90,7 @@ final readonly class ProtocolResolver implements ProtocolResolverInterface
                 ProtocolVersion::LEGACY->value
             ));
 
-            return [ProtocolVersion::LEGACY, self::CACHE_TTL];
+            return ProtocolVersion::LEGACY;
         }
 
         $metadataUrl = $hubUrl;
@@ -113,11 +108,11 @@ final readonly class ProtocolResolver implements ProtocolResolverInterface
                 // Throws unless the body is the JSON metadata document, e.g. for a proxy's catch-all page
                 $response->toArray(false);
 
-                return [ProtocolVersion::V1, self::CACHE_TTL];
+                return ProtocolVersion::V1;
             }
 
             if ($status === self::HTTP_STATUS_NOT_FOUND) {
-                return [ProtocolVersion::LEGACY, self::CACHE_TTL];
+                return ProtocolVersion::LEGACY;
             }
 
             $reason = sprintf('HTTP status %d', $status);
@@ -132,7 +127,7 @@ final readonly class ProtocolResolver implements ProtocolResolverInterface
             $reason
         ));
 
-        return [ProtocolVersion::LEGACY, self::FAILURE_CACHE_TTL];
+        return ProtocolVersion::LEGACY;
     }
 
     /**

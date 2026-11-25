@@ -18,6 +18,8 @@ use LogicException;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ProtocolResolver;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant\ProtocolVersion;
+use Psr\Cache\CacheItemInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
@@ -121,6 +123,26 @@ final class ProtocolResolverTest extends Unit
 
         $this->assertSame([ProtocolVersion::LEGACY, ProtocolVersion::LEGACY], [$first, $second]);
         $this->assertSame(1, $client->getRequestsCount());
+    }
+
+    /**
+     * A client whose subscription failed re-authorizes; a short lifetime lets that pick up a hub switched to the other
+     * protocol.
+     */
+    public function testCachesEveryOutcomeForOneMinute(): void
+    {
+        $item = $this->createMock(CacheItemInterface::class);
+        $item->method('isHit')->willReturn(false);
+        $item->method('set')->willReturnSelf();
+        $item->expects($this->once())->method('expiresAfter')->with(60)->willReturnSelf();
+        $cache = $this->createMock(CacheItemPoolInterface::class);
+        $cache->method('getItem')->willReturn($item);
+        $cache->expects($this->once())->method('save')->with($item)->willReturn(true);
+        $client = new MockHttpClient(new MockResponse('{"resource":"x"}', ['http_code' => 200]));
+
+        $resolver = new ProtocolResolver($this->createUrlService(), $client, $cache, new NullLogger());
+
+        $this->assertSame(ProtocolVersion::V1, $resolver->getProtocolVersion());
     }
 
     public function testCachesTheDetection(): void
