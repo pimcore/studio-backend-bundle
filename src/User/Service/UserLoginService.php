@@ -78,7 +78,10 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         try {
             $this->mailService->sendResetPasswordMail($user, $token, $loginUrl);
         } catch (DomainConfigurationException|SendMailException $exception) {
-            $this->pimcoreLogger->error('Error sending password recovery email', ['error' => $exception->getMessage()]);
+            $this->pimcoreLogger->error(
+                'Error sending password recovery email',
+                ['error' => $exception->getPrevious()?->getMessage() ?? $exception->getMessage()]
+            );
 
             throw $exception;
         }
@@ -151,14 +154,15 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         $parsed = parse_url($url);
 
         // Reject anything parse_url() and a browser could read differently: credentials in the
-        // authority, backslashes, whitespace and control characters.
+        // authority, backslashes, whitespace and control characters. Curly braces are no valid
+        // URL characters either and would open template syntax wherever the link ends up.
         if (
             $parsed === false
             || !isset($parsed['scheme'], $parsed['host'])
             || !in_array(strtolower($parsed['scheme']), self::RESET_PASSWORD_URL_ALLOWED_SCHEMES, true)
             || isset($parsed['user'])
             || isset($parsed['pass'])
-            || preg_match('/[\x00-\x20\x7f\\\\]/', $url) === 1
+            || preg_match('/[\x00-\x20\x7f\\\\{}]/', $url) === 1
         ) {
             throw new InvalidArgumentException('Invalid reset password URL provided');
         }
