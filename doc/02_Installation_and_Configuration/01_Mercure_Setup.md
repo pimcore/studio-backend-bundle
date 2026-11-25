@@ -7,56 +7,42 @@ description: Configure Mercure for real-time updates in Pimcore Studio.
 
 ## Start and configure Mercure server
 
-Pimcore Studio works with both Mercure hub generations, without extra configuration in Pimcore:
+Pimcore Studio works with both Mercure hub generations, without hub-specific configuration in Pimcore:
 
 | Hub | Docker image | `MERCURE_EXTRA_DIRECTIVES` |
 |---|---|---|
-| Mercure **1.x** (recommended) | `dunglas/mercure:v1` | `anonymous`, optionally `protocol_version_compatibility 8` |
-| Mercure **0.x** (e.g. 0.24) | `dunglas/mercure:v0.24` | `anonymous` only |
+| Mercure **1.x** (recommended) | `dunglas/mercure:v1` | `anonymous`, optionally `protocol_version_compatibility 8` (compatibility mode) |
+| Mercure **0.x** (e.g. 0.24) | `dunglas/mercure:v0.24` | `anonymous` only (`protocol_version_compatibility 8` stops it from starting) |
 
-For details see the [Mercure docs](https://mercure.rocks/docs/getting-started/installation).
+Pin the image to `v1` or `v0.24`, not `latest`. For details see the
+[Mercure docs](https://mercure.rocks/docs/getting-started/installation).
 
-Studio speaks both Mercure protocols at once:
-- Its tokens carry the claims of both protocols (Mercure 1.0 access token claims and the 0.x `mercure` claim), and it
-  sets both authorization cookies (`mercureAuthorization` for 0.x, `__Secure-mercure_access_token` or
-  `mercure_access_token` for 1.0). Each hub reads its own and ignores the other.
-- The Studio UI subscribes with the parameters of the hub's protocol (`topic`/`lastEventID` for 0.x,
-  `match`/`last_event_id` for 1.0). By default (`protocol_version: auto`) the backend detects the protocol with a
-  `GET` request to the hub's OAuth protected resource metadata (RFC 9728), which only 1.x hubs serve: the origin of
-  `hub_url_server`, then `/.well-known/oauth-protected-resource`, then the path of `hub_url_server`. For
-  `hub_url_server: 'http://mercure/.well-known/mercure'` that is
-  `http://mercure/.well-known/oauth-protected-resource/.well-known/mercure`. If a proxy sits between Pimcore and the
-  hub, let this URL through. A 1.x hub answers `200` with JSON, a 0.x hub `404`. The result is cached for ten minutes;
-  any other answer, or no answer within two seconds, assumes the 0.x protocol, logs a warning and retries after a
-  minute. Set `protocol_version` to `0.x` or `1.0` to skip the detection.
+> The 0.x protocol, and with it support for 0.x hubs, is removed in the next major version. Mercure no longer ships
+> fixes for 0.x hubs.
 
-> Support for the 0.x protocol, and thereby for 0.x hubs, is removed in the next major version. Mercure no longer ships
-> fixes for 0.x hubs: plan the move to a 1.x hub.
->
-> - Do not add `protocol_version_compatibility 8` to a 0.x hub: Mercure 0.24 only accepts `7` and refuses to start.
-> - A 1.x hub without compatibility mode checks the tokens' issuer and audience and reads its own cookie, see
->   [1.x hubs without compatibility mode](#1x-hubs-without-compatibility-mode).
-> - Pin the image to `v1` or `v0.24` instead of using `latest` or an untagged image, so that a future major version
->   cannot break the setup.
+### How Studio serves both protocols
+- Tokens carry the claims of both protocols. Two cookies with the same token are set: `mercureAuthorization` (0.x) and
+  `__Secure-mercure_access_token` (1.0; `mercure_access_token` for a plain HTTP `hub_url_client`).
+- The UI subscribes with `topic`/`lastEventID` (0.x) or `match`/`last_event_id` (1.0), as set by
+  `mercure_settings.protocol_version`: `auto` (default) detects the protocol, `0.x` or `1.0` skip the detection.
+- `auto` sends `GET <origin of hub_url_server>/.well-known/oauth-protected-resource<path of hub_url_server>` from PHP,
+  e.g. `http://mercure/.well-known/oauth-protected-resource/.well-known/mercure`. Let it through any proxy between
+  Pimcore and the hub. A 1.x hub answers `200`, a 0.x hub `404`; the result is cached for ten minutes. Any other answer
+  falls back to 0.x, logs a warning and is retried after a minute.
 
 ### Mercure configuration
-Following Mercure configuration aspects need to be considered
-- Add same JWT key to `MERCURE_PUBLISHER_JWT_KEY` and `MERCURE_SUBSCRIBER_JWT_KEY`
-- JWT key needs to be minimum 256 bits (or 32 chars) long
+- Add the same JWT key to `MERCURE_PUBLISHER_JWT_KEY` and `MERCURE_SUBSCRIBER_JWT_KEY`
+- The JWT key needs to be at least 256 bits (32 characters) long
 
 ### 1.x hubs without compatibility mode
-A 1.x hub without `protocol_version_compatibility 8` only accepts Mercure 1.0 access tokens. Studio's defaults match the
-hub's defaults; check these settings when you deviate from them:
-- **Issuer**: the hub accepts tokens of the issuers in `MERCURE_TRUSTED_ISSUERS`. Both it and Pimcore's
-  `mercure_settings.issuer` default to `https://localhost`, which only suits development: set both to your
-  application's URL.
-- **Audience**: the hub checks that the tokens' audience contains the URL it is reached through. Pimcore's tokens cover
-  `hub_url_server` and `/.well-known/mercure` on the host of `hub_url_client`, which fits the reverse proxy setups below.
-  If a proxy exposes the hub under yet another host, set `mercure_settings.resource_identifier` in Pimcore and the same
-  `resource_identifier` directive in `MERCURE_EXTRA_DIRECTIVES`.
-- **Cookie**: the hub reads `__Secure-mercure_access_token`. Browsers only keep `__Secure-` cookies over HTTPS, so for a
-  plain HTTP `hub_url_client` (e.g. local development) Pimcore names the cookie `mercure_access_token`: add
-  `cookie_name mercure_access_token` to `MERCURE_EXTRA_DIRECTIVES`. `mercure_settings.cookie_name` overrides the name.
+These hubs check issuer, audience and cookie name. Pimcore's defaults match the hub's; the optional
+`mercure_settings` only matter when you deviate:
+- `issuer` (default `https://localhost`, development only) must be listed in the hub's `MERCURE_TRUSTED_ISSUERS`.
+- `cookie_name`: for a plain HTTP `hub_url_client` the cookie is `mercure_access_token`, because browsers drop
+  `__Secure-` cookies over HTTP. Add `cookie_name mercure_access_token` to `MERCURE_EXTRA_DIRECTIVES`.
+- `resource_identifier`: tokens are valid for `hub_url_server` and `/.well-known/mercure` on the host of
+  `hub_url_client`. If a proxy exposes the hub under another host, set it here and as the hub's `resource_identifier`
+  directive.
 
 ## Example Configuration with docker compose
 Following there are configuration snippets for a setup with docker compose.
@@ -128,10 +114,8 @@ Add Mercure to your docker compose file and make sure to add the configuration f
 
 Configure Pimcore application with JWT key as well as the client side and server side URLs for Mercure.
 `hub_url_server` must be set and has no default; it is not checked at boot, but without it no updates are published.
-`hub_url_client` is optional; if it is not set, the scheme and host of the current request plus `/hub` is used.
-For a 1.x hub you can also route its own path, `/.well-known/mercure`, to it without rewriting and set `hub_url_client`
-to `https://your-app-domain.com/.well-known/mercure`: the hub then also serves its development UI and subscriptions API
-through the proxy.
+`hub_url_client` is optional; if it is not set, the scheme and host of the current request plus `/hub` is used. A 1.x
+hub can also be proxied under its own path, `/.well-known/mercure`, without rewriting; set `hub_url_client` accordingly.
 
 ```yaml
 pimcore_studio_backend:
@@ -155,8 +139,7 @@ you configured in configuration). This request should return the text
 missing "match" subscription parameter
 ```
 
-(a 0.x hub answers `Missing "topic" parameter`)
-or
+(a 0.x hub: `Missing "topic" parameter`) or
 
 ```
 Unauthorized
@@ -193,14 +176,15 @@ or Direct Edit events) are not delivered while the hub is down. Notifications th
 published, so they still show up after the next reload.
 
 If the hub itself needs to be highly available, Mercure offers clustered editions (Mercure Enterprise with a shared
-transport, or Mercure Cloud; both are licensed by Mercure, not by Pimcore). They are Mercure 1.x hubs: configure them as
-described above; their compatibility with this bundle's setup has not been verified. Alternatively, restart the single hub quickly with a process supervisor or your orchestrator.
+transport, or Mercure Cloud; both are licensed by Mercure, not by Pimcore). Note that these are Mercure 1.x hubs, which need
+the compatibility mode described at the top of this page, and their compatibility with this bundle's setup has not
+been verified. Alternatively, restart the single hub quickly with a process supervisor or your orchestrator.
 
 > The legacy Direct Edit path (`FileEditControllerTrait` of `pimcore/direct-edit`, deprecated since 2026.3, removal
 > planned for 2027.1) asks the hub which clients are subscribed (subscriptions API). This requires that all clients
 > are connected to the one hub the application asks, with the `subscriptions` directive enabled. If you run that hub as
-> a cluster, only the Redis/Valkey transport supports subscriptions cluster-wide. This path speaks only the Mercure
-> 0.x protocol: as long as you use it with a 1.x hub, add `protocol_version_compatibility 8` to `MERCURE_EXTRA_DIRECTIVES`.
+> a cluster, only the Redis/Valkey transport supports subscriptions cluster-wide. This path speaks only the 0.x protocol:
+> with a 1.x hub it needs `protocol_version_compatibility 8`.
 >
 > Direct Edit also has its own, deprecated hub settings (`mercure_settings.server_side_url`, `parameters.mercure.hub.*`)
 > that can override the hub URL and key. Remove them or set them to the same values as the hub configured above.

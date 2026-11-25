@@ -3,19 +3,23 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
-- [Mercure] Changed: Studio works with 0.x hubs and with 1.x hubs, with or without `protocol_version_compatibility 8`,
-  without changes to the Pimcore configuration. The tokens carry the claims of both protocols and the header
-  `typ: at+jwt`, and next to `mercureAuthorization` a second cookie (`__Secure-mercure_access_token`, or
-  `mercure_access_token` for a plain HTTP `hub_url_client`) is set with the same token. The UI subscribes with
-  `match`/`last_event_id` to 1.x hubs and with `topic`/`lastEventID` to 0.x hubs; the new
-  `mercure_settings.protocol_version` (`auto`, default, `0.x` or `1.0`) selects or detects the protocol, and
-  `POST /pimcore-studio/api/mercure/auth` returns it as `protocolVersion`. For a 1.x hub without compatibility mode the
-  new optional settings `issuer`, `resource_identifier` and `cookie_name` match the hub's trusted issuers, resource
-  identifier and cookie name. The requirements `symfony/mercure` `^0.6.5` and `symfony/mercure-bundle` `^0.3.9` stay;
-  the tokens are built with `lcobucci/jwt` directly. The publisher token is now renewed for every update, so
-  long-running workers no longer publish with an expired token. In the next major version, support for the 0.x protocol is removed and `symfony/mercure` /
-  `symfony/mercure-bundle` move to their 1.0-protocol versions (`^0.10` / `^0.7`). See
-  [Mercure Setup](./01_Mercure_Setup.md).
+- [Mercure] Changed: Studio supports 0.x hubs and 1.x hubs, with or without `protocol_version_compatibility 8`, side by
+  side, without configuration changes. See [Mercure Setup](./01_Mercure_Setup.md).
+  - Tokens carry the claims of both protocols (`typ: at+jwt`); next to `mercureAuthorization`, a second cookie
+    `__Secure-mercure_access_token` (`mercure_access_token` over plain HTTP) is set.
+  - Added `mercure_settings.protocol_version` (`auto` default, `0.x`, `1.0`). `auto` probes
+    `<hub origin>/.well-known/oauth-protected-resource<hub path>` from PHP: let it through proxies.
+    `POST /pimcore-studio/api/mercure/auth` returns the result as `protocolVersion`.
+  - Added optional settings for 1.x hubs without compatibility mode: `issuer`, `cookie_name`, `resource_identifier`.
+  - Unchanged: the `hub_url_client` default `<host>/hub`, the requirements `symfony/mercure` `^0.6.5` and
+    `symfony/mercure-bundle` `^0.3.9` (`^0.10` / `^0.7` follow in the next major,
+    https://github.com/pimcore/platform-version/issues/889), and the legacy Direct Edit path needs
+    `protocol_version_compatibility 8` on 1.x hubs.
+  - Fixed: the publisher token is renewed for every update, so long-running workers no longer publish with an
+    expired token.
+  - Restart the Messenger workers after updating: a worker started before the update fails with a constructor
+    `TypeError` on the changed Mercure services.
+  - The 0.x protocol is removed in the next major version.
 - [Elements] Deprecated: `coauthorType` and `coauthor` in the bodies of the element patch and update endpoints
   and of `PUT /pimcore-studio/api/versions/{id}`. They still work, are marked `deprecated` in the OpenAPI schema and
   raise a deprecation notice. They are removed in 2027.1 (https://github.com/pimcore/platform-version/issues/814).

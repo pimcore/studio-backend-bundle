@@ -166,19 +166,12 @@ pimcore_studio_backend:
         # It is possible to use "<PIMCORE_SCHEMA_HOST>" as a placeholder for the current schema and host if path to mercure should be different.
         hub_url_client: 'https://your-app-domain.com/hub'
 
-        # Mercure protocol the Studio UI subscribes with: "auto" (default) detects it on hub_url_server,
-        # "0.x" or "1.0" skip the detection. Tokens and cookies always serve both protocols.
+        # "auto" (default), "0.x" or "1.0"; see the Mercure Setup page
         protocol_version: 'auto'
-
-        # Only for 1.x hubs without compatibility mode, see the Mercure Setup page:
-        # Issuer ("iss" claim) of the access tokens, must be trusted by the hub (MERCURE_TRUSTED_ISSUERS).
-        issuer: 'https://localhost'
-        # Audience ("aud" claim) of the access tokens, i.e. the hub's resource identifier.
-        # Defaults to hub_url_server and the host of hub_url_client; set it when a proxy exposes the hub under another host.
+        # Only for 1.x hubs without compatibility mode; see the Mercure Setup page
+        issuer: 'https://your-app-domain.com'
+        cookie_name: 'mercure_access_token'
         resource_identifier: 'https://hub.your-app-domain.com/.well-known/mercure'
-        # Name of the 1.0 cookie, set next to the 0.x "mercureAuthorization" cookie.
-        # Defaults to "__Secure-mercure_access_token" for an https hub_url_client, "mercure_access_token" otherwise.
-        cookie_name: '__Secure-mercure_access_token'
 
         cookie_lifetime: 3600
         jwt_cookie_strictness: true
