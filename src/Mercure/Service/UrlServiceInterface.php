@@ -18,16 +18,4 @@ interface UrlServiceInterface
     public function getServerSideUrl(): string;
 
     public function getClientSideUrl(): string;
-
-    /**
-     * The hub's resource identifier, i.e. the audience of the publisher's access tokens.
-     */
-    public function getResourceIdentifier(): string;
-
-    /**
-     * Every resource identifier the hub may derive for a browser, i.e. the audience of the subscribers' access tokens.
-     *
-     * @return string[]
-     */
-    public function getSubscriberAudience(): array;
 }

@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant\Mercure;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
+use function array_map;
 
 /**
  * @internal
@@ -39,6 +40,11 @@ final readonly class HubService implements HubServiceInterface
 
     public function createCookie(): Cookie
     {
+        return $this->createCookies()[0];
+    }
+
+    public function createCookies(): array
+    {
         $urlParts = parse_url($this->urlService->getClientSideUrl());
 
         $host = '';
@@ -51,17 +57,22 @@ final readonly class HubService implements HubServiceInterface
         }
 
         $secure = ($urlParts[Mercure::URL_SCHEME->value] ?? null) === Mercure::URL_SCHEME_HTTPS->value;
+        $jwt = $this->tokenProvider->getJwt();
 
-        return new Cookie(
-            $this->getCookieName($secure),
-            $this->tokenProvider->getJwt(),
-            time() + $this->cookieLifetime,
-            $urlParts[Mercure::URL_PATH->value] ?? '/',
-            $host,
-            $secure,
-            true,
-            false,
-            $this->jwtCookieStrictness ? Cookie::SAMESITE_STRICT : Cookie::SAMESITE_NONE
+        // Each hub reads only the cookie of its own protocol
+        return array_map(
+            fn (string $name): Cookie => new Cookie(
+                $name,
+                $jwt,
+                time() + $this->cookieLifetime,
+                $urlParts[Mercure::URL_PATH->value] ?? '/',
+                $host,
+                $secure,
+                true,
+                false,
+                $this->jwtCookieStrictness ? Cookie::SAMESITE_STRICT : Cookie::SAMESITE_NONE
+            ),
+            [$this->getCookieName($secure), Mercure::AUTHORIZATION_COOKIE_NAME->value]
         );
     }
 

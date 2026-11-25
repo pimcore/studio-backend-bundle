@@ -106,7 +106,7 @@ final class UrlServiceTest extends Unit
             $this->createRequestStackWithRequest('https://example.com')
         );
 
-        $this->assertSame('https://example.com/.well-known/mercure', $service->getClientSideUrl());
+        $this->assertSame('https://example.com/hub', $service->getClientSideUrl());
     }
 
     public function testThrowsLogicExceptionWithoutRequest(): void
@@ -126,7 +126,7 @@ final class UrlServiceTest extends Unit
             $this->createRequestStackWithRequest('http://localhost:8080')
         );
 
-        $this->assertSame('http://localhost:8080/.well-known/mercure', $service->getClientSideUrl());
+        $this->assertSame('http://localhost:8080/hub', $service->getClientSideUrl());
     }
 
     private function createRequestStackWithRequest(string $uri): RequestStack

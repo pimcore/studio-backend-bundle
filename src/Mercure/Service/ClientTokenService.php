@@ -17,9 +17,7 @@ use DateTimeImmutable;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Model\TopicCollection;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TopicLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant\Mercure;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Grants;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Symfony\Component\Mercure\Jwt\TokenFactoryInterface;
 use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
 
 /**
@@ -29,10 +27,9 @@ final readonly class ClientTokenService implements TokenProviderInterface
 {
     public function __construct(
         private TopicLoaderInterface $topicLoader,
-        private TokenFactoryInterface $tokenFactory,
-        private UrlServiceInterface $urlService,
+        private AccessTokenFactoryInterface $tokenFactory,
+        private AudienceServiceInterface $audienceService,
         private SecurityServiceInterface $securityService,
-        private string $issuer,
         private int $cookieLifetime = 3600
     ) {
     }
@@ -47,19 +44,15 @@ final readonly class ClientTokenService implements TokenProviderInterface
         $topics = $this->getTopicCollection();
 
         return $this->tokenFactory->create(
-            Grants::fromTopics($topics->getClientSubscribableTopics(), $topics->getClientPublishableTopics()),
-            [
-                'iss' => $this->issuer,
-                'aud' => $this->urlService->getSubscriberAudience(),
-                'sub' => $this->getSubject(),
-                'client_id' => Mercure::CLIENT_ID->value,
-                // Without an explicit claim the factory derives `exp` from `session.cookie_lifetime`
-                // (or 3600), which has nothing to do with the lifetime the cookie is stamped with and
-                // the client is told to renew on. Configuring a longer `cookie_lifetime` would then
-                // leave a window where the browser still sends a cookie the hub already rejects, which
-                // is the dead-authorization state this whole mechanism exists to avoid.
-                'exp' => new DateTimeImmutable('+' . $this->cookieLifetime . ' seconds'),
-            ]
+            $topics->getClientSubscribableTopics(),
+            $topics->getClientPublishableTopics(),
+            $this->getSubject(),
+            $this->audienceService->getSubscriberAudience(),
+            // The token must expire with the cookie it is stamped into and the client renews on.
+            // A token outliving the cookie is harmless; one expiring earlier leaves the browser
+            // sending a cookie the hub already rejects, the dead-authorization state this whole
+            // mechanism exists to avoid.
+            new DateTimeImmutable('+' . $this->cookieLifetime . ' seconds')
         );
     }
 

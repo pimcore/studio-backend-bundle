@@ -13,11 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 
+use DateTimeImmutable;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Model\TopicCollection;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TopicLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant\Mercure;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Grants;
-use Symfony\Component\Mercure\Jwt\TokenFactoryInterface;
 use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
 
 /**
@@ -25,11 +24,12 @@ use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
  */
 final readonly class ServerTokenService implements TokenProviderInterface
 {
+    private const int LIFETIME = 3600;
+
     public function __construct(
         private TopicLoaderInterface $topicLoader,
-        private TokenFactoryInterface $tokenFactory,
-        private UrlServiceInterface $urlService,
-        private string $issuer
+        private AccessTokenFactoryInterface $tokenFactory,
+        private AudienceServiceInterface $audienceService
     ) {
     }
 
@@ -37,14 +37,13 @@ final readonly class ServerTokenService implements TokenProviderInterface
     {
         $topics = $this->getTopicCollection();
 
+        // Minted per publish, see PublishService
         return $this->tokenFactory->create(
-            Grants::fromTopics($topics->getServerSubscribableTopics(), $topics->getServerPublishableTopics()),
-            [
-                'iss' => $this->issuer,
-                'aud' => $this->urlService->getResourceIdentifier(),
-                'sub' => Mercure::CLIENT_ID->value,
-                'client_id' => Mercure::CLIENT_ID->value,
-            ]
+            $topics->getServerSubscribableTopics(),
+            $topics->getServerPublishableTopics(),
+            Mercure::CLIENT_ID->value,
+            [$this->audienceService->getResourceIdentifier()],
+            new DateTimeImmutable('+' . self::LIFETIME . ' seconds')
         );
     }
 

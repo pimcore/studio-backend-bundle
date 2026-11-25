@@ -11,13 +11,22 @@ services:
         public: true
         tags: [ 'controller.service_arguments' ]
 
-    Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ServerTokenService:
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ServerTokenService: ~
+
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Service\AccessTokenFactoryInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Mercure\Service\AccessTokenFactory
         arguments:
+            $jwtKey: '%pimcore_studio_backend.mercure_settings.jwt_key%'
             $issuer: '%pimcore_studio_backend.mercure_settings.issuer%'
+
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ProtocolResolverInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ProtocolResolver
+        arguments:
+            $cache: '@cache.app'
+            $protocolVersion: '%pimcore_studio_backend.mercure_settings.protocol_version%'
 
     Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ClientTokenService:
         arguments:
-            $issuer: '%pimcore_studio_backend.mercure_settings.issuer%'
             $cookieLifetime: '%pimcore_studio_backend.mercure_settings.cookie_lifetime%'
 
     Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface:
@@ -39,6 +48,9 @@ services:
 
     Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface:
         class: Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlService
+
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Service\AudienceServiceInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface
 
     Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface:
         class: Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicService

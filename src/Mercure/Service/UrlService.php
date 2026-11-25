@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 /**
  * @internal
  */
-final readonly class UrlService implements UrlServiceInterface
+final readonly class UrlService implements UrlServiceInterface, AudienceServiceInterface
 {
     public function __construct(
         private ?string $serverSideUrl,
@@ -80,7 +80,7 @@ final readonly class UrlService implements UrlServiceInterface
 
     private function getDefaultClientUrl(): string
     {
-        return $this->getHostUrl() . Mercure::HUB_PATH->value;
+        return $this->getHostUrl() . Mercure::DEFAULT_CLIENT_PATH->value;
     }
 
     /**

@@ -14,17 +14,19 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mercure\Service;
 
 use Codeception\Test\Unit;
+use DateTimeImmutable;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Model\TopicCollection;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\AccessTokenFactory;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\AudienceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ClientTokenService;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TopicLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ServerTokenService;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\UserInterface;
-use Symfony\Component\Mercure\Jwt\LcobucciFactory;
 
 /**
- * The hub only accepts Mercure 1.0 access tokens: RFC 9068 claims plus Mercure authorization details.
+ * Tokens serve both hub generations: Mercure 1.0 access token claims (RFC 9068 plus authorization
+ * details) for 1.x hubs, the "mercure" claim for 0.x hubs. Each hub ignores the other's claims.
  */
 final class TokenServiceTest extends Unit
 {
@@ -36,22 +38,26 @@ final class TokenServiceTest extends Unit
 
     private const string PUBLIC_RESOURCE_IDENTIFIER = 'https://pimcore.example.com/.well-known/mercure';
 
-    public function testServerTokenGrantsPublishing(): void
+    public function testServerTokenGrantsPublishingOnBothProtocols(): void
     {
         $service = new ServerTokenService(
             $this->createTopicLoader(new TopicCollection(['studio-backend-default', '*'])),
-            new LcobucciFactory(self::JWT_KEY),
-            $this->createUrlService(),
-            self::ISSUER
+            new AccessTokenFactory(self::JWT_KEY, self::ISSUER),
+            $this->createAudienceService()
         );
 
         [$header, $claims] = $this->decode($service->getJwt());
 
         $this->assertSame('at+jwt', $header['typ']);
+        $this->assertSame('HS256', $header['alg']);
         $this->assertSame(self::ISSUER, $claims['iss']);
         $this->assertSame(self::RESOURCE_IDENTIFIER, $claims['aud']);
         $this->assertSame('pimcore-studio', $claims['sub']);
         $this->assertSame('pimcore-studio', $claims['client_id']);
+        $this->assertIsInt($claims['iat']);
+        $this->assertIsInt($claims['exp']);
+        $this->assertEqualsWithDelta(time() + 3600, $claims['exp'], 5);
+        $this->assertNotEmpty($claims['jti']);
         $this->assertSame([
             [
                 'type' => 'https://mercure.rocks/authorization-detail',
@@ -59,22 +65,22 @@ final class TokenServiceTest extends Unit
                 'topics' => [['match' => 'studio-backend-default'], ['match' => '*']],
             ],
         ], $claims['authorization_details']);
-        $this->assertArrayNotHasKey('mercure', $claims);
+        $this->assertSame(['publish' => ['studio-backend-default', '*']], $claims['mercure']);
     }
 
-    public function testClientTokenGrantsSubscriptionsToTheCurrentUser(): void
+    public function testClientTokenGrantsSubscriptionsToTheCurrentUserOnBothProtocols(): void
     {
         $service = new ClientTokenService(
             $this->createTopicLoader(
                 new TopicCollection([], [], [], ['studio-backend-default', 'studio-backend-default/user/2'])
             ),
-            new LcobucciFactory(self::JWT_KEY),
-            $this->createUrlService(),
+            new AccessTokenFactory(self::JWT_KEY, self::ISSUER),
+            $this->createAudienceService(),
             $this->makeEmpty(SecurityServiceInterface::class, [
                 'isLoggedIn' => true,
                 'getCurrentUser' => $this->makeEmpty(UserInterface::class, ['getId' => 2]),
             ]),
-            self::ISSUER
+            900
         );
 
         [$header, $claims] = $this->decode($service->getJwt());
@@ -82,6 +88,7 @@ final class TokenServiceTest extends Unit
         $this->assertSame('at+jwt', $header['typ']);
         $this->assertSame([self::RESOURCE_IDENTIFIER, self::PUBLIC_RESOURCE_IDENTIFIER], $claims['aud']);
         $this->assertSame('2', $claims['sub']);
+        $this->assertEqualsWithDelta(time() + 900, $claims['exp'], 5);
         $this->assertSame([
             [
                 'type' => 'https://mercure.rocks/authorization-detail',
@@ -89,16 +96,19 @@ final class TokenServiceTest extends Unit
                 'topics' => [['match' => 'studio-backend-default'], ['match' => 'studio-backend-default/user/2']],
             ],
         ], $claims['authorization_details']);
+        $this->assertSame(
+            ['subscribe' => ['studio-backend-default', 'studio-backend-default/user/2']],
+            $claims['mercure']
+        );
     }
 
     public function testClientTokenWithoutUserUsesTheClientAsSubject(): void
     {
         $service = new ClientTokenService(
             $this->createTopicLoader(new TopicCollection([], [], [], ['studio-backend-default'])),
-            new LcobucciFactory(self::JWT_KEY),
-            $this->createUrlService(),
-            $this->makeEmpty(SecurityServiceInterface::class, ['isLoggedIn' => false]),
-            self::ISSUER
+            new AccessTokenFactory(self::JWT_KEY, self::ISSUER),
+            $this->createAudienceService(),
+            $this->makeEmpty(SecurityServiceInterface::class, ['isLoggedIn' => false])
         );
 
         [, $claims] = $this->decode($service->getJwt());
@@ -106,14 +116,48 @@ final class TokenServiceTest extends Unit
         $this->assertSame('pimcore-studio', $claims['sub']);
     }
 
+    public function testTokenWithoutTopicsCarriesNoGrants(): void
+    {
+        $jwt = (new AccessTokenFactory(self::JWT_KEY, self::ISSUER))->create(
+            [],
+            [],
+            'pimcore-studio',
+            [self::RESOURCE_IDENTIFIER],
+            new DateTimeImmutable('+60 seconds')
+        );
+
+        [, $claims] = $this->decode($jwt);
+
+        $this->assertArrayNotHasKey('authorization_details', $claims);
+        $this->assertArrayNotHasKey('mercure', $claims);
+    }
+
+    public function testTokenIsSignedWithTheJwtKey(): void
+    {
+        $jwt = (new AccessTokenFactory(self::JWT_KEY, self::ISSUER))->create(
+            ['studio-backend-default'],
+            [],
+            'pimcore-studio',
+            [self::RESOURCE_IDENTIFIER],
+            new DateTimeImmutable('+60 seconds')
+        );
+
+        [$header, $payload, $signature] = explode('.', $jwt);
+        $expected = rtrim(strtr(base64_encode(
+            hash_hmac('sha256', $header . '.' . $payload, self::JWT_KEY, true)
+        ), '+/', '-_'), '=');
+
+        $this->assertSame($expected, $signature);
+    }
+
     private function createTopicLoader(TopicCollection $topics): TopicLoaderInterface
     {
         return $this->makeEmpty(TopicLoaderInterface::class, ['loadTopics' => $topics]);
     }
 
-    private function createUrlService(): UrlServiceInterface
+    private function createAudienceService(): AudienceServiceInterface
     {
-        return $this->makeEmpty(UrlServiceInterface::class, [
+        return $this->makeEmpty(AudienceServiceInterface::class, [
             'getResourceIdentifier' => self::RESOURCE_IDENTIFIER,
             'getSubscriberAudience' => [self::RESOURCE_IDENTIFIER, self::PUBLIC_RESOURCE_IDENTIFIER],
         ]);

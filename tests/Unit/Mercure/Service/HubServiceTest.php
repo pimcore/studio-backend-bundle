@@ -15,12 +15,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mercure\Service;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Model\TopicCollection;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\AccessTokenFactory;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\AudienceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ClientTokenService;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubService;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TopicLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Symfony\Component\Mercure\Jwt\LcobucciFactory;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
 
 final class HubServiceTest extends Unit
@@ -80,12 +82,11 @@ final class HubServiceTest extends Unit
                 $this->makeEmpty(TopicLoaderInterface::class, [
                     'loadTopics' => new TopicCollection([], [], [], ['studio-backend-default']),
                 ]),
-                new LcobucciFactory(self::JWT_KEY),
-                $this->makeEmpty(UrlServiceInterface::class, [
+                new AccessTokenFactory(self::JWT_KEY, 'https://example.com'),
+                $this->makeEmpty(AudienceServiceInterface::class, [
                     'getSubscriberAudience' => ['http://mercure/.well-known/mercure'],
                 ]),
                 $this->makeEmpty(SecurityServiceInterface::class, ['isLoggedIn' => false]),
-                'https://example.com',
                 $lifetime
             ),
             $this->makeEmpty(UrlServiceInterface::class, ['getClientSideUrl' => 'https://example.com/hub']),
@@ -122,6 +123,47 @@ final class HubServiceTest extends Unit
 
         $this->assertSame('mercure_access_token', $cookie->getName());
         $this->assertFalse($cookie->isSecure());
+    }
+
+    /**
+     * Each hub reads the cookie of its own protocol; both carry the same token and scope.
+     */
+    public function testCookiesServeBothProtocols(): void
+    {
+        $service = new HubService(
+            $this->makeEmpty(TokenProviderInterface::class, ['getJwt' => 'jwt']),
+            $this->makeEmpty(UrlServiceInterface::class, ['getClientSideUrl' => 'https://example.com/hub']),
+            jwtCookieHost: '.example.com'
+        );
+
+        $cookies = $service->createCookies();
+
+        $this->assertSame(
+            ['__Secure-mercure_access_token', 'mercureAuthorization'],
+            array_map(static fn (Cookie $cookie): string => $cookie->getName(), $cookies)
+        );
+        foreach ($cookies as $cookie) {
+            $this->assertSame('jwt', $cookie->getValue());
+            $this->assertSame('/hub', $cookie->getPath());
+            $this->assertSame('.example.com', $cookie->getDomain());
+            $this->assertTrue($cookie->isSecure());
+            $this->assertTrue($cookie->isHttpOnly());
+        }
+    }
+
+    public function testCookiesShareOneToken(): void
+    {
+        $tokenProvider = $this->createMock(TokenProviderInterface::class);
+        $tokenProvider->expects($this->once())->method('getJwt')->willReturn('jwt');
+        $service = new HubService(
+            $tokenProvider,
+            $this->makeEmpty(UrlServiceInterface::class, ['getClientSideUrl' => 'http://localhost/hub']),
+        );
+
+        $this->assertSame(
+            ['mercure_access_token', 'mercureAuthorization'],
+            array_map(static fn (Cookie $cookie): string => $cookie->getName(), $service->createCookies())
+        );
     }
 
     public function testConfiguredCookieNameIsUsed(): void
