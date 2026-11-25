@@ -149,7 +149,7 @@ final readonly class VersionDetailService implements VersionDetailServiceInterfa
      * Relations to elements deleted after the version was saved can not be loaded with the version data,
      * the version only knows them as unresolved references.
      *
-     * @todo drop the guard once pimcore/pimcore ^2026.3.7 (which adds Version::getUnresolvedReferences()) is required
+     * @todo drop the guard once pimcore/pimcore ^2026.3.8 (which adds Version::getUnresolvedReferences()) is required
      */
     private function addDeletedRelations(DataObjectVersion $hydratedVersion, Concrete $element, Version $version): void
     {
