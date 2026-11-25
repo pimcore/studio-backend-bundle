@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Event\PreResponse\ScheduleActionEvent;
@@ -89,7 +91,7 @@ final readonly class ScheduleService implements ScheduleServiceInterface
     }
 
     /**
-     * @throws DatabaseException
+     * @throws DatabaseException|InvalidArgumentException|ForbiddenException|NotFoundException
      */
     public function updateSchedules(
         string $elementType,
