@@ -162,6 +162,32 @@ final class FavoriteServiceTest extends Unit
         $this->assertSame($third, $service->getFavoriteConfigurationForDataObject(999999, self::CLASS_ID));
     }
 
+    /**
+     * With duplicate shared defaults left by a race, removing a favorite must find the row of its
+     * own configuration, not just the first one.
+     */
+    public function testRemovingFavoriteFindsItsSharedDefaultAmongDuplicates(): void
+    {
+        $service = $this->createService();
+        $first = $this->createConfiguration(1);
+        $second = $this->createConfiguration(2);
+
+        foreach ([$second, $first] as $configuration) {
+            $duplicate = new GridConfigurationFavorite();
+            $duplicate->setUser(self::USER_ID);
+            $duplicate->setFolder(0);
+            $duplicate->setClassId(self::CLASS_ID);
+            $duplicate->setConfiguration($configuration);
+            $configuration->addFavorite($duplicate);
+        }
+
+        $service->removeDataObjectConfigurationAsFavoriteForCurrentUser($first, 101235);
+
+        $remaining = $this->findFavorites(self::USER_ID, 0, self::CLASS_ID);
+        $this->assertCount(1, $remaining);
+        $this->assertSame($second, $remaining[0]->getConfiguration());
+    }
+
     private function createConfiguration(?int $id): GridConfiguration
     {
         $configuration = $this->getMockBuilder(GridConfiguration::class)

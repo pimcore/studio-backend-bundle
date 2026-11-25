@@ -205,14 +205,16 @@ final readonly class FavoriteService implements FavoriteServiceInterface
 
     private function removeSharedDefaultForCurrentUser(GridConfiguration $gridConfiguration): void
     {
-        $shared = $this->gridConfigurationFavoriteRepository->getByUserAndDataObject(
+        $sharedDefaults = $this->gridConfigurationFavoriteRepository->getAllByUserAndDataObject(
             $this->securityService->getCurrentUser()->getId(),
             self::SHARED_DEFAULT_FOLDER,
             $gridConfiguration->getClassId()
         );
 
-        if ($shared?->getConfiguration() === $gridConfiguration) {
-            $shared->getConfiguration()->removeFavorite($shared);
+        foreach ($sharedDefaults as $shared) {
+            if ($shared->getConfiguration() === $gridConfiguration) {
+                $shared->getConfiguration()->removeFavorite($shared);
+            }
         }
     }
 }
