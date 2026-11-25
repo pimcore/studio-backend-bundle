@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 
 /**
@@ -46,21 +47,23 @@ interface KeyGroupRelationRepositoryInterface
     public function getByGroupIds(array $groupIds): array;
 
     /**
-     * The `localized` flag of each of the given keys, by key id, read in ONE statement.
+     * The key configuration of each of the given keys, by key id, read in ONE statement.
      *
      * Core's relation listing already joins the key's columns but keeps only those its relation model
-     * has a property for, and it has none for this one, so a listing that publishes the flag has to
-     * fetch it. Fetching it per row is what this exists to avoid: `KeyConfig::getById()` queries on
-     * a cache miss, so a cold page of N keys would cost N statements.
+     * has a property for, and it has neither the `localized` flag nor the title, so a listing that
+     * publishes them has to fetch them. Fetching them per row is what this exists to avoid:
+     * `KeyConfig::getById()` queries on a cache miss, so a cold page of N keys would cost N
+     * statements.
      *
-     * Only the keys that have a row are present, and a key present with null states no flag of its
-     * own. Keys are read whether enabled or not, because the listing lists them either way.
+     * Only the keys that have a row are present; a key the configuration no longer carries is
+     * absent, and the caller publishes nothing for it. Keys are read whether enabled or not, because
+     * the listing lists them either way.
      *
      * @param int[] $keyIds duplicates and an empty list are allowed
      *
-     * @return array<int, bool|null>
+     * @return array<int, KeyConfig>
      *
      * @throws DatabaseException
      */
-    public function getKeyLocalizationFlags(array $keyIds): array;
+    public function getKeyConfigs(array $keyIds): array;
 }

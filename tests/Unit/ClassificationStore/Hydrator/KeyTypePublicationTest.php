@@ -18,6 +18,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\Se
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\KeyGroupRelationHydrator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyFilterResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolver;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\LabelResolverMockTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
@@ -34,6 +35,8 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
  */
 final class KeyTypePublicationTest extends Unit
 {
+    use LabelResolverMockTrait;
+
     public function testTheStoredKeyTypeIsPublishedVerbatim(): void
     {
         $relation = new KeyGroupRelation();
@@ -104,10 +107,14 @@ final class KeyTypePublicationTest extends Unit
 
     private function hydrator(): KeyGroupRelationHydrator
     {
-        return new KeyGroupRelationHydrator(new KeyFilterResolver(
-            $this->makeEmpty(ServiceResolverInterface::class, ['getFieldDefinitionFromJson' => new Input()]),
-            new SearchIndexFlagResolver()
-        ));
+        return new KeyGroupRelationHydrator(
+            new KeyFilterResolver(
+                $this->makeEmpty(ServiceResolverInterface::class, ['getFieldDefinitionFromJson' => new Input()]),
+                new SearchIndexFlagResolver()
+            ),
+            $this->createLabelResolver(),
+            $this->createLabelLanguageResolver('en', 'en')
+        );
     }
 
     private function groupConfig(): GroupConfig

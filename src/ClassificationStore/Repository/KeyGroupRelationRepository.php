@@ -20,11 +20,13 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizati
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
 use function array_unique;
 use function array_values;
 use function count;
+use function is_string;
 use function sprintf;
 
 /**
@@ -33,17 +35,22 @@ use function sprintf;
 final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepositoryInterface
 {
     /**
-     * Every column, rather than `id` and `localized`: `composer.json` allows a core whose
+     * Every column, rather than a named list: `composer.json` allows a core whose
      * `classificationstore_keys` has no `localized` column, and naming the column would fail against
      * one of those instead of reporting that no key states a flag. This is the single statement the
      * per-row `KeyConfig::getById()` calls collapse into, and it reads the same rows those did.
      */
-    private const string LOCALIZATION_QUERY = 'SELECT * FROM `%s` WHERE `id` IN (?)';
+    private const string KEY_QUERY = 'SELECT * FROM `%s` WHERE `id` IN (?)';
+
+    private const string TITLE_COLUMN = 'title';
+
+    private const string NAME_COLUMN = 'name';
 
     public function __construct(
         private GroupConfigRepositoryInterface $groupConfigRepository,
         private SearchHelperServiceInterface $searchHelperService,
         private DbResolverInterface $dbResolver,
+        private KeyLocalizationResolverInterface $keyLocalizationResolver,
     ) {
     }
 
@@ -87,7 +94,7 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
     /**
      * {@inheritdoc}
      */
-    public function getKeyLocalizationFlags(array $keyIds): array
+    public function getKeyConfigs(array $keyIds): array
     {
         $keyIds = array_values(array_unique($keyIds));
 
@@ -97,25 +104,54 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
 
         try {
             $rows = $this->dbResolver->get()->fetchAllAssociative(
-                sprintf(self::LOCALIZATION_QUERY, KeyConfigDao::TABLE_NAME_KEYS),
+                sprintf(self::KEY_QUERY, KeyConfigDao::TABLE_NAME_KEYS),
                 [$keyIds],
                 [ArrayParameterType::INTEGER]
             );
         } catch (DBALException $e) {
             throw new DatabaseException(
-                'Failed to read the localization flags of the keys: ' . $e->getMessage(),
+                'Failed to read the key configurations of the keys: ' . $e->getMessage(),
                 $e
             );
         }
 
-        $flags = [];
+        $keyConfigs = [];
 
         foreach ($rows as $row) {
-            $flag = $row[KeyLocalizationResolverInterface::LOCALIZED_COLUMN] ?? null;
-            $flags[(int) $row['id']] = $flag === null ? null : (bool) $flag;
+            $keyConfigs[(int) $row['id']] = $this->toKeyConfig($row);
         }
 
-        return $flags;
+        return $keyConfigs;
+    }
+
+    /**
+     * The row as the key configuration model, carrying only what a listing page resolves against:
+     * the identity, the name and the title the label chain ends on, plus the `localized` flag.
+     *
+     * A column the row does not carry is not written, so a core without it leaves the model's own
+     * default standing rather than failing the page.
+     *
+     * @param array<string, mixed> $row
+     */
+    private function toKeyConfig(array $row): KeyConfig
+    {
+        $keyConfig = new KeyConfig();
+        $keyConfig->setId((int) $row['id']);
+
+        $name = $row[self::NAME_COLUMN] ?? null;
+        if (is_string($name)) {
+            $keyConfig->setName($name);
+        }
+
+        $title = $row[self::TITLE_COLUMN] ?? null;
+        if (is_string($title)) {
+            $keyConfig->setTitle($title);
+        }
+
+        $localized = $row[KeyLocalizationResolverInterface::LOCALIZED_COLUMN] ?? null;
+        $this->keyLocalizationResolver->setLocalized($keyConfig, $localized === null ? null : (bool) $localized);
+
+        return $keyConfig;
     }
 
     private function getBaseListing(int $storeId, ?array $groupIds = null, ?string $searchTerm = null): Listing

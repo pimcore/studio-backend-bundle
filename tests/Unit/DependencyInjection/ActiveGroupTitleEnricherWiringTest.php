@@ -18,7 +18,9 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\LayoutDefin
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\LayoutDefinitionService as ObjectBrickService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricher;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricherInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\KeyGroupRelationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupRelationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\LayoutService;
 use Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface;
 use ReflectionClass;
@@ -52,17 +54,22 @@ final class ActiveGroupTitleEnricherWiringTest extends Unit
     }
 
     /**
-     * Both layout paths resolve their labels through core's resolver, which is reached by an explicit
+     * Every path that labels a key resolves it through core's resolver, which is reached by an explicit
      * argument rather than left to autowiring discovery: the supported contract is an alias in core,
      * and an unresolvable id would only surface when the container compiles.
      */
-    public function testBothLayoutServicesTakeCoresLabelResolverExplicitly(): void
+    public function testEveryLabellingServiceTakesCoresLabelResolverExplicitly(): void
     {
         $container = new ContainerBuilder();
         $loader = new YamlFileLoader($container, new FileLocator(dirname(__DIR__, 3) . '/config'));
         $loader->load('classification_store.yaml');
 
-        $services = [ActiveGroupTitleEnricherInterface::class, KeyGroupLayoutServiceInterface::class];
+        $services = [
+            ActiveGroupTitleEnricherInterface::class,
+            KeyGroupLayoutServiceInterface::class,
+            KeyGroupRelationServiceInterface::class,
+            KeyGroupRelationHydratorInterface::class,
+        ];
 
         foreach ($services as $service) {
             $this->assertSame(
