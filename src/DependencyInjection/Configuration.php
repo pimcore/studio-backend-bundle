@@ -365,7 +365,8 @@ class Configuration implements ConfigurationInterface
                     ->end()
                     ->scalarNode('issuer')
                         ->info('Issuer ("iss" claim) of the Mercure access tokens. A 1.x hub without ' .
-                            'compatibility mode must trust it, e.g. with its MERCURE_TRUSTED_ISSUERS environment variable. ' .
+                            'compatibility mode must trust it, ' .
+                            'e.g. with its MERCURE_TRUSTED_ISSUERS environment variable. ' .
                             'The default matches the default of the hub, which only suits development.'
                         )
                         ->defaultValue('https://localhost')
