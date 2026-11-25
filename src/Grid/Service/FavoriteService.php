@@ -171,19 +171,28 @@ final readonly class FavoriteService implements FavoriteServiceInterface
     private function setSharedDefaultForCurrentUser(GridConfiguration $gridConfiguration): void
     {
         $userId = $this->securityService->getCurrentUser()->getId();
-        $shared = $this->gridConfigurationFavoriteRepository->getByUserAndDataObject(
+        $isDefaultAlready = false;
+
+        // More than one row can exist if two requests set the default at the same time; keep one, drop the rest
+        foreach ($this->gridConfigurationFavoriteRepository->getAllByUserAndDataObject(
             $userId,
             self::SHARED_DEFAULT_FOLDER,
             $gridConfiguration->getClassId()
-        );
+        ) as $shared) {
+            // Compared by instance: a configuration that is saved together with its favorite has no id yet
+            if (!$isDefaultAlready && $shared->getConfiguration() === $gridConfiguration) {
+                $isDefaultAlready = true;
 
-        // Compared by instance: a configuration that is saved together with its favorite has no id yet
-        if ($shared?->getConfiguration() === $gridConfiguration) {
-            return;
+                continue;
+            }
+
+            // The configuration is part of the row's identifier, so the row is replaced, not updated
+            $shared->getConfiguration()->removeFavorite($shared);
         }
 
-        // The configuration is part of the row's identifier, so the row is replaced, not updated
-        $shared?->getConfiguration()->removeFavorite($shared);
+        if ($isDefaultAlready) {
+            return;
+        }
 
         $shared = new GridConfigurationFavorite();
         $shared->setFolder(self::SHARED_DEFAULT_FOLDER);

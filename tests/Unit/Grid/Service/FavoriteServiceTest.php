@@ -22,6 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\FavoriteService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\User;
 use TypeError;
+use function array_filter;
+use function array_values;
 use function spl_object_id;
 
 /**
@@ -134,6 +136,32 @@ final class FavoriteServiceTest extends Unit
         $this->assertSame($existing, $service->getFavoriteConfigurationForDataObject(101235, self::CLASS_ID));
     }
 
+    /**
+     * Two concurrent requests can both insert a shared default (the primary key includes the
+     * configuration); the next time a favorite is set only the new default may remain.
+     */
+    public function testDuplicateSharedDefaultsAreCleanedUpWhenFavoriteIsSet(): void
+    {
+        $service = $this->createService();
+        $first = $this->createConfiguration(1);
+        $second = $this->createConfiguration(2);
+        $third = $this->createConfiguration(3);
+
+        foreach ([$first, $second] as $configuration) {
+            $duplicate = new GridConfigurationFavorite();
+            $duplicate->setUser(self::USER_ID);
+            $duplicate->setFolder(0);
+            $duplicate->setClassId(self::CLASS_ID);
+            $duplicate->setConfiguration($configuration);
+            $configuration->addFavorite($duplicate);
+        }
+
+        $service->setDataObjectConfigurationAsFavoriteForCurrentUser($third, 101235);
+
+        $this->assertCount(1, $this->findFavorites(self::USER_ID, 0, self::CLASS_ID));
+        $this->assertSame($third, $service->getFavoriteConfigurationForDataObject(999999, self::CLASS_ID));
+    }
+
     private function createConfiguration(?int $id): GridConfiguration
     {
         $configuration = $this->getMockBuilder(GridConfiguration::class)
@@ -182,21 +210,28 @@ final class FavoriteServiceTest extends Unit
             )
         );
 
+        $repository->method('getAllByUserAndDataObject')->willReturnCallback(
+            fn (int $user, int $folder, string $classId): array => $this->findFavorites($user, $folder, $classId)
+        );
+
         return new FavoriteService($repository, $share, $security);
     }
 
     private function findFavorite(int $user, int $folder, string $classId): ?GridConfigurationFavorite
     {
-        foreach ($this->storedFavorites as $favorite) {
-            if (
-                $favorite->getUser() === $user
+        return $this->findFavorites($user, $folder, $classId)[0] ?? null;
+    }
+
+    /**
+     * @return GridConfigurationFavorite[]
+     */
+    private function findFavorites(int $user, int $folder, string $classId): array
+    {
+        return array_values(array_filter(
+            $this->storedFavorites,
+            static fn (GridConfigurationFavorite $favorite): bool => $favorite->getUser() === $user
                 && $favorite->getFolder() === $folder
                 && $favorite->getClassId() === $classId
-            ) {
-                return $favorite;
-            }
-        }
-
-        return null;
+        ));
     }
 }

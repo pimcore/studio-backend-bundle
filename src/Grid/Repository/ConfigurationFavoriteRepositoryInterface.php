@@ -27,4 +27,13 @@ interface ConfigurationFavoriteRepositoryInterface
         int $dataObjectFolderId,
         string $classId
     ): ?GridConfigurationFavorite;
+
+    /**
+     * @return GridConfigurationFavorite[]
+     */
+    public function getAllByUserAndDataObject(
+        int $user,
+        int $dataObjectFolderId,
+        string $classId
+    ): array;
 }
