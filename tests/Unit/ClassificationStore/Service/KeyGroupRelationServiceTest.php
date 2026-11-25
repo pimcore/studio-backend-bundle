@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Serv
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\GroupConfigResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\KeyGroupRelationHydrator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
@@ -28,16 +27,15 @@ use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation as CoreKeyGroupRelation;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use function array_flip;
-use function array_intersect_key;
 
 /**
  * The store-wide key listing the object editor's add-keys modal and the grid column picker read.
  * A key's `localized` flag is a column of the key, and core's relation listing keeps only the joined
  * columns it has a property for - it has none for this one - so the flag is fetched for the page.
  *
- * Once for the page, and not once per row: `KeyConfig::getById()` queries on a cache miss, so a
- * per-row read would cost a cold page of N keys N statements.
+ * The title is the same story, and comes out of the same read. Once for the page, and not once per
+ * row: `KeyConfig::getById()` queries on a cache miss, so a per-row read would cost a cold page of
+ * N keys N statements.
  *
  * @internal
  */
@@ -60,11 +58,11 @@ final class KeyGroupRelationServiceTest extends Unit
     /**
      * @var list<array<int>>
      */
-    private array $localizationReads = [];
+    private array $keyConfigReads = [];
 
     public function _before(): void
     {
-        $this->localizationReads = [];
+        $this->keyConfigReads = [];
         $this->labelResolverCalls = [];
     }
 
@@ -90,26 +88,6 @@ final class KeyGroupRelationServiceTest extends Unit
     public function testARelationWhoseKeyCannotBeResolvedReportsNoLocalizationFlag(): void
     {
         $this->assertNull($this->getKeyGroupRelations()[3]->getLocalized());
-    }
-
-    /**
-     * The flags of the whole page are fetched in one read, naming every key the page lists.
-     *
-     * @throws Exception
-     */
-    public function testThePageIsReadOnceForEveryKeyItLists(): void
-    {
-        $this->getKeyGroupRelations();
-
-        $this->assertSame(
-            [[
-                self::LOCALIZED_KEY_ID,
-                self::NOT_LOCALIZED_KEY_ID,
-                self::INHERITING_KEY_ID,
-                self::UNRESOLVABLE_KEY_ID,
-            ]],
-            $this->localizationReads
-        );
     }
 
     /**
@@ -154,21 +132,46 @@ final class KeyGroupRelationServiceTest extends Unit
     }
 
     /**
-     * A core that does not carry the flag is not read at all: there the answer could only be null
-     * for every key, and the listing says so without going near the database.
+     * The key configurations of the whole page are read in ONE statement, naming every key the page
+     * lists: both the `localized` flag and the title the rows carry come out of it. A lookup per
+     * relation is the N+1 this guards - it is invisible in the published payload, and paging this
+     * very dialog is already slow.
      *
      * @throws Exception
      */
-    public function testACoreWithoutTheFlagIsNotReadAtAll(): void
+    public function testTheKeyConfigurationsOfThePageAreReadInOneStatement(): void
+    {
+        $this->getKeyGroupRelations();
+
+        $this->assertSame(
+            [[
+                self::LOCALIZED_KEY_ID,
+                self::NOT_LOCALIZED_KEY_ID,
+                self::INHERITING_KEY_ID,
+                self::UNRESOLVABLE_KEY_ID,
+            ]],
+            $this->keyConfigReads,
+            'the key configurations of the page must cost one read, not one per relation'
+        );
+    }
+
+    /**
+     * A core that does not carry the flag reports none for any key: there the answer could only be
+     * null. The page is still read once, because the title rides the same statement.
+     *
+     * @throws Exception
+     */
+    public function testACoreWithoutTheFlagReportsNoneForAnyKey(): void
     {
         $relations = $this->getKeyGroupRelations(new InMemoryKeyLocalizationResolver(false));
 
-        $this->assertSame([], $this->localizationReads);
         $this->assertCount(4, $relations);
 
         foreach ($relations as $relation) {
             $this->assertNull($relation->getLocalized());
         }
+
+        $this->assertCount(1, $this->keyConfigReads);
     }
 
     /**
@@ -196,14 +199,13 @@ final class KeyGroupRelationServiceTest extends Unit
                 $this->createRelation(self::UNRESOLVABLE_KEY_ID),
             ]);
         $repository
-            ->method('getKeyLocalizationFlags')
+            ->method('getKeyConfigs')
             ->willReturnCallback(
-                // a key the configuration no longer carries has no row and is absent, rather than
-                // present as null
-                function (array $keyIds) use ($flags): array {
-                    $this->localizationReads[] = $keyIds;
+                // a key the configuration no longer carries has no row and is absent altogether
+                function (array $keyIds) use ($flags, $keyLocalizationResolver): array {
+                    $this->keyConfigReads[] = $keyIds;
 
-                    return array_intersect_key($flags, array_flip($keyIds));
+                    return $this->createKeyConfigs($keyIds, $flags, $keyLocalizationResolver);
                 }
             );
 
@@ -221,15 +223,6 @@ final class KeyGroupRelationServiceTest extends Unit
             ->method('getById')
             ->willReturn($groupConfig);
 
-        $keyConfigResolver = $this->createMock(KeyConfigResolverInterface::class);
-        $keyConfigResolver
-            ->method('getById')
-            ->willReturnCallback(
-                fn (int $keyId): ?KeyConfig => $keyId === self::UNRESOLVABLE_KEY_ID
-                    ? null
-                    : $this->createKeyConfig($keyId, 'key' . $keyId, 'Key ' . $keyId)
-            );
-
         $labelResolver = $this->createLabelResolver();
         $labelLanguageResolver = $this->createLabelLanguageResolver('en', 'en');
 
@@ -238,7 +231,6 @@ final class KeyGroupRelationServiceTest extends Unit
             $groupService,
             new KeyGroupRelationHydrator(
                 $this->createMock(KeyFilterResolverInterface::class),
-                $keyConfigResolver,
                 $labelResolver,
                 $labelLanguageResolver
             ),
@@ -254,6 +246,34 @@ final class KeyGroupRelationServiceTest extends Unit
                 new ListClassificationStoreParameter(self::STORE_ID, 'classificationStore', 1, 50)
             )
             ->getItems();
+    }
+
+    /**
+     * The rows the one page read returns: a key the configuration no longer carries has none.
+     *
+     * @param int[] $keyIds
+     * @param array<int, bool|null> $flags
+     *
+     * @return array<int, KeyConfig>
+     */
+    private function createKeyConfigs(
+        array $keyIds,
+        array $flags,
+        InMemoryKeyLocalizationResolver $keyLocalizationResolver
+    ): array {
+        $keyConfigs = [];
+
+        foreach ($keyIds as $keyId) {
+            if ($keyId === self::UNRESOLVABLE_KEY_ID) {
+                continue;
+            }
+
+            $keyConfig = $this->createKeyConfig($keyId, 'key' . $keyId, 'Key ' . $keyId);
+            $keyLocalizationResolver->setLocalized($keyConfig, $flags[$keyId] ?? null);
+            $keyConfigs[$keyId] = $keyConfig;
+        }
+
+        return $keyConfigs;
     }
 
     private function createRelation(int $keyId): CoreKeyGroupRelation

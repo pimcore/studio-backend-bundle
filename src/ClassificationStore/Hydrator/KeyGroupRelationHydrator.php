@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator;
 
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyGroupRelation;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyFilterResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolverInterface;
@@ -30,7 +29,6 @@ final class KeyGroupRelationHydrator implements KeyGroupRelationHydratorInterfac
 {
     public function __construct(
         private readonly KeyFilterResolverInterface $keyFilterResolver,
-        private readonly KeyConfigResolverInterface $keyConfigResolver,
         private readonly LabelResolverInterface $labelResolver,
         private readonly LabelLanguageResolverInterface $labelLanguageResolver,
     ) {
@@ -40,6 +38,7 @@ final class KeyGroupRelationHydrator implements KeyGroupRelationHydratorInterfac
         CoreKeyGroupRelation $keyGroupRelation,
         GroupConfig $groupConfig,
         ?bool $keyLocalized = null,
+        ?KeyConfig $keyConfig = null,
     ): KeyGroupRelation {
         $filterStated = $this->statesTypeAndDefinition($keyGroupRelation);
         $filterReason = $filterStated ? $this->keyFilterResolver->getFilterUnavailableReason($keyGroupRelation) : null;
@@ -56,7 +55,7 @@ final class KeyGroupRelationHydrator implements KeyGroupRelationHydratorInterfac
             keyType: $this->readType($keyGroupRelation),
             filterable: $filterStated ? $filterReason === null : null,
             filterUnavailableReason: $filterReason?->value,
-            keyTitle: $this->resolveKeyTitle($keyGroupRelation),
+            keyTitle: $this->resolveKeyTitle($keyConfig),
         );
     }
 
@@ -64,15 +63,14 @@ final class KeyGroupRelationHydrator implements KeyGroupRelationHydratorInterfac
      * The label the key is shown under, resolved for the label language.
      *
      * The relation itself carries no title: core's listing selects the key's columns but keeps only
-     * those its model has a property for, and it has none for this one. The resolver walks the
-     * language chain down to the key's own title and then to its name, so no fallback is repeated
-     * here; null stands for a relation whose key configuration is gone, which the caller reads as
-     * "nothing better than the name".
+     * those its model has a property for, and it has none for this one, so the caller hands the key
+     * configuration of the whole page in - looking one up per relation is a statement per row. The
+     * resolver walks the language chain down to the key's own title and then to its name, so no
+     * fallback is repeated here; null stands for a relation whose key configuration is gone, which
+     * the caller reads as "nothing better than the name".
      */
-    private function resolveKeyTitle(CoreKeyGroupRelation $keyGroupRelation): ?string
+    private function resolveKeyTitle(?KeyConfig $keyConfig): ?string
     {
-        $keyConfig = $this->keyConfigResolver->getById($keyGroupRelation->getKeyId());
-
         if (!$keyConfig instanceof KeyConfig) {
             return null;
         }

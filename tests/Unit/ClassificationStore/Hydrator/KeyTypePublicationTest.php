@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Hydrator;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\KeyGroupRelationHydrator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyFilterResolver;
@@ -113,7 +112,6 @@ final class KeyTypePublicationTest extends Unit
                 $this->makeEmpty(ServiceResolverInterface::class, ['getFieldDefinitionFromJson' => new Input()]),
                 new SearchIndexFlagResolver()
             ),
-            $this->createMock(KeyConfigResolverInterface::class),
             $this->createLabelResolver(),
             $this->createLabelLanguageResolver('en', 'en')
         );

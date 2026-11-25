@@ -23,9 +23,11 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperS
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use function array_keys;
 use function array_map;
 
 /**
@@ -103,20 +105,31 @@ final class KeyGroupRelationRepositoryTest extends Unit
     }
 
     /**
-     * The flags of a whole listing page in one statement, which is what keeps a cold page of N keys
-     * from costing N reads of the key configuration.
+     * The key configurations of a whole listing page in one statement, which is what keeps a cold
+     * page of N keys from costing N reads of the key configuration.
      */
-    public function testGetKeyLocalizationFlagsReadsEveryKeyInOneStatement(): void
+    public function testGetKeyConfigsReadsEveryKeyInOneStatement(): void
     {
-        $repository = $this->createRepository(dbResolver: $this->stubKeyRowsReturning([
-            ['id' => 11, 'localized' => 1],
-            ['id' => 12, 'localized' => 0],
-            ['id' => 13, 'localized' => null],
-        ]));
+        $keyLocalizationResolver = new InMemoryKeyLocalizationResolver();
+        $repository = $this->createRepository(
+            dbResolver: $this->stubKeyRowsReturning([
+                ['id' => 11, 'name' => 'weight', 'title' => 'Weight', 'localized' => 1],
+                ['id' => 12, 'name' => 'height', 'title' => '', 'localized' => 0],
+                ['id' => 13, 'name' => 'depth', 'title' => 'Depth', 'localized' => null],
+            ]),
+            keyLocalizationResolver: $keyLocalizationResolver
+        );
 
-        $flags = $repository->getKeyLocalizationFlags([11, 12, 13, 11]);
+        $keyConfigs = $repository->getKeyConfigs([11, 12, 13, 11]);
 
-        $this->assertSame([11 => true, 12 => false, 13 => null], $flags);
+        $this->assertSame([11, 12, 13], array_keys($keyConfigs));
+        $this->assertSame('weight', $keyConfigs[11]->getName());
+        $this->assertSame('Weight', $keyConfigs[11]->getTitle());
+        $this->assertSame('', $keyConfigs[12]->getTitle());
+        $this->assertTrue($keyLocalizationResolver->getLocalized($keyConfigs[11]));
+        $this->assertFalse($keyLocalizationResolver->getLocalized($keyConfigs[12]));
+        $this->assertNull($keyLocalizationResolver->getLocalized($keyConfigs[13]));
+
         $this->assertCount(1, $this->keyLocalizationQueries);
         $this->assertSame(
             'SELECT * FROM `classificationstore_keys` WHERE `id` IN (?)',
@@ -127,24 +140,30 @@ final class KeyGroupRelationRepositoryTest extends Unit
     }
 
     /**
-     * A key with no row - one the configuration no longer carries - is absent rather than present as
-     * null, and a core whose `classificationstore_keys` has no `localized` column reports no flag
-     * for any key rather than failing: the statement names no column.
+     * A key with no row - one the configuration no longer carries - is absent altogether, and a core
+     * whose `classificationstore_keys` has neither the `localized` nor the `title` column reports
+     * neither rather than failing: the statement names no column.
      */
-    public function testGetKeyLocalizationFlagsLeavesOutWhatTheKeysTableDoesNotCarry(): void
+    public function testGetKeyConfigsLeavesOutWhatTheKeysTableDoesNotCarry(): void
     {
-        $repository = $this->createRepository(dbResolver: $this->stubKeyRowsReturning([
-            ['id' => 11, 'name' => 'weight'],
-        ]));
+        $keyLocalizationResolver = new InMemoryKeyLocalizationResolver();
+        $repository = $this->createRepository(
+            dbResolver: $this->stubKeyRowsReturning([['id' => 11, 'name' => 'weight']]),
+            keyLocalizationResolver: $keyLocalizationResolver
+        );
 
-        $this->assertSame([11 => null], $repository->getKeyLocalizationFlags([11, 12]));
+        $keyConfigs = $repository->getKeyConfigs([11, 12]);
+
+        $this->assertSame([11], array_keys($keyConfigs));
+        $this->assertNull($keyConfigs[11]->getTitle());
+        $this->assertNull($keyLocalizationResolver->getLocalized($keyConfigs[11]));
     }
 
-    public function testGetKeyLocalizationFlagsAsksNothingForAnEmptyPage(): void
+    public function testGetKeyConfigsAsksNothingForAnEmptyPage(): void
     {
         $repository = $this->createRepository(dbResolver: $this->stubKeyRowsReturning([]));
 
-        $this->assertSame([], $repository->getKeyLocalizationFlags([]));
+        $this->assertSame([], $repository->getKeyConfigs([]));
         $this->assertSame([], $this->keyLocalizationQueries);
     }
 
@@ -166,14 +185,16 @@ final class KeyGroupRelationRepositoryTest extends Unit
 
     private function createRepository(
         ?SearchHelperServiceInterface $searchHelperService = null,
-        ?DbResolverInterface $dbResolver = null
+        ?DbResolverInterface $dbResolver = null,
+        ?InMemoryKeyLocalizationResolver $keyLocalizationResolver = null
     ): KeyGroupRelationRepository {
         $groupConfig = (new GroupConfig())->setId(self::GROUP_ID);
 
         return new KeyGroupRelationRepository(
             $this->makeEmpty(GroupConfigRepositoryInterface::class, ['getAllGroupsByStore' => [$groupConfig]]),
             $searchHelperService ?? $this->makeEmpty(SearchHelperServiceInterface::class),
-            $dbResolver ?? $this->makeEmpty(DbResolverInterface::class)
+            $dbResolver ?? $this->makeEmpty(DbResolverInterface::class),
+            $keyLocalizationResolver ?? new InMemoryKeyLocalizationResolver()
         );
     }
 

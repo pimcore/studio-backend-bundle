@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Hydrator;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\KeyGroupRelationHydrator;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyGroupRelation;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyFilterResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\LabelResolverMockTrait;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
@@ -37,9 +37,7 @@ final class KeyTitlePublicationTest extends Unit
 
     public function testTheKeysOwnTitleIsPublishedBesideItsName(): void
     {
-        $hydrated = $this
-            ->hydrator($this->createKeyConfig(self::KEY_ID, 'height', 'Height'))
-            ->hydrate($this->relation(), $this->groupConfig());
+        $hydrated = $this->hydrate($this->createKeyConfig(self::KEY_ID, 'height', 'Height'));
 
         $this->assertSame('height', $hydrated->getKeyName());
         $this->assertSame('Height', $hydrated->getKeyTitle());
@@ -47,22 +45,18 @@ final class KeyTitlePublicationTest extends Unit
 
     public function testAStoredLabelOfTheLabelLanguageWinsOverTheOwnTitle(): void
     {
-        $hydrated = $this
-            ->hydrator(
-                $this->createKeyConfig(self::KEY_ID, 'height', 'Height'),
-                [self::KEY_ID => ['de' => 'Höhe', 'en' => 'Height']],
-                'de'
-            )
-            ->hydrate($this->relation(), $this->groupConfig());
+        $hydrated = $this->hydrate(
+            $this->createKeyConfig(self::KEY_ID, 'height', 'Height'),
+            [self::KEY_ID => ['de' => 'Höhe', 'en' => 'Height']],
+            'de'
+        );
 
         $this->assertSame('Höhe', $hydrated->getKeyTitle());
     }
 
     public function testAKeyWithoutATitleFallsBackToItsNameRatherThanToNothing(): void
     {
-        $hydrated = $this
-            ->hydrator($this->createKeyConfig(self::KEY_ID, 'height'))
-            ->hydrate($this->relation(), $this->groupConfig());
+        $hydrated = $this->hydrate($this->createKeyConfig(self::KEY_ID, 'height'));
 
         $this->assertSame(
             'height',
@@ -73,7 +67,7 @@ final class KeyTitlePublicationTest extends Unit
 
     public function testARelationWhoseKeyCannotBeResolvedPublishesNoTitle(): void
     {
-        $hydrated = $this->hydrator(null)->hydrate($this->relation(), $this->groupConfig());
+        $hydrated = $this->hydrate(null);
 
         $this->assertNull(
             $hydrated->getKeyTitle(),
@@ -82,24 +76,23 @@ final class KeyTitlePublicationTest extends Unit
     }
 
     /**
+     * The key configuration is handed in, the way the listing hands in the one it read for the whole
+     * page; null is a relation whose key the configuration no longer carries.
+     *
      * @param array<int, array<string, string>> $labels
      */
-    private function hydrator(
+    private function hydrate(
         ?KeyConfig $keyConfig,
         array $labels = [],
         string $userLanguage = 'en'
-    ): KeyGroupRelationHydrator {
-        $keyConfigResolver = $this->createMock(KeyConfigResolverInterface::class);
-        $keyConfigResolver
-            ->method('getById')
-            ->willReturn($keyConfig);
-
-        return new KeyGroupRelationHydrator(
+    ): KeyGroupRelation {
+        $hydrator = new KeyGroupRelationHydrator(
             $this->createMock(KeyFilterResolverInterface::class),
-            $keyConfigResolver,
             $this->createLabelResolver($labels),
             $this->createLabelLanguageResolver($userLanguage, 'en')
         );
+
+        return $hydrator->hydrate($this->relation(), $this->groupConfig(), null, $keyConfig);
     }
 
     private function relation(): CoreKeyGroupRelation

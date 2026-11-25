@@ -62,16 +62,19 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
             $parameter->getSearchTerm()
         );
 
-        $localizationFlags = $this->resolveKeyLocalizationFlags($keyGroupRelations);
+        // the flag and the title of every key on the page in one statement, never one per relation
+        $keyConfigs = $this->keyGroupRelationRepository->getKeyConfigs($this->keyIds($keyGroupRelations));
         $this->preloadKeyTitles($keyGroupRelations);
 
         foreach ($keyGroupRelations as $keyGroupRelation) {
             $groupConfig = $this->groupConfigResolver->getById($keyGroupRelation->getGroupId());
+            $keyConfig = $keyConfigs[$keyGroupRelation->getKeyId()] ?? null;
 
             $hydratedKeyGroupRelation = $this->keyGroupRelationHydrator->hydrate(
                 $keyGroupRelation,
                 $groupConfig,
-                $localizationFlags[$keyGroupRelation->getKeyId()] ?? null
+                $keyConfig === null ? null : $this->keyLocalizationResolver->getLocalized($keyConfig),
+                $keyConfig
             );
 
             $this->eventDispatcher->dispatch(
@@ -105,38 +108,21 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
 
         $this->labelResolver->preload(
             LabelEntityType::Key,
-            array_map(
-                static fn (KeyGroupRelation $keyGroupRelation): int => $keyGroupRelation->getKeyId(),
-                $keyGroupRelations
-            ),
+            $this->keyIds($keyGroupRelations),
             $this->labelLanguageResolver->getLabelLanguage()
         );
     }
 
     /**
-     * The `localized` flag of every key on the page, in one statement: core's relation listing
-     * selects the key's columns but keeps only those its model has a property for, and it has none
-     * for this one. A key the configuration no longer carries is simply absent from the result and
-     * reports nothing, rather than failing the whole listing.
-     *
-     * A core that does not carry the flag is not asked at all - there, the answer could only be null
-     * for every key.
-     *
      * @param KeyGroupRelation[] $keyGroupRelations
      *
-     * @return array<int, bool|null>
+     * @return int[]
      */
-    private function resolveKeyLocalizationFlags(array $keyGroupRelations): array
+    private function keyIds(array $keyGroupRelations): array
     {
-        if (!$this->keyLocalizationResolver->supportsLocalization()) {
-            return [];
-        }
-
-        return $this->keyGroupRelationRepository->getKeyLocalizationFlags(
-            array_map(
-                static fn (KeyGroupRelation $keyGroupRelation): int => $keyGroupRelation->getKeyId(),
-                $keyGroupRelations
-            )
+        return array_map(
+            static fn (KeyGroupRelation $keyGroupRelation): int => $keyGroupRelation->getKeyId(),
+            $keyGroupRelations
         );
     }
 }
