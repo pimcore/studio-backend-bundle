@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant;
 
 /**
  * Mercure protocol a hub speaks, as named by symfony/mercure.
+ *
+ * @internal
  */
 enum ProtocolVersion: string
 {
