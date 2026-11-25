@@ -14,6 +14,8 @@ Pimcore Studio works with Mercure 0.x and 1.x hubs (see the [Mercure docs](https
 | 1.x (recommended) | `dunglas/mercure:v1` | `anonymous`; optionally `protocol_version_compatibility 8` |
 | 0.x | `dunglas/mercure:v0.24` | `anonymous`; never add `protocol_version_compatibility 8` |
 
+> Since 2026.4. Before 2026.4, Studio speaks only the 0.x protocol: a 1.x hub needs `protocol_version_compatibility 8`.
+
 Pin the image to `v1` or `v0.24`. The 0.x protocol is removed in the next major version.
 
 - `mercure_settings.protocol_version`: `auto` (default) detects the protocol via
