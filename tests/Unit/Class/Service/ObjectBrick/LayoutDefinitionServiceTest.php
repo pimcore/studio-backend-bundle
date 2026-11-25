@@ -88,9 +88,9 @@ final class LayoutDefinitionServiceTest extends Unit
         $user = new User();
         $dataObject = $this->createDataObject($user, view: true, list: true);
 
-        $brickField = new Objectbricks();
-        $brickField->setName('bricks');
-        $brickField->setAllowedTypes(['BrickA', 'BrickB']);
+        $brickField = $this->createMock(Objectbricks::class);
+        $brickField->method('getName')->willReturn('bricks');
+        $brickField->method('getAllowedTypes')->willReturn(['BrickA', 'BrickB']);
 
         $classDefinition = $this->createMock(ClassDefinition::class);
         $classDefinition->method('getFieldDefinitions')->willReturn(['bricks' => $brickField]);
