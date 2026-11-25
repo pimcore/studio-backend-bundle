@@ -3,23 +3,12 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
-- [Mercure] Changed: Studio supports 0.x hubs and 1.x hubs, with or without `protocol_version_compatibility 8`, side by
-  side, without configuration changes. See [Mercure Setup](./01_Mercure_Setup.md).
-  - Tokens carry the claims of both protocols (`typ: at+jwt`); next to `mercureAuthorization`, a second cookie
-    `__Secure-mercure_access_token` (`mercure_access_token` over plain HTTP) is set.
-  - Added `mercure_settings.protocol_version` (`auto` default, `0.x`, `1.0`). `auto` probes
-    `<hub origin>/.well-known/oauth-protected-resource<hub path>` from PHP: let it through proxies.
-    `POST /pimcore-studio/api/mercure/auth` returns the result as `protocolVersion`.
-  - Added optional settings for 1.x hubs without compatibility mode: `issuer`, `cookie_name`, `resource_identifier`.
-  - Unchanged: the `hub_url_client` default `<host>/hub`, the requirements `symfony/mercure` `^0.6.5` and
-    `symfony/mercure-bundle` `^0.3.9` (`^0.10` / `^0.7` follow in the next major,
-    https://github.com/pimcore/platform-version/issues/889), and the legacy Direct Edit path needs
-    `protocol_version_compatibility 8` on 1.x hubs.
-  - Fixed: the publisher token is renewed for every update, so long-running workers no longer publish with an
-    expired token.
-  - Restart the Messenger workers after updating: a worker started before the update fails with a constructor
-    `TypeError` on the changed Mercure services.
-  - The 0.x protocol is removed in the next major version.
+- [Mercure] Changed: Studio works with Mercure 0.x and 1.x hubs (with or without `protocol_version_compatibility 8`)
+  and detects the hub's protocol (`mercure_settings.protocol_version`, default `auto`).
+  See [Mercure Setup](./01_Mercure_Setup.md).
+  - Restart the Messenger workers after updating.
+  - Fixed: long-running workers no longer publish with an expired token.
+  - The 0.x protocol is removed in the next major (https://github.com/pimcore/platform-version/issues/889).
 - [Elements] Deprecated: `coauthorType` and `coauthor` in the bodies of the element patch and update endpoints
   and of `PUT /pimcore-studio/api/versions/{id}`. They still work, are marked `deprecated` in the OpenAPI schema and
   raise a deprecation notice. They are removed in 2027.1 (https://github.com/pimcore/platform-version/issues/814).
