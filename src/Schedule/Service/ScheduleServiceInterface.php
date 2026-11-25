@@ -40,7 +40,7 @@ interface ScheduleServiceInterface
     public function listActions(string $elementType): array;
 
     /**
-     * @throws DatabaseException|InvalidArgumentException|ForbiddenException
+     * @throws DatabaseException|InvalidArgumentException|ForbiddenException|NotFoundException
      */
     public function updateSchedules(
         string $elementType,

@@ -96,7 +96,7 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
     }
 
     /**
-     * @throws DatabaseException|InvalidArgumentException|ForbiddenException
+     * @throws DatabaseException|InvalidArgumentException|ForbiddenException|NotFoundException
      */
     public function updateSchedules(
         string $elementType,
@@ -109,8 +109,8 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         $currentUserId = $this->securityService->getCurrentUser()->getId();
 
         // Everything is checked before the first write, so a rejected request leaves no partial
-        // changes behind: every action has to be valid and every submitted task has to belong to
-        // this element already.
+        // changes behind: every action has to be valid and every submitted task has to exist and
+        // belong to this element already.
         $existingTasks = [];
         foreach ($schedules as $index => $schedule) {
             $this->validateAction($elementType, $schedule->getAction());
@@ -120,7 +120,11 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
             }
 
             $task = $this->taskResolver->getById($schedule->getId());
-            if ($task && ($task->getCid() !== $id || $task->getCtype() !== $elementType)) {
+            if (!$task) {
+                throw new NotFoundException('Task', $schedule->getId());
+            }
+
+            if ($task->getCid() !== $id || $task->getCtype() !== $elementType) {
                 throw new ForbiddenException('You are not allowed to update this schedule');
             }
 
@@ -131,10 +135,6 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         foreach ($schedules as $index => $schedule) {
             $isNew = !$schedule->getId();
             $task = $isNew ? $this->createSchedule($elementType, $id) : $existingTasks[$index];
-
-            if (!$task) {
-                continue;
-            }
 
             // A task is executed with the permissions of its owner. Whoever creates or changes a
             // task becomes its owner; a task that is submitted unchanged keeps the user it was

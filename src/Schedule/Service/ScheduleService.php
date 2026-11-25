@@ -91,7 +91,7 @@ final readonly class ScheduleService implements ScheduleServiceInterface
     }
 
     /**
-     * @throws DatabaseException|InvalidArgumentException|ForbiddenException
+     * @throws DatabaseException|InvalidArgumentException|ForbiddenException|NotFoundException
      */
     public function updateSchedules(
         string $elementType,

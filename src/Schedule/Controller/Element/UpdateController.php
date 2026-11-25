@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\ElementTypeParameter;
@@ -53,7 +54,7 @@ final class UpdateController extends AbstractApiController
     }
 
     /**
-     * @throws DatabaseException|InvalidArgumentException|ForbiddenException
+     * @throws DatabaseException|InvalidArgumentException|ForbiddenException|NotFoundException
      */
     #[Route('/schedules/{elementType}/{id}', name: 'pimcore_studio_api_update_schedules', methods: ['PUT'])]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]

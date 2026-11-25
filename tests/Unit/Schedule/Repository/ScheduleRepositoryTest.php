@@ -23,6 +23,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Schedule\TaskResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Repository\ScheduleRepository;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Request\UpdateElementSchedules;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -253,6 +254,29 @@ final class ScheduleRepositoryTest extends Unit
         $repository->updateSchedules(ElementTypes::TYPE_DOCUMENT, 7, new UpdateElementSchedules([
             ['id' => 5, 'date' => 1900000000, 'action' => 'unpublish', 'version' => null, 'active' => true],
             ['id' => 5, 'date' => 1900000000, 'action' => 'not-an-action', 'version' => null, 'active' => true],
+        ]));
+    }
+
+    public function testAnUnknownTaskIdIsRejectedWithoutWritingOrDeleting(): void
+    {
+        // Task 5 belongs to the element, task 99 does not exist (anymore). Skipping 99 would leave it
+        // out of the kept ids, so the obsolete-task cleanup would delete stored tasks the caller never
+        // meant to remove.
+        $ownTask = $this->makeEmpty(Task::class, [
+            'getId' => 5,
+            'getCid' => 7,
+            'getCtype' => ElementTypes::TYPE_DOCUMENT,
+            'save' => Expected::never(),
+        ]);
+        $this->queryBuilder->expects($this->never())->method('executeStatement');
+
+        $repository = $this->createRepository([5 => $ownTask]);
+
+        $this->expectException(NotFoundException::class);
+
+        $repository->updateSchedules(ElementTypes::TYPE_DOCUMENT, 7, new UpdateElementSchedules([
+            ['id' => 5, 'date' => 1900000000, 'action' => 'unpublish', 'version' => null, 'active' => true],
+            ['id' => 99, 'date' => 1600000000, 'action' => 'publish', 'version' => null, 'active' => true],
         ]));
     }
 
