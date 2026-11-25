@@ -115,7 +115,7 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         foreach ($schedules as $index => $schedule) {
             $this->validateAction($elementType, $schedule->getAction());
 
-            if (!$schedule->getId()) {
+            if ($schedule->getId() === null) {
                 continue;
             }
 
@@ -133,7 +133,7 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
 
         $currentTasks = [];
         foreach ($schedules as $index => $schedule) {
-            $isNew = !$schedule->getId();
+            $isNew = $schedule->getId() === null;
             $task = $isNew ? $this->createSchedule($elementType, $id) : $existingTasks[$index];
 
             // A task is executed with the permissions of its owner. Whoever creates or changes a

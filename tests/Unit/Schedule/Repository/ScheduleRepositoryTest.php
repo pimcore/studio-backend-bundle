@@ -257,11 +257,14 @@ final class ScheduleRepositoryTest extends Unit
         ]));
     }
 
-    public function testAnUnknownTaskIdIsRejectedWithoutWritingOrDeleting(): void
+    /**
+     * @dataProvider unknownTaskIdProvider
+     */
+    public function testAnUnknownTaskIdIsRejectedWithoutWritingOrDeleting(int $unknownId): void
     {
-        // Task 5 belongs to the element, task 99 does not exist (anymore). Skipping 99 would leave it
-        // out of the kept ids, so the obsolete-task cleanup would delete stored tasks the caller never
-        // meant to remove.
+        // Task 5 belongs to the element, the other id does not exist (anymore). Skipping it, or
+        // treating it as a new schedule, would leave it out of the kept ids, so the obsolete-task
+        // cleanup would delete stored tasks the caller never meant to remove. Only null means "new".
         $ownTask = $this->makeEmpty(Task::class, [
             'getId' => 5,
             'getCid' => 7,
@@ -276,8 +279,20 @@ final class ScheduleRepositoryTest extends Unit
 
         $repository->updateSchedules(ElementTypes::TYPE_DOCUMENT, 7, new UpdateElementSchedules([
             ['id' => 5, 'date' => 1900000000, 'action' => 'unpublish', 'version' => null, 'active' => true],
-            ['id' => 99, 'date' => 1600000000, 'action' => 'publish', 'version' => null, 'active' => true],
+            ['id' => $unknownId, 'date' => 1600000000, 'action' => 'publish', 'version' => null, 'active' => true],
         ]));
+    }
+
+    /**
+     * @return array<string, array{int}>
+     */
+    public function unknownTaskIdProvider(): array
+    {
+        return [
+            'deleted task' => [99],
+            'zero' => [0],
+            'negative draft id' => [-1764081234000],
+        ];
     }
 
     public function testDeleteObsoleteTasksOnlyRemovesTasksOfTheSameElementType(): void
