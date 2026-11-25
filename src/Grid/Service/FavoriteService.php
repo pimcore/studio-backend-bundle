@@ -25,6 +25,12 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
  */
 final readonly class FavoriteService implements FavoriteServiceInterface
 {
+    /**
+     * Folder value of the favorite row that holds the default of a user and class.
+     * It is shared by all data objects and folders of that class; no element has the id 0.
+     */
+    private const int SHARED_DEFAULT_FOLDER = 0;
+
     public function __construct(
         private ConfigurationFavoriteRepositoryInterface $gridConfigurationFavoriteRepository,
         private ConfigurationShareServiceInterface $shareService,
@@ -94,6 +100,8 @@ final readonly class FavoriteService implements FavoriteServiceInterface
 
         $gridConfiguration->addFavorite($favorite);
 
+        $this->setSharedDefaultForCurrentUser($gridConfiguration);
+
         return $gridConfiguration;
     }
 
@@ -127,6 +135,8 @@ final readonly class FavoriteService implements FavoriteServiceInterface
             $gridConfiguration->removeFavorite($favorite);
         }
 
+        $this->removeSharedDefaultForCurrentUser($gridConfiguration);
+
         return $gridConfiguration;
     }
 
@@ -142,12 +152,58 @@ final readonly class FavoriteService implements FavoriteServiceInterface
 
     public function getFavoriteConfigurationForDataObject(int $folderId, string $classId): ?GridConfiguration
     {
+        $userId = $this->securityService->getCurrentUser()->getId();
+
+        // A favorite of this very data object or folder wins over the default shared by its class
         $favorite = $this->gridConfigurationFavoriteRepository->getByUserAndDataObject(
-            $this->securityService->getCurrentUser()->getId(),
+            $userId,
             $folderId,
+            $classId
+        ) ?? $this->gridConfigurationFavoriteRepository->getByUserAndDataObject(
+            $userId,
+            self::SHARED_DEFAULT_FOLDER,
             $classId
         );
 
         return $favorite?->getConfiguration();
+    }
+
+    private function setSharedDefaultForCurrentUser(GridConfiguration $gridConfiguration): void
+    {
+        $userId = $this->securityService->getCurrentUser()->getId();
+        $shared = $this->gridConfigurationFavoriteRepository->getByUserAndDataObject(
+            $userId,
+            self::SHARED_DEFAULT_FOLDER,
+            $gridConfiguration->getClassId()
+        );
+
+        // Compared by instance: a configuration that is saved together with its favorite has no id yet
+        if ($shared?->getConfiguration() === $gridConfiguration) {
+            return;
+        }
+
+        // The configuration is part of the row's identifier, so the row is replaced, not updated
+        $shared?->getConfiguration()->removeFavorite($shared);
+
+        $shared = new GridConfigurationFavorite();
+        $shared->setFolder(self::SHARED_DEFAULT_FOLDER);
+        $shared->setUser($userId);
+        $shared->setClassId($gridConfiguration->getClassId());
+        $shared->setConfiguration($gridConfiguration);
+
+        $gridConfiguration->addFavorite($shared);
+    }
+
+    private function removeSharedDefaultForCurrentUser(GridConfiguration $gridConfiguration): void
+    {
+        $shared = $this->gridConfigurationFavoriteRepository->getByUserAndDataObject(
+            $this->securityService->getCurrentUser()->getId(),
+            self::SHARED_DEFAULT_FOLDER,
+            $gridConfiguration->getClassId()
+        );
+
+        if ($shared?->getConfiguration() === $gridConfiguration) {
+            $shared->getConfiguration()->removeFavorite($shared);
+        }
     }
 }
