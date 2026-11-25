@@ -88,7 +88,7 @@ final readonly class AdminLanguageService implements AdminLanguageServiceInterfa
         }
 
         $languageCode = $parts[0];
-        if ($parts[0] === 'studio' && isset($parts[1])) {
+        if ($parts[0] === 'studio') {
             $languageCode = $parts[1];
         }
 

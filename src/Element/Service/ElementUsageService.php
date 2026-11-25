@@ -35,6 +35,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\AbstractObject;
@@ -98,6 +99,12 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
         ElementInterface $element,
         ?User $user = null
     ): void {
+        if (!$sourceElement->isAllowed(ElementPermissions::VIEW_PERMISSION, $user)
+            || !$targetElement->isAllowed(ElementPermissions::VIEW_PERMISSION, $user)
+        ) {
+            return;
+        }
+
         if (!$element->isAllowed('save')) {
             return;
         }
