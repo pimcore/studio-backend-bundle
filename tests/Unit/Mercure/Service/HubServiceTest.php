@@ -103,7 +103,7 @@ final class HubServiceTest extends Unit
 
     public function testCookieNameIsSecurePrefixedOverHttps(): void
     {
-        $cookie = $this->createHubService(self::CUSTOM_LIFETIME)->createCookie();
+        $cookie = $this->createHubService(self::CUSTOM_LIFETIME)->createCookies()[1];
 
         $this->assertSame('__Secure-mercure_access_token', $cookie->getName());
         $this->assertTrue($cookie->isSecure());
@@ -119,7 +119,7 @@ final class HubServiceTest extends Unit
             $this->makeEmpty(UrlServiceInterface::class, ['getClientSideUrl' => 'http://localhost/hub']),
         );
 
-        $cookie = $service->createCookie();
+        $cookie = $service->createCookies()[1];
 
         $this->assertSame('mercure_access_token', $cookie->getName());
         $this->assertFalse($cookie->isSecure());
@@ -139,7 +139,7 @@ final class HubServiceTest extends Unit
         $cookies = $service->createCookies();
 
         $this->assertSame(
-            ['__Secure-mercure_access_token', 'mercureAuthorization'],
+            ['mercureAuthorization', '__Secure-mercure_access_token'],
             array_map(static fn (Cookie $cookie): string => $cookie->getName(), $cookies)
         );
         foreach ($cookies as $cookie) {
@@ -161,9 +161,31 @@ final class HubServiceTest extends Unit
         );
 
         $this->assertSame(
-            ['mercure_access_token', 'mercureAuthorization'],
+            ['mercureAuthorization', 'mercure_access_token'],
             array_map(static fn (Cookie $cookie): string => $cookie->getName(), $service->createCookies())
         );
+    }
+
+    /**
+     * Callers outside this bundle (e.g. pimcore/portal-engine) set createCookie() with a token that
+     * only 0.x hubs and 1.x hubs in compatibility mode accept, so it must stay the 0.x cookie.
+     */
+    public function testCreateCookieKeepsTheLegacyCookie(): void
+    {
+        foreach (['https://example.com/hub' => true, 'http://localhost/hub' => false] as $url => $secure) {
+            $service = new HubService(
+                $this->makeEmpty(TokenProviderInterface::class, ['getJwt' => 'jwt']),
+                $this->makeEmpty(UrlServiceInterface::class, ['getClientSideUrl' => $url]),
+                cookieName: 'custom_mercure_cookie'
+            );
+
+            $cookie = $service->createCookie();
+
+            $this->assertSame('mercureAuthorization', $cookie->getName());
+            $this->assertSame('jwt', $cookie->getValue());
+            $this->assertSame('/hub', $cookie->getPath());
+            $this->assertSame($secure, $cookie->isSecure());
+        }
     }
 
     public function testConfiguredCookieNameIsUsed(): void
@@ -174,7 +196,8 @@ final class HubServiceTest extends Unit
             cookieName: 'custom_mercure_cookie'
         );
 
-        $this->assertSame('custom_mercure_cookie', $service->createCookie()->getName());
+        $this->assertSame('custom_mercure_cookie', $service->createCookies()[1]->getName());
+        $this->assertSame('mercureAuthorization', $service->createCookie()->getName());
     }
 
     /**

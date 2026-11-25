@@ -11,9 +11,10 @@ The following steps are necessary during updating to newer versions.
   `mercure_settings.protocol_version` (`auto`, default, `0.x` or `1.0`) selects or detects the protocol, and
   `POST /pimcore-studio/api/mercure/auth` returns it as `protocolVersion`. For a 1.x hub without compatibility mode the
   new optional settings `issuer`, `resource_identifier` and `cookie_name` match the hub's trusted issuers, resource
-  identifier and cookie name. `symfony/mercure` `^0.10` and `symfony/mercure-bundle` `^0.7` are allowed next to the
-  previous versions. The publisher token is now renewed for every update, so long-running workers no longer publish with
-  an expired token. Support for the 0.x protocol is removed in the next major version. See
+  identifier and cookie name. The requirements `symfony/mercure` `^0.6.5` and `symfony/mercure-bundle` `^0.3.9` stay;
+  the tokens are built with `lcobucci/jwt` directly. The publisher token is now renewed for every update, so
+  long-running workers no longer publish with an expired token. In the next major version, support for the 0.x protocol is removed and `symfony/mercure` /
+  `symfony/mercure-bundle` move to their 1.0-protocol versions (`^0.10` / `^0.7`). See
   [Mercure Setup](./01_Mercure_Setup.md).
 - [Elements] Deprecated: `coauthorType` and `coauthor` in the bodies of the element patch and update endpoints
   and of `PUT /pimcore-studio/api/versions/{id}`. They still work, are marked `deprecated` in the OpenAPI schema and

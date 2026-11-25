@@ -66,6 +66,23 @@ final class UrlServiceTest extends Unit
         ], $service->getSubscriberAudience());
     }
 
+    /**
+     * The auth endpoint did not need hub_url_server before, so its absence must not break it.
+     */
+    public function testGetSubscriberAudienceWithoutServerSideUrl(): void
+    {
+        $service = new UrlService(
+            null,
+            'https://pimcore.example.com/hub',
+            $this->createRequestStackWithRequest('https://pimcore.example.com')
+        );
+
+        $this->assertSame([
+            'https://pimcore.example.com/.well-known/mercure',
+            'http://pimcore.example.com/.well-known/mercure',
+        ], $service->getSubscriberAudience());
+    }
+
     public function testGetSubscriberAudienceUsesConfiguredResourceIdentifier(): void
     {
         $service = new UrlService(

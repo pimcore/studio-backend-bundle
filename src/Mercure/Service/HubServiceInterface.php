@@ -20,15 +20,14 @@ use Symfony\Component\HttpFoundation\Cookie;
  */
 interface HubServiceInterface
 {
-    /**
-     * The cookie read by hubs speaking the Mercure 1.0 protocol.
-     */
     public function createCookie(): Cookie;
 
     /**
-     * One cookie per protocol, carrying the same token: the 1.0 cookie first, then the 0.x one.
+     * One cookie per protocol, carrying the same token: first the 0.x "mercureAuthorization" cookie
+     * (the one createCookie() returns), then the 1.0 cookie ("__Secure-mercure_access_token",
+     * "mercure_access_token" for a plain HTTP client URL, or the configured cookie_name).
      *
-     * @return Cookie[]
+     * @return array{0: Cookie, 1: Cookie}
      */
     public function createCookies(): array;
 

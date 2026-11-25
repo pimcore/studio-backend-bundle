@@ -63,7 +63,8 @@ final readonly class UrlService implements UrlServiceInterface, AudienceServiceI
             return [$this->resourceIdentifier];
         }
 
-        $audience = [$this->getServerSideUrl()];
+        // Without hub_url_server nothing is published; the auth endpoint still answers, as it did before
+        $audience = empty($this->serverSideUrl) ? [] : [$this->getServerSideUrl()];
         $client = parse_url($this->getClientSideUrl());
         if (isset($client[Mercure::URL_HOST->value])) {
             $authority = $client[Mercure::URL_HOST->value] . (isset($client['port']) ? ':' . $client['port'] : '');

@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant\Mercure;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
-use function array_map;
 
 /**
  * @internal
@@ -40,10 +39,21 @@ final readonly class HubService implements HubServiceInterface
 
     public function createCookie(): Cookie
     {
-        return $this->createCookies()[0];
+        return $this->buildCookie(Mercure::AUTHORIZATION_COOKIE_NAME->value, $this->tokenProvider->getJwt());
     }
 
     public function createCookies(): array
+    {
+        $jwt = $this->tokenProvider->getJwt();
+
+        // Each hub reads only the cookie of its own protocol
+        return [
+            $this->buildCookie(Mercure::AUTHORIZATION_COOKIE_NAME->value, $jwt),
+            $this->buildCookie($this->getCookieName($this->isSecure()), $jwt),
+        ];
+    }
+
+    private function buildCookie(string $name, string $jwt): Cookie
     {
         $urlParts = parse_url($this->urlService->getClientSideUrl());
 
@@ -56,24 +66,22 @@ final readonly class HubService implements HubServiceInterface
             $host = $urlParts[Mercure::URL_HOST->value];
         }
 
-        $secure = ($urlParts[Mercure::URL_SCHEME->value] ?? null) === Mercure::URL_SCHEME_HTTPS->value;
-        $jwt = $this->tokenProvider->getJwt();
-
-        // Each hub reads only the cookie of its own protocol
-        return array_map(
-            fn (string $name): Cookie => new Cookie(
-                $name,
-                $jwt,
-                time() + $this->cookieLifetime,
-                $urlParts[Mercure::URL_PATH->value] ?? '/',
-                $host,
-                $secure,
-                true,
-                false,
-                $this->jwtCookieStrictness ? Cookie::SAMESITE_STRICT : Cookie::SAMESITE_NONE
-            ),
-            [$this->getCookieName($secure), Mercure::AUTHORIZATION_COOKIE_NAME->value]
+        return new Cookie(
+            $name,
+            $jwt,
+            time() + $this->cookieLifetime,
+            $urlParts[Mercure::URL_PATH->value] ?? '/',
+            $host,
+            $this->isSecure(),
+            true,
+            false,
+            $this->jwtCookieStrictness ? Cookie::SAMESITE_STRICT : Cookie::SAMESITE_NONE
         );
+    }
+
+    private function isSecure(): bool
+    {
+        return parse_url($this->urlService->getClientSideUrl(), PHP_URL_SCHEME) === Mercure::URL_SCHEME_HTTPS->value;
     }
 
     private function getCookieName(bool $secure): string

@@ -63,18 +63,13 @@ final readonly class ProtocolResolver implements ProtocolResolverInterface
         }
 
         try {
-            $metadataUrl = $this->getMetadataUrl($this->urlService->getServerSideUrl());
-        } catch (LogicException $exception) {
-            $this->logger->warning(sprintf(
-                'Mercure protocol detection skipped, using %s: %s',
-                ProtocolVersion::LEGACY->value,
-                $exception->getMessage()
-            ));
-
-            return ProtocolVersion::LEGACY;
+            $hubUrl = $this->urlService->getServerSideUrl();
+        } catch (LogicException) {
+            $hubUrl = null;
         }
 
-        $item = $this->cache->getItem(self::CACHE_KEY_PREFIX . hash('xxh128', $metadataUrl));
+        // Every outcome is cached, so a failure is logged once per cache period, not on every authorization
+        $item = $this->cache->getItem(self::CACHE_KEY_PREFIX . hash('xxh128', $hubUrl ?? ''));
         if ($item->isHit()) {
             $cached = ProtocolVersion::tryFrom((string)$item->get());
             if ($cached !== null) {
@@ -82,7 +77,7 @@ final readonly class ProtocolResolver implements ProtocolResolverInterface
             }
         }
 
-        [$detected, $ttl] = $this->detect($metadataUrl);
+        [$detected, $ttl] = $this->detect($hubUrl);
         $this->cache->save($item->set($detected->value)->expiresAfter($ttl));
 
         return $detected;
@@ -91,9 +86,22 @@ final readonly class ProtocolResolver implements ProtocolResolverInterface
     /**
      * @return array{0: ProtocolVersion, 1: int}
      */
-    private function detect(string $metadataUrl): array
+    private function detect(?string $hubUrl): array
     {
+        if ($hubUrl === null) {
+            // Nothing is published without hub_url_server, so there is no hub to ask
+            $this->logger->info(sprintf(
+                'Mercure protocol detection skipped without hub_url_server, using %s',
+                ProtocolVersion::LEGACY->value
+            ));
+
+            return [ProtocolVersion::LEGACY, self::CACHE_TTL];
+        }
+
+        $metadataUrl = $hubUrl;
+
         try {
+            $metadataUrl = $this->getMetadataUrl($hubUrl);
             $response = $this->httpClient->request('GET', $metadataUrl, [
                 'timeout' => self::TIMEOUT_SECONDS,
                 'max_duration' => self::TIMEOUT_SECONDS,

@@ -21,10 +21,14 @@ Studio speaks both Mercure protocols at once:
   sets both authorization cookies (`mercureAuthorization` for 0.x, `__Secure-mercure_access_token` or
   `mercure_access_token` for 1.0). Each hub reads its own and ignores the other.
 - The Studio UI subscribes with the parameters of the hub's protocol (`topic`/`lastEventID` for 0.x,
-  `match`/`last_event_id` for 1.0). By default (`protocol_version: auto`) the backend detects the protocol on
-  `hub_url_server`: only 1.x hubs serve `/.well-known/oauth-protected-resource/.well-known/mercure`. The result is cached
-  for ten minutes; if the hub cannot be reached, the 0.x protocol is assumed and detection is retried after a minute. Set
-  `protocol_version` to `0.x` or `1.0` to skip the detection.
+  `match`/`last_event_id` for 1.0). By default (`protocol_version: auto`) the backend detects the protocol with a
+  `GET` request to the hub's OAuth protected resource metadata (RFC 9728), which only 1.x hubs serve: the origin of
+  `hub_url_server`, then `/.well-known/oauth-protected-resource`, then the path of `hub_url_server`. For
+  `hub_url_server: 'http://mercure/.well-known/mercure'` that is
+  `http://mercure/.well-known/oauth-protected-resource/.well-known/mercure`. If a proxy sits between Pimcore and the
+  hub, let this URL through. A 1.x hub answers `200` with JSON, a 0.x hub `404`. The result is cached for ten minutes;
+  any other answer, or no answer within two seconds, assumes the 0.x protocol, logs a warning and retries after a
+  minute. Set `protocol_version` to `0.x` or `1.0` to skip the detection.
 
 > Support for the 0.x protocol, and thereby for 0.x hubs, is removed in the next major version. Mercure no longer ships
 > fixes for 0.x hubs: plan the move to a 1.x hub.

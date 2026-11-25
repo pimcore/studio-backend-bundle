@@ -18,6 +18,7 @@ use LogicException;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ProtocolResolver;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant\ProtocolVersion;
+use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\Exception\TransportException;
@@ -87,6 +88,39 @@ final class ProtocolResolverTest extends Unit
         $resolver = new ProtocolResolver($urlService, $client, new ArrayAdapter(), new NullLogger());
 
         $this->assertSame(ProtocolVersion::LEGACY, $resolver->getProtocolVersion());
+    }
+
+    public function testCachesTheCaseWithoutHubUrl(): void
+    {
+        $urlService = $this->createMock(UrlServiceInterface::class);
+        $urlService->method('getServerSideUrl')->willThrowException(new LogicException('not configured'));
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())->method('info');
+        $logger->expects($this->never())->method('warning');
+        $resolver = new ProtocolResolver($urlService, new MockHttpClient(), new ArrayAdapter(), $logger);
+
+        $first = $resolver->getProtocolVersion();
+        $second = $resolver->getProtocolVersion();
+
+        $this->assertSame([ProtocolVersion::LEGACY, ProtocolVersion::LEGACY], [$first, $second]);
+    }
+
+    public function testLogsAFailureOncePerCachePeriod(): void
+    {
+        $client = new MockHttpClient([
+            new MockResponse('Bad Gateway', ['http_code' => 502]),
+            new MockResponse('Bad Gateway', ['http_code' => 502]),
+        ]);
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())->method('warning')
+            ->with($this->stringContains(self::METADATA_URL));
+        $resolver = new ProtocolResolver($this->createUrlService(), $client, new ArrayAdapter(), $logger);
+
+        $first = $resolver->getProtocolVersion();
+        $second = $resolver->getProtocolVersion();
+
+        $this->assertSame([ProtocolVersion::LEGACY, ProtocolVersion::LEGACY], [$first, $second]);
+        $this->assertSame(1, $client->getRequestsCount());
     }
 
     public function testCachesTheDetection(): void
