@@ -19,6 +19,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
@@ -31,6 +32,7 @@ use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionNamedType;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -231,6 +233,64 @@ final class UserLoginServiceTest extends Unit
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid reset password URL provided');
         $service->resetPassword($resetPassword);
+    }
+
+    public function testResetPasswordRejectsUrlWithTemplateDelimiters(): void
+    {
+        $service = $this->createService(
+            mainDomain: 'mysite.com',
+            sites: [],
+        );
+
+        foreach (['{{7*7}}', '{%set(a=1)%}', '{#x#}', 'reset}'] as $path) {
+            try {
+                $service->resetPassword(new ResetPassword('testuser', 'https://mysite.com/' . $path));
+                $this->fail('The URL with "' . $path . '" must be rejected.');
+            } catch (InvalidArgumentException $exception) {
+                $this->assertSame('Invalid reset password URL provided', $exception->getMessage());
+            }
+        }
+    }
+
+    public function testResetPasswordLogsTheCauseOfAFailedMail(): void
+    {
+        $user = new User();
+        $user->setName('testuser');
+        $user->setEmail('test@example.com');
+        $user->setActive(true);
+        $user->setPassword('hashed-password');
+
+        $exception = new SendMailException(new RuntimeException('SMTP connection refused'));
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())->method('error')->with(
+            'Error sending password recovery email',
+            ['error' => 'SMTP connection refused']
+        );
+
+        $service = new UserLoginService(
+            $this->makeEmpty(AuthenticationResolverInterface::class, [
+                'generateTokenByUser' => 'test-token-123',
+            ]),
+            $this->makeEmpty(MailServiceInterface::class, [
+                'sendResetPasswordMail' => static fn () => throw $exception,
+            ]),
+            $logger,
+            $this->makeEmpty(UrlGeneratorInterface::class),
+            $this->makeEmpty(UserRepositoryInterface::class),
+            $this->makeEmpty(UserResolverInterface::class, [
+                'getByName' => $user,
+            ]),
+            $this->makeEmpty(SecurityServiceInterface::class),
+            $this->makeEmpty(SettingsProviderInterface::class, [
+                'getSettings' => ['main_domain' => 'mysite.com'],
+            ]),
+            $this->makeEmpty(SiteRepositoryInterface::class, [
+                'listSites' => [],
+            ]),
+        );
+
+        $this->expectExceptionObject($exception);
+        $service->resetPassword(new ResetPassword('testuser', 'https://mysite.com/reset-password/'));
     }
 
     public function testResetPasswordRejectsWhenNoDomainConfig(): void
