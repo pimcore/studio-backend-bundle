@@ -80,9 +80,10 @@ final class MailService implements MailServiceInterface
                 $mail->setIgnoreDebugMode(true);
                 $mail->addFrom($this->fromEmail);
                 $mail->text(sprintf(self::RESET_MAIL_TEXT, $loginUrl));
-                $mail->send();
+                // The text holds a link the caller has a say in, it must never be compiled as a Twig template.
+                $mail->sendWithoutRendering();
             } catch (Exception $exception) {
-                throw new SendMailException($exception->getMessage());
+                throw new SendMailException($exception);
             }
         }
     }
