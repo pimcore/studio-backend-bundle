@@ -22,13 +22,16 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ConfigLayoutDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\LayoutDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ObjectBrickRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\LayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\LayoutDefinitionService;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Objectbrick\Definition as ObjectBrickDefinition;
 use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -85,16 +88,56 @@ final class LayoutDefinitionServiceTest extends Unit
         $user = new User();
         $dataObject = $this->createDataObject($user, view: true, list: true);
 
-        // A class without object brick fields: the permission check passes and nothing has to be resolved.
+        $brickField = new Objectbricks();
+        $brickField->setName('bricks');
+        $brickField->setAllowedTypes(['BrickA', 'BrickB']);
+
+        $classDefinition = $this->createMock(ClassDefinition::class);
+        $classDefinition->method('getFieldDefinitions')->willReturn(['bricks' => $brickField]);
+
         $classDefinitionResolver = $this->createMock(ClassDefinitionResolverInterface::class);
         $classDefinitionResolver->expects($this->once())
             ->method('getById')
             ->with(self::CLASS_ID)
-            ->willReturn(new ClassDefinition());
+            ->willReturn($classDefinition);
 
-        $service = $this->createService($user, $dataObject, $classDefinitionResolver);
+        $definitionResolver = $this->createMock(DefinitionResolverInterface::class);
+        $definitionResolver->method('getByKey')->willReturnCallback(
+            function (string $key): ObjectBrickDefinition {
+                $definition = $this->createMock(ObjectBrickDefinition::class);
+                $definition->method('getKey')->willReturn($key);
 
-        $this->assertSame([], $service->getLayoutDefinitionsForObject(self::OBJECT_ID));
+                return $definition;
+            }
+        );
+
+        $hydrator = $this->createMock(LayoutDefinitionHydratorInterface::class);
+        $hydrator->method('hydrate')->willReturnCallback(
+            static fn (ObjectBrickDefinition $definition): LayoutDefinition
+                => new LayoutDefinition($definition->getKey(), 'panel')
+        );
+
+        $dataObjectServiceResolver = $this->createMock(DataObjectServiceResolverInterface::class);
+        $dataObjectServiceResolver->expects($this->exactly(2))->method('enrichLayoutDefinition');
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects($this->exactly(2))->method('dispatch');
+
+        $service = $this->createService(
+            $user,
+            $dataObject,
+            $classDefinitionResolver,
+            $definitionResolver,
+            $hydrator,
+            $dataObjectServiceResolver,
+            $eventDispatcher
+        );
+
+        $result = $service->getLayoutDefinitionsForObject(self::OBJECT_ID);
+
+        $this->assertCount(2, $result);
+        $this->assertSame('BrickA', $result[0]->getKey());
+        $this->assertSame('BrickB', $result[1]->getKey());
     }
 
     private function createDataObject(User $user, bool $view, bool $list): Concrete
@@ -116,7 +159,11 @@ final class LayoutDefinitionServiceTest extends Unit
     private function createService(
         User $user,
         Concrete $dataObject,
-        ClassDefinitionResolverInterface $classDefinitionResolver
+        ClassDefinitionResolverInterface $classDefinitionResolver,
+        ?DefinitionResolverInterface $definitionResolver = null,
+        ?LayoutDefinitionHydratorInterface $hydrator = null,
+        ?DataObjectServiceResolverInterface $dataObjectServiceResolver = null,
+        ?EventDispatcherInterface $eventDispatcher = null,
     ): LayoutDefinitionService {
         $securityService = $this->createMock(SecurityServiceInterface::class);
         $securityService->method('getCurrentUser')->willReturn($user);
@@ -127,13 +174,13 @@ final class LayoutDefinitionServiceTest extends Unit
         return new LayoutDefinitionService(
             $serviceResolver,
             $securityService,
-            $this->createMock(DataObjectServiceResolverInterface::class),
+            $dataObjectServiceResolver ?? $this->createMock(DataObjectServiceResolverInterface::class),
             $classDefinitionResolver,
-            $this->createMock(DefinitionResolverInterface::class),
-            $this->createMock(LayoutDefinitionHydratorInterface::class),
+            $definitionResolver ?? $this->createMock(DefinitionResolverInterface::class),
+            $hydrator ?? $this->createMock(LayoutDefinitionHydratorInterface::class),
             $this->createMock(ObjectBrickRepositoryInterface::class),
             $this->createMock(ConfigLayoutDefinitionHydratorInterface::class),
-            $this->createMock(EventDispatcherInterface::class),
+            $eventDispatcher ?? $this->createMock(EventDispatcherInterface::class),
         );
     }
 }
