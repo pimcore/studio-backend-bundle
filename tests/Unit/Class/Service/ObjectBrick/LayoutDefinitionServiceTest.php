@@ -92,8 +92,8 @@ final class LayoutDefinitionServiceTest extends Unit
         $brickField->method('getName')->willReturn('bricks');
         $brickField->method('getAllowedTypes')->willReturn(['BrickA', 'BrickB']);
 
-        $classDefinition = $this->createMock(ClassDefinition::class);
-        $classDefinition->method('getFieldDefinitions')->willReturn(['bricks' => $brickField]);
+        $classDefinition = new ClassDefinition();
+        $classDefinition->setFieldDefinitions(['bricks' => $brickField]);
 
         $classDefinitionResolver = $this->createMock(ClassDefinitionResolverInterface::class);
         $classDefinitionResolver->expects($this->once())
