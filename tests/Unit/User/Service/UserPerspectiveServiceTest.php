@@ -97,6 +97,35 @@ final class UserPerspectiveServiceTest extends Unit
         $this->assertSame('other-perspective', $service->getActivePerspective($user));
     }
 
+    public function testSuperadminWithoutOwnAssignmentGetsRoleAssignedPerspective(): void
+    {
+        $user = $this->makeEmpty(UserInterface::class, [
+            'getId' => 1,
+            'isAdmin' => true,
+            'getRoles' => [5],
+        ]);
+
+        $service = $this->createService(rolePerspectives: [5 => ['other-perspective']]);
+
+        $this->assertSame('other-perspective', $service->getActivePerspective($user));
+    }
+
+    public function testSuperadminUserAssignmentTakesPrecedenceOverRoleAssignment(): void
+    {
+        $user = $this->makeEmpty(UserInterface::class, [
+            'getId' => 1,
+            'isAdmin' => true,
+            'getRoles' => [5],
+        ]);
+
+        $service = $this->createService(
+            listUserPerspectives: ['other-perspective'],
+            rolePerspectives: [5 => [Perspectives::DEFAULT_ID->value]],
+        );
+
+        $this->assertSame('other-perspective', $service->getActivePerspective($user));
+    }
+
     public function testSuperadminFallsBackToAssignedPerspectiveWhenStoredOneNoLongerExists(): void
     {
         $user = $this->makeEmpty(UserInterface::class, [
@@ -158,12 +187,17 @@ final class UserPerspectiveServiceTest extends Unit
         $service->validatePerspectiveAccess($user, 'some-other-perspective');
     }
 
+    /**
+     * @param array<int, string[]> $rolePerspectives perspectives assigned per role ID
+     */
     private function createService(
         array $listUserPerspectives = [],
         ?string $getUserActivePerspective = null,
+        array $rolePerspectives = [],
     ): UserPerspectiveService {
         $repository = $this->makeEmpty(PerspectiveRepositoryInterface::class, [
-            'listUserPerspectives' => $listUserPerspectives,
+            'listUserPerspectives' => static fn (int $id): array => $rolePerspectives[$id]
+                ?? $listUserPerspectives,
             'getUserActivePerspective' => $getUserActivePerspective,
         ]);
 
