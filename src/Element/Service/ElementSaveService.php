@@ -54,14 +54,19 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
     }
 
     /**
-     * A save must not make a published object's changes live unless the user may publish it.
+     * A save must not make a published element's changes live unless the user may publish it.
      * Without the publish permission the data is stored as a version (draft), like the "Save draft" action does.
+     * Only data objects and page snippets can hold a version; other element types are saved as before.
      *
      * @throws Exception
      */
     private function processPlainSave(ElementInterface $element, UserInterface $user): void
     {
-        if ($element instanceof Concrete && $element->isPublished() && !$this->canPublish($element, $user)) {
+        if (
+            ($element instanceof Concrete || $element instanceof PageSnippet)
+            && $element->isPublished()
+            && !$this->canPublish($element, $user)
+        ) {
             $this->processVersionTasks($element, $user, ElementSaveTasks::VERSION->value);
 
             return;
