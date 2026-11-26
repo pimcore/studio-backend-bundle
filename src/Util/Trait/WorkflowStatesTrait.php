@@ -23,8 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowStatus;
 trait WorkflowStatesTrait
 {
     #[Property(
-        description: 'Workflow states visible in the header; '
-            . 'null outside tree listings, for elements the user may not view and for asset folders',
+        description: 'Workflow states in the header; '
+            . 'null outside tree listings, for unviewable elements and asset folders',
         type: 'array',
         items: new Items(ref: WorkflowStatus::class),
         nullable: true

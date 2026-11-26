@@ -21,8 +21,7 @@ use OpenApi\Attributes\Property;
 trait ScoreAwareTrait
 {
     #[Property(
-        description: 'Search relevance score of the hit in the search engine\'s own score space; '
-            . 'null unless the request ran a scored search',
+        description: 'Relevance score of the hit in the search engine score space; null unless a scored search ran',
         type: 'number',
         format: 'float',
         example: 0.63,
