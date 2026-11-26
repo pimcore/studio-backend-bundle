@@ -23,7 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowStatus;
 trait WorkflowStatesTrait
 {
     #[Property(
-        description: 'Workflow states in the header; null outside tree listings, for unviewable elements and asset folders',
+        description: 'Workflow states in the header; '
+            . 'null outside tree listings, for unviewable elements and asset folders',
         type: 'array',
         items: new Items(ref: WorkflowStatus::class),
         nullable: true

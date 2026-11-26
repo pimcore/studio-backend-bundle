@@ -81,7 +81,8 @@ final readonly class UpdateParameter
         )]
         private array $documentWorkspaces = [],
         #[Property(
-            description: 'IDs of the users who answer for the service user, no service users; omit to keep, [] to clear',
+            description: 'IDs of the users who answer for the service user, no service users; '
+            . 'omit to keep, [] to clear',
             type: 'array',
             items: new Items(type: 'integer'),
             example: [3],
