@@ -17,13 +17,18 @@ use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ExecutionEngine\CloneService;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\Folder;
 use Pimcore\Model\UserInterface;
+use ReflectionMethod;
+use ReflectionProperty;
 
 /**
  * @internal
@@ -60,6 +65,45 @@ final class CloneServiceTest extends Unit
         );
 
         $this->assertSame($expectedLookupPath, $lookedUpPath);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testJobEnvironmentMapsTheOriginalRootToTheCopiedRoot(): void
+    {
+        $startedJob = null;
+        $jobExecutionAgent = $this->makeEmpty(JobExecutionAgentInterface::class, [
+            'startJobExecution' => static function (Job $job) use (&$startedJob): JobRun {
+                $startedJob = $job;
+                $jobRun = new JobRun(1);
+                (new ReflectionProperty(JobRun::class, 'id'))->setValue($jobRun, 1);
+
+                return $jobRun;
+            },
+        ]);
+        $service = new CloneService(
+            $this->makeEmpty(DataObjectServiceInterface::class),
+            $this->makeEmpty(DataObjectSearchServiceInterface::class, ['getChildrenIds' => [11, 12]]),
+            $jobExecutionAgent,
+            $this->makeEmpty(SecurityServiceInterface::class),
+            $this->makeEmpty(SynchronousProcessingServiceInterface::class)
+        );
+
+        (new ReflectionMethod($service, 'cloneChildrenWithExecutionEngine'))->invoke(
+            $service,
+            $this->makeEmpty(UserInterface::class, ['getId' => 1]),
+            $this->makeEmpty(Folder::class, ['getId' => self::ORIGINAL_PARENT_ID, 'getRealFullPath' => '/source']),
+            $this->makeEmpty(Folder::class, ['getId' => self::NEW_PARENT_ID]),
+            true
+        );
+
+        // the root is copied before the job starts, so the job would not know it otherwise
+        $this->assertInstanceOf(Job::class, $startedJob);
+        $this->assertSame(
+            [self::ORIGINAL_PARENT_ID => self::NEW_PARENT_ID],
+            $startedJob->getEnvironmentData()[EnvironmentVariables::REWRITE_CONFIGURATION->value]
+        );
     }
 
     /**
