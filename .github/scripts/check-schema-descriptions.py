@@ -66,6 +66,24 @@ def call_arguments(src, open_paren):
     return args, i
 
 
+DOUBLE_QUOTED_TOKEN = re.compile(
+    r'\\(?:[nrtvef\\$"]|[0-7]{1,3}|x[0-9A-Fa-f]{1,2}|u\{[0-9A-Fa-f]+\})'  # escape sequence: one character
+    r'|(\$[A-Za-z_{]|\{\$)'  # interpolation: group 1, cannot be evaluated statically
+    r'|.',
+    re.S,
+)
+
+
+def double_quoted_length(body):
+    """Length of a PHP double-quoted string body, or None when it interpolates."""
+    length = 0
+    for token in DOUBLE_QUOTED_TOKEN.finditer(body):
+        if token.group(1):
+            return None
+        length += 1
+    return length
+
+
 def literal_value(expression):
     """Evaluate 'a' . "b" concatenations of plain string literals; None for anything dynamic."""
     parts, i, expression = [], 0, expression.strip()
@@ -77,21 +95,42 @@ def literal_value(expression):
             end = skip_string(expression, i)
             body = expression[i + 1:end - 1]
             if ch == "'":
-                body = re.sub(r"\\([\\'])", r'\1', body)
-            elif '$' in body or '{' in body:
-                return None
+                parts.append(re.sub(r"\\([\\'])", r'\1', body))
             else:
-                body = re.sub(r'\\(["\\])', r'\1', body)
-            parts.append(body)
+                length = double_quoted_length(body)
+                if length is None:
+                    return None
+                parts.append('x' * length)
             i = end
         else:
             return None
     return ''.join(parts) if parts else None
 
 
+PROPERTY_CALL = re.compile(r'(?<![\w$>:])Property\s*\(')
+
+
+def property_calls(src):
+    """Yield the match of every Property( call in code, leaving out comments and string literals."""
+    i = 0
+    while i < len(src):
+        end = skip_comment(src, i)
+        if end != i:
+            i = end
+        elif src[i] in '\'"':
+            i = skip_string(src, i)
+        else:
+            match = PROPERTY_CALL.match(src, i)
+            if match:
+                yield match
+                i = match.end()
+            else:
+                i += 1
+
+
 def check_file(path):
     src = path.read_text(encoding='utf-8')
-    for match in re.finditer(r'(?<![\w$>:])Property\s*\(', src):
+    for match in property_calls(src):
         args, _ = call_arguments(src, match.end() - 1)
         for arg in args:
             named = re.match(r'\s*description\s*:(.*)$', arg, re.S)
