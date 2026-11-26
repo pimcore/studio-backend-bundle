@@ -13,12 +13,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\User\Role\RoleResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\UserInformation;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPermissionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
 use Pimcore\Model\User;
+use Pimcore\Model\User\Role;
 use Pimcore\Model\UserInterface;
+use function array_map;
+use function array_merge;
+use function array_unique;
+use function array_values;
 
 /**
  * @internal
@@ -28,6 +34,7 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
     public function __construct(
         private ContentLanguagesHydratorInterface $contentLanguagesHydrator,
         private KeyBindingServiceInterface $keyBindingService,
+        private RoleResolverInterface $roleResolver,
         private TwoFactorAuthHydratorInterface $twoFactorAuthHydrator,
         private UserPermissionServiceInterface $userPermissionService,
         private UserPerspectiveServiceInterface $userPerspectiveService,
@@ -36,6 +43,8 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
 
     public function hydrate(UserInterface $user): UserInformation
     {
+        $roles = $this->getRoles($user);
+
         return new UserInformation(
             id: $user->getId(),
             username: $user->getUsername(),
@@ -44,8 +53,14 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
             lastname: $user->getLastname(),
             permissions: $this->userPermissionService->getAllowedUserPermissions($user),
             isAdmin: $user->isAdmin(),
-            classes: $user->getClasses(),
-            docTypes: $user->getDocTypes(),
+            classes: $this->mergeWithRoles(
+                $user->getClasses(),
+                array_map(static fn (Role $role) => $role->getClasses(), $roles)
+            ),
+            docTypes: $this->mergeWithRoles(
+                $user->getDocTypes(),
+                array_map(static fn (Role $role) => $role->getDocTypes(), $roles)
+            ),
             language: $user->getLanguage(),
             dateTimeLocale: $user instanceof User ? $user->getDateTimeLocale() : '',
             theme: $user instanceof User ? $user->getTheme() : 'default',
@@ -64,5 +79,35 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
             perspectives: $this->userPerspectiveService->getAllowedPerspectives($user),
             welcomeScreenTarget: $user instanceof User ? $user->getWelcomeScreenTarget() : null,
         );
+    }
+
+    /**
+     * @return Role[]
+     */
+    private function getRoles(UserInterface $user): array
+    {
+        $roles = [];
+        foreach ($user->getRoles() as $roleId) {
+            $role = $this->roleResolver->getById((int)$roleId);
+            if ($role instanceof Role) {
+                $roles[] = $role;
+            }
+        }
+
+        return $roles;
+    }
+
+    /**
+     * Mirrors Pimcore Core's User::isAllowed() for the 'class' and 'docType' types:
+     * the grants assigned to the user and to all of their roles are combined.
+     *
+     * @param string[] $userGrants
+     * @param array<int, string[]> $roleGrants
+     *
+     * @return string[]
+     */
+    private function mergeWithRoles(array $userGrants, array $roleGrants): array
+    {
+        return array_values(array_unique(array_merge($userGrants, ...$roleGrants)));
     }
 }
