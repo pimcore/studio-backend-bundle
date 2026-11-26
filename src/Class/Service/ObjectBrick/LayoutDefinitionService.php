@@ -15,9 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ObjectBrick\ConfigLayoutDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ObjectBrick\LayoutDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ConfigLayoutDefinitionHydratorInterface;
@@ -28,6 +28,10 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\LayoutDefinition
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricherInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\DataObject\ClassDefinitionInterface;
@@ -38,18 +42,22 @@ use function sprintf;
 /**
  * @internal
  */
-final readonly class LayoutDefinitionService implements LayoutDefinitionServiceInterface
+final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
 {
+    use ElementProviderTrait;
+    use ElementViewPermissionTrait;
+
     public function __construct(
-        private DataObjectResolverInterface $dataObjectResolver,
-        private DataObjectServiceResolverInterface $dataObjectServiceResolver,
-        private ClassDefinitionResolverInterface $classDefinitionResolver,
-        private DefinitionResolverInterface $definitionResolver,
-        private LayoutDefinitionHydratorInterface $layoutDefinitionHydrator,
-        private ObjectBrickRepositoryInterface $objectBrickRepository,
-        private ConfigLayoutDefinitionHydratorInterface $configLayoutDefinitionHydrator,
-        private EventDispatcherInterface $eventDispatcher,
-        private ActiveGroupTitleEnricherInterface $activeGroupTitleEnricher,
+        private readonly ServiceResolverInterface $serviceResolver,
+        private readonly SecurityServiceInterface $securityService,
+        private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
+        private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
+        private readonly DefinitionResolverInterface $definitionResolver,
+        private readonly LayoutDefinitionHydratorInterface $layoutDefinitionHydrator,
+        private readonly ObjectBrickRepositoryInterface $objectBrickRepository,
+        private readonly ConfigLayoutDefinitionHydratorInterface $configLayoutDefinitionHydrator,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly ActiveGroupTitleEnricherInterface $activeGroupTitleEnricher,
     ) {
     }
 
@@ -58,7 +66,13 @@ final readonly class LayoutDefinitionService implements LayoutDefinitionServiceI
      */
     public function getLayoutDefinitionsForObject(int $dataObjectId): array
     {
-        $dataObject = $this->dataObjectResolver->getById($dataObjectId);
+        $this->assertElementViewPermission(
+            ElementTypes::TYPE_OBJECT,
+            $dataObjectId,
+            $this->securityService->getCurrentUser()
+        );
+        $dataObject = $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $dataObjectId);
+
         if (!$dataObject instanceof Concrete) {
             throw new InvalidElementTypeException(
                 sprintf('DataObject id (%s) is not a concrete object', $dataObjectId)

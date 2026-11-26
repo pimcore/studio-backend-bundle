@@ -23,9 +23,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -50,6 +52,7 @@ final class CollectionController extends AbstractApiController
         methods: ['GET'],
         priority: 10
     )]
+    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'class_object_brick_collection',
@@ -62,6 +65,7 @@ final class CollectionController extends AbstractApiController
         content: new CollectionJson(new GenericCollection(ObjectBrickConfig::class))
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getObjectBrickCollection(): JsonResponse
