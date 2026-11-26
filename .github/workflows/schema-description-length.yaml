@@ -1,0 +1,21 @@
+name: Schema Description Length
+
+# Catches on the pull request what the nightly "Schema Validation" run would only report after the merge:
+# OpenAPI property descriptions must have 2 to 100 characters.
+on:
+  pull_request:
+    paths:
+      - 'src/**/*.php'
+      - '.github/scripts/check-schema-descriptions.py'
+      - '.github/workflows/schema-description-length.yaml'
+
+permissions:
+  contents: read
+
+jobs:
+  schema-description-length:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check property description lengths
+        run: python3 .github/scripts/check-schema-descriptions.py src
