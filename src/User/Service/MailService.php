@@ -93,7 +93,6 @@ final class MailService implements MailServiceInterface
         }
     }
 
-
     /**
      * @throws DomainConfigurationException|SendMailException
      */
