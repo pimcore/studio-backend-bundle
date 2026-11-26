@@ -22,6 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Document\Link;
+use Pimcore\Model\Document\Page;
 use Pimcore\Model\UserInterface;
 
 final class ElementSaveServiceTest extends Unit
@@ -109,6 +111,61 @@ final class ElementSaveServiceTest extends Unit
         $this->service->save($object, $this->user, ElementSaveTasks::PUBLISH->value);
     }
 
+    /**
+     * @dataProvider plainSaveTasks
+     */
+    public function testPublishedPageWithoutPublishPermissionIsOnlySavedAsVersion(?string $task): void
+    {
+        $page = $this->pageMock(published: true);
+        $this->denyPublish();
+
+        $page->expects($this->never())->method('save');
+        $page->expects($this->once())->method('saveVersion');
+
+        $this->service->save($page, $this->user, $task);
+    }
+
+    /**
+     * @dataProvider plainSaveTasks
+     */
+    public function testPublishedPageWithPublishPermissionIsSavedLive(?string $task): void
+    {
+        $page = $this->pageMock(published: true);
+        $this->securityService->expects($this->once())->method('hasElementPermission')
+            ->with($page, $this->user, ElementPermissions::PUBLISH_PERMISSION);
+
+        $page->expects($this->once())->method('save');
+        $page->expects($this->never())->method('saveVersion');
+
+        $this->service->save($page, $this->user, $task);
+    }
+
+    /**
+     * @dataProvider plainSaveTasks
+     */
+    public function testUnpublishedPageWithoutPublishPermissionIsSaved(?string $task): void
+    {
+        $page = $this->pageMock(published: false);
+        $this->denyPublish();
+
+        $page->expects($this->once())->method('save');
+        $page->expects($this->never())->method('saveVersion');
+
+        $this->service->save($page, $this->user, $task);
+    }
+
+    public function testDocumentWithoutVersionsIsSavedAsBefore(): void
+    {
+        // only page snippets can hold a draft version, so other document types keep their plain save
+        $link = $this->createMock(Link::class);
+        $link->method('isPublished')->willReturn(true);
+        $this->denyPublish();
+
+        $link->expects($this->once())->method('save');
+
+        $this->service->save($link, $this->user);
+    }
+
     private function denyPublish(): void
     {
         $this->securityService->method('hasElementPermission')
@@ -121,5 +178,13 @@ final class ElementSaveServiceTest extends Unit
         $object->method('isPublished')->willReturn($published);
 
         return $object;
+    }
+
+    private function pageMock(bool $published): MockObject&Page
+    {
+        $page = $this->createMock(Page::class);
+        $page->method('isPublished')->willReturn($published);
+
+        return $page;
     }
 }
