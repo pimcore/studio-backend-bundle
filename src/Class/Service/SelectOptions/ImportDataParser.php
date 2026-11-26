@@ -19,13 +19,13 @@ use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateSelectOptionP
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Model\DataObject\SelectOptions\Config;
 use Pimcore\Model\DataObject\SelectOptions\Data\SelectOption;
-use function array_is_list;
-use function array_key_exists;
+use stdClass;
 use function gettype;
 use function implode;
 use function in_array;
 use function is_array;
 use function json_decode;
+use function property_exists;
 use function sprintf;
 
 /**
@@ -42,41 +42,39 @@ final readonly class ImportDataParser implements ImportDataParserInterface
     public function parse(string $json): UpdateSelectOptionParameters
     {
         $data = $this->decode($json);
-        $group = $data[Config::PROPERTY_GROUP] ?? null;
-        $adminOnly = $data[Config::PROPERTY_ADMIN_ONLY] ?? false;
-        $useTraits = $data[Config::PROPERTY_USE_TRAITS] ?? '';
-        $implementsInterfaces = $data[Config::PROPERTY_IMPLEMENTS_INTERFACES] ?? '';
-        $selectOptions = $data[Config::PROPERTY_SELECT_OPTIONS];
+        $group = $data->{Config::PROPERTY_GROUP} ?? null;
+        $adminOnly = $data->{Config::PROPERTY_ADMIN_ONLY} ?? false;
+        $useTraits = $data->{Config::PROPERTY_USE_TRAITS} ?? '';
+        $implementsInterfaces = $data->{Config::PROPERTY_IMPLEMENTS_INTERFACES} ?? '';
 
         $this->assertType(Config::PROPERTY_GROUP, $group, ['string', 'NULL']);
         $this->assertType(Config::PROPERTY_ADMIN_ONLY, $adminOnly, ['boolean']);
         $this->assertType(Config::PROPERTY_USE_TRAITS, $useTraits, ['string']);
         $this->assertType(Config::PROPERTY_IMPLEMENTS_INTERFACES, $implementsInterfaces, ['string']);
-        $this->validateSelectOptions($selectOptions);
 
         return new UpdateSelectOptionParameters(
             $group,
             $adminOnly,
             $useTraits,
             $implementsInterfaces,
-            $selectOptions
+            $this->createSelectOptions($data->{Config::PROPERTY_SELECT_OPTIONS})
         );
     }
 
     /**
-     * @throws InvalidArgumentException
+     * Decoded without associative arrays, so a JSON object never passes as a list.
      *
-     * @return array<string, mixed>
+     * @throws InvalidArgumentException
      */
-    private function decode(string $json): array
+    private function decode(string $json): stdClass
     {
         try {
-            $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+            $data = json_decode($json, false, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
             throw new InvalidArgumentException('Uploaded file is not valid JSON: ' . $e->getMessage(), $e);
         }
 
-        if (!is_array($data) || !array_key_exists(Config::PROPERTY_SELECT_OPTIONS, $data)) {
+        if (!$data instanceof stdClass || !property_exists($data, Config::PROPERTY_SELECT_OPTIONS)) {
             throw new InvalidArgumentException(
                 'Uploaded file is not a select options export: missing "selectOptions".'
             );
@@ -87,23 +85,32 @@ final readonly class ImportDataParser implements ImportDataParserInterface
 
     /**
      * @throws InvalidArgumentException
+     *
+     * @return array<int, array<string, mixed>>
      */
-    private function validateSelectOptions(mixed $selectOptions): void
+    private function createSelectOptions(mixed $selectOptions): array
     {
-        if (!is_array($selectOptions) || !array_is_list($selectOptions)) {
+        if (!is_array($selectOptions)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid value for "%s": expected a list of objects.', Config::PROPERTY_SELECT_OPTIONS)
             );
         }
 
+        $options = [];
+
         foreach ($selectOptions as $index => $option) {
             $path = sprintf('%s[%d]', Config::PROPERTY_SELECT_OPTIONS, $index);
-            $this->assertType($path, $option, ['array']);
+            $this->assertType($path, $option, ['object']);
+            $option = (array) $option;
 
             foreach (self::OPTION_FIELDS as $field) {
                 $this->assertType($path . '.' . $field, $option[$field] ?? '', ['string']);
             }
+
+            $options[] = $option;
         }
+
+        return $options;
     }
 
     /**

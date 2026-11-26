@@ -111,9 +111,21 @@ final class ImportDataParserTest extends Unit
                 '{"selectOptions": {"open": {"value": "open"}}}',
                 'Invalid value for "selectOptions": expected a list of objects.',
             ],
+            'selectOptions as empty object' => [
+                '{"selectOptions": {}}',
+                'Invalid value for "selectOptions": expected a list of objects.',
+            ],
+            'selectOptions as object with consecutive numeric keys' => [
+                '{"selectOptions": {"0": {"value": "open"}, "1": {"value": "closed"}}}',
+                'Invalid value for "selectOptions": expected a list of objects.',
+            ],
             'option as string' => [
                 '{"selectOptions": ["open"]}',
-                'Invalid value for "selectOptions[0]": expected array, got string.',
+                'Invalid value for "selectOptions[0]": expected object, got string.',
+            ],
+            'option as list' => [
+                '{"selectOptions": [["open"]]}',
+                'Invalid value for "selectOptions[0]": expected object, got array.',
             ],
             'option value as number' => [
                 '{"selectOptions": [{"value": 1}]}',
