@@ -210,6 +210,39 @@ final class ColumnTest extends Unit
         $this->assertSame(7, $configs->getColumns()[0]->getKeyId());
     }
 
+    public function testGetAdvancedColumnConfigParsesClassificationStoreIdentifiers(): void
+    {
+        $column = new Column(
+            key: 'adv',
+            locale: null,
+            type: 'dataobject.advanced',
+            group: ['test'],
+            config: [
+                'advancedColumns' => [
+                    [
+                        'key' => 'simpleField',
+                        'config' => ['field' => 'cs', 'groupIdentifier' => 'product-data', 'keyIdentifier' => 'weight'],
+                    ],
+                    [
+                        'key' => 'relationField',
+                        'config' => [
+                            'relation' => 'manufacturer',
+                            'field' => 'cs',
+                            'groupIdentifier' => 'product-data',
+                            'keyIdentifier' => 'weight',
+                        ],
+                    ],
+                ],
+            ],
+        );
+
+        [$simple, $relation] = $column->getAdvancedColumnConfig()->getColumns();
+
+        $this->assertSame(['product-data', 'weight'], [$simple->getGroupIdentifier(), $simple->getKeyIdentifier()]);
+        $this->assertNull($simple->getGroupId());
+        $this->assertSame(['product-data', 'weight'], [$relation->getGroupIdentifier(), $relation->getKeyIdentifier()]);
+    }
+
     public function testWidthDefaultsToNull(): void
     {
         $column = new Column('id', 'en', 'system.id', ['system'], []);

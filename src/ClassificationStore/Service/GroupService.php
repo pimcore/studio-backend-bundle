@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event\GroupEvent;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event\GroupLayoutEvent;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupHydratorInterface;
@@ -22,13 +22,14 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupLayoutH
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\GroupLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_map;
 use function count;
 
 /**
@@ -37,14 +38,16 @@ use function count;
 final readonly class GroupService implements GroupServiceInterface
 {
     public function __construct(
-        private ConcreteObjectResolver $concreteObjectResolver,
+        private ConcreteObjectResolverInterface $concreteObjectResolver,
         private GroupConfigRepositoryInterface $groupConfigRepository,
         private EventDispatcherInterface $eventDispatcher,
         private GroupHydratorInterface $groupHydrator,
-        private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
+        private KeyRelationResolverInterface $keyRelationResolver,
         private KeyGroupLayoutServiceInterface $keyGroupLayoutService,
         private GroupLayoutHydratorInterface $groupLayoutHydrator,
         private ClassDefinitionResolverInterface $classDefinitionResolver,
+        private SubGroupLayoutResolverInterface $subGroupLayoutResolver,
+        private LabelLanguageResolverInterface $labelLanguageResolver,
     ) {
     }
 
@@ -111,12 +114,26 @@ final readonly class GroupService implements GroupServiceInterface
      */
     public function getLayoutDefinition(int $groupId, LayoutParameter $layoutParameter): GroupLayout
     {
-        $keys = $this->keyGroupRelationRepository->getByGroupId($groupId);
-        $object = $this->concreteObjectResolver->getById($layoutParameter->getObjectId());
+        $keys = $this->keyRelationResolver->getByGroup($groupId);
 
-        if (!$object) {
-            throw new NotFoundException('object', $layoutParameter->getObjectId());
+        $object = null;
+        // `!== null`, not truthiness: only an omitted objectId is served without an object in
+        // context. An objectId of 0 was supplied and does not resolve, so it is still a 404.
+        if ($layoutParameter->getObjectId() !== null) {
+            $object = $this->concreteObjectResolver->getById($layoutParameter->getObjectId());
+
+            if (!$object) {
+                throw new NotFoundException('object', $layoutParameter->getObjectId());
+            }
         }
+
+        $language = $this->labelLanguageResolver->getLabelLanguage();
+
+        // One statement for the whole group, instead of a label query per key.
+        $this->keyGroupLayoutService->preloadKeyTitles(
+            array_map(static fn (KeyGroupRelation $key): int => $key->getKeyId(), $keys),
+            $language
+        );
 
         $keyLayouts = [];
         foreach ($keys as $key) {
@@ -131,11 +148,21 @@ final readonly class GroupService implements GroupServiceInterface
                 name: $key->getName(),
                 description: $key->getDescription(),
                 definition: $definition,
+                title: $this->keyGroupLayoutService->getKeyTitle($key->getKeyId(), $language),
+                subGroup: $key->getSubGroup(),
+                localized: $this->keyGroupLayoutService->getKeyLocalized($key->getKeyId()),
+                variants: $this->keyGroupLayoutService->getKeyVariants($key->getKeyId()),
+                defaultVariant: $this->keyGroupLayoutService->getKeyDefaultVariant($key->getKeyId()),
+                defaultVariantLabel: $this->keyGroupLayoutService->getKeyDefaultVariantLabel($key->getKeyId()),
             );
         }
 
         $group = $this->groupConfigRepository->getById($groupId);
-        $groupLayout = $this->groupLayoutHydrator->hydrate($keyLayouts, $group);
+        $groupLayout = $this->groupLayoutHydrator->hydrate(
+            $keyLayouts,
+            $group,
+            $this->subGroupLayoutResolver->resolve($keys, $group->getStoreId())
+        );
 
         $this->eventDispatcher->dispatch(
             new GroupLayoutEvent($groupLayout),

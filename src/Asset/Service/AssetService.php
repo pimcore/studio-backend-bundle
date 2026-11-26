@@ -43,6 +43,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateServiceInterface;
 use Pimcore\Model\Asset as AssetModel;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -65,6 +66,7 @@ final readonly class AssetService implements AssetServiceInterface
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
         private WorkflowDetailsServiceInterface $workflowDetailsService,
+        private WorkflowStateServiceInterface $workflowStateService,
     ) {
     }
 
@@ -91,6 +93,8 @@ final readonly class AssetService implements AssetServiceInterface
         $result = $this->assetSearchService->searchAssets($assetQuery);
 
         $items = $result->getItems();
+
+        $this->workflowStateService->applyVisibleStates($items, ElementTypes::TYPE_ASSET);
 
         foreach ($items as $item) {
             $this->dispatchAssetEvent($item);

@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Request\SearchTermParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\PublishedState;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Subtype;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -98,6 +99,11 @@ interface ElementServiceInterface
      * @throws NotFoundException|ForbiddenException|UserNotFoundException
      */
     public function getElementSubtype(ElementParameters $parameters): Subtype;
+
+    /**
+     * @throws NotFoundException|ForbiddenException|UserNotFoundException
+     */
+    public function getElementPublishedState(ElementParameters $parameters): PublishedState;
 
     /**
      * @throws InvalidElementTypeException|NotFoundException|SearchException

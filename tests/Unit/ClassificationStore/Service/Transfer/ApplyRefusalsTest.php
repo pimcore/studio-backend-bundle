@@ -1,0 +1,846 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\Transfer;
+
+use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollectionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyTypeEngineFitResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyContext;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusals;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyReport;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactAssignmentEntry;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\MatchedRow;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use function array_intersect;
+use function array_values;
+use function is_callable;
+
+/**
+ * What an apply refuses to write, and why - the three refusals the writer asks about before it
+ * writes anything: a name the level's own API would refuse, a key the file disables while the store
+ * still assigns it, and the refusals one key assignment carries on its own.
+ *
+ * @internal
+ */
+final class ApplyRefusalsTest extends Unit
+{
+    private const int STORE_ID = 1;
+
+    private const string MULTI_VALUE_TYPE = 'multiValue';
+
+    private const string MULTI_VALUE_IDENTIFIER = '01MVKEY';
+
+    private const string MULTI_VALUE_LABEL = 'key "steering"';
+
+    /**
+     * A sub group's own ::update() refuses a name another row of the store carries, so a rename the
+     * file asks for is refused here rather than arriving as a failed save.
+     */
+    public function testASubGroupRenameOntoANameTheStoreCarriesIsRefused(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals(subGroupNameTaken: true);
+
+        $refused = $refusals->refuseTakenName(
+            $context,
+            ArtifactSection::SUB_GROUPS,
+            ApplyOutcome::UPDATED,
+            'Dimensions',
+            new MatchedRow(7),
+            'sub group "Dimensions"',
+            '01SUB'
+        );
+
+        $this->assertTrue($refused);
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+        $this->assertSame(
+            ['sub group "Dimensions": the target holds the name under another identifier than the file gives it'],
+            $context->getReport()->getNamed(ApplyOutcome::SKIPPED)
+        );
+    }
+
+    /**
+     * A collection's and a group's own ::update() do not probe the name, but the apply does: a file
+     * entry for one identifier renamed onto a name another identifier holds is skipped and named, and
+     * the row being updated stays resolvable under the identifier the file gives it.
+     */
+    public function testARenameOntoANameAnotherIdentifierHoldsIsSkippedAtEveryLevel(): void
+    {
+        foreach ([ArtifactSection::COLLECTIONS, ArtifactSection::GROUPS] as $section) {
+            $context = $this->createContext();
+            $refusals = $this->createRefusals(collectionNameTaken: true, groupNameTaken: true);
+
+            $this->assertTrue(
+                $refusals->refuseTakenName(
+                    $context,
+                    $section,
+                    ApplyOutcome::UPDATED,
+                    'Alpha',
+                    new MatchedRow(7, 'Beta'),
+                    'label',
+                    'id'
+                ),
+                $section->value
+            );
+            $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+            $this->assertSame(1, $context->getReport()->getCount(ApplyOutcome::SKIPPED), $section->value);
+            $this->assertFalse($context->isSkipped($section, 'id'), $section->value);
+        }
+    }
+
+    /**
+     * A nameless row selected by name is adopted only when no other row holds the name under another
+     * identifier; otherwise nothing is written, so the identifier is skipped and what refers to it
+     * is skipped with it rather than resolving to the row left without one.
+     */
+    public function testAnAmbiguousAdoptionSkipsTheIdentifierAtEveryLevel(): void
+    {
+        $sections = [ArtifactSection::SUB_GROUPS, ArtifactSection::COLLECTIONS, ArtifactSection::GROUPS];
+
+        foreach ($sections as $section) {
+            $context = $this->createContext();
+            $refusals = $this->createRefusals(
+                collectionNameTaken: true,
+                groupNameTaken: true,
+                subGroupNameTaken: true
+            );
+
+            $this->assertTrue(
+                $refusals->refuseTakenName(
+                    $context,
+                    $section,
+                    ApplyOutcome::ADOPTED,
+                    'Alpha',
+                    new MatchedRow(7, 'Alpha'),
+                    'label',
+                    'id'
+                ),
+                $section->value
+            );
+            $this->assertSame(1, $context->getReport()->getCount(ApplyOutcome::SKIPPED), $section->value);
+            $this->assertTrue($context->isSkipped($section, 'id'), $section->value);
+        }
+    }
+
+    /**
+     * A creation is refused at every guarded level, because every one of them probes the name on
+     * ::create().
+     */
+    public function testACreationOntoANameTheStoreCarriesIsRefusedAtEveryGuardedLevel(): void
+    {
+        $sections = [
+            ArtifactSection::SUB_GROUPS,
+            ArtifactSection::COLLECTIONS,
+            ArtifactSection::GROUPS,
+        ];
+
+        foreach ($sections as $section) {
+            $context = $this->createContext();
+            $refusals = $this->createRefusals(
+                collectionNameTaken: true,
+                groupNameTaken: true,
+                subGroupNameTaken: true
+            );
+
+            $this->assertTrue(
+                $refusals->refuseTakenName($context, $section, ApplyOutcome::CREATED, 'Alpha', null, 'label', 'id'),
+                $section->value
+            );
+        }
+    }
+
+    /**
+     * An entry the row it was matched to already says is nothing the guard has to ask about.
+     */
+    public function testAnUnchangedEntryIsNeverRefused(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals(subGroupNameTaken: true);
+
+        $this->assertFalse(
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::SUB_GROUPS,
+                ApplyOutcome::MATCHED_UNCHANGED,
+                'Dimensions',
+                new MatchedRow(7),
+                'label',
+                'id'
+            )
+        );
+    }
+
+    /**
+     * The run answers for the names it is writing itself: a file naming one name under two
+     * identifiers is refused on the second, which the store cannot know about yet.
+     */
+    public function testTheSecondEntryOfTheFileClaimingOneNameIsRefused(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals();
+
+        $this->assertFalse(
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::GROUPS,
+                ApplyOutcome::CREATED,
+                'Alpha',
+                null,
+                'one',
+                'id1'
+            )
+        );
+        $this->assertTrue(
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::GROUPS,
+                ApplyOutcome::CREATED,
+                'alpha',
+                null,
+                'two',
+                'id2'
+            )
+        );
+        $this->assertSame(
+            ['two: the name is already another entry\'s in this store'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
+    /**
+     * The name is claimed by every entry that carries it after the apply, so a file naming it twice is
+     * a conflict even when the first of the two is the row the store already has.
+     */
+    public function testAMatchedEntryAndANewOneClaimingOneNameAreAConflict(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals(groupNameTaken: true);
+
+        $this->assertFalse(
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::GROUPS,
+                ApplyOutcome::MATCHED_UNCHANGED,
+                'Measurements',
+                new MatchedRow(7),
+                'one',
+                '01GROUP'
+            )
+        );
+        $this->assertTrue(
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::GROUPS,
+                ApplyOutcome::CREATED,
+                'Measurements',
+                null,
+                'two',
+                '01OTHER'
+            )
+        );
+        $this->assertSame(1, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::SKIPPED));
+    }
+
+    /**
+     * A store already holding two rows of one name applies its own export: entries matched unchanged
+     * only carry the name, they do not write it.
+     */
+    public function testTwoMatchedEntriesCarryingOneNameAreNotAConflict(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals(groupNameTaken: true);
+
+        foreach ([[7, 'A'], [8, 'B']] as [$id, $identifier]) {
+            $this->assertFalse(
+                $refusals->refuseTakenName(
+                    $context,
+                    ArtifactSection::GROUPS,
+                    ApplyOutcome::MATCHED_UNCHANGED,
+                    'Dimensions',
+                    new MatchedRow($id, 'Dimensions'),
+                    $identifier,
+                    $identifier
+                )
+            );
+        }
+
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+    }
+
+    /**
+     * A name another entry of the file renames its row away from is free for a new entry, in a dry run
+     * (which has written no rename) as in a real one.
+     */
+    public function testANameTheFileRenamesAwayFromIsFreeForANewEntry(): void
+    {
+        $context = $this->createContext();
+        // the store holds one group, row 7 named "Dimensions"; "Lengths" is free
+        $refusals = $this->createRefusals(
+            groupNameTaken: static fn (string $name, ?int $exceptId): bool => $name === 'Dimensions'
+                && $exceptId !== 7
+        );
+
+        $this->assertFalse(
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::GROUPS,
+                ApplyOutcome::UPDATED,
+                'Lengths',
+                new MatchedRow(7, 'Dimensions'),
+                'A',
+                'A'
+            )
+        );
+        $this->assertFalse(
+            $refusals->refuseTakenName(
+                $context,
+                ArtifactSection::GROUPS,
+                ApplyOutcome::CREATED,
+                'Dimensions',
+                null,
+                'B',
+                'B'
+            )
+        );
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::SKIPPED));
+    }
+
+    /**
+     * A sub group whose rename is skipped is still in the store under the identifier the file gives
+     * it, so what names it is not skipped along with it.
+     */
+    public function testARefusedRenameLeavesTheSubGroupResolvable(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals(groupNameTaken: true);
+
+        $refusals->refuseTakenName(
+            $context,
+            ArtifactSection::GROUPS,
+            ApplyOutcome::UPDATED,
+            'Sizes',
+            new MatchedRow(7),
+            'sub group "Sizes"',
+            '01SUB'
+        );
+
+        $this->assertFalse($context->isSkipped(ArtifactSection::SUB_GROUPS, '01SUB'));
+    }
+
+    /**
+     * Disabling a key deletes every assignment of it, so a file that disables one the store still
+     * assigns is refused, naming the groups that would have been untagged.
+     */
+    public function testDisablingAKeyTheStoreStillAssignsIsRefusedNamingTheGroups(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals(assignedGroupNames: ['Alpha', 'Beta']);
+
+        $refused = $refusals->refuseDisablingAnAssignedKey($context, $this->createKey(), 'weight');
+
+        $this->assertTrue($refused);
+        $this->assertSame(
+            ['key "weight" is disabled by the file but still assigned to the group(s) "Alpha", "Beta"'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
+    public function testDisablingAnUnassignedKeyIsNotRefused(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals();
+
+        $this->assertFalse($refusals->refuseDisablingAnAssignedKey($context, $this->createKey(), 'weight'));
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+    }
+
+    /**
+     * A real run writes under the probe's answer, so the probe is a locking read; a dry run writes
+     * nothing, holds nothing and asks without the lock.
+     */
+    public function testTheProbeLocksInARealRunAndNotInADryRun(): void
+    {
+        foreach ([false, true] as $dryRun) {
+            $holds = [];
+            $keyGroupRelationRepository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
+            $keyGroupRelationRepository
+                ->method('getGroupNamesByKeyId')
+                ->willReturnCallback(static function (int $keyId, bool $hold = false) use (&$holds): array {
+                    $holds[] = $hold;
+
+                    return [];
+                });
+
+            $refusals = new ApplyRefusals(
+                $this->makeEmpty(CollectionRepositoryInterface::class),
+                $this->makeEmpty(GroupRepositoryInterface::class),
+                $keyGroupRelationRepository,
+                $this->makeEmpty(KeyTypeEngineFitResolverInterface::class),
+                $this->makeEmpty(SubGroupRepositoryInterface::class)
+            );
+
+            $refusals->refuseDisablingAnAssignedKey($this->createContext($dryRun), $this->createKey(), 'weight');
+
+            $this->assertSame([!$dryRun], $holds, $dryRun ? 'dry run' : 'real run');
+        }
+    }
+
+    public function testAnAssignmentOfAKeyTheSameFileDisablesIsRefused(): void
+    {
+        $context = $this->createContext();
+        $context->markKeyDisabled('K1');
+        $refusals = $this->createRefusals();
+
+        $refused = $refusals->refuseAssignment($context, $this->createAssignment(), 'key assignment "G1 -> K1"');
+
+        $this->assertTrue($refused);
+        $this->assertSame(
+            ['key assignment "G1 -> K1": key "K1" is disabled by the file and assigned by it as well'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
+    /**
+     * The same hazard from the other side: the key is disabled in the target and no entry of the
+     * file enables it, so the assignment would write a relation core treats as invisible and its own
+     * disable - which fires on the transition only - will never clean up.
+     */
+    public function testAnAssignmentOfAKeyTheTargetDisablesIsRefused(): void
+    {
+        $context = $this->createContext();
+        $context->markKeyDisabledInTarget('K1');
+        $refusals = $this->createRefusals();
+
+        $refused = $refusals->refuseAssignment($context, $this->createAssignment(), 'key assignment "G1 -> K1"');
+
+        $this->assertTrue($refused);
+        $this->assertSame(
+            ['key assignment "G1 -> K1": key "K1" is disabled in the target and the file does not enable it'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
+    /**
+     * A key the file disables and the target carries disabled is named once, by the file: both
+     * refusals describe the same relation and reporting it twice would read as two faults.
+     */
+    public function testAKeyDisabledOnBothSidesIsNamedOnceByTheFile(): void
+    {
+        $context = $this->createContext();
+        $context->markKeyDisabled('K1');
+        $context->markKeyDisabledInTarget('K1');
+        $refusals = $this->createRefusals();
+
+        $this->assertTrue(
+            $refusals->refuseAssignment($context, $this->createAssignment(), 'label')
+        );
+        $this->assertSame(
+            ['label: key "K1" is disabled by the file and assigned by it as well'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
+    /**
+     * The negative case: a key neither side disables is assignable, which is every ordinary entry.
+     */
+    public function testAnAssignmentOfAnEnabledKeyIsNotRefused(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals();
+
+        $this->assertFalse($refusals->refuseAssignment($context, $this->createAssignment(), 'label'));
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+    }
+
+    /**
+     * Every property outside the closed list is named, rather than only the first one the model
+     * would have thrown on.
+     */
+    public function testAnOverrideOutsideTheClosedListIsRefusedNamingEveryProperty(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals();
+
+        $refused = $refusals->refuseAssignment(
+            $context,
+            $this->createAssignment(definitionOverride: [
+                'options' => [['key' => 'a', 'value' => 'a']],
+                'type' => 'input',
+                'name' => 'weight',
+            ]),
+            'label'
+        );
+
+        $this->assertTrue($refused);
+        $this->assertSame(
+            [
+                'label: "type" cannot be overridden per key assignment',
+                'label: "name" cannot be overridden per key assignment',
+            ],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
+    /**
+     * The search index flag is not overridable per assignment: that flag belongs to the key, in its
+     * own `definition`, and no assignment overrides it - so a `definitionOverride` naming it is
+     * outside the closed list like anything else.
+     */
+    public function testAnOverrideNamingTheSearchIndexFlagIsRefused(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals();
+
+        $refused = $refusals->refuseAssignment(
+            $context,
+            $this->createAssignment(definitionOverride: ['indexed' => false]),
+            'label'
+        );
+
+        $this->assertTrue($refused);
+        $this->assertSame(
+            ['label: "indexed" cannot be overridden per key assignment'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
+    public function testASubGroupNeitherTheFileNorTheStoreCarriesIsRefused(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals();
+
+        $refused = $refusals->refuseAssignment($context, $this->createAssignment(subGroup: 'SG1'), 'label');
+
+        $this->assertTrue($refused);
+        $this->assertSame(
+            ['label: the sub group "SG1" exists neither in the file nor in the store'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
+    public function testASubGroupTheRunKnowsAboutIsNotRefused(): void
+    {
+        $context = $this->createContext();
+        $context->plan(ArtifactSection::SUB_GROUPS, 'SG1');
+        $refusals = $this->createRefusals();
+
+        $this->assertFalse(
+            $refusals->refuseAssignment($context, $this->createAssignment(subGroup: 'SG1'), 'label')
+        );
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+    }
+
+    /**
+     * @param array<string, mixed>|null $definitionOverride
+     */
+    private function createAssignment(
+        ?array $definitionOverride = null,
+        ?string $subGroup = null,
+    ): ArtifactAssignmentEntry {
+        return new ArtifactAssignmentEntry(
+            'G1',
+            'K1',
+            0,
+            false,
+            definitionOverride: $definitionOverride,
+            subGroup: $subGroup
+        );
+    }
+
+    private function createKey(): KeyConfig
+    {
+        $key = new KeyConfig();
+        $key->setId(7);
+        $key->setStoreId(self::STORE_ID);
+
+        return $key;
+    }
+
+    /**
+     * The refusal asks the fit resolver about the key's own type and its wrapper delegate, and about
+     * the store the apply writes into - null for a store the apply has yet to create.
+     */
+    public function testAKeyTypeTheEngineCannotHoldIsRefusedNamingTheEngine(): void
+    {
+        $asked = [];
+        $fit = $this->makeEmpty(KeyTypeEngineFitResolverInterface::class, [
+            'findRefusingEngine' => function (string $type, ?string $delegate, ?int $storeId) use (&$asked): string {
+                $asked[] = [$type, $delegate, $storeId];
+
+                return 'eav';
+            },
+        ]);
+        $context = $this->createContext();
+        $entry = new ArtifactKeyEntry(
+            '01KEY',
+            'secret',
+            null,
+            null,
+            'encryptedField',
+            ['delegateDatatype' => 'geopoint'],
+            true
+        );
+
+        $refused = $this->createRefusals(keyTypeEngineFit: $fit)
+            ->refuseKeyTypeTheEngineCannotHold($context, $entry, 'key "secret"');
+
+        $this->assertTrue($refused);
+        $this->assertSame([['encryptedField', 'geopoint', self::STORE_ID]], $asked);
+        $this->assertSame(
+            ['key "secret": the field type "encryptedField" cannot be held by the "eav" storage engine of the store'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
+    public function testAKeyTypeEveryEngineHoldsIsNotRefused(): void
+    {
+        $context = $this->createContext();
+        $entry = new ArtifactKeyEntry('01KEY', 'weight', null, null, 'input', ['fieldtype' => 'input'], true);
+
+        $refused = $this->createRefusals()->refuseKeyTypeTheEngineCannotHold($context, $entry, 'key "weight"');
+
+        $this->assertFalse($refused);
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+    }
+
+    public function testAWithdrawnTypeTheStoredKeyAlreadyCarriesIsNotRefused(): void
+    {
+        $fit = $this->makeEmpty(KeyTypeEngineFitResolverInterface::class, [
+            'findWithdrawnTypes' => static fn (array $types): array => array_values(
+                array_intersect($types, ['consent'])
+            ),
+        ]);
+        $entry = new ArtifactKeyEntry('01KEY', 'agree', null, null, 'consent', ['fieldtype' => 'consent'], true);
+        $stored = $this->createKey();
+        $stored->setType('consent');
+        $stored->setDefinition('{"fieldtype":"consent"}');
+        $refusals = $this->createRefusals(keyTypeEngineFit: $fit);
+
+        $context = $this->createContext();
+        $this->assertFalse($refusals->refuseWithdrawnKeyType($context, $stored, $entry, 'key "agree"'));
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+
+        $context = $this->createContext();
+        $this->assertTrue($refusals->refuseWithdrawnKeyType($context, null, $entry, 'key "agree"'));
+        $this->assertSame(
+            ['key "agree": the field type "consent" has been withdrawn as a key type'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
+    /**
+     * The import is the one live way a `multiValue` key still reaches an EAV store once new stores
+     * are created on the document engine: the artifact deliberately carries no engine, so a file
+     * exported from a document store applies into an EAV one without anything else noticing.
+     */
+    public function testADeclarationTheEngineCannotAddressIsRefusedNamingTheCapability(): void
+    {
+        $context = $this->createContext();
+        $entry = $this->createMultiValueEntry([['name' => 'Metric']]);
+
+        $refused = $this->createRefusals(keyTypeEngineFit: $this->createDeclarationFit())
+            ->refuseDeclarationTheEngineCannotAddress($context, null, $entry, self::MULTI_VALUE_LABEL);
+
+        $this->assertTrue($refused);
+        $this->assertSame(
+            [
+                self::MULTI_VALUE_LABEL . ': the declaration of a "multiValue" key needs MultiValue, Variants,'
+                . ' which the "eav" storage engine of the store does not offer',
+            ],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+        $this->assertTrue(
+            $context->isSkipped(ArtifactSection::KEYS, self::MULTI_VALUE_IDENTIFIER),
+            'nothing registers a refused key, so what refers to it is skipped with it'
+        );
+    }
+
+    /**
+     * The control the refusal needs, and the reason it is not blanket: a key the store already
+     * carries that way stays writable, exactly as a withdrawn type the stored row already carries
+     * does. Only what the stored row does not already need is refused - here the row names no
+     * variant and the file gives it two.
+     */
+    public function testADeclarationTheStoredKeyAlreadyNeedsIsNotRefusedAndOnlyTheWideningIs(): void
+    {
+        $refusals = $this->createRefusals(keyTypeEngineFit: $this->createDeclarationFit());
+
+        $stored = $this->createKey();
+        $stored->setType(self::MULTI_VALUE_TYPE);
+        $stored->setDefinition('{"variants":[{"name":"Metric"}]}');
+
+        $context = $this->createContext();
+        $this->assertFalse($refusals->refuseDeclarationTheEngineCannotAddress(
+            $context,
+            $stored,
+            $this->createMultiValueEntry([['name' => 'Metric']]),
+            self::MULTI_VALUE_LABEL
+        ));
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+
+        $plain = $this->createKey();
+        $plain->setType(self::MULTI_VALUE_TYPE);
+        $plain->setDefinition('{"variants":[]}');
+
+        $context = $this->createContext();
+        $this->assertTrue($refusals->refuseDeclarationTheEngineCannotAddress(
+            $context,
+            $plain,
+            $this->createMultiValueEntry([['name' => 'Metric']]),
+            self::MULTI_VALUE_LABEL
+        ));
+        $this->assertSame(
+            [
+                self::MULTI_VALUE_LABEL . ': the declaration of a "multiValue" key needs Variants, which the'
+                . ' "eav" storage engine of the store does not offer',
+            ],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT),
+            'only the capability the stored row does not already need'
+        );
+    }
+
+    public function testADeclarationTheEngineAddressesIsNotRefused(): void
+    {
+        $context = $this->createContext();
+
+        $refused = $this->createRefusals()->refuseDeclarationTheEngineCannotAddress(
+            $context,
+            null,
+            $this->createMultiValueEntry([]),
+            self::MULTI_VALUE_LABEL
+        );
+
+        $this->assertFalse($refused);
+        $this->assertSame(0, $context->getReport()->getCount(ApplyOutcome::CONFLICT));
+    }
+
+    /**
+     * A fit resolver answering the way core's does on an EAV store: the type needs `MultiValue` and
+     * a declaration naming variants needs `Variants` on top of it.
+     *
+     * @param array<int, array<string, string>> $variants
+     */
+    private function createMultiValueEntry(array $variants): ArtifactKeyEntry
+    {
+        return new ArtifactKeyEntry(
+            self::MULTI_VALUE_IDENTIFIER,
+            'steering',
+            null,
+            null,
+            self::MULTI_VALUE_TYPE,
+            ['delegateDatatype' => 'input', 'variants' => $variants],
+            true
+        );
+    }
+
+    private function createDeclarationFit(): KeyTypeEngineFitResolverInterface
+    {
+        return $this->makeEmpty(KeyTypeEngineFitResolverInterface::class, [
+            'findEngineRefusingDeclaration' => static function (
+                string $type,
+                ?array $definition,
+                ?int $storeId
+            ): ?array {
+                if ($type !== self::MULTI_VALUE_TYPE) {
+                    return null;
+                }
+
+                $capabilities = ['MultiValue'];
+                if (($definition['variants'] ?? []) !== []) {
+                    $capabilities[] = 'Variants';
+                }
+
+                return ['engine' => 'eav', 'capabilities' => $capabilities];
+            },
+        ]);
+    }
+
+    public function testADelegateNoKeyIsDefinedWithIsRefusedNamingIt(): void
+    {
+        $fit = $this->makeEmpty(KeyTypeEngineFitResolverInterface::class, [
+            'findDelegateThatIsNotAKeyType' => static fn (?string $delegate): ?string => $delegate,
+        ]);
+        $entry = new ArtifactKeyEntry(
+            '01KEY',
+            'slug',
+            null,
+            null,
+            self::MULTI_VALUE_TYPE,
+            ['delegateDatatype' => 'urlSlug'],
+            true
+        );
+        $context = $this->createContext();
+
+        $refused = $this->createRefusals(keyTypeEngineFit: $fit)
+            ->refuseDelegateThatIsNotAKeyType($context, $entry, 'key "slug"');
+
+        $this->assertTrue($refused);
+        $this->assertSame(
+            ['key "slug": a key cannot wrap the field type "urlSlug", which no key is defined with'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
+    private function createContext(bool $dryRun = false): ApplyContext
+    {
+        $context = new ApplyContext($dryRun, new ApplyReport());
+        $context->setStoreId(self::STORE_ID);
+
+        return $context;
+    }
+
+    /**
+     * @param list<string> $assignedGroupNames
+     */
+    private function createRefusals(
+        bool $collectionNameTaken = false,
+        bool|callable $groupNameTaken = false,
+        bool $subGroupNameTaken = false,
+        array $assignedGroupNames = [],
+        ?KeyTypeEngineFitResolverInterface $keyTypeEngineFit = null,
+    ): ApplyRefusals {
+        $collectionRepository = $this->createMock(CollectionRepositoryInterface::class);
+        $collectionRepository->method('isNameTaken')->willReturn($collectionNameTaken);
+
+        $groupRepository = $this->createMock(GroupRepositoryInterface::class);
+        if (is_callable($groupNameTaken)) {
+            $groupRepository->method('isNameTaken')->willReturnCallback(
+                static fn (int $storeId, string $name, ?int $exceptId = null): bool => $groupNameTaken($name, $exceptId)
+            );
+        } else {
+            $groupRepository->method('isNameTaken')->willReturn($groupNameTaken);
+        }
+
+        $subGroupRepository = $this->createMock(SubGroupRepositoryInterface::class);
+        $subGroupRepository->method('isNameTaken')->willReturn($subGroupNameTaken);
+
+        $keyGroupRelationRepository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
+        $keyGroupRelationRepository->method('getGroupNamesByKeyId')->willReturn($assignedGroupNames);
+
+        return new ApplyRefusals(
+            $collectionRepository,
+            $groupRepository,
+            $keyGroupRelationRepository,
+            $keyTypeEngineFit ?? $this->makeEmpty(KeyTypeEngineFitResolverInterface::class),
+            $subGroupRepository
+        );
+    }
+}

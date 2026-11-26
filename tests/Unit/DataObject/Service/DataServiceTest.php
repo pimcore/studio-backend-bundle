@@ -28,8 +28,11 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInte
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -234,6 +237,28 @@ final class DataServiceTest extends Unit
     }
 
     /**
+     * The sibling of the case above, and the one the Classification Store's own refusals need: a
+     * value the key's declaration does not permit is refused inside the adapter with the status and
+     * the error key that refusal states, and a client has to receive both rather than the 500 and
+     * the generic error key wrapping it would report.
+     *
+     * @throws Exception
+     */
+    public function testUpdateEditableDataKeepsTheStatusAndErrorKeyOfAValidationRefusal(): void
+    {
+        try {
+            $this->updateWithAdapterThrowing(new InvalidArgumentException(
+                'The value names a variant the key does not declare.',
+                errorKey: HttpResponseErrorKeys::UNDECLARED_VARIANT->value
+            ));
+            $this->fail('Expected the refusal to reach the caller');
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(HttpResponseCodes::UNPROCESSABLE_CONTENT->value, $exception->getStatusCode());
+            $this->assertSame(HttpResponseErrorKeys::UNDECLARED_VARIANT->value, $exception->getErrorKey());
+        }
+    }
+
+    /**
      * @throws Exception
      */
     public function testUpdateEditableDataSkipsRemoteWritingAdapterWhenRemoteChangesAreNotApplied(): void
@@ -283,6 +308,32 @@ final class DataServiceTest extends Unit
         $this->updateWith($adapter, false);
 
         $this->assertSame(1, $calls);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAKeyWithoutAnExportAdapterIsExportedFromTheObjectWithTheContextItIsGiven(): void
+    {
+        $object = $this->makeEmpty(Concrete::class);
+        $parameters = [
+            'context' => ['containerType' => 'classificationstore', 'groupId' => 3, 'keyId' => 7],
+        ];
+        $seen = [];
+        $definition = $this->makeEmpty(Input::class, [
+            'getFieldType' => 'input',
+            'getForCsvExport' => static function (mixed $received, array $params) use (&$seen): string {
+                $seen = [$received, $params];
+
+                return 'csv';
+            },
+        ]);
+
+        $export = $this->createService($this->makeEmpty(SetterDataInterface::class))->getExportFieldValue($object, $definition, 'key', new FieldContextData(legacyParameters: $parameters));
+
+        $this->assertSame('csv', $export);
+        $this->assertSame($object, $seen[0]);
+        $this->assertSame($parameters, $seen[1]);
     }
 
     /**

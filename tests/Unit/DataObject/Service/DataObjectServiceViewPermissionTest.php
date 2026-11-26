@@ -32,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInter
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMergerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateServiceInterface;
 use Pimcore\Model\DataObject\Folder as CoreFolder;
 use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\User;
@@ -133,6 +134,7 @@ final class DataObjectServiceViewPermissionTest extends Unit
             $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => $coreElement]),
             $this->makeEmpty(ElementSaveServiceInterface::class),
             $this->makeEmpty(WorkflowPermissionMergerInterface::class),
+            $this->makeEmpty(WorkflowStateServiceInterface::class),
         );
     }
 }

@@ -16,13 +16,21 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Listing\Filter;
 use Carbon\Carbon;
 use Codeception\Test\Unit;
 use Doctrine\DBAL\Connection;
+use Pimcore\Bundle\SeoBundle\Model\Redirect\Listing as RedirectListing;
 use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\DateFilter;
+use Pimcore\Model\DataObject\Classificationstore\CollectionConfig\Listing as CollectionConfigListing;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing as GroupConfigListing;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Listing as KeyConfigListing;
+use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig\Listing as SubGroupConfigListing;
 use Pimcore\Model\Element\Note\Listing as NoteListing;
 use Pimcore\Model\Element\Recyclebin\Item\Listing as RecycleBinListing;
+use Pimcore\Model\Listing\AbstractListing;
 use Pimcore\Model\Notification\Listing as NotificationListing;
+use Pimcore\Model\Translation\Listing as TranslationListing;
+use Pimcore\Model\WebsiteSetting\Listing as WebsiteSettingListing;
 
 /**
  * @internal
@@ -147,6 +155,111 @@ final class DateFilterTest extends Unit
             ['filter_0' => (new Carbon('2024-06-10'))->getTimestamp()],
             $listing->getConditionVariables()
         );
+    }
+
+    /**
+     * The sub-group vocabulary lives in a configuration table: `classificationstore_subgroups`
+     * declares `creationDate` and `modificationDate` as `INT(11) UNSIGNED`, a Unix timestamp.
+     * Binding datetime strings there made MySQL coerce them to a number, so an `on` filter
+     * compared against 0 and the listing came back empty.
+     */
+    public function testDateFilterSubGroupListingOnOperatorBindsUnixTimestamps(): void
+    {
+        $filter = $this->createFilter();
+        $listing = new SubGroupConfigListing();
+
+        $params = new FilterParameter(columnFilters: [
+            ['key' => 'creationDate', 'type' => 'date', 'filterValue' => ['operator' => 'on', 'value' => '2024-06-10']],
+        ]);
+
+        $filter->apply($params, $listing);
+
+        $this->assertStringContainsString(
+            '`creationDate` BETWEEN :minTime_0 AND :maxTime_0',
+            $listing->getCondition()
+        );
+        $this->assertSame(
+            [
+                'minTime_0' => (new Carbon('2024-06-10'))->getTimestamp(),
+                'maxTime_0' => (new Carbon('2024-06-10'))->addDay()->subSecond()->getTimestamp(),
+            ],
+            $listing->getConditionVariables()
+        );
+    }
+
+    /**
+     * Both of the sub-group listing's date columns are registered, and range operators bind
+     * the integer too - not only the `on` window.
+     */
+    public function testDateFilterSubGroupListingModificationDateRangeBindsUnixTimestamp(): void
+    {
+        $filter = $this->createFilter();
+        $listing = new SubGroupConfigListing();
+
+        $params = new FilterParameter(columnFilters: [
+            [
+                'key' => 'modificationDate',
+                'type' => 'date',
+                'filterValue' => ['operator' => 'from', 'value' => '2024-06-10'],
+            ],
+        ]);
+
+        $filter->apply($params, $listing);
+
+        $this->assertStringContainsString('`modificationDate` >= :filter_0', $listing->getCondition());
+        $this->assertSame(
+            ['filter_0' => (new Carbon('2024-06-10'))->getTimestamp()],
+            $listing->getConditionVariables()
+        );
+    }
+
+    /**
+     * The sub-group listing was only where the defect was reported. Every other configuration
+     * listing this bundle filters through `ListingFilter` stores its date columns the same way
+     * - `INT(11) UNSIGNED` in `classificationstore_groups`, `classificationstore_keys`,
+     * `classificationstore_collections`, `translations_messages`, `website_settings` and
+     * `redirects` - so the integer binding has to hold for all of them.
+     *
+     * @dataProvider unixTimestampConfigurationColumnProvider
+     *
+     * @param class-string<AbstractListing> $listingClass
+     */
+    public function testDateFilterConfigurationListingsBindUnixTimestamps(
+        string $listingClass,
+        string $column
+    ): void {
+        $filter = $this->createFilter();
+        $listing = new $listingClass();
+
+        $params = new FilterParameter(columnFilters: [
+            ['key' => $column, 'type' => 'date', 'filterValue' => ['operator' => 'from', 'value' => '2024-06-10']],
+        ]);
+
+        $filter->apply($params, $listing);
+
+        $this->assertSame(
+            ['filter_0' => (new Carbon('2024-06-10'))->getTimestamp()],
+            $listing->getConditionVariables(),
+            $listingClass . '.' . $column . ' has to be compared against an integer timestamp.'
+        );
+    }
+
+    /**
+     * @return array<string, array{class-string<AbstractListing>, string}>
+     */
+    public static function unixTimestampConfigurationColumnProvider(): array
+    {
+        return [
+            'group creationDate' => [GroupConfigListing::class, 'creationDate'],
+            'group modificationDate' => [GroupConfigListing::class, 'modificationDate'],
+            'key creationDate' => [KeyConfigListing::class, 'creationDate'],
+            'collection creationDate' => [CollectionConfigListing::class, 'creationDate'],
+            'translation creationDate' => [TranslationListing::class, 'creationDate'],
+            'website setting modificationDate' => [WebsiteSettingListing::class, 'modificationDate'],
+            'redirect creationDate' => [RedirectListing::class, 'creationDate'],
+            // the redirect's own int timestamp, published on the redirect schema next to the audit columns
+            'redirect expiry' => [RedirectListing::class, 'expiry'],
+        ];
     }
 
     /**

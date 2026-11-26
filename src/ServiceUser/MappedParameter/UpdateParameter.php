@@ -81,8 +81,8 @@ final readonly class UpdateParameter
         )]
         private array $documentWorkspaces = [],
         #[Property(
-            description: 'IDs of the users who answer for the service user; service users are not allowed. '
-            . 'Leave the key out to keep the stored users, send an empty list to clear them',
+            description: 'IDs of the users who answer for the service user, no service users; '
+            . 'omit to keep, [] to clear',
             type: 'array',
             items: new Items(type: 'integer'),
             example: [3],
@@ -90,8 +90,7 @@ final readonly class UpdateParameter
         )]
         private ?array $responsibleUsers = null,
         #[Property(
-            description: 'IDs of the roles whose members answer for the service user. '
-            . 'Leave the key out to keep the stored roles, send an empty list to clear them',
+            description: 'IDs of the roles whose members answer for the service user; omit to keep, [] to clear',
             type: 'array',
             items: new Items(type: 'integer'),
             example: [5],

@@ -35,4 +35,12 @@ interface UserLoginServiceInterface
      * @throws ForbiddenException|NotFoundException
      */
     public function getLoginTokenUrl(int $id): string;
+
+    /**
+     * Sends a one time login link to the user, so they can set their own password.
+     *
+     * @throws DomainConfigurationException|ForbiddenException|InvalidArgumentException|NotFoundException
+     * @throws SendMailException
+     */
+    public function sendInvitation(int $id): void;
 }

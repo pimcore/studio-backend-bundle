@@ -20,12 +20,14 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Response\ScoreAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowPermissionsAwareInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowStatesAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ScoreAwareTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowStatesTrait;
 
 #[Schema(
     title: 'Asset',
@@ -46,12 +48,14 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
 class Asset extends Element implements
     AdditionalAttributesInterface,
     ScoreAwareInterface,
-    WorkflowPermissionsAwareInterface
+    WorkflowPermissionsAwareInterface,
+    WorkflowStatesAwareInterface
 {
     use AdditionalAttributesTrait;
     use CustomAttributesTrait;
     use ScoreAwareTrait;
     use WorkflowAvailableTrait;
+    use WorkflowStatesTrait;
 
     public function __construct(
         #[Property(description: 'Has children', required: ['hasChildren'], type: 'bool', example: false)]

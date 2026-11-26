@@ -20,12 +20,13 @@ use Symfony\Component\HttpFoundation\RequestStack;
 /**
  * @internal
  */
-final readonly class UrlService implements UrlServiceInterface
+final readonly class UrlService implements UrlServiceInterface, AudienceServiceInterface
 {
     public function __construct(
         private ?string $serverSideUrl,
         private ?string $clientSideUrl,
         private RequestStack $requestStack,
+        private ?string $resourceIdentifier = null,
     ) {
     }
 
@@ -47,9 +48,40 @@ final readonly class UrlService implements UrlServiceInterface
         return str_replace(Mercure::HOST_PLACEHOLDER->value, $this->getHostUrl(), $this->clientSideUrl);
     }
 
+    public function getResourceIdentifier(): string
+    {
+        if (empty($this->resourceIdentifier)) {
+            return $this->getServerSideUrl();
+        }
+
+        return $this->resourceIdentifier;
+    }
+
+    public function getSubscriberAudience(): array
+    {
+        if (!empty($this->resourceIdentifier)) {
+            return [$this->resourceIdentifier];
+        }
+
+        // Without hub_url_server nothing is published; the auth endpoint still answers, as it did before
+        $audience = empty($this->serverSideUrl) ? [] : [$this->getServerSideUrl()];
+        $client = parse_url($this->getClientSideUrl());
+        if (isset($client[Mercure::URL_HOST->value])) {
+            $authority = $client[Mercure::URL_HOST->value] . (isset($client['port']) ? ':' . $client['port'] : '');
+            // A proxy forwarding the public host makes the hub identify itself by that host, often over plain HTTP
+            // because TLS ends at the proxy
+            $schemes = array_unique([$client[Mercure::URL_SCHEME->value] ?? 'https', 'http']);
+            foreach ($schemes as $scheme) {
+                $audience[] = $scheme . '://' . $authority . Mercure::HUB_PATH->value;
+            }
+        }
+
+        return array_values(array_unique($audience));
+    }
+
     private function getDefaultClientUrl(): string
     {
-        return $this->getHostUrl() . '/hub';
+        return $this->getHostUrl() . Mercure::DEFAULT_CLIENT_PATH->value;
     }
 
     /**

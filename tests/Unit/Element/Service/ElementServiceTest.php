@@ -20,12 +20,15 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ElementSearchServiceInt
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementService;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderPaths;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
+use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document\Folder as DocumentFolder;
+use Pimcore\Model\Document\Page;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -152,6 +155,79 @@ final class ElementServiceTest extends Unit
      *
      * @throws Exception
      */
+    /**
+     * @throws Exception
+     */
+    public function testGetElementPublishedStateReportsUnpublishedDocument(): void
+    {
+        $element = $this->makeEmpty(Page::class, ['getId' => 7221, 'getPublished' => false]);
+        $service = $this->createPublishedStateService($element);
+
+        $state = $service->getElementPublishedState(new ElementParameters(ElementTypes::TYPE_DOCUMENT, 7221));
+
+        $this->assertSame(7221, $state->getElementId());
+        $this->assertSame(ElementTypes::TYPE_DOCUMENT, $state->getElementType());
+        $this->assertFalse($state->getIsPublished());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetElementPublishedStateReportsPublishedDataObject(): void
+    {
+        $element = $this->makeEmpty(Concrete::class, ['getId' => 7221, 'getPublished' => true]);
+        $service = $this->createPublishedStateService($element);
+
+        $state = $service->getElementPublishedState(new ElementParameters(ElementTypes::TYPE_DATA_OBJECT, 7221));
+
+        $this->assertTrue($state->getIsPublished());
+        // The response echoes the type of the request path, not the core type ("object") it is resolved with
+        $this->assertSame(ElementTypes::TYPE_DATA_OBJECT, $state->getElementType());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetElementPublishedStateIsNullForAssets(): void
+    {
+        $element = $this->makeEmpty(Asset::class, ['getId' => 7221]);
+        $service = $this->createPublishedStateService($element);
+
+        $state = $service->getElementPublishedState(new ElementParameters(ElementTypes::TYPE_ASSET, 7221));
+
+        $this->assertNull($state->getIsPublished());
+    }
+
+    /**
+     * An element the user may not view must not reveal its state.
+     *
+     * @throws Exception
+     */
+    public function testGetElementPublishedStateChecksViewPermission(): void
+    {
+        $element = $this->makeEmpty(Page::class, ['getId' => 7221, 'getPublished' => false]);
+        $service = $this->createPublishedStateService($element, $checkedPermissions, forbidden: true);
+
+        try {
+            $service->getElementPublishedState(new ElementParameters(ElementTypes::TYPE_DOCUMENT, 7221));
+            $this->fail('Expected a ForbiddenException');
+        } catch (ForbiddenException) {
+            $this->assertSame(['view'], $checkedPermissions);
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetElementPublishedStateThrowsForUnknownElement(): void
+    {
+        $service = $this->createPublishedStateService(null);
+
+        $this->expectException(NotFoundException::class);
+
+        $service->getElementPublishedState(new ElementParameters(ElementTypes::TYPE_DOCUMENT, 7221));
+    }
+
     private function createService(
         ?array &$checkedPaths = null,
         bool $forbidden = false,
@@ -177,6 +253,45 @@ final class ElementServiceTest extends Unit
                 string $permission
             ) use (&$checkedPaths, &$resolvedPaths, $forbidden): void {
                 $checkedPaths[] = end($resolvedPaths);
+
+                if ($forbidden) {
+                    throw new ForbiddenException(sprintf('You dont have %s permission', $permission));
+                }
+            },
+        ]);
+
+        return new ElementService(
+            $this->makeEmpty(ElementSearchServiceInterface::class),
+            $this->makeEmpty(EventDispatcherInterface::class),
+            $serviceResolver,
+            $securityService
+        );
+    }
+
+    /**
+     * @param string[]|null $checkedPermissions
+     *
+     * @throws Exception
+     */
+    private function createPublishedStateService(
+        ?ElementInterface $element,
+        ?array &$checkedPermissions = null,
+        bool $forbidden = false
+    ): ElementService {
+        $checkedPermissions = [];
+
+        $serviceResolver = $this->makeEmpty(ServiceResolverInterface::class, [
+            'getElementById' => fn () => $element,
+        ]);
+
+        $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
+            'getCurrentUser' => $this->makeUser(),
+            'hasElementPermission' => function (
+                ElementInterface $element,
+                UserInterface $user,
+                string $permission
+            ) use (&$checkedPermissions, $forbidden): void {
+                $checkedPermissions[] = $permission;
 
                 if ($forbidden) {
                     throw new ForbiddenException(sprintf('You dont have %s permission', $permission));

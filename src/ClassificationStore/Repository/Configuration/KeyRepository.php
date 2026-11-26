@@ -13,11 +13,16 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration;
 
+use Closure;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DBALException;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\IdentifierOrderedChunkTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -25,8 +30,13 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Listing;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Dao as KeyGroupRelationDao;
+use Throwable;
 use function in_array;
+use function is_array;
+use function is_string;
 use function json_encode;
 use function sprintf;
 use function strtoupper;
@@ -36,6 +46,8 @@ use function strtoupper;
  */
 final readonly class KeyRepository implements KeyRepositoryInterface
 {
+    use IdentifierOrderedChunkTrait;
+
     private const array ALLOWED_SORT_KEYS = [
         'name',
         'title',
@@ -50,8 +62,27 @@ final readonly class KeyRepository implements KeyRepositoryInterface
 
     private const array ALLOWED_SORT_DIRECTIONS = ['ASC', 'DESC'];
 
+    /**
+     * Own parameter name, so a client supplied equals filter on `storeId` narrows the route's store
+     * binding instead of replacing the condition Pimcore keys by its own string.
+     */
+    private const string STORE_SCOPE_PARAMETER = 'scopeStoreId';
+
+    private const string STORE_SCOPE_CONDITION = '`storeId` = :' . self::STORE_SCOPE_PARAMETER;
+
+    // `scope` prefixed, not the request field's name: the column filters run later and bind under the column's name
+    private const string GROUP_EXCLUSION_PARAMETER = 'scopeExcludedGroupId';
+
+    /**
+     * A condition, so the page and the listing's COUNT(*) are both over the narrowed set.
+     * NOT EXISTS and not `NOT IN`, which a NULL `keyId` would answer UNKNOWN for every row.
+     */
+    private const string GROUP_EXCLUSION_CONDITION = 'NOT EXISTS (SELECT 1 FROM `%s`'
+        . ' WHERE `%s`.`keyId` = `%s`.`id` AND `%s`.`groupId` = :' . self::GROUP_EXCLUSION_PARAMETER . ')';
+
     public function __construct(
         private KeyConfigResolverInterface $keyConfigResolver,
+        private KeyLocalizationResolverInterface $keyLocalizationResolver,
         private ListingFilterInterface $listingFilter,
         private SearchHelperServiceInterface $searchHelperService,
         private Connection $connection,
@@ -61,10 +92,29 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getListing(FilterParameter $parameters, int $storeId): Listing
-    {
+    public function getListing(
+        FilterParameter $parameters,
+        int $storeId,
+        bool $disabledOnly = false,
+        ?int $excludeKeysOfGroupId = null,
+    ): Listing {
         $listing = new Listing();
-        $listing->addConditionParam('`storeId` = :storeId', ['storeId' => $storeId]);
+        // core's `includeDisabled` swaps the enabled condition for the disabled one, it never unions them
+        $listing->setIncludeDisabled($disabledOnly);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
+
+        if ($excludeKeysOfGroupId !== null) {
+            $listing->addConditionParam(
+                sprintf(
+                    self::GROUP_EXCLUSION_CONDITION,
+                    KeyGroupRelationDao::TABLE_NAME_RELATIONS,
+                    KeyGroupRelationDao::TABLE_NAME_RELATIONS,
+                    KeyConfigDao::TABLE_NAME_KEYS,
+                    KeyGroupRelationDao::TABLE_NAME_RELATIONS
+                ),
+                [self::GROUP_EXCLUSION_PARAMETER => $excludeKeysOfGroupId]
+            );
+        }
 
         $this->applySearchCondition($listing, $parameters);
         $this->listingFilter->applyFilters($parameters, $listing);
@@ -89,18 +139,102 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function create(string $name, int $storeId): KeyConfig
+    public function getChunkAfterIdentifier(
+        int $storeId,
+        bool $disabledOnly,
+        ?string $afterIdentifier,
+        int $afterId,
+        int $limit,
+    ): array {
+        $listing = new Listing();
+        // the flag core spells `includeDisabled` narrows to the disabled rows rather than adding
+        // them, so the two states are two walks and never one
+        $listing->setIncludeDisabled($disabledOnly);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
+        $this->applyIdentifierCursorChunk($listing, $limit, $afterIdentifier, $afterId);
+
+        return $listing->load();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChunkAfterId(
+        int $storeId,
+        bool $disabledOnly,
+        int $afterId,
+        int $limit,
+        ?bool $withIdentifier = null,
+    ): array {
+        $listing = new Listing();
+        $listing->setIncludeDisabled($disabledOnly);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
+        $listing->addConditionParam('`id` > :afterId', ['afterId' => $afterId]);
+        $this->applyIdentifierPhase($listing, $withIdentifier);
+        $this->applyIdCursorChunk($listing, $limit);
+
+        return $listing->load();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function saveFromArtifact(?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyWriteResult
     {
+        return $this->writeHoldingTheRow(
+            $config?->getId(),
+            fn (): KeyConfig => $this->writeArtifactEntry($config, $storeId, $entry)
+        );
+    }
+
+    /**
+     * @throws ElementSavingFailedException
+     */
+    private function writeArtifactEntry(?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyConfig
+    {
+        $config ??= new KeyConfig();
+        $config->setStoreId($storeId);
+        $config->setName($entry->getName());
+        $config->setTitle($entry->getTitle() ?? '');
+        $config->setDescription($entry->getDescription());
+        $config->setType($entry->getType());
+        $config->setEnabled($entry->isEnabled());
+        // unconditionally, null included: a file written before the flag existed carries none and
+        // restores every key to inheriting, which is the state such a file describes
+        $this->keyLocalizationResolver->setLocalized($config, $entry->getLocalized());
+
+        if ($entry->isCustomMetadataSupplied()) {
+            $config->setCustomMetadata($entry->getCustomMetadata());
+        }
+
+        try {
+            $config->setDefinition(json_encode($entry->getDefinition() ?? [], JSON_THROW_ON_ERROR));
+            // before the save, so that a new row carries the file's identifier instead of a fresh one
+            $config->setIdentifier($entry->getIdentifier());
+            $config->save();
+        } catch (Exception $e) {
+            throw new ElementSavingFailedException($config->getId(), $e->getMessage(), $e);
+        }
+
+        return $config;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function create(string $name, int $storeId, ?string $title = null): KeyConfig
+    {
+        $title = ($title === null || $title === '') ? $name : $title;
         $definition = [
             'fieldtype' => 'input',
             'name' => $name,
-            'title' => $name,
+            'title' => $title,
             'datatype' => 'data',
         ];
 
         $config = new KeyConfig();
         $config->setName($name);
-        $config->setTitle($name);
+        $config->setTitle($title);
         $config->setType('input');
         $config->setStoreId($storeId);
         $config->setEnabled(true);
@@ -118,22 +252,42 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function update(
-        int $id,
-        string $name,
-        ?string $title,
-        ?string $description,
-        ?string $type,
-        ?array $definition,
-    ): KeyConfig {
-        $config = $this->getById($id);
-        $config->setName($name);
-        $config->setTitle($title ?? $config->getTitle());
-        $config->setDescription($description ?? $config->getDescription());
+    public function update(int $id, KeyUpdate $parameters): KeyWriteResult
+    {
+        return $this->writeHoldingTheRow($id, fn (): KeyConfig => $this->writeUpdate($id, $parameters));
+    }
 
+    /**
+     * @throws NotFoundException
+     * @throws ElementSavingFailedException
+     */
+    private function writeUpdate(int $id, KeyUpdate $parameters): KeyConfig
+    {
+        $config = $this->getById($id);
+        $config->setName($parameters->getName());
+
+        if ($parameters->isTitleSupplied()) {
+            $config->setTitle($parameters->getTitle() ?? '');
+        }
+
+        if ($parameters->isDescriptionSupplied()) {
+            $config->setDescription($parameters->getDescription() ?? '');
+        }
+
+        if ($parameters->isLocalizedSupplied()) {
+            $this->keyLocalizationResolver->setLocalized($config, $parameters->getLocalized());
+        }
+
+        if ($parameters->isCustomMetadataSupplied()) {
+            $config->setCustomMetadata($parameters->getCustomMetadata());
+        }
+
+        $type = $parameters->getType();
         if ($type !== null) {
             $config->setType($type);
         }
+
+        $definition = $parameters->getDefinition();
 
         try {
             if ($definition !== null) {
@@ -166,6 +320,69 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     /**
      * {@inheritdoc}
      */
+    public function delete(int $id): void
+    {
+        $this->getById($id)->delete();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function restore(int $id): KeyConfig
+    {
+        return $this->writeHoldingTheRow($id, fn (): KeyConfig => $this->writeRestore($id))->getConfig();
+    }
+
+    /**
+     * Runs with the row held. The model may be a cached one, so it is refreshed from the held row
+     * before anything is decided or saved: a stale flag must neither skip the write of a key that is
+     * still disabled nor cause one for a key that is already enabled, and `save()` - which writes
+     * every column - must not put stale values over what a competing writer stored. The flag is
+     * then the only value that differs from the row.
+     *
+     * @throws NotFoundException
+     * @throws ElementSavingFailedException
+     */
+    private function writeRestore(int $id): KeyConfig
+    {
+        $config = $this->getById($id);
+        $row = $this->connection->fetchAssociative(
+            sprintf('SELECT * FROM `%s` WHERE `id` = ? FOR UPDATE', KeyConfigDao::TABLE_NAME_KEYS),
+            [$id]
+        );
+
+        if (!is_array($row)) {
+            throw new NotFoundException('key configuration', $id);
+        }
+
+        $storedEnabled = (bool) ($row['enabled'] ?? false);
+        unset($row['enabled']);
+        $config->setValues($row);
+
+        if ($storedEnabled) {
+            $config->setEnabled(true);
+
+            return $config;
+        }
+
+        $config->setEnabled(true);
+
+        try {
+            $config->save();
+        } catch (Exception $e) {
+            // the held row is disabled (checked above), so the cached model must report disabled,
+            // whatever it said before
+            $config->setEnabled(false);
+
+            throw new ElementSavingFailedException($id, $e->getMessage(), $e);
+        }
+
+        return $config;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getPageForId(
         string $table,
         int $id,
@@ -173,6 +390,7 @@ final readonly class KeyRepository implements KeyRepositoryInterface
         int $pageSize,
         string $sortKey,
         string $sortDir,
+        bool $disabledOnly = false,
     ): int {
         $sortKey = in_array($sortKey, self::ALLOWED_SORT_KEYS, true) ? $sortKey : 'name';
         $sortDir = in_array(strtoupper($sortDir), self::ALLOWED_SORT_DIRECTIONS, true)
@@ -180,10 +398,14 @@ final readonly class KeyRepository implements KeyRepositoryInterface
             : 'ASC';
 
         $tableName = 'classificationstore_' . ($table === 'groups' ? 'groups' : 'keys');
-        $enabledCondition = $tableName === 'classificationstore_keys' ? ' AND enabled = 1' : '';
+        // each view counts positions with the condition its listing uses
+        $viewCondition = '';
+        if ($tableName === 'classificationstore_keys') {
+            $viewCondition = $disabledOnly ? ' AND (enabled IS NULL OR enabled = 0)' : ' AND enabled = 1';
+        }
 
         $referenceRow = $this->connection->fetchAssociative(
-            sprintf('SELECT `%s` FROM `%s` WHERE id = ?', $sortKey, $tableName),
+            sprintf('SELECT `%s` FROM `%s` WHERE id = ?%s', $sortKey, $tableName, $viewCondition),
             [$id]
         );
 
@@ -203,7 +425,7 @@ final readonly class KeyRepository implements KeyRepositoryInterface
             $comparison,
             $sortKey,
             $comparison,
-            $enabledCondition,
+            $viewCondition,
         );
 
         try {
@@ -228,5 +450,75 @@ final readonly class KeyRepository implements KeyRepositoryInterface
         }
 
         $this->searchHelperService->applyKeySearchFilter($listing, $searchFilter->getFilterValue());
+    }
+
+    /**
+     * Runs one key write with the row it writes held, and answers with the definition that row
+     * carried when the lock was taken.
+     *
+     * The lock is what makes the definition answered with comparable to the one the write leaves
+     * behind. Without it the two reads are a check-then-act across two transactions: both requests
+     * read the same `indexed`, the second's comparison is made against a value the first has
+     * already replaced, and the flag change it is the only witness of is never queued
+     * ({@see KeyWriteResult}). Held here rather than at the service boundary because this is where
+     * the write is, and a lock the caller takes a call earlier is a lock the next caller has to
+     * remember to take.
+     *
+     * A row that is already gone is not held and reports no definition; the write itself then
+     * decides what that means - a 404 for an update, a fresh row for an apply.
+     *
+     * A database that fails the transaction or the locking read is reported as the saving failure
+     * it is, so the two writes keep throwing what they declare and a caller has one exception to
+     * handle rather than two.
+     *
+     * @param Closure(): KeyConfig $write
+     *
+     * @throws ElementSavingFailedException
+     * @throws NotFoundException
+     */
+    private function writeHoldingTheRow(?int $id, Closure $write): KeyWriteResult
+    {
+        // an enclosing transaction stays the caller's to finish, the way core's own writes join one
+        $ownTransaction = !$this->connection->isTransactionActive();
+
+        try {
+            if ($ownTransaction) {
+                $this->connection->beginTransaction();
+            }
+
+            $definitionBefore = $id === null ? null : $this->holdKey($id);
+            $config = $write();
+
+            if ($ownTransaction) {
+                $this->connection->commit();
+            }
+        } catch (Throwable $e) {
+            if ($ownTransaction && $this->connection->isTransactionActive()) {
+                $this->connection->rollBack();
+            }
+
+            throw $e instanceof DBALException
+                ? new ElementSavingFailedException($id, $e->getMessage(), $e)
+                : $e;
+        }
+
+        return new KeyWriteResult($config, $definitionBefore);
+    }
+
+    /**
+     * Holds the key row and reports the definition it actually carries, read as of now rather than
+     * from the snapshot of the transaction this runs in and never from the model cache, so that it
+     * is the value a competing writer of this row has to wait behind.
+     *
+     * @throws DBALException
+     */
+    private function holdKey(int $id): ?string
+    {
+        $stored = $this->connection->fetchOne(
+            sprintf('SELECT `definition` FROM `%s` WHERE `id` = ? FOR UPDATE', KeyConfigDao::TABLE_NAME_KEYS),
+            [$id]
+        );
+
+        return is_string($stored) ? $stored : null;
     }
 }

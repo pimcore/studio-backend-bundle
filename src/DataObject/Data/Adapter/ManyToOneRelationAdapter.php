@@ -18,10 +18,12 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Normalizer\NormalizerInterface;
@@ -37,7 +39,8 @@ final readonly class ManyToOneRelationAdapter implements SetterDataInterface, Da
     use ElementProviderTrait;
 
     public function __construct(
-        private ServiceResolverInterface $serviceResolver
+        private ServiceResolverInterface $serviceResolver,
+        private ElementDataServiceInterface $elementDataService,
     ) {
     }
 
@@ -71,15 +74,19 @@ final readonly class ManyToOneRelationAdapter implements SetterDataInterface, Da
         $data = $fieldDefinition->normalize($value);
         $published = null;
 
-        if ($value instanceof Concrete) {
+        if ($value instanceof Concrete || $value instanceof Document) {
             $published = $value->isPublished();
         }
 
         if (!empty($data)) {
-            $data['fullPath'] = $value->getRealFullPath();
-            $data['subtype'] = $value->getType();
-            $data['isPublished'] = $published;
+            // GHSA-pg5f-74vr-w237: a relation can point at any element id, so path, subtype and publish
+            // state of the target are only handed out to a user who is allowed to view it.
+            $hasViewAccess = $this->elementDataService->getRelatedElementData($value)->getHasViewAccess();
 
+            $data['fullPath'] = $hasViewAccess ? $value->getRealFullPath() : '';
+            $data['subtype'] = $hasViewAccess ? $value->getType() : '';
+            $data['isPublished'] = $hasViewAccess ? $published : null;
+            $data['hasViewAccess'] = $hasViewAccess;
         }
 
         return $data;

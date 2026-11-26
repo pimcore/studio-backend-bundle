@@ -17,6 +17,7 @@ use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserWelcomeScreen;
 
 /**
  * @internal
@@ -97,6 +98,14 @@ final readonly class UpdateUser
         private array $perspectives = [],
         #[Property(description: 'Theme of the User', type: 'string', example: 'default')]
         private string $theme = 'default',
+        #[Property(
+            description: 'Welcome screen after login as `<provider>:<id>`; omit or null keeps it, empty clears it',
+            type: 'string',
+            maxLength: UserWelcomeScreen::MAX_TARGET_LENGTH,
+            example: 'studio-dashboards:019c7555_49f6_712b_af5f_bd0c22b3d1f7',
+            nullable: true
+        )]
+        private ?string $welcomeScreenTarget = null,
     ) {
     }
 
@@ -243,5 +252,10 @@ final readonly class UpdateUser
     public function getPerspectives(): array
     {
         return $this->perspectives;
+    }
+
+    public function getWelcomeScreenTarget(): ?string
+    {
+        return $this->welcomeScreenTarget;
     }
 }

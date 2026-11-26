@@ -60,7 +60,8 @@ abstract readonly class AbstractExportService implements ExportServiceInterface
             $headers = $this->getHeaders(
                 $gridExportData->getColumns(),
                 $columnsDefinitions,
-                $gridExportData->isWithGroup()
+                $gridExportData->isWithGroup(),
+                $gridExportData->getExportDataInfo()['classId'] ?? null
             );
         }
 
@@ -108,15 +109,20 @@ abstract readonly class AbstractExportService implements ExportServiceInterface
         return $folderName . '/' . $file;
     }
 
-    protected function getHeaders(array $columns, array $columnsDefinitions, bool $withGroup): array
-    {
+    protected function getHeaders(
+        array $columns,
+        array $columnsDefinitions,
+        bool $withGroup,
+        ?string $classId = null
+    ): array {
         if (empty($columns)) {
             return [];
         }
 
         $columnCollection = $this->gridService->getConfigurationForExport(
             $columns,
-            $columnsDefinitions
+            $columnsDefinitions,
+            $classId
         );
 
         return $this->gridService->getColumnKeys(

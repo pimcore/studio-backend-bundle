@@ -20,10 +20,12 @@ use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Schedule\TaskResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Request\UpdateElementSchedules;
+use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\UpdateSchedule;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ScheduleActions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
@@ -93,6 +95,9 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         return $this->checkElementPermissions($elementType, $id)->getScheduledTasks();
     }
 
+    /**
+     * @throws DatabaseException|InvalidArgumentException|ForbiddenException|NotFoundException
+     */
     public function updateSchedules(
         string $elementType,
         int $id,
@@ -101,32 +106,62 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         $this->checkElementPermissions($elementType, $id);
 
         $schedules = $updateElementSchedules->getSchedules();
+        $currentUserId = $this->securityService->getCurrentUser()->getId();
 
-        $currentTasks = [];
-        foreach ($schedules as $schedule) {
+        // Everything is checked before the first write, so a rejected request leaves no partial
+        // changes behind: every action has to be valid and every submitted task has to exist and
+        // belong to this element already.
+        $existingTasks = [];
+        foreach ($schedules as $index => $schedule) {
+            $this->validateAction($elementType, $schedule->getAction());
 
-            if ($schedule->getId()) {
-                $task = $this->taskResolver->getById($schedule->getId());
-            } else {
-                $task = $this->createSchedule($elementType, $id);
+            if ($schedule->getId() === null) {
+                continue;
             }
 
+            $task = $this->taskResolver->getById($schedule->getId());
             if (!$task) {
-                continue;
+                throw new NotFoundException('Task', $schedule->getId());
+            }
+
+            if ($task->getCid() !== $id || $task->getCtype() !== $elementType) {
+                throw new ForbiddenException('You are not allowed to update this schedule');
+            }
+
+            $existingTasks[$index] = $task;
+        }
+
+        $currentTasks = [];
+        foreach ($schedules as $index => $schedule) {
+            $isNew = $schedule->getId() === null;
+            $task = $isNew ? $this->createSchedule($elementType, $id) : $existingTasks[$index];
+
+            // A task is executed with the permissions of its owner. Whoever creates or changes a
+            // task becomes its owner; a task that is submitted unchanged keeps the user it was
+            // scheduled by.
+            if ($isNew || $this->isScheduleChanged($task, $schedule)) {
+                $task->setUserId($currentUserId);
             }
 
             $currentTasks[] = $task->getId();
             $task->setCid($id);
             $task->setCtype($elementType);
             $task->setDate($schedule->getDate());
-            $this->validateAction($elementType, $schedule->getAction());
             $task->setAction($schedule->getAction());
             $task->setVersion($schedule->getVersion());
             $task->setActive($schedule->isActive());
             $task->save();
         }
 
-        $this->deleteObsoleteTasks($currentTasks, $id);
+        $this->deleteObsoleteTasks($currentTasks, $id, $elementType);
+    }
+
+    private function isScheduleChanged(Task $task, UpdateSchedule $schedule): bool
+    {
+        return $task->getDate() !== $schedule->getDate()
+            || $task->getAction() !== $schedule->getAction()
+            || $task->getVersion() !== $schedule->getVersion()
+            || $task->getActive() !== $schedule->isActive();
     }
 
     public function deleteSchedule(int $id): void
@@ -151,14 +186,15 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
     /**
      * @throws DatabaseException
      */
-    private function deleteObsoleteTasks(array $currentTasks, int $cid): void
+    private function deleteObsoleteTasks(array $currentTasks, int $cid, string $ctype): void
     {
         $queryBuilder = $this->dbResolver->get()->createQueryBuilder();
 
         $queryBuilder->delete('schedule_tasks')
-            ->where('id NOT IN (:ids) AND cid = :cid')
+            ->where('id NOT IN (:ids) AND cid = :cid AND ctype = :ctype')
             ->setParameter('ids', $currentTasks, ArrayParameterType::INTEGER)
-            ->setParameter('cid', $cid);
+            ->setParameter('cid', $cid)
+            ->setParameter('ctype', $ctype);
 
         try {
             $queryBuilder->executeStatement();

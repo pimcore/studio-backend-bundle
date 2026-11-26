@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configur
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\AbsentValue;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\JsonObjectShapeTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 
 /**
@@ -28,6 +30,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 )]
 final readonly class CollectionUpdate
 {
+    use JsonObjectShapeTrait;
+
     /**
      * @throws InvalidArgumentException
      */
@@ -41,9 +45,28 @@ final readonly class CollectionUpdate
             nullable: true
         )]
         private ?string $description = null,
+        #[Property(
+            description: 'Free-form pairs; omit to keep them, an object replaces them whole, null clears them',
+            type: 'object',
+            example: ['source' => 'erp'],
+            nullable: true
+        )]
+        private mixed $customMetadata = AbsentValue::ABSENT,
+        // only refused here, never a property of this schema; the default stands for an absent key
+        mixed $identifier = AbsentValue::ABSENT,
     ) {
         if (empty($this->name)) {
             throw new InvalidArgumentException('Name cannot be empty.');
+        }
+
+        if ($this->customMetadata !== AbsentValue::ABSENT
+            && $this->customMetadata !== null
+            && !$this->isJsonObject($this->customMetadata)) {
+            throw new InvalidArgumentException('customMetadata has to be an object or null.');
+        }
+
+        if ($identifier !== AbsentValue::ABSENT) {
+            throw new InvalidArgumentException('Identifier is assigned by the system and cannot be set.');
         }
     }
 
@@ -55,5 +78,20 @@ final readonly class CollectionUpdate
     public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    public function hasCustomMetadata(): bool
+    {
+        return $this->customMetadata !== AbsentValue::ABSENT;
+    }
+
+    /**
+     * Carries a value only when {@see self::hasCustomMetadata()} reports one.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getCustomMetadata(): ?array
+    {
+        return $this->customMetadata;
     }
 }

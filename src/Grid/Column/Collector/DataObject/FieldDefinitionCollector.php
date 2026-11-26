@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject;
 
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ClassIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
@@ -56,6 +57,7 @@ final class FieldDefinitionCollector implements
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
         private readonly LoggerInterface $logger,
+        private readonly KeyLocalizationResolverInterface $keyLocalizationResolver,
         private readonly array $skipFieldTypes = []
     ) {
     }
@@ -131,11 +133,12 @@ final class FieldDefinitionCollector implements
                 continue;
             }
 
-            if ($definition instanceof Classificationstore && $definition->localized) {
-                $localized = true;
-            }
+            // the keys of a store decide their own languages, so the field's flag alone is not the answer
+            $isLocalized = $localized
+                || ($definition instanceof Classificationstore
+                    && $this->keyLocalizationResolver->hasLocalizedKey($definition));
 
-            if ($localized) {
+            if ($isLocalized) {
                 $this->groupedDefinitions[] = new ColumnFieldDefinition($definition, [$defaultGroup], true);
 
                 continue;

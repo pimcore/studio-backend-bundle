@@ -16,13 +16,21 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig\Listing;
-use function count;
+use function array_values;
 
 /**
  * @internal
  */
 final class CollectionConfigRepository implements CollectionConfigRepositoryInterface
 {
+    /**
+     * `scopeStoreId`, not `storeId`: a client supplied equals filter on `storeId` binds its own
+     * parameter, so the route scope keeps a name of its own that such a filter cannot overwrite.
+     */
+    private const string STORE_SCOPE_PARAMETER = 'scopeStoreId';
+
+    private const string STORE_SCOPE_CONDITION = 'storeId = :' . self::STORE_SCOPE_PARAMETER;
+
     public function __construct(
         private SearchHelperServiceInterface $searchHelperService
     ) {
@@ -43,7 +51,7 @@ final class CollectionConfigRepository implements CollectionConfigRepositoryInte
         $list->setOffset($this->getOffset($collectionParameters));
         $list->setOrder('ASC');
         $list->setOrderKey('id');
-        $list->setCondition('storeId = ?', $storeId);
+        $list->setCondition(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
 
         if ($collectionIds !== null) {
             $this->applyCollectionIdsFilter($list, $collectionIds);
@@ -57,15 +65,27 @@ final class CollectionConfigRepository implements CollectionConfigRepositoryInte
     public function getCountByStoreId(int $storeId): int
     {
         $list = new Listing();
-        $list->setCondition('storeId = ?', $storeId);
+        $list->setCondition(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
 
         return $list->count();
     }
 
+    /**
+     * Named, like the store restriction and the search condition this shares its statement with:
+     * DBAL cannot bind named and positional placeholders in one query.
+     */
     private function applyCollectionIdsFilter(Listing $list, array $collectionIds): void
     {
-        $placeholders = implode(',', array_fill(0, count($collectionIds), '?'));
-        $list->addConditionParam('id IN ('. $placeholders .')', $collectionIds);
+        $placeholders = [];
+        $parameters = [];
+
+        foreach (array_values($collectionIds) as $index => $collectionId) {
+            $parameter = 'scopeCollectionId_' . $index;
+            $placeholders[] = ':' . $parameter;
+            $parameters[$parameter] = $collectionId;
+        }
+
+        $list->addConditionParam('id IN ('. implode(',', $placeholders) .')', $parameters);
     }
 
     private function getOffset(CollectionParametersInterface $collectionParameters): int

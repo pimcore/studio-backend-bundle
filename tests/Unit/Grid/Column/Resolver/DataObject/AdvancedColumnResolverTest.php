@@ -105,6 +105,58 @@ final class AdvancedColumnResolverTest extends Unit
         $this->assertNull($values[0]->getRelation());
     }
 
+    public function testResolveForCoreElementForwardsClassificationStoreIdentifiers(): void
+    {
+        $forwarded = [];
+        $classificationStoreResolver = $this->makeEmpty(CoreElementColumnResolverInterface::class, [
+            'resolveForCoreElement' => static function (Column $column) use (&$forwarded): ColumnData {
+                $forwarded = $column->getConfig();
+
+                return new ColumnData(key: 'csstore.size', locale: null, value: 'XL', fieldType: 'input');
+            },
+        ]);
+
+        $resolver = new AdvancedColumnResolver(
+            $this->makeEmpty(TransformerLoaderInterface::class, ['loadTransformers' => []]),
+            $this->makeEmpty(GridServiceInterface::class, [
+                'getColumnResolvers' => ['dataobject.classificationstore' => $classificationStoreResolver],
+                'isLocaleViewableForElement' => true,
+            ]),
+            $this->makeEmpty(ResolverTypeGuesserInterface::class, [
+                'guessType' => 'dataobject.classificationstore',
+                'isLocalizable' => false,
+            ]),
+            $this->makeEmpty(ToolResolverInterface::class),
+            $this->makeEmpty(LocalizedFieldResolverInterface::class),
+            new AdvancedColumnSourceFieldContext(),
+        );
+
+        $column = new Column(
+            key: 'advanced',
+            locale: null,
+            type: 'dataobject.advanced',
+            group: ['advanced'],
+            config: [
+                'advancedColumns' => [
+                    [
+                        'key' => 'simpleField',
+                        'config' => [
+                            'field' => 'csstore',
+                            'groupIdentifier' => 'product-data',
+                            'keyIdentifier' => 'weight',
+                        ],
+                    ],
+                ],
+                'transformers' => [],
+            ],
+        );
+
+        $resolver->resolveForCoreElement($column, $this->makeEmpty(Concrete::class, ['getClassId' => 'CAR']));
+
+        $this->assertSame('product-data', $forwarded['groupIdentifier']);
+        $this->assertSame('weight', $forwarded['keyIdentifier']);
+    }
+
     /**
      * A denied locale for a simple field must skip that field entirely and never reach its
      * sub-resolver - otherwise the "advanced" column would leak values for languages a role's

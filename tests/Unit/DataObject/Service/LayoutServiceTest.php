@@ -17,6 +17,7 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricherInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\LayoutEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\ObjectLayoutHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Layout;
@@ -29,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceIn
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Text;
+use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -39,6 +41,14 @@ final class LayoutServiceTest extends Unit
     private const string CLASS_ID = 'CAR';
 
     private const string TWIG_SOURCE = '{{ object.getKey() }}';
+
+    private const int OBJECT_ID = 5;
+
+    private const string CALL_ENRICH = 'enrich';
+
+    private const string CALL_TITLES = 'titles';
+
+    private const string CALL_HYDRATE = 'hydrate';
 
     /**
      * The class definition editor must receive the stored layout definition. Enriching it renders the
@@ -84,6 +94,7 @@ final class LayoutServiceTest extends Unit
             ->willReturnArgument(0);
 
         $service = new LayoutService(
+            $this->createStub(ActiveGroupTitleEnricherInterface::class),
             $classDefinitionRepository,
             $this->createStub(CustomLayoutRepositoryInterface::class),
             $this->createStub(DataObjectServiceInterface::class),
@@ -98,5 +109,78 @@ final class LayoutServiceTest extends Unit
 
         $this->assertSame($hydratedLayout, $service->getClassLayout(self::CLASS_ID));
         $this->assertSame(self::TWIG_SOURCE, $text->getHtml());
+    }
+
+    /**
+     * A classification store field reached through the object layout needs its already-active group and
+     * key titles filled before the layout is hydrated, otherwise the editor renders them without a label.
+     */
+    public function testGetDataObjectLayoutFillsClassificationStoreTitlesBeforeHydration(): void
+    {
+        $panel = new Panel();
+        $panel->setName('pimcore_root');
+
+        $class = new ClassDefinition();
+        $class->setLayoutDefinitions($panel);
+
+        $dataObject = $this->createMock(Concrete::class);
+        $dataObject->method('getClass')->willReturn($class);
+
+        $dataObjectService = $this->createMock(DataObjectServiceInterface::class);
+        $dataObjectService
+            ->method('getDataObjectElement')
+            ->willReturn($dataObject);
+
+        $calls = [];
+
+        $dataObjectServiceResolver = $this->createMock(DataObjectServiceResolverInterface::class);
+        $dataObjectServiceResolver
+            ->expects($this->once())
+            ->method('enrichLayoutDefinition')
+            ->willReturnCallback(function (mixed $layout) use (&$calls, $panel): void {
+                $this->assertSame($panel, $layout);
+                $calls[] = self::CALL_ENRICH;
+            });
+
+        $activeGroupTitleEnricher = $this->createMock(ActiveGroupTitleEnricherInterface::class);
+        $activeGroupTitleEnricher
+            ->expects($this->once())
+            ->method('enrich')
+            ->with($this->identicalTo($panel))
+            ->willReturnCallback(static function () use (&$calls): void {
+                $calls[] = self::CALL_TITLES;
+            });
+
+        $hydratedLayout = $this->createStub(Layout::class);
+        $hydrator = $this->createMock(ObjectLayoutHydratorInterface::class);
+        $hydrator
+            ->expects($this->once())
+            ->method('hydrateLayout')
+            ->with($this->identicalTo($panel), null)
+            ->willReturnCallback(static function () use (&$calls, $hydratedLayout): Layout {
+                $calls[] = self::CALL_HYDRATE;
+
+                return $hydratedLayout;
+            });
+
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->method('dispatch')->willReturnArgument(0);
+
+        $service = new LayoutService(
+            $activeGroupTitleEnricher,
+            $this->createStub(ClassDefinitionRepositoryInterface::class),
+            $this->createStub(CustomLayoutRepositoryInterface::class),
+            $dataObjectService,
+            $dataObjectServiceResolver,
+            $eventDispatcher,
+            $hydrator,
+            $this->createStub(PreviewConfigServiceInterface::class),
+            $this->createStub(SecurityLayoutServiceInterface::class),
+            $this->createStub(SecurityServiceInterface::class),
+            $this->createStub(WorkflowDetailsServiceInterface::class),
+        );
+
+        $this->assertSame($hydratedLayout, $service->getDataObjectLayout(self::OBJECT_ID));
+        $this->assertSame([self::CALL_ENRICH, self::CALL_TITLES, self::CALL_HYDRATE], $calls);
     }
 }

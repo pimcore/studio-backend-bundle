@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\QualifiedValue;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\Classificationstore;
 use Pimcore\Model\DataObject\Concrete;
@@ -38,6 +39,7 @@ final readonly class FieldContextData
         private ?string $containerFieldName = null,
         private ?string $containerBrickType = null,
         private bool $historicalVersion = false,
+        private ?QualifiedValue $classificationStoreValue = null,
     ) {
     }
 
@@ -196,12 +198,27 @@ final readonly class FieldContextData
     }
 
     /**
+     * The value of the slot this context addresses.
+     *
+     * A `multiValue` key holds one value of its own type per slot, and the one a caller is working
+     * on is one entry of the key. Where the caller names that entry, its value is the current value
+     * - the key's other entries are not the state of the value being written. The entry is
+     * deliberately not carried into {@see self::createFieldContextData()}: the ancestor walk is
+     * about the ancestor's own value.
+     *
+     * Where no entry is named, the slot is the default variant at position 0, which is the one core's
+     * resolving reader answers.
+     *
      * @throws Exception
      */
     private function getDataFromClassificationStore(Classificationstore $classificationstore): mixed
     {
         if ($this->getClassificationStoreKeyId() === null || $this->getClassificationStoreGroupId() === null) {
             return null;
+        }
+
+        if ($this->classificationStoreValue !== null) {
+            return $this->classificationStoreValue->getValue();
         }
 
         return $classificationstore->getLocalizedKeyValue(

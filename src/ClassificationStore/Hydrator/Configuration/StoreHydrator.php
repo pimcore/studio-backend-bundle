@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Config
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\StoreDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\StoreTreeNode;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreEngineResolverInterface;
 use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
 
 /**
@@ -22,12 +23,20 @@ use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
  */
 final readonly class StoreHydrator implements StoreHydratorInterface
 {
+    public function __construct(
+        private StoreEngineResolverInterface $storeEngineResolver,
+    ) {
+    }
+
     public function hydrateStoreDetail(StoreConfig $storeConfig): StoreDetail
     {
         return new StoreDetail(
             $storeConfig->getId(),
             $storeConfig->getName(),
             $storeConfig->getDescription(),
+            $storeConfig->getIdentifier(),
+            $this->storeEngineResolver->getEngine($storeConfig),
+            $this->storeEngineResolver->getEngineCapabilities($storeConfig),
         );
     }
 
@@ -37,6 +46,9 @@ final readonly class StoreHydrator implements StoreHydratorInterface
             $storeConfig->getId(),
             $storeConfig->getName(),
             $storeConfig->getDescription(),
+            $storeConfig->getIdentifier(),
+            $this->storeEngineResolver->getEngine($storeConfig),
+            $this->storeEngineResolver->getEngineCapabilities($storeConfig),
         );
     }
 }

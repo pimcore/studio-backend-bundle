@@ -28,6 +28,73 @@ final class UrlServiceTest extends Unit
         $this->assertSame('https://custom/mercure', $service->getServerSideUrl());
     }
 
+    public function testGetResourceIdentifierDefaultsToServerSideUrl(): void
+    {
+        $service = new UrlService('http://mercure/.well-known/mercure', null, new RequestStack());
+
+        $this->assertSame('http://mercure/.well-known/mercure', $service->getResourceIdentifier());
+    }
+
+    public function testGetResourceIdentifierUsesConfiguredValue(): void
+    {
+        $service = new UrlService(
+            'http://mercure/.well-known/mercure',
+            null,
+            new RequestStack(),
+            'https://example.com/.well-known/mercure'
+        );
+
+        $this->assertSame('https://example.com/.well-known/mercure', $service->getResourceIdentifier());
+    }
+
+    /**
+     * The hub derives its identity from the host each request reaches it through: the internal one when the proxy
+     * rewrites the Host header, the public one when it forwards it, often over plain HTTP.
+     */
+    public function testGetSubscriberAudienceCoversInternalAndPublicHosts(): void
+    {
+        $service = new UrlService(
+            'http://mercure/.well-known/mercure',
+            'https://pimcore.example.com:8443/hub',
+            $this->createRequestStackWithRequest('https://pimcore.example.com:8443')
+        );
+
+        $this->assertSame([
+            'http://mercure/.well-known/mercure',
+            'https://pimcore.example.com:8443/.well-known/mercure',
+            'http://pimcore.example.com:8443/.well-known/mercure',
+        ], $service->getSubscriberAudience());
+    }
+
+    /**
+     * The auth endpoint did not need hub_url_server before, so its absence must not break it.
+     */
+    public function testGetSubscriberAudienceWithoutServerSideUrl(): void
+    {
+        $service = new UrlService(
+            null,
+            'https://pimcore.example.com/hub',
+            $this->createRequestStackWithRequest('https://pimcore.example.com')
+        );
+
+        $this->assertSame([
+            'https://pimcore.example.com/.well-known/mercure',
+            'http://pimcore.example.com/.well-known/mercure',
+        ], $service->getSubscriberAudience());
+    }
+
+    public function testGetSubscriberAudienceUsesConfiguredResourceIdentifier(): void
+    {
+        $service = new UrlService(
+            'http://mercure/.well-known/mercure',
+            'https://pimcore.example.com/hub',
+            new RequestStack(),
+            'https://hub.example.com/.well-known/mercure'
+        );
+
+        $this->assertSame(['https://hub.example.com/.well-known/mercure'], $service->getSubscriberAudience());
+    }
+
     public function testGetServerSideUrlThrowsWhenNotConfigured(): void
     {
         $service = new UrlService(null, null, new RequestStack());

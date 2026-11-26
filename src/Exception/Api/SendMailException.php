@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Throwable;
 use function sprintf;
 
 /**
@@ -21,11 +22,17 @@ use function sprintf;
  */
 final class SendMailException extends AbstractApiException
 {
-    public function __construct(string $originalMessage)
+    /**
+     * The message is returned to the caller of the unauthenticated reset password endpoint, so it must
+     * not carry the reason of the failure. The reason stays available as the previous exception. The
+     * mail type only names the operation, so it is safe to report.
+     */
+    public function __construct(?Throwable $previous = null, string $mailType = 'reset password mail')
     {
         parent::__construct(
             HttpResponseCodes::INTERNAL_SERVER_ERROR->value,
-            sprintf('Failed to send reset password mail: %s', $originalMessage),
+            sprintf('Failed to send %s', $mailType),
+            $previous,
         );
     }
 }

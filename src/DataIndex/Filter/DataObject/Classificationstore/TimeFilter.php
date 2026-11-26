@@ -14,29 +14,24 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\TimeFilter as GDITimeFilter;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreFilterValueResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreSegmentResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\ClassificationStoreFilterValue;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\GetClassificationStoreFilterValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
-use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
-use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 
 /**
  * @internal
  */
 final class TimeFilter implements FilterInterface
 {
-    use GetClassificationStoreFilterValueTrait;
-
     public function __construct(
-        private readonly GroupConfigRepositoryInterface $groupConfigRepository,
-        private readonly KeyGroupRelationRepositoryInterface $keyGroupRelationRepository
+        private readonly ClassificationStoreFilterValueResolverInterface $filterValueResolver,
+        private readonly ClassificationStoreSegmentResolverInterface $segmentResolver
     ) {
 
     }
@@ -52,14 +47,20 @@ final class TimeFilter implements FilterInterface
         }
 
         foreach ($parameters->getColumnFilterByType(ColumnType::CLASSIFICATION_STORE_TIME->value) as $column) {
-            $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
-            $key = $this->keyGroupRelationRepository->getByKeyGroupId(
-                $filterValue->getKeyId(),
-                $filterValue->getGroupId()
+            $filterValue = $this->filterValueResolver->resolve(
+                $column->getFilterValue(),
+                $parameters,
+                $column->getKeyWithOutLocale()
             );
-            $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
             /** @var DataObjectQueryInterface $query */
-            $query = $this->applyTimeFilter($column, $query, $key, $group, $filterValue);
+            $query = $this->applyTimeFilter(
+                $column,
+                $query,
+                $this->segmentResolver->resolveGroupSegment($filterValue),
+                $this->segmentResolver->resolveFieldName($filterValue),
+                $this->segmentResolver->resolveLocale($filterValue, $column, $parameters),
+                $filterValue
+            );
         }
 
         return $query;
@@ -68,8 +69,9 @@ final class TimeFilter implements FilterInterface
     private function applyTimeFilter(
         ColumnFilter $column,
         DataObjectQueryInterface $query,
-        KeyGroupRelation $key,
-        GroupConfig $group,
+        string $group,
+        string $fieldName,
+        string $locale,
         ClassificationStoreFilterValue $filterValue,
     ): QueryInterface {
 
@@ -79,13 +81,13 @@ final class TimeFilter implements FilterInterface
 
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
+                $group,
                 $this->buildTimeFilterModifier(
-                    $key->getName(),
+                    $fieldName,
                     $value['from'],
                     $value['to']
                 ),
-                $column->getLocale()
+                $locale
             );
 
             return $query;
@@ -94,39 +96,39 @@ final class TimeFilter implements FilterInterface
         if (isset($value['on'])) {
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
+                $group,
                 $this->buildTimeFilterModifier(
-                    $key->getName(),
+                    $fieldName,
                     null,
                     null,
                     $value['on']
                 ),
-                $column->getLocale()
+                $locale
             );
         }
 
         if (isset($value['to'])) {
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
+                $group,
                 $this->buildTimeFilterModifier(
-                    $key->getName(),
+                    $fieldName,
                     null,
                     $value['to']
                 ),
-                $column->getLocale()
+                $locale
             );
         }
 
         if (isset($value['from'])) {
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
-                $group->getName(),
+                $group,
                 $this->buildTimeFilterModifier(
-                    $key->getName(),
+                    $fieldName,
                     $value['from']
                 ),
-                $column->getLocale()
+                $locale
             );
         }
 

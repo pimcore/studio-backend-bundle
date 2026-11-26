@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepositoryInterfa
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
@@ -32,10 +33,12 @@ use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionNamedType;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RequestContext;
+use function strlen;
 
 /**
  * @internal
@@ -234,6 +237,64 @@ final class UserLoginServiceTest extends Unit
         $service->resetPassword($resetPassword);
     }
 
+    public function testResetPasswordRejectsUrlWithTemplateDelimiters(): void
+    {
+        $service = $this->createService(
+            mainDomain: 'mysite.com',
+            sites: [],
+        );
+
+        foreach (['{{7*7}}', '{%set(a=1)%}', '{#x#}', 'reset}'] as $path) {
+            try {
+                $service->resetPassword(new ResetPassword('testuser', 'https://mysite.com/' . $path));
+                $this->fail('The URL with "' . $path . '" must be rejected.');
+            } catch (InvalidArgumentException $exception) {
+                $this->assertSame('Invalid reset password URL provided', $exception->getMessage());
+            }
+        }
+    }
+
+    public function testResetPasswordLogsTheCauseOfAFailedMail(): void
+    {
+        $user = new User();
+        $user->setName('testuser');
+        $user->setEmail('test@example.com');
+        $user->setActive(true);
+        $user->setPassword('hashed-password');
+
+        $exception = new SendMailException(new RuntimeException('SMTP connection refused'));
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())->method('error')->with(
+            'Error sending password recovery email',
+            ['error' => 'SMTP connection refused']
+        );
+
+        $service = new UserLoginService(
+            $this->makeEmpty(AuthenticationResolverInterface::class, [
+                'generateTokenByUser' => 'test-token-123',
+            ]),
+            $this->makeEmpty(MailServiceInterface::class, [
+                'sendResetPasswordMail' => static fn () => throw $exception,
+            ]),
+            $logger,
+            $this->makeEmpty(UrlGeneratorInterface::class),
+            $this->makeEmpty(UserRepositoryInterface::class),
+            $this->makeEmpty(UserResolverInterface::class, [
+                'getByName' => $user,
+            ]),
+            $this->makeEmpty(SecurityServiceInterface::class),
+            $this->makeEmpty(SettingsProviderInterface::class, [
+                'getSettings' => ['main_domain' => 'mysite.com'],
+            ]),
+            $this->makeEmpty(SiteRepositoryInterface::class, [
+                'listSites' => [],
+            ]),
+        );
+
+        $this->expectExceptionObject($exception);
+        $service->resetPassword(new ResetPassword('testuser', 'https://mysite.com/reset-password/'));
+    }
+
     public function testResetPasswordRejectsWhenNoDomainConfig(): void
     {
         $service = $this->createService(
@@ -339,6 +400,181 @@ final class UserLoginServiceTest extends Unit
         $url = $service->getLoginTokenUrl(42);
 
         $this->assertSame('https://mysite.com:8443/cms/pimcore-studio/login/?token=test-token-123', $url);
+    }
+
+    public function testSendInvitationBuildsTheLinkFromTheConfiguredOrigin(): void
+    {
+        $sentUrls = [];
+        $service = $this->createInvitationService(
+            $this->createInviteeUser(password: 'hashed-password'),
+            sentUrls: $sentUrls,
+        );
+
+        $service->sendInvitation(42);
+
+        // built from the router origin, never from anything the caller supplied
+        self::assertSame(
+            ['https://mysite.com:8443/cms/pimcore-studio/reset-password/?token=test-token-123'],
+            $sentUrls
+        );
+    }
+
+    public function testSendInvitationAssignsAPasswordWhenTheUserHasNone(): void
+    {
+        $calls = [];
+        $invitee = $this->createInviteeUser(password: null);
+        $service = $this->createInvitationService($invitee, calls: $calls);
+
+        $service->sendInvitation(42);
+
+        self::assertNotEmpty($invitee->getPassword(), 'A user without a password must be given one.');
+        self::assertSame(32, strlen((string) $invitee->getPassword()));
+
+        // the placeholder has to reach the database before the token is generated: the token is
+        // only accepted for a user that has a password
+        self::assertSame(['updateUser:' . $invitee->getPassword(), 'generateToken'], $calls);
+    }
+
+    public function testSendInvitationKeepsAnExistingPassword(): void
+    {
+        $calls = [];
+        $invitee = $this->createInviteeUser(password: 'hashed-password');
+        $service = $this->createInvitationService($invitee, calls: $calls);
+
+        $service->sendInvitation(42);
+
+        self::assertSame('hashed-password', $invitee->getPassword());
+        self::assertSame(['generateToken'], $calls, 'A user that has a password must not be saved.');
+    }
+
+    public function testSendInvitationRefusesAnAdminTargetForANonAdmin(): void
+    {
+        $service = $this->createInvitationService(
+            $this->createInviteeUser(password: 'hashed-password', admin: true),
+            currentUserIsAdmin: false,
+        );
+
+        $this->expectException(ForbiddenException::class);
+
+        $service->sendInvitation(42);
+    }
+
+    public function testSendInvitationRejectsAnInactiveUser(): void
+    {
+        $service = $this->createInvitationService(
+            $this->createInviteeUser(password: 'hashed-password', active: false)
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $service->sendInvitation(42);
+    }
+
+    public function testSendInvitationRejectsAUserWithoutAnEmail(): void
+    {
+        $service = $this->createInvitationService(
+            $this->createInviteeUser(password: 'hashed-password', email: null)
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $service->sendInvitation(42);
+    }
+
+    public function testSendInvitationRejectsAMalformedEmail(): void
+    {
+        $service = $this->createInvitationService(
+            $this->createInviteeUser(password: 'hashed-password', email: 'not-an-email')
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $service->sendInvitation(42);
+    }
+
+    public function testSendInvitationPropagatesMailFailures(): void
+    {
+        $service = $this->createInvitationService(
+            $this->createInviteeUser(password: 'hashed-password'),
+            mailFails: true,
+        );
+
+        $this->expectException(SendMailException::class);
+
+        $service->sendInvitation(42);
+    }
+
+    private function createInviteeUser(
+        ?string $password,
+        ?string $email = 'invitee@example.com',
+        bool $active = true,
+        bool $admin = false,
+    ): User {
+        $user = new User();
+        $user->setId(42);
+        $user->setName('invitee');
+        $user->setActive($active);
+        $user->setAdmin($admin);
+
+        if ($email !== null) {
+            $user->setEmail($email);
+        }
+
+        if ($password !== null) {
+            $user->setPassword($password);
+        }
+
+        return $user;
+    }
+
+    private function createInvitationService(
+        User $invitee,
+        bool $currentUserIsAdmin = true,
+        array &$sentUrls = [],
+        bool $mailFails = false,
+        array &$calls = [],
+    ): UserLoginService {
+        return new UserLoginService(
+            $this->makeEmpty(AuthenticationResolverInterface::class, [
+                'generateTokenByUser' => static function () use (&$calls): string {
+                    $calls[] = 'generateToken';
+
+                    return 'test-token-123';
+                },
+            ]),
+            $this->makeEmpty(MailServiceInterface::class, [
+                'sendInvitationMail' => static function (
+                    UserInterface $user,
+                    string $invitationUrl
+                ) use (&$sentUrls, $mailFails): void {
+                    if ($mailFails) {
+                        throw new SendMailException(null, 'invitation mail');
+                    }
+
+                    $sentUrls[] = $invitationUrl;
+                },
+            ]),
+            $this->makeEmpty(LoggerInterface::class),
+            $this->makeEmpty(UrlGeneratorInterface::class, [
+                'generate' => 'https://mysite.com:8443/cms/pimcore-studio/api/login/token',
+                'getContext' => new RequestContext('/cms'),
+            ]),
+            $this->makeEmpty(UserRepositoryInterface::class, [
+                'getPersonById' => $invitee,
+                'updateUser' => static function (UserInterface $saved) use (&$calls): void {
+                    $calls[] = 'updateUser:' . $saved->getPassword();
+                },
+            ]),
+            $this->makeEmpty(UserResolverInterface::class),
+            $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $this->makeEmpty(UserInterface::class, [
+                    'isAdmin' => $currentUserIsAdmin,
+                    'getId' => 7,
+                ]),
+            ]),
+            $this->makeEmpty(SettingsProviderInterface::class),
+            $this->makeEmpty(SiteRepositoryInterface::class),
+        );
     }
 
     private function createTargetUser(bool $isAdmin, string $password = 'hashed-password', int $id = 0): User

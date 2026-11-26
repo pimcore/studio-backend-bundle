@@ -28,6 +28,7 @@ final readonly class HubService implements HubServiceInterface
         private int $cookieLifetime = 3600,
         private bool $jwtCookieStrictness = true,
         private ?string $jwtCookieHost = null,
+        private ?string $cookieName = null,
     ) {
     }
 
@@ -37,6 +38,22 @@ final readonly class HubService implements HubServiceInterface
     }
 
     public function createCookie(): Cookie
+    {
+        return $this->buildCookie(Mercure::AUTHORIZATION_COOKIE_NAME->value, $this->tokenProvider->getJwt());
+    }
+
+    public function createCookies(): array
+    {
+        $jwt = $this->tokenProvider->getJwt();
+
+        // Each hub reads only the cookie of its own protocol
+        return [
+            $this->buildCookie(Mercure::AUTHORIZATION_COOKIE_NAME->value, $jwt),
+            $this->buildCookie($this->getCookieName($this->isSecure()), $jwt),
+        ];
+    }
+
+    private function buildCookie(string $name, string $jwt): Cookie
     {
         $urlParts = parse_url($this->urlService->getClientSideUrl());
 
@@ -50,15 +67,30 @@ final readonly class HubService implements HubServiceInterface
         }
 
         return new Cookie(
-            Mercure::AUTHORIZATION_COOKIE_NAME->value,
-            $this->tokenProvider->getJwt(),
+            $name,
+            $jwt,
             time() + $this->cookieLifetime,
             $urlParts[Mercure::URL_PATH->value] ?? '/',
             $host,
-            $urlParts[Mercure::URL_SCHEME->value] === Mercure::URL_SCHEME_HTTPS->value,
+            $this->isSecure(),
             true,
             false,
             $this->jwtCookieStrictness ? Cookie::SAMESITE_STRICT : Cookie::SAMESITE_NONE
         );
+    }
+
+    private function isSecure(): bool
+    {
+        return parse_url($this->urlService->getClientSideUrl(), PHP_URL_SCHEME) === Mercure::URL_SCHEME_HTTPS->value;
+    }
+
+    private function getCookieName(bool $secure): string
+    {
+        if (!empty($this->cookieName)) {
+            return $this->cookieName;
+        }
+
+        // Browsers drop __Secure- cookies that are not sent over HTTPS
+        return $secure ? Mercure::SECURE_COOKIE_NAME->value : Mercure::COOKIE_NAME->value;
     }
 }

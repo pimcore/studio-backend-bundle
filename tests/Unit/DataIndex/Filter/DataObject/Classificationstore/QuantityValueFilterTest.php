@@ -38,7 +38,7 @@ final class QuantityValueFilterTest extends Unit
         $this->assertCalls($calls);
         $filter = $calls[0]['filter'];
         $this->assertInstanceOf(NumberFilter::class, $filter);
-        $this->assertSame(self::KEY_NAME . '.value', $filter->getFieldName());
+        $this->assertSame(self::KEY_SEGMENT . '.value', $filter->getFieldName());
         $this->assertSame(5, $filter->getSearchTerm());
     }
 
@@ -123,19 +123,20 @@ final class QuantityValueFilterTest extends Unit
         $this->assertCount(2, $calls);
         foreach ($calls as $call) {
             $this->assertSame(self::FIELD_NAME, $call['fieldName']);
-            $this->assertSame(self::GROUP_NAME, $call['group']);
+            $this->assertSame(self::GROUP_SEGMENT, $call['group']);
+            $this->assertSame(self::NON_LOCALIZED_NODE, $call['locale']);
         }
 
         $unitFilter = $calls[1]['filter'];
         $this->assertInstanceOf(WildcardSearch::class, $unitFilter);
-        $this->assertSame(self::KEY_NAME . '.unitId', $unitFilter->getFieldName());
+        $this->assertSame(self::KEY_SEGMENT . '.unitId', $unitFilter->getFieldName());
         $this->assertSame('kg', $unitFilter->getSearchTerm());
     }
 
     private function assertRangeFilter(mixed $filter): NumberRangeFilter
     {
         $this->assertInstanceOf(NumberRangeFilter::class, $filter);
-        $this->assertSame(self::KEY_NAME . '.value', $filter->getField());
+        $this->assertSame(self::KEY_SEGMENT . '.value', $filter->getField());
 
         return $filter;
     }

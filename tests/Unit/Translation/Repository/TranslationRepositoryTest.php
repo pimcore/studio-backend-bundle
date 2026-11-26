@@ -16,12 +16,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Translation\Repository;
 use Codeception\Test\Unit;
 use Doctrine\DBAL\Connection;
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepository;
 use Pimcore\Config;
 use Pimcore\Model\Translation\Listing;
 use Pimcore\Model\Translation\Listing\Dao as ListingDao;
+use ReflectionMethod;
 
 /**
  * @internal
@@ -50,12 +52,47 @@ final class TranslationRepositoryTest extends Unit
     }
 
     /**
+     * SystemSettingsProvider::getSettings() throws while the configured error document is gone
+     * (see SystemSettingsProviderTest), which made every consumer unbuildable
+     * (pimcore/platform-version#864).
+     *
      * @throws Exception
      */
-    private function getRepository(): TranslationRepository
+    public function testRepositoryIsBuiltWhileTheSystemSettingsCannotBeResolved(): void
+    {
+        $settingsProvider = $this->makeEmpty(SettingsProviderInterface::class, [
+            'getSettings' => static function (): array {
+                throw new NotFoundException('document', '/en/missing-error-page', 'path');
+            },
+        ]);
+
+        $this->assertInstanceOf(TranslationRepository::class, $this->getRepository($settingsProvider));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testValidLanguagesAreResolvedOnceOnFirstUse(): void
+    {
+        $settingsProvider = $this->createMock(SettingsProviderInterface::class);
+        $settingsProvider->expects($this->once())
+            ->method('getSettings')
+            ->willReturn(['validLanguages' => ['en', 'de']]);
+
+        $repository = $this->getRepository($settingsProvider);
+        $resolve = new ReflectionMethod($repository, 'getValidLanguages');
+
+        $this->assertSame(['en', 'de'], $resolve->invoke($repository));
+        $this->assertSame(['en', 'de'], $resolve->invoke($repository));
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function getRepository(?SettingsProviderInterface $settingsProvider = null): TranslationRepository
     {
         return new TranslationRepository(
-            $this->makeEmpty(SettingsProviderInterface::class, ['getSettings' => []]),
+            $settingsProvider ?? $this->makeEmpty(SettingsProviderInterface::class, ['getSettings' => []]),
             $this->makeEmpty(Connection::class),
             $this->makeEmpty(SecurityServiceInterface::class),
             new Config(),

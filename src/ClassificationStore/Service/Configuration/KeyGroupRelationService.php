@@ -20,11 +20,14 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationDetail;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\GroupInfoResolverTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -40,8 +43,10 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         private FilterMapperServiceInterface $filterMapper,
         private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
         private KeyGroupRelationHydratorInterface $keyGroupRelationHydrator,
+        private KeyRelationResolverInterface $keyRelationResolver,
         private GroupRepositoryInterface $groupConfigurationRepository,
         private KeyRepositoryInterface $keyConfigurationRepository,
+        private KeyLocalizationResolverInterface $keyLocalizationResolver,
     ) {
     }
 
@@ -60,8 +65,14 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         $items = [];
 
         foreach ($relations as $relation) {
-            [$keyName, $keyDescription] = $this->resolveKeyInfo($relation->getKeyId());
-            $items[] = $this->getHydratedKeyGroupRelationDetail($relation, $keyName, $keyDescription);
+            [$keyName, $keyDescription, $keyLocalized, $keyConfig] = $this->resolveKeyInfo($relation->getKeyId());
+            $items[] = $this->getHydratedKeyGroupRelationDetail(
+                $relation,
+                $keyName,
+                $keyDescription,
+                $keyLocalized,
+                $keyConfig
+            );
         }
 
         return new Collection(
@@ -76,16 +87,21 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
     public function createOrUpdateKeyGroupRelation(
         KeyGroupRelationCreate $parameters
     ): KeyGroupRelationDetail {
-        $relation = $this->keyGroupRelationRepository->createOrUpdate(
-            $parameters->getKeyId(),
-            $parameters->getGroupId(),
-            $parameters->getSorter(),
-            $parameters->isMandatory()
+        try {
+            $relation = $this->keyGroupRelationRepository->createOrUpdate($parameters);
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
+
+        [$keyName, $keyDescription, $keyLocalized, $keyConfig] = $this->resolveKeyInfo($relation->getKeyId());
+
+        return $this->getHydratedKeyGroupRelationDetail(
+            $relation,
+            $keyName,
+            $keyDescription,
+            $keyLocalized,
+            $keyConfig
         );
-
-        [$keyName, $keyDescription] = $this->resolveKeyInfo($relation->getKeyId());
-
-        return $this->getHydratedKeyGroupRelationDetail($relation, $keyName, $keyDescription);
     }
 
     /**
@@ -93,19 +109,27 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
      */
     public function deleteKeyGroupRelation(int $keyId, int $groupId): void
     {
-        $this->keyGroupRelationRepository->delete($keyId, $groupId);
+        try {
+            $this->keyGroupRelationRepository->delete($keyId, $groupId);
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
     }
 
     private function getHydratedKeyGroupRelationDetail(
         KeyGroupRelation $relation,
         ?string $keyName = null,
-        ?string $keyDescription = null
+        ?string $keyDescription = null,
+        ?bool $keyLocalized = null,
+        ?KeyConfig $keyConfig = null
     ): KeyGroupRelationDetail {
         $detail = $this->keyGroupRelationHydrator->hydrateKeyGroupRelationDetail(
             $relation,
             $keyName,
             $keyDescription,
             $this->resolveGroupName($relation->getGroupId(), $this->groupConfigurationRepository),
+            $keyLocalized,
+            $keyConfig,
         );
         $this->eventDispatcher->dispatch(
             new KeyGroupRelationDetailEvent($detail),
@@ -116,16 +140,25 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
     }
 
     /**
-     * @return array{0: ?string, 1: ?string} [keyName, keyDescription]
+     * The key's `localized` flag comes off the configuration this already loads for the name and the
+     * description: core's relation has no property of its own for it, so there is nothing on the
+     * relation to read it from.
+     *
+     * @return array{0: ?string, 1: ?string, 2: ?bool, 3: ?KeyConfig} [keyName, keyDescription, keyLocalized, keyConfig]
      */
     private function resolveKeyInfo(int $keyId): array
     {
         try {
             $keyConfig = $this->keyConfigurationRepository->getById($keyId);
 
-            return [$keyConfig->getName(), $keyConfig->getDescription()];
+            return [
+                $keyConfig->getName(),
+                $keyConfig->getDescription(),
+                $this->keyLocalizationResolver->getLocalized($keyConfig),
+                $keyConfig,
+            ];
         } catch (NotFoundException) {
-            return [null, null];
+            return [null, null, null, null];
         }
     }
 }

@@ -19,7 +19,9 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ClassDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as ClassificationstoreField;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\UserInterface;
@@ -72,7 +74,8 @@ final class FieldDefinitionCollectorTest extends Unit
         $collector = new FieldDefinitionCollector(
             $classDefinitionService,
             $columnConfigurationService,
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
+            new InMemoryKeyLocalizationResolver()
         );
         $collector->setFolderId(1);
         $collector->setUser($this->createMock(UserInterface::class));
@@ -85,6 +88,79 @@ final class FieldDefinitionCollectorTest extends Unit
 
         $collector->setClassId('car');
         $this->assertSame(['name', 'series'], $this->keys($collector->getColumnConfigurations([])));
+    }
+
+    /**
+     * The keys of a store decide their own languages, so a store field that is not localized is
+     * offered a language when one of its keys is, and is not when none is.
+     */
+    public function testAStoreFieldIsLocalizedWhenAnyKeyOfItsStoreIs(): void
+    {
+        $this->assertSame([true, true], $this->collectLocalizedFlags(fieldLocalized: false, keyLocalized: true));
+        $this->assertSame([false, false], $this->collectLocalizedFlags(fieldLocalized: false, keyLocalized: false));
+        $this->assertSame([true, true], $this->collectLocalizedFlags(fieldLocalized: true, keyLocalized: false));
+    }
+
+    /**
+     * What the store field's column is built localized for, and the `localizable` it publishes.
+     *
+     * @return list<bool>
+     */
+    private function collectLocalizedFlags(bool $fieldLocalized, bool $keyLocalized): array
+    {
+        $store = new ClassificationstoreField();
+        $store->setName('cs');
+        $store->setLocalized($fieldLocalized);
+        $layout = new Panel();
+        $layout->setChildren([$store]);
+
+        $classDefinitionService = $this->createMock(ClassDefinitionServiceInterface::class);
+        $classDefinitionService->method('getFilteredLayoutDefinitions')->willReturn($layout);
+        $classDefinitionService->method('getClassDefinition')->willReturnCallback(static function (): ClassDefinition {
+            $classDefinition = new ClassDefinition();
+            $classDefinition->setName('car');
+
+            return $classDefinition;
+        });
+
+        $flags = [];
+        $columnConfigurationService = $this->createMock(ColumnConfigurationServiceInterface::class);
+        $columnConfigurationService->method('buildDataObjectAdapterColumnConfiguration')
+            ->willReturnCallback(
+                static function (ColumnFieldDefinition $definition) use (&$flags): ColumnConfiguration {
+                    $flags[] = $definition->isLocalized();
+
+                    return new ColumnConfiguration(
+                        'cs',
+                        $definition->getGroup(),
+                        false,
+                        false,
+                        false,
+                        false,
+                        $definition->isLocalized(),
+                        null,
+                        'dataobject.classificationstore',
+                        'classificationstore',
+                        []
+                    );
+                }
+            );
+
+        $keyLocalization = new InMemoryKeyLocalizationResolver();
+        $keyLocalization->flagKeyId(1, $keyLocalized);
+        $collector = new FieldDefinitionCollector(
+            $classDefinitionService,
+            $columnConfigurationService,
+            $this->createMock(LoggerInterface::class),
+            $keyLocalization
+        );
+        $collector->setFolderId(1);
+        $collector->setUser($this->createMock(UserInterface::class));
+        $collector->setClassId('car');
+
+        $columns = $collector->getColumnConfigurations([]);
+
+        return [$flags[0], $columns[0]->isLocalizable()];
     }
 
     /**

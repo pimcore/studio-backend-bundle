@@ -17,6 +17,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricherInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\LayoutEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\ObjectLayoutHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Layout;
@@ -47,6 +48,7 @@ final readonly class LayoutService implements LayoutServiceInterface
     use WorkflowLayoutTrait;
 
     public function __construct(
+        private ActiveGroupTitleEnricherInterface $activeGroupTitleEnricher,
         private ClassDefinitionRepositoryInterface $classDefinitionRepository,
         private CustomLayoutRepositoryInterface $customLayoutRepository,
         private DataObjectServiceInterface $dataObjectService,
@@ -88,6 +90,7 @@ final readonly class LayoutService implements LayoutServiceInterface
 
         $layout = $this->getLayoutDefinitions($user, $dataObject, $class, $layoutId);
         $this->dataObjectServiceResolver->enrichLayoutDefinition($layout, $dataObject);
+        $this->activeGroupTitleEnricher->enrich($layout);
         if (!$layout instanceof Panel) {
             throw new NotFoundException(type: 'class layout for data object', id: $id);
         }

@@ -29,6 +29,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowMetaServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowMetaService
 
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateService
+
   # Repositories
   Pimcore\Bundle\StudioBackendBundle\Workflow\Repository\WorkflowElementsRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Workflow\Repository\WorkflowElementsRepository
@@ -46,6 +49,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowElementsHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowElementsHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowStatusHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowStatusHydrator
 
   # Submitters
   Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\TransitionActionSubmitterInterface:

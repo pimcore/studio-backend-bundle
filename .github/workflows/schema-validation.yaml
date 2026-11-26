@@ -17,4 +17,20 @@ jobs:
         run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
       - name: Run Schema Validation
         run: |
-          postman collection run 38917228-9dd46798-6140-4954-b9f1-1adcdb28d5de -e 38917228-a7031c27-2010-4199-87c8-38b5039143e7
+          # The CLI prints one "Pass" line per assertion (about 10,000). Fold each run of them into a
+          # collapsed group so failures and the summary stay visible. pipefail keeps the CLI's exit code.
+          set -o pipefail
+          postman collection run 38917228-9dd46798-6140-4954-b9f1-1adcdb28d5de -e 38917228-a7031c27-2010-4199-87c8-38b5039143e7 \
+            | awk '
+              function flush() {
+                if (n > 0) {
+                  print "::group::" n " passed assertions"
+                  for (i = 1; i <= n; i++) print buf[i]
+                  print "::endgroup::"
+                  n = 0
+                }
+              }
+              /^  Pass  / { buf[++n] = $0; next }
+              { flush(); print }
+              END { flush() }
+            '

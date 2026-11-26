@@ -14,14 +14,20 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DependencyInjection;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\FieldDefinitionCollector;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\BlockDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject\ClassificationStoreResolver;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridService;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorColumnDefinitionLoader;
 use ReflectionClass;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use function array_keys;
+use function array_map;
 use function basename;
 use function dirname;
 use function glob;
@@ -62,6 +68,31 @@ final class GridColumnDefinitionWiringTest extends Unit
                 $taggedServiceIds,
                 sprintf('%s is not tagged in config/grid.yaml and would be silently dropped from the grid', $class)
             );
+        }
+    }
+
+    /**
+     * The three grid services that ask the language question take it from the one bridge, which
+     * the Classification Store config registers under its interface; the collector and the
+     * Classification Store column resolver are registered by the grid config.
+     */
+    public function testTheLanguageBridgeIsRegisteredForEveryGridServiceThatAsksIt(): void
+    {
+        $container = $this->loadGridContainer();
+        (new YamlFileLoader($container, new FileLocator(dirname(__DIR__, 3) . '/config')))
+            ->load('classification_store.yaml');
+
+        $this->assertTrue($container->hasDefinition(KeyLocalizationResolverInterface::class));
+        $this->assertSame(GridService::class, $container->getDefinition(GridServiceInterface::class)->getClass());
+        $this->assertTrue($container->hasDefinition(FieldDefinitionCollector::class));
+        $this->assertTrue($container->hasDefinition(ClassificationStoreResolver::class));
+
+        foreach ([FieldDefinitionCollector::class, ClassificationStoreResolver::class, GridService::class] as $class) {
+            $types = array_map(
+                static fn ($parameter): string => (string) $parameter->getType(),
+                (new ReflectionClass($class))->getConstructor()?->getParameters() ?? []
+            );
+            $this->assertContains(KeyLocalizationResolverInterface::class, $types, $class);
         }
     }
 

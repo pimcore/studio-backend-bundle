@@ -31,10 +31,11 @@ final class CollectionParametersMapper implements FilterMapperInterface
             return new FilterParameter();
         }
 
-        $filters = $parameters->getFilters();
-        if ($filters === null) {
-            return new FilterParameter();
-        }
+        // An omitted `filters` is not "no paging": a FilterParameter carries the default page
+        // and page size, and the paging columns below are the only thing PaginationFilter acts
+        // on. Returning an empty parameter set here left the listing unlimited, so a request
+        // body of `{}` answered with every row in the table.
+        $filters = $parameters->getFilters() ?? new FilterParameter();
 
         $columnFilters = $filters->getColumnFilters();
         $columnFilters = $this->addPaging($parameters, $filters, $columnFilters);

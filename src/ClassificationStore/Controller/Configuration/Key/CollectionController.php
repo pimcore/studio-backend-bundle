@@ -14,12 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Controller\Configuration\Key;
 
 use OpenApi\Attributes\Post;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\KeyCollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\OpenApi\Attribute\Request\KeyCollectionRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Request\CollectionRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IntParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
@@ -64,7 +64,7 @@ final class CollectionController extends AbstractApiController
         tags: [Tags::ClassificationStore->value]
     )]
     #[IntParameter(name: 'storeId', example: 1, description: 'ID of the store to list keys for')]
-    #[CollectionRequestBody(
+    #[KeyCollectionRequestBody(
         columnFiltersExample: '[' .
             '{"type":"search","filterValue":"my-key"},'.
             '{"type":"equals","key": "type", "filterValue":"quantityValue"}'.
@@ -80,7 +80,7 @@ final class CollectionController extends AbstractApiController
     ])]
     public function getKeys(
         int $storeId,
-        #[MapRequestPayload] CollectionFilterParameter $parameters,
+        #[MapRequestPayload] KeyCollectionParameters $parameters,
     ): JsonResponse {
         $collection = $this->keyService->listKeys($parameters, $storeId);
 
