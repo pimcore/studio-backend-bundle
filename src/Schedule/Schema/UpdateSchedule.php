@@ -28,7 +28,12 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ScheduleActions;
 final readonly class UpdateSchedule
 {
     public function __construct(
-        #[Property(description: 'Id of schedule, if null a new one will be created', type: 'integer', example: 666, nullable: true)]
+        #[Property(
+            description: 'Id of schedule, if null a new one will be created',
+            type: 'integer',
+            example: 666,
+            nullable: true
+        )]
         private ?int $id,
         #[Property(description: 'Date of schedule', type: 'integer', example: 1634025600)]
         private int $date,
