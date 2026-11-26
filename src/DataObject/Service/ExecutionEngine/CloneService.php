@@ -162,6 +162,8 @@ final readonly class CloneService implements CloneServiceInterface
                 EnvironmentVariables::ORIGINAL_PARENT_ID->value => $originalParent->getId(),
                 EnvironmentVariables::PARENT_ID->value => $newParent->getId(),
                 EnvironmentVariables::UPDATE_REFERENCES->value => $updateReferences,
+                // the root is copied before the job starts, so the handler would not know it otherwise
+                EnvironmentVariables::REWRITE_CONFIGURATION->value => [$originalParent->getId() => $newParent->getId()],
             ]
         );
         $jobRun = $this->jobExecutionAgent->startJobExecution(

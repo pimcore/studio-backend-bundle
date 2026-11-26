@@ -25,7 +25,7 @@ final readonly class FieldCollectionConfigHydrator implements FieldCollectionCon
     {
         return new FieldCollectionConfig(
             $definition->getKey(),
-            $definition->getTitle()
+            $definition->getTitle() ?? '',
         );
     }
 }
