@@ -41,8 +41,7 @@ final readonly class Authorization
         )]
         private int $cookieLifetime,
         #[Property(
-            description: 'Mercure protocol to subscribe with: "topic" and "lastEventID" for 0.x, ' .
-                '"match" and "last_event_id" for 1.0',
+            description: 'Mercure protocol: "topic"/"lastEventID" for 0.x, "match"/"last_event_id" for 1.0',
             type: 'string',
             enum: ['0.x', '1.0'],
             example: '1.0'
