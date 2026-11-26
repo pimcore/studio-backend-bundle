@@ -30,10 +30,9 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Dimensions;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Version;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
-use Pimcore\Model\Version;
-use Pimcore\Model\Version\UnresolvedReference;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
@@ -149,11 +148,18 @@ final readonly class VersionDetailService implements VersionDetailServiceInterfa
     /**
      * Relations to elements deleted after the version was saved can not be loaded with the version data,
      * the version only knows them as unresolved references.
+     *
+     * @todo drop the guard once pimcore/pimcore ^2026.3.8 (which adds Version::getUnresolvedReferences()) is required
      */
     private function addDeletedRelations(DataObjectVersion $hydratedVersion, Concrete $element, Version $version): void
     {
+        // @phpstan-ignore function.impossibleType, function.alreadyNarrowedType
+        if (!method_exists($version, 'getUnresolvedReferences')) {
+            return;
+        }
+
         $references = array_map(
-            static fn (UnresolvedReference $reference) => new DeletedRelationReference(
+            static fn (object $reference) => new DeletedRelationReference(
                 $reference->getFieldName(),
                 $reference->getLanguage(),
                 $reference->getIndex(),
