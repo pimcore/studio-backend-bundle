@@ -117,11 +117,69 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         /** @var User $user */
         $token = $this->authenticationResolver->generateTokenByUser($user);
 
+        return $this->buildStudioTokenUrl('/login/', $token);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function sendInvitation(int $id): void
+    {
+        // getPersonById, not getUserById: a service user must not be invited either
+        $user = $this->userRepository->getPersonById($id);
+
+        if ($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
+            throw new ForbiddenException(
+                'Cannot invite this user',
+                HttpResponseErrorKeys::INVITATION_NON_ADMIN->value
+            );
+        }
+
+        if (!$user->isActive()) {
+            throw new InvalidArgumentException(
+                'Cannot invite an inactive user',
+                errorKey: HttpResponseErrorKeys::INVITATION_USER_INACTIVE->value
+            );
+        }
+
+        $email = $user->getEmail();
+        if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new InvalidArgumentException(
+                'Cannot invite a user without a valid email address',
+                errorKey: HttpResponseErrorKeys::INVITATION_NO_EMAIL->value
+            );
+        }
+
+        /** @var User $user */
+        // The token is only accepted for a user that has a password: Tool\Authentication::isValidUser()
+        // requires one. An invited user usually has none, so give them one they will never learn. It is
+        // stored verbatim - hashing happens in the update service - so it can never satisfy password_verify
+        // and the account stays password-less in practice. The Classic UI does the same.
+        if (!$user->getPassword()) {
+            $user->setPassword(bin2hex(random_bytes(16)));
+            $this->userRepository->updateUser($user);
+        }
+
+        $token = $this->authenticationResolver->generateTokenByUser($user);
+
+        // The reset password route logs the invitee in with the token and opens the profile in reset
+        // mode, so they set a password of their own. The plain login route would drop them at the root
+        // holding a password they do not know.
+        $this->mailService->sendInvitationMail($user, $this->buildStudioTokenUrl('/reset-password/', $token));
+    }
+
+    /**
+     * A Studio URL carrying the token, built from the configured origin rather than from anything the
+     * caller supplied, so the mail can never be pointed at a host of someone else's choosing.
+     */
+    private function buildStudioTokenUrl(string $path, string $token): string
+    {
         return sprintf(
-            '%s%s%s/login/?token=%s',
+            '%s%s%s%s?token=%s',
             $this->getOrigin(),
             $this->urlGenerator->getContext()->getBaseUrl(),
             rtrim($this->studioPath, '/'),
+            $path,
             urlencode($token)
         );
     }

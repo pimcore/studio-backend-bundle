@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DomainConfigurationExceptio
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Event\InvitationEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\LostPasswordEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\MailService;
 use Pimcore\Mail;
@@ -138,6 +139,87 @@ final class MailServiceTest extends Unit
             $this->assertStringNotContainsString('secret-value', $exception->getMessage());
             $this->assertSame($cause, $exception->getPrevious(), 'The cause stays available for the log.');
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testInvitationMailIsSentWithoutRenderingTheTextAsTemplate(): void
+    {
+        $text = null;
+        $mail = $this->createMock(Mail::class);
+        $mail->method('text')->willReturnCallback(
+            static function (string $body) use (&$text, $mail): Mail {
+                $text = $body;
+
+                return $mail;
+            }
+        );
+        // send() compiles the text body as a Twig template, sendWithoutRendering() sends it as it is
+        $mail->expects($this->never())->method('send');
+        $mail->expects($this->once())->method('sendWithoutRendering')->willReturnSelf();
+
+        $this->getSendingService($mail)->sendInvitationMail($this->createUser(), self::TEMPLATE_URL);
+
+        $this->assertIsString($text);
+        $this->assertStringEndsWith(self::TEMPLATE_URL, $text, 'The link must reach the mail unchanged.');
+        $this->assertStringContainsString('24 hours', $text);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testInvitationMailNamesItsOwnOperationWhenSendingFails(): void
+    {
+        $cause = new RuntimeException('Route "secret-value-read-from-the-system" not found');
+        $mail = $this->createMock(Mail::class);
+        $mail->method('sendWithoutRendering')->willThrowException($cause);
+
+        try {
+            $this->getSendingService($mail)->sendInvitationMail($this->createUser(), self::TEMPLATE_URL);
+            $this->fail('A SendMailException was expected.');
+        } catch (SendMailException $exception) {
+            $this->assertSame('Failed to send invitation mail', $exception->getMessage());
+            $this->assertStringNotContainsString('secret-value', $exception->getMessage());
+            $this->assertSame($cause, $exception->getPrevious(), 'The cause stays available for the log.');
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testInvitationMailIsNotSentWhenTheEventStopsIt(): void
+    {
+        $mail = $this->createMock(Mail::class);
+        $mail->expects($this->never())->method('sendWithoutRendering');
+
+        $service = new MailService(
+            $this->makeEmpty(SettingsProviderInterface::class, [
+                'getSettings' => ['main_domain' => 'mysite.com'],
+            ]),
+            $this->makeEmpty(RouterInterface::class, ['getContext' => new RequestContext()]),
+            $this->makeEmpty(EventDispatcherInterface::class, [
+                'dispatch' => static fn (InvitationEvent $event): InvitationEvent => $event->setSendMail(false),
+            ]),
+            $this->makeEmpty(ToolResolverInterface::class, ['getMail' => $mail]),
+            'noreply@example.com',
+        );
+
+        $service->sendInvitationMail($this->createUser(), self::TEMPLATE_URL);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testInvitationMailReportsAMissingMainDomain(): void
+    {
+        $service = $this->getService(
+            $this->makeEmpty(SettingsProviderInterface::class, ['getSettings' => ['main_domain' => '']])
+        );
+
+        $this->expectException(DomainConfigurationException::class);
+
+        $service->sendInvitationMail($this->createUser(), self::TEMPLATE_URL);
     }
 
     private function createUser(): User
