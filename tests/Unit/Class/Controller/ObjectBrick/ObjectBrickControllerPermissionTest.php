@@ -29,6 +29,7 @@ use function sprintf;
 
 /**
  * The object brick read routes must require a permission, like the rest of this controller family.
+ *
  * @internal
  */
 final class ObjectBrickControllerPermissionTest extends Unit
