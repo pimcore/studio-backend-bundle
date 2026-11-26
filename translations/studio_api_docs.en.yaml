@@ -1466,8 +1466,8 @@ user_reset_password_summary: Sending username to reset password.
 user_send_invitation_description: |
   Send an invitation mail to the user identified by <strong>{id}</strong>. <br>
   The mail carries a one time login link to the Studio reset password route, valid for 24 hours, that
-  lets the user set their own password. The link is built from the main domain in the system settings,
-  never from the request. <br>
+  lets the user set their own password. The host and port of the link are taken from the main domain in
+  the system settings, never from the request's Host header. <br>
   The user must be active and must have a valid email address, and a main domain must be configured.
   A user without a password is given a throwaway one, so the login token is accepted.
 user_send_invitation_summary: Send an invitation link to a user by ID
