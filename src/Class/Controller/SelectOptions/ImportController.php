@@ -72,10 +72,10 @@ final class ImportController extends AbstractApiController
         required: true
     )]
     #[MultipartFormDataRequestBody(
-        properties: [
+        [
             new FileUpload(description: 'Select option configuration JSON export file to upload'),
         ],
-        required: ['file']
+        ['file']
     )]
     #[SuccessResponse(
         description: 'class_select_option_import_success_response',
