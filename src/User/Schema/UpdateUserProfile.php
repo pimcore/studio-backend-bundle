@@ -66,8 +66,7 @@ final readonly class UpdateUserProfile
         #[Property(description: 'Theme of the User', type: 'string', example: 'default')]
         private string $theme = 'default',
         #[Property(
-            description: 'Welcome screen opened after login, as `<provider>:<id>`. '
-                . 'Omitted or null keeps the stored target, an empty string clears it',
+            description: 'Welcome screen after login as `<provider>:<id>`; omit or null keeps it, empty clears it',
             type: 'string',
             maxLength: UserWelcomeScreen::MAX_TARGET_LENGTH,
             example: 'studio-dashboards:019c7555_49f6_712b_af5f_bd0c22b3d1f7',
