@@ -79,11 +79,11 @@ final readonly class UserPerspectiveService implements UserPerspectiveServiceInt
 
     public function getActivePerspective(UserInterface $user): string
     {
+        $activePerspective = $this->repository->getUserActivePerspective($user->getId());
         if ($user->isAdmin()) {
-            return Perspectives::DEFAULT_ID->value;
+            return $this->getAdminActivePerspective($user, $activePerspective);
         }
 
-        $activePerspective = $this->repository->getUserActivePerspective($user->getId());
         $userPerspectives = $this->getAllUserPerspectives($user);
         if (empty($userPerspectives)) {
             $userPerspectives = $this->getAllPerspectiveIds();
@@ -147,6 +147,30 @@ final readonly class UserPerspectiveService implements UserPerspectiveServiceInt
             return [];
         }
 
+        return $this->getAssignedPerspectives($user);
+    }
+
+    /**
+     * Admins have access to every perspective, so an assignment does not restrict them. It only
+     * decides which perspective they open with: the one they switched to themselves, else the
+     * first one assigned to them or their roles, else the default one. IDs that are no longer
+     * configured are skipped.
+     */
+    private function getAdminActivePerspective(UserInterface $user, ?string $activePerspective): string
+    {
+        $existingPerspectivesSet = array_flip($this->getAllPerspectiveIds());
+        $candidates = [$activePerspective, ...$this->getAssignedPerspectives($user)];
+        foreach ($candidates as $candidate) {
+            if ($candidate !== null && isset($existingPerspectivesSet[$candidate])) {
+                return $candidate;
+            }
+        }
+
+        return Perspectives::DEFAULT_ID->value;
+    }
+
+    private function getAssignedPerspectives(UserInterface|UserRoleInterface $user): array
+    {
         $userPerspectives = $this->repository->listUserPerspectives($user->getId());
         if (!$user instanceof UserInterface) {
             return $userPerspectives;
