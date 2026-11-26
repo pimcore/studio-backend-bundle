@@ -63,25 +63,70 @@ final class UserPerspectiveServiceTest extends Unit
         $this->assertCount(1, $result);
     }
 
-    public function testSuperadminGetsDefaultActivePerspectiveDespiteStaleAssignment(): void
+    /**
+     * Regression coverage for pimcore/platform-version#842: a Superadmin keeps the perspective
+     * they switched to themselves.
+     */
+    public function testSuperadminGetsStoredActivePerspective(): void
     {
         $user = $this->makeEmpty(UserInterface::class, [
             'getId' => 1,
             'isAdmin' => true,
+            'getRoles' => [],
         ]);
 
-        // Uses a real, still-configured perspective ID (one of the two in the mocked full set),
-        // not a fake one - otherwise this test would pass even without the isAdmin() bypass in
-        // getActivePerspective(), since a nonexistent stale ID can never match the full set either
-        // way and the bug would go unnoticed.
+        $service = $this->createService(getUserActivePerspective: 'other-perspective');
+
+        $this->assertSame('other-perspective', $service->getActivePerspective($user));
+    }
+
+    /**
+     * Regression coverage for pimcore/platform-version#842: a perspective assigned to a Superadmin
+     * (or one of their roles) is the one they open with when they have not chosen one yet.
+     */
+    public function testSuperadminWithoutStoredActivePerspectiveGetsAssignedPerspective(): void
+    {
+        $user = $this->makeEmpty(UserInterface::class, [
+            'getId' => 1,
+            'isAdmin' => true,
+            'getRoles' => [],
+        ]);
+
+        $service = $this->createService(listUserPerspectives: ['other-perspective']);
+
+        $this->assertSame('other-perspective', $service->getActivePerspective($user));
+    }
+
+    public function testSuperadminFallsBackToAssignedPerspectiveWhenStoredOneNoLongerExists(): void
+    {
+        $user = $this->makeEmpty(UserInterface::class, [
+            'getId' => 1,
+            'isAdmin' => true,
+            'getRoles' => [],
+        ]);
+
         $service = $this->createService(
-            listUserPerspectives: ['other-perspective'],
-            getUserActivePerspective: 'other-perspective',
+            listUserPerspectives: ['deleted-perspective', 'other-perspective'],
+            getUserActivePerspective: 'deleted-perspective',
         );
 
-        $result = $service->getActivePerspective($user);
+        $this->assertSame('other-perspective', $service->getActivePerspective($user));
+    }
 
-        $this->assertSame(Perspectives::DEFAULT_ID->value, $result);
+    public function testSuperadminFallsBackToDefaultWhenNothingStoredOrAssignedExists(): void
+    {
+        $user = $this->makeEmpty(UserInterface::class, [
+            'getId' => 1,
+            'isAdmin' => true,
+            'getRoles' => [],
+        ]);
+
+        $service = $this->createService(
+            listUserPerspectives: ['deleted-perspective'],
+            getUserActivePerspective: 'deleted-perspective',
+        );
+
+        $this->assertSame(Perspectives::DEFAULT_ID->value, $service->getActivePerspective($user));
     }
 
     public function testValidatePerspectiveAccessAllowsSuperadminForAnyPerspective(): void
