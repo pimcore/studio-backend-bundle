@@ -19,6 +19,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolve
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ReverseObjectRelationAdapter;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -42,6 +43,7 @@ use Psr\Log\LoggerInterface;
 use function array_map;
 use function in_array;
 use function is_array;
+use function is_subclass_of;
 
 require_once __DIR__ . '/../../../../Support/Fixture/ReverseRelationOwnerTestObject.php';
 
@@ -634,6 +636,14 @@ final class ReverseObjectRelationAdapterTest extends Unit
         $this->assertSame(self::USER_ID, $owner->getUserModification());
         $this->assertSame(1, $otherOwner->getSaveCount());
         $this->assertSame(self::USER_ID, $otherOwner->getUserModification());
+    }
+
+    public function testAdapterIsMarkedAsRemoteStorage(): void
+    {
+        $this->assertTrue(
+            is_subclass_of(ReverseObjectRelationAdapter::class, RemoteStorageDataInterface::class),
+            'select options lookup and draft saves skip the reverse relation only through this marker'
+        );
     }
 
     /**

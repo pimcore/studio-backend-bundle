@@ -17,13 +17,16 @@ use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DomainConfigurationException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\InvitationEvent;
+use Pimcore\Bundle\StudioBackendBundle\User\Event\LostPasswordEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\MailService;
 use Pimcore\Mail;
 use Pimcore\Model\User;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use RuntimeException;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -32,136 +35,233 @@ use Symfony\Component\Routing\RouterInterface;
  */
 final class MailServiceTest extends Unit
 {
-    private const string INVITATION_URL = 'https://mysite.com/pimcore-studio/reset-password/?token=test-token-123';
+    private const string TEMPLATE_URL = 'https://mysite.com/{{path(pimcore_object(2).getEmail())}}?token=abc';
 
-    public function testSendInvitationMailThrowsWithoutMainDomain(): void
+    /**
+     * SystemSettingsProvider::getSettings() throws while the configured error document is gone
+     * (see SystemSettingsProviderTest), which made every consumer unbuildable
+     * (pimcore/platform-version#864).
+     *
+     * @throws Exception
+     */
+    public function testServiceIsBuiltWhileTheSystemSettingsCannotBeResolved(): void
     {
-        $service = $this->createService(mainDomain: '');
+        $settingsProvider = $this->makeEmpty(SettingsProviderInterface::class, [
+            'getSettings' => static function (): array {
+                throw new NotFoundException('document', '/en/missing-error-page', 'path');
+            },
+        ]);
 
-        $this->expectException(DomainConfigurationException::class);
-
-        $service->sendInvitationMail($this->createUser(), self::INVITATION_URL);
+        $this->assertInstanceOf(MailService::class, $this->getService($settingsProvider));
     }
 
-    public function testSendInvitationMailDispatchesInvitationEvent(): void
+    /**
+     * @throws Exception
+     */
+    public function testMissingMainDomainIsStillReportedOnSend(): void
     {
-        $dispatcher = new EventDispatcher();
-        $dispatched = null;
-        $dispatcher->addListener(
-            InvitationEvent::EVENT_NAME,
-            static function (InvitationEvent $event) use (&$dispatched): void {
-                $dispatched = $event;
+        $settingsProvider = $this->createMock(SettingsProviderInterface::class);
+        $settingsProvider->expects($this->once())
+            ->method('getSettings')
+            ->willReturn(['main_domain' => '']);
+
+        $service = $this->getService($settingsProvider);
+
+        // resolved once, reported on every send
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            try {
+                $service->sendResetPasswordMail($this->createUser(), 'token');
+                $this->fail('Expected a DomainConfigurationException');
+            } catch (DomainConfigurationException $exception) {
+                $this->assertSame(500, $exception->getStatusCode());
             }
-        );
-
-        $service = $this->createService(dispatcher: $dispatcher);
-        $user = $this->createUser();
-
-        $service->sendInvitationMail($user, self::INVITATION_URL);
-
-        self::assertInstanceOf(InvitationEvent::class, $dispatched);
-        self::assertSame(self::INVITATION_URL, $dispatched->getInvitationUrl());
-        self::assertSame($user, $dispatched->getUser());
+        }
     }
 
-    public function testSendInvitationMailIsNotSentWhenTheEventStopsIt(): void
+    /**
+     * @throws Exception
+     */
+    public function testConfiguredMainDomainIsAppliedToTheRouterContext(): void
     {
-        $dispatcher = new EventDispatcher();
-        $dispatcher->addListener(
-            InvitationEvent::EVENT_NAME,
-            static function (InvitationEvent $event): void {
-                $event->setSendMail(false);
-            }
+        $context = new RequestContext();
+        $router = $this->makeEmpty(RouterInterface::class, ['getContext' => $context]);
+        $settingsProvider = $this->makeEmpty(SettingsProviderInterface::class, [
+            'getSettings' => ['main_domain' => 'studio.example.com'],
+        ]);
+
+        $this->getService($settingsProvider, $router)->sendResetPasswordMail(
+            $this->createUser(),
+            'token',
+            'https://studio.example.com/login?token=token'
         );
 
-        $mailWasRequested = false;
-        $mail = $this->makeEmpty(Mail::class);
-        $service = $this->createService(
-            dispatcher: $dispatcher,
-            onGetMail: static function () use (&$mailWasRequested, $mail): Mail {
-                $mailWasRequested = true;
-
-                return $mail;
-            }
-        );
-
-        $service->sendInvitationMail($this->createUser(), self::INVITATION_URL);
-
-        self::assertFalse($mailWasRequested, 'No mail may be built when the event stops the invitation.');
+        $this->assertSame('studio.example.com', $context->getHost());
     }
 
-    public function testSendInvitationMailBodyCarriesTheLink(): void
+    /**
+     * @throws Exception
+     */
+    public function testResetPasswordMailIsSentWithoutRenderingTheTextAsTemplate(): void
     {
         $text = null;
-        $mail = null;
-        // `use (&$mail)` resolves at call time, so the stub returns itself: Mail::text() and its
-        // siblings are declared `: static`, and handing back any other instance is a TypeError.
-        $mail = $this->makeEmpty(Mail::class, [
-            'text' => static function (string $body) use (&$text, &$mail): Mail {
+        $mail = $this->createMock(Mail::class);
+        $mail->method('text')->willReturnCallback(
+            static function (string $body) use (&$text, $mail): Mail {
                 $text = $body;
 
                 return $mail;
-            },
-        ]);
-        $service = $this->createService(
-            onGetMail: static fn (): Mail => $mail
+            }
         );
+        // send() compiles the text body as a Twig template, sendWithoutRendering() sends it as it is
+        $mail->expects($this->never())->method('send');
+        $mail->expects($this->once())->method('sendWithoutRendering')->willReturnSelf();
 
-        $service->sendInvitationMail($this->createUser(), self::INVITATION_URL);
+        $this->getSendingService($mail)->sendResetPasswordMail($this->createUser(), 'abc', self::TEMPLATE_URL);
 
-        self::assertIsString($text);
-        self::assertStringContainsString(self::INVITATION_URL, $text);
-        self::assertStringContainsString('24 hours', $text);
+        $this->assertIsString($text);
+        $this->assertStringEndsWith(self::TEMPLATE_URL, $text, 'The link must reach the mail unchanged.');
     }
 
-    public function testSendInvitationMailWrapsTransportFailures(): void
+    /**
+     * @throws Exception
+     */
+    public function testFailureToSendDoesNotExposeTheCauseInTheApiMessage(): void
     {
-        $mail = $this->makeEmpty(Mail::class, [
-            'send' => static function (): void {
-                throw new Exception('transport down');
-            },
-        ]);
-        $service = $this->createService(
-            onGetMail: static fn (): Mail => $mail
+        $cause = new RuntimeException('Route "secret-value-read-from-the-system" not found');
+        $mail = $this->createMock(Mail::class);
+        $mail->method('sendWithoutRendering')->willThrowException($cause);
+
+        try {
+            $this->getSendingService($mail)->sendResetPasswordMail($this->createUser(), 'abc', self::TEMPLATE_URL);
+            $this->fail('A SendMailException was expected.');
+        } catch (SendMailException $exception) {
+            $this->assertSame('Failed to send reset password mail', $exception->getMessage());
+            $this->assertStringNotContainsString('secret-value', $exception->getMessage());
+            $this->assertSame($cause, $exception->getPrevious(), 'The cause stays available for the log.');
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testInvitationMailIsSentWithoutRenderingTheTextAsTemplate(): void
+    {
+        $text = null;
+        $mail = $this->createMock(Mail::class);
+        $mail->method('text')->willReturnCallback(
+            static function (string $body) use (&$text, $mail): Mail {
+                $text = $body;
+
+                return $mail;
+            }
+        );
+        // send() compiles the text body as a Twig template, sendWithoutRendering() sends it as it is
+        $mail->expects($this->never())->method('send');
+        $mail->expects($this->once())->method('sendWithoutRendering')->willReturnSelf();
+
+        $this->getSendingService($mail)->sendInvitationMail($this->createUser(), self::TEMPLATE_URL);
+
+        $this->assertIsString($text);
+        $this->assertStringEndsWith(self::TEMPLATE_URL, $text, 'The link must reach the mail unchanged.');
+        $this->assertStringContainsString('24 hours', $text);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testInvitationMailNamesItsOwnOperationWhenSendingFails(): void
+    {
+        $cause = new RuntimeException('Route "secret-value-read-from-the-system" not found');
+        $mail = $this->createMock(Mail::class);
+        $mail->method('sendWithoutRendering')->willThrowException($cause);
+
+        try {
+            $this->getSendingService($mail)->sendInvitationMail($this->createUser(), self::TEMPLATE_URL);
+            $this->fail('A SendMailException was expected.');
+        } catch (SendMailException $exception) {
+            $this->assertSame('Failed to send invitation mail', $exception->getMessage());
+            $this->assertStringNotContainsString('secret-value', $exception->getMessage());
+            $this->assertSame($cause, $exception->getPrevious(), 'The cause stays available for the log.');
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testInvitationMailIsNotSentWhenTheEventStopsIt(): void
+    {
+        $mail = $this->createMock(Mail::class);
+        $mail->expects($this->never())->method('sendWithoutRendering');
+
+        $service = new MailService(
+            $this->makeEmpty(SettingsProviderInterface::class, [
+                'getSettings' => ['main_domain' => 'mysite.com'],
+            ]),
+            $this->makeEmpty(RouterInterface::class, ['getContext' => new RequestContext()]),
+            $this->makeEmpty(EventDispatcherInterface::class, [
+                'dispatch' => static fn (InvitationEvent $event): InvitationEvent => $event->setSendMail(false),
+            ]),
+            $this->makeEmpty(ToolResolverInterface::class, ['getMail' => $mail]),
+            'noreply@example.com',
         );
 
-        $this->expectException(SendMailException::class);
+        $service->sendInvitationMail($this->createUser(), self::TEMPLATE_URL);
+    }
 
-        $service->sendInvitationMail($this->createUser(), self::INVITATION_URL);
+    /**
+     * @throws Exception
+     */
+    public function testInvitationMailReportsAMissingMainDomain(): void
+    {
+        $service = $this->getService(
+            $this->makeEmpty(SettingsProviderInterface::class, ['getSettings' => ['main_domain' => '']])
+        );
+
+        $this->expectException(DomainConfigurationException::class);
+
+        $service->sendInvitationMail($this->createUser(), self::TEMPLATE_URL);
     }
 
     private function createUser(): User
     {
-        $user = new User();
-        $user->setName('testuser');
-        $user->setEmail('test@example.com');
-        $user->setActive(true);
-
-        return $user;
+        return (new User())->setEmail('user@example.com');
     }
 
-    private function createService(
-        string $mainDomain = 'mysite.com',
-        ?EventDispatcher $dispatcher = null,
-        ?callable $onGetMail = null,
+    /**
+     * @throws Exception
+     */
+    private function getService(
+        SettingsProviderInterface $settingsProvider,
+        ?RouterInterface $router = null
     ): MailService {
-        $defaultMail = $this->makeEmpty(Mail::class);
-        $onGetMail ??= static fn (): Mail => $defaultMail;
+        return new MailService(
+            $settingsProvider,
+            $router ?? $this->makeEmpty(RouterInterface::class, ['getContext' => new RequestContext()]),
+            $this->makeEmpty(EventDispatcherInterface::class, [
+                'dispatch' => static fn (LostPasswordEvent $event): LostPasswordEvent => $event->setSendMail(false),
+            ]),
+            $this->makeEmpty(ToolResolverInterface::class, ['getMail' => $this->makeEmpty(Mail::class)]),
+            'noreply@example.com',
+        );
+    }
 
+    /**
+     * A service whose event listener lets the mail go out, sending it through the given mail.
+     *
+     * @throws Exception
+     */
+    private function getSendingService(Mail $mail): MailService
+    {
         return new MailService(
             $this->makeEmpty(SettingsProviderInterface::class, [
-                'getSettings' => ['main_domain' => $mainDomain],
+                'getSettings' => ['main_domain' => 'mysite.com'],
             ]),
-            $this->makeEmpty(RouterInterface::class, [
-                'getContext' => new RequestContext(),
-                'generate' => 'https://mysite.com/generated',
+            $this->makeEmpty(RouterInterface::class, ['getContext' => new RequestContext()]),
+            $this->makeEmpty(EventDispatcherInterface::class, [
+                'dispatch' => static fn (object $event): object => $event,
             ]),
-            $dispatcher ?? new EventDispatcher(),
-            $this->makeEmpty(ToolResolverInterface::class, [
-                'getHostname' => 'mysite.com',
-                'getMail' => $onGetMail,
-            ]),
-            'noreply@mysite.com',
+            $this->makeEmpty(ToolResolverInterface::class, ['getMail' => $mail]),
+            'noreply@example.com',
         );
     }
 }

@@ -55,7 +55,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
      */
     public function updateUserById(UpdateUserParameter $updateUserParameter, int $userId): void
     {
-        $user = $this->userRepository->getUserById($userId);
+        $user = $this->userRepository->getPersonById($userId);
 
         if ($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
             throw new ForbiddenException('Only admin can update admin user');
@@ -63,6 +63,11 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
 
         if ($this->securityService->getCurrentUser()->isAdmin()) {
             $user->setAdmin($updateUserParameter->isAdmin());
+        }
+
+        // a changed email allows taking over the account through the password reset: admin only for other users
+        if ($updateUserParameter->getEmail() !== $user->getEmail()) {
+            $this->denyForNonAdminUnlessOwnAccount($user, 'Only admin can change the email of another user');
         }
 
         $user->setEmail($updateUserParameter->getEmail());
@@ -86,6 +91,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         if ($user instanceof User) {
             $user->setDatetimeLocale($updateUserParameter->getDatetimeLocale());
             $user->setTheme($updateUserParameter->getTheme());
+            $this->updateWelcomeScreenTarget($user, $updateUserParameter->getWelcomeScreenTarget());
         }
 
         $user = $this->updateService->updatePermissions($updateUserParameter->getPermissions(), $user);
@@ -122,6 +128,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         $user->setKeyBindings(
             $this->getKeyBindingsString($params->getKeyBindings())
         );
+        $this->updateWelcomeScreenTarget($user, $params->getWelcomeScreenTarget());
 
         $this->userRepository->updateUser($user);
     }
@@ -131,7 +138,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
      */
     public function updatePasswordById(UpdatePasswordParameter $updateParameter, int $userId): void
     {
-        $user = $this->userRepository->getUserById($userId);
+        $user = $this->userRepository->getPersonById($userId);
 
         if ($user->getName() === 'system') {
             throw new ForbiddenException('System user password cannot be changed');
@@ -140,6 +147,9 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         if ($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
             throw new ForbiddenException('Only admin can update admin user');
         }
+
+        // setting a password allows logging in as that user: admin only for other users
+        $this->denyForNonAdminUnlessOwnAccount($user, 'Only admin can change the password of another user');
 
         if ($updateParameter->getPassword() !== $updateParameter->getPasswordConfirmation()) {
             throw new InvalidArgumentException('Passwords do not match');
@@ -171,6 +181,26 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
     {
         $user = $this->securityService->getCurrentUser();
         $this->userPerspectiveService->updateActivePerspective($perspectiveId, $user);
+    }
+
+    private function updateWelcomeScreenTarget(User $user, ?string $welcomeScreenTarget): void
+    {
+        // an omitted field arrives as null and keeps the stored target
+        if ($welcomeScreenTarget !== null) {
+            $user->setWelcomeScreenTarget($welcomeScreenTarget === '' ? null : $welcomeScreenTarget);
+        }
+    }
+
+    /**
+     * @throws ForbiddenException
+     */
+    private function denyForNonAdminUnlessOwnAccount(UserInterface $target, string $message): void
+    {
+        $currentUser = $this->securityService->getCurrentUser();
+
+        if (!$currentUser->isAdmin() && $currentUser->getId() !== $target->getId()) {
+            throw new ForbiddenException($message);
+        }
     }
 
     /**

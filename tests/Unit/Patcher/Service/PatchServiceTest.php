@@ -15,6 +15,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Patcher\Service;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorService;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
@@ -23,13 +28,22 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\PatchFolderParameter;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContext;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\AdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\SubTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
+use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version\CoauthorContext;
@@ -49,11 +63,14 @@ final class PatchServiceTest extends Unit
 
     private CoauthorContext $coauthorContext;
 
+    private McpCallContext $mcpCallContext;
+
     protected function _before(): void
     {
         $this->element = $this->makeEmpty(Asset::class);
         $this->user = $this->makeEmpty(UserInterface::class);
         $this->coauthorContext = new CoauthorContext();
+        $this->mcpCallContext = new McpCallContext();
     }
 
     public function testPatchRejectsAnEmptyList(): void
@@ -89,6 +106,80 @@ final class PatchServiceTest extends Unit
         );
     }
 
+    public function testPatchInsideMcpCallIgnoresPayloadCoauthorAndKeepsTheMcpCoauthor(): void
+    {
+        $captured = [];
+        $service = $this->createService(function () use (&$captured): void {
+            $captured[] = [$this->coauthorContext->getType(), $this->coauthorContext->getCoauthor()];
+        });
+
+        $this->coauthorContext->withCoauthor('mcp-server', 'pme-test', function () use ($service): void {
+            $this->mcpCallContext->run(fn () => $service->patchElement($this->element, ElementTypes::TYPE_ASSET, [
+                'coauthorType' => 'agent',
+                'coauthor' => 'claimed-by-the-payload',
+            ], $this->user));
+        });
+
+        $this->assertSame([['mcp-server', 'pme-test']], $captured);
+    }
+
+    public function testAsyncBatchPatchInsideMcpCallDropsThePayloadCoauthorBeforeTheWorkerSeesIt(): void
+    {
+        $job = null;
+        $service = $this->createService(static fn () => null, jobCapture: $job);
+
+        $this->mcpCallContext->run(fn () => $service->patch(ElementTypes::TYPE_ASSET, [
+            ['id' => 1, 'coauthorType' => 'agent', 'coauthor' => 'claimed', 'key' => 'a'],
+            ['id' => 2, 'key' => 'b'],
+        ], $this->user));
+
+        $this->assertInstanceOf(Job::class, $job);
+        $this->assertSame([1 => ['id' => 1, 'key' => 'a'], 2 => ['id' => 2, 'key' => 'b']], $job->getEnvironmentData());
+    }
+
+    public function testAsyncBatchPatchOutsideMcpKeepsThePayloadCoauthor(): void
+    {
+        $job = null;
+        $service = $this->createService(static fn () => null, jobCapture: $job);
+
+        $service->patch(ElementTypes::TYPE_ASSET, [
+            ['id' => 1, 'coauthorType' => 'agent', 'coauthor' => 'claimed'],
+            ['id' => 2],
+        ], $this->user);
+
+        $this->assertSame('claimed', $job->getEnvironmentData()[1]['coauthor']);
+    }
+
+    public function testFolderPatchInsideMcpCallDropsThePayloadCoauthorBeforeTheWorkerSeesIt(): void
+    {
+        $job = null;
+        $service = $this->createService(static fn () => null, jobCapture: $job);
+
+        $this->mcpCallContext->run(fn () => $service->patchFolder(
+            5,
+            ElementTypes::TYPE_ASSET,
+            new PatchFolderParameter(['coauthorType' => 'agent', 'coauthor' => 'claimed', 'key' => 'a'], null),
+            $this->user
+        ));
+
+        $this->assertSame([5 => ['key' => 'a']], $job->getEnvironmentData());
+    }
+
+    public function testPatchInsideMcpCallWithoutStampSavesWithoutCoauthor(): void
+    {
+        $captured = [];
+        $service = $this->createService(function () use (&$captured): void {
+            $captured[] = $this->coauthorContext->isActive();
+        });
+
+        $this->mcpCallContext->run(fn () => $service->patchElement($this->element, ElementTypes::TYPE_ASSET, [
+            'coauthorType' => 'agent',
+            'coauthor' => 'claimed-by-the-payload',
+        ], $this->user));
+
+        $this->assertSame([false], $captured);
+    }
+
     public function testPatchActivatesCoauthorContextDuringSaveAndRestoresAfter(): void
     {
         $captured = [];
@@ -112,6 +203,62 @@ final class PatchServiceTest extends Unit
         $this->assertFalse($this->coauthorContext->isActive());
         $this->assertNull($this->coauthorContext->getType());
         $this->assertNull($this->coauthorContext->getCoauthor());
+    }
+
+    /**
+     * An auto-save must not write the owners of a reverse relation; an explicit save (also Save draft) does.
+     *
+     * @dataProvider remoteChangeTasksProvider
+     */
+    public function testPatchAppliesRemoteChangesOnlyForExplicitSaves(?string $task, bool $expectedApplied): void
+    {
+        $applied = 0;
+        $adapter = new class($applied) implements SetterDataInterface, RemoteStorageDataInterface {
+            public function __construct(private int &$calls)
+            {
+            }
+
+            public function getDataForSetter(
+                Concrete $element,
+                Data $fieldDefinition,
+                string $key,
+                array $data,
+                UserInterface $user,
+                ?FieldContextData $contextData = null,
+                bool $isPatch = false
+            ): null {
+                $this->calls++;
+
+                return null;
+            }
+        };
+        $class = (new ClassDefinition())->setId('test')->addFieldDefinition('owners', (new Input())->setName('owners'));
+        $object = $this->makeEmpty(Concrete::class, ['getId' => 1, 'getClass' => $class]);
+        $service = $this->createService(
+            static fn () => null,
+            $this->makeEmpty(DataAdapterServiceInterface::class, ['tryDataAdapter' => $adapter])
+        );
+
+        $patch = ['editableData' => ['owners' => [['id' => 7]]]];
+        if ($task !== null) {
+            $patch['task'] = $task;
+        }
+        $service->patchElement($object, ElementTypes::TYPE_OBJECT, $patch, $this->user);
+
+        $this->assertSame($expectedApplied ? 1 : 0, $applied);
+    }
+
+    public static function remoteChangeTasksProvider(): array
+    {
+        return [
+            'autoSave' => [ElementSaveTasks::AUTOSAVE->value, false],
+            'unknown task' => ['draft', false],
+            'version' => [ElementSaveTasks::VERSION->value, true],
+            'save' => [ElementSaveTasks::SAVE->value, true],
+            'publish' => [ElementSaveTasks::PUBLISH->value, true],
+            'unpublish' => [ElementSaveTasks::UNPUBLISH->value, true],
+            'no task' => [null, true],
+        ];
     }
 
     public function testPatchWithoutCoauthorKeysNeverActivatesContext(): void
@@ -184,6 +331,30 @@ final class PatchServiceTest extends Unit
         $this->expectExceptionMessage('field is mandatory');
 
         $service->patchElement($this->element, ElementTypes::TYPE_ASSET, [], $this->user);
+    }
+
+    /**
+     * The sibling of the case above, on the same boundary: a refusal that already carries its own
+     * status and error key - which is how the Classification Store refuses a value the key's
+     * declaration does not permit - reaches the client as that, and is not masked as a 500 with the
+     * generic error key.
+     */
+    public function testPatchKeepsTheStatusAndErrorKeyOfAValidationRefusal(): void
+    {
+        $service = $this->createService(static function (): void {
+            throw new InvalidArgumentException(
+                'The value names a variant the key does not declare.',
+                errorKey: HttpResponseErrorKeys::UNDECLARED_VARIANT->value
+            );
+        });
+
+        try {
+            $service->patchElement($this->element, ElementTypes::TYPE_ASSET, [], $this->user);
+            $this->fail('Expected the refusal to reach the caller');
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(HttpResponseCodes::UNPROCESSABLE_CONTENT->value, $exception->getStatusCode());
+            $this->assertSame(HttpResponseErrorKeys::UNDECLARED_VARIANT->value, $exception->getErrorKey());
+        }
     }
 
     public function testPatchRestoresOuterContextWhenSaveThrows(): void
@@ -504,21 +675,30 @@ final class PatchServiceTest extends Unit
         return array_map(static fn (array $item) => [$item['id'], $item['type']], $items);
     }
 
-    private function createService(callable $onSave): PatchService
-    {
+    private function createService(
+        callable $onSave,
+        ?DataAdapterServiceInterface $dataAdapterService = null,
+        ?Job &$jobCapture = null,
+    ): PatchService {
         return new PatchService(
             adapterLoader: $this->makeEmpty(AdapterLoaderInterface::class, [
                 'loadAdapters' => [],
             ]),
-            dataAdapterService: $this->makeEmpty(DataAdapterServiceInterface::class),
+            dataAdapterService: $dataAdapterService ?? $this->makeEmpty(DataAdapterServiceInterface::class),
             elementService: $this->makeEmpty(ElementServiceInterface::class),
-            jobExecutionAgent: $this->makeEmpty(JobExecutionAgentInterface::class),
+            jobExecutionAgent: $this->makeEmpty(JobExecutionAgentInterface::class, [
+                'startJobExecution' => function (Job $job) use (&$jobCapture): JobRun {
+                    $jobCapture = $job;
+
+                    return $this->makeEmpty(JobRun::class, ['getId' => 7]);
+                },
+            ]),
             indexService: $this->makeEmpty(ElementIndexServiceInterface::class),
             elementSaveService: $this->makeEmpty(ElementSaveServiceInterface::class, [
                 'save' => $onSave,
             ]),
             securityService: $this->makeEmpty(SecurityServiceInterface::class),
-            coauthorService: new CoauthorService($this->coauthorContext),
+            coauthorService: new CoauthorService($this->coauthorContext, $this->mcpCallContext),
         );
     }
 }

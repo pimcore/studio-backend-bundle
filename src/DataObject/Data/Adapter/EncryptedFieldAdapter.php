@@ -116,17 +116,27 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface, DataN
         string $key,
         ?FieldContextData $contextData = null
     ): string {
-        $data = $this->getValidFieldValue($object, $key, $contextData);
+        $data = $this->getContextExportValue($object, $key, $contextData);
 
         if (!$data instanceof EncryptedField || !$fieldDefinition instanceof EncryptedFieldDefinition) {
             return '';
         }
 
+        $delegate = $fieldDefinition->getDelegateDatatypeDefinition();
+        if (!$delegate instanceof Data) {
+            return '';
+        }
+
         return $this->dataService->getExportFieldValue(
             $object,
-            $fieldDefinition->getDelegate(),
-            $data->getPlain(),
-            new FieldContextData(legacyParameters: ['injectedData' => $data])
+            $delegate,
+            $key,
+            new FieldContextData(
+                legacyParameters: [
+                    ...($contextData?->getLegacyParameters() ?? []),
+                    'injectedData' => $data->getPlain(),
+                ]
+            )
         );
     }
 }

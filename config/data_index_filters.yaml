@@ -38,6 +38,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\PqlFilter:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\EmptyFilter:
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
+
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\UserFilter:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
@@ -107,6 +110,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\RelationFilter:
       tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\UnfilterableKeyGuard:
+    tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\StringFilter:
     tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]

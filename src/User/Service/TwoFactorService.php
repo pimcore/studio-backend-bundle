@@ -107,6 +107,8 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
                 throw new ForbiddenException('Two-factor authentication is not completed.');
             }
 
+            // The login asks for a code only while required, so a setup the user made themselves requires it too.
+            $user->setTwoFactorAuthentication('required', true);
             $user->setTwoFactorAuthentication('enabled', true);
             $user->setTwoFactorAuthentication('type', self::TYPE_GOOGLE);
             $user->setTwoFactorAuthentication('secret', $secret);
@@ -132,7 +134,7 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
     public function resetForUser(int $userId): void
     {
         $currentUser = $this->securityService->getCurrentUser();
-        $user = $this->userRepository->getUserById($userId);
+        $user = $this->userRepository->getPersonById($userId);
 
         // Admins reset anyone; everyone else with user management only themselves.
         if (!$currentUser->isAdmin() && $currentUser->getId() !== $user->getId()) {

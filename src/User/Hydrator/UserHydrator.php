@@ -89,6 +89,7 @@ final readonly class UserHydrator implements UserHydratorInterface
             documentWorkspaces: $this->workspaceHydrator->hydrateDocumentWorkspace($user),
             objectDependencies: $objectDependencies,
             perspectives: $this->userPerspectiveService->getConfigPerspectives($user),
+            welcomeScreenTarget: $user instanceof User ? $user->getWelcomeScreenTarget() : null,
         );
     }
 }

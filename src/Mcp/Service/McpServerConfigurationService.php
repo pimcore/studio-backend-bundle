@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Schema\McpServerUserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerCapability;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository\ServiceUserRepositoryInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use function rtrim;
 use function sprintf;
@@ -48,6 +49,7 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
         private McpServerAccessResolverInterface $accessResolver,
         private SecurityServiceInterface $securityService,
         private UserResolverInterface $userResolver,
+        private ServiceUserRepositoryInterface $serviceUserRepository,
         private ?string $issuer,
     ) {
     }
@@ -197,10 +199,28 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
                 continue;
             }
 
-            $entries[] = $this->enforceImplicitEdit($entry, $owner);
+            $entries[] = $this->enforceAccessOnlyForServiceUsers($this->enforceImplicitEdit($entry, $owner));
         }
 
         return $entries;
+    }
+
+    /**
+     * A service user cannot open Studio, so Config Read and Config Edit are meaningless for it.
+     * Those two are stored as false whatever the client sent; Access is kept as sent.
+     */
+    private function enforceAccessOnlyForServiceUsers(McpServerAccessEntry $entry): McpServerAccessEntry
+    {
+        if (!$this->serviceUserRepository->isServiceUserName($entry->name)) {
+            return $entry;
+        }
+
+        return new McpServerAccessEntry(
+            $entry->name,
+            canRead: false,
+            canAccess: $entry->canAccess,
+            canEdit: false,
+        );
     }
 
     /**
@@ -229,6 +249,11 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
      */
     private function isImplicitEditor(string $name, ?string $owner): bool
     {
+        // A service user is never an implicit editor, not even when its name equals the owner.
+        if ($this->serviceUserRepository->isServiceUserName($name)) {
+            return false;
+        }
+
         if ($owner !== null && $owner !== '' && $name === $owner) {
             return true;
         }

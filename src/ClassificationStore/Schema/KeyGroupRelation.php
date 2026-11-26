@@ -47,6 +47,43 @@ final class KeyGroupRelation implements AdditionalAttributesInterface
         private readonly ?string $keyDescription,
         #[Property(description: 'Key Description', type: 'string', example: 'value', nullable: true)]
         private readonly ?string $groupDescription,
+        #[Property(
+            description: 'Per-language flag as the key stores it; null defers to the class definition field',
+            type: 'boolean',
+            example: true,
+            nullable: true
+        )]
+        private readonly ?bool $localized = null,
+        #[Property(
+            description: 'Data type of the key, as the relation stores it; null where the relation states none',
+            type: 'string',
+            example: 'input',
+            nullable: true
+        )]
+        private readonly ?string $keyType = null,
+        #[Property(
+            description: 'Whether a grid filter can be applied to this key',
+            type: 'boolean',
+            example: true,
+            nullable: true
+        )]
+        private readonly ?bool $filterable = null,
+        #[Property(
+            description: 'Why the key cannot be filtered:'
+                . ' indexExcluded, typeUnsupported or resolutionFailed; null otherwise',
+            type: 'string',
+            example: 'indexExcluded',
+            nullable: true
+        )]
+        private readonly ?string $filterUnavailableReason = null,
+        #[Property(
+            description: 'Resolved label of the key in the label language, falling back to its name;'
+                . ' null where the key configuration is gone',
+            type: 'string',
+            example: 'Height',
+            nullable: true
+        )]
+        private readonly ?string $keyTitle = null,
     ) {
     }
 
@@ -78,5 +115,30 @@ final class KeyGroupRelation implements AdditionalAttributesInterface
     public function getGroupDescription(): ?string
     {
         return $this->groupDescription;
+    }
+
+    public function getLocalized(): ?bool
+    {
+        return $this->localized;
+    }
+
+    public function getKeyType(): ?string
+    {
+        return $this->keyType;
+    }
+
+    public function getFilterable(): ?bool
+    {
+        return $this->filterable;
+    }
+
+    public function getFilterUnavailableReason(): ?string
+    {
+        return $this->filterUnavailableReason;
+    }
+
+    public function getKeyTitle(): ?string
+    {
+        return $this->keyTitle;
     }
 }

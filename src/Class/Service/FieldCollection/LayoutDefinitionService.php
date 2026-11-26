@@ -15,9 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\FieldCollection\DefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection\ConfigLayoutDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection\LayoutDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ConfigLayoutDefinitionHydratorInterface;
@@ -25,8 +25,13 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefi
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\FieldCollectionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConfigLayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricherInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\DataObject\ClassDefinitionInterface;
@@ -39,8 +44,12 @@ use function sprintf;
  */
 final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
 {
+    use ElementProviderTrait;
+    use ElementViewPermissionTrait;
+
     public function __construct(
-        private readonly DataObjectResolverInterface $dataObjectResolver,
+        private readonly ServiceResolverInterface $serviceResolver,
+        private readonly SecurityServiceInterface $securityService,
         private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly DefinitionResolverInterface $definitionResolver,
@@ -48,6 +57,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
         private readonly LayoutDefinitionHydratorInterface $layoutDefinitionHydrator,
         private readonly ConfigLayoutDefinitionHydratorInterface $configLayoutDefinitionHydrator,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly ActiveGroupTitleEnricherInterface $activeGroupTitleEnricher,
     ) {
     }
 
@@ -58,7 +68,12 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
      */
     public function getLayoutDefinitionsForObject(int $dataObjectId): array
     {
-        $dataObject = $this->dataObjectResolver->getById($dataObjectId);
+        $this->assertElementViewPermission(
+            ElementTypes::TYPE_OBJECT,
+            $dataObjectId,
+            $this->securityService->getCurrentUser()
+        );
+        $dataObject = $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $dataObjectId);
 
         if (!$dataObject instanceof Concrete) {
             throw new InvalidElementTypeException(
@@ -112,6 +127,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
         }
         $layoutDefinitions = $definition->getLayoutDefinitions();
         $this->dataObjectServiceResolver->enrichLayoutDefinition($layoutDefinitions, $dataObject);
+        $this->activeGroupTitleEnricher->enrich($layoutDefinitions);
         $layoutDefinition = $this->layoutDefinitionHydrator->hydrate($definition);
 
         $this->eventDispatcher->dispatch(

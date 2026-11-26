@@ -46,8 +46,12 @@ enum Config: string
     case XLSX_CREATION_FAILED_MESSAGE = 'studio_ee_xlsx_creation_failed';
     case RECYCLE_BIN_DELETE_FAILED = 'studio_ee_recycle_bin_delete_failed';
     case RECYCLE_BIN_RESTORE_FAILED = 'studio_ee_recycle_bin_restore_failed';
+    case RECYCLE_BIN_RESTORE_RELOCATED = 'studio_ee_recycle_bin_restore_relocated';
     case ELEMENT_REPLACE_ASSIGNMENT_FAILED = 'studio_ee_element_replace_assignment_failed';
     case BULK_IMPORT_FAILED_MESSAGE = 'studio_ee_bulk_import_failed';
     case OWNERSHIP_MANAGEMENT_REASSIGN_FAILED = 'studio_ee_ownership_management_reassign_failed';
     case OWNERSHIP_MANAGEMENT_DELETE_FAILED = 'studio_ee_ownership_management_delete_failed';
+    case INDEX_SYNC_FAILED = 'studio_ee_index_sync_failed';
+    case INDEX_SYNC_ALREADY_RUNNING = 'studio_ee_index_sync_already_running';
+    case INDEX_SYNC_PERMISSION_MISSING = 'studio_ee_index_sync_permission_missing';
 }

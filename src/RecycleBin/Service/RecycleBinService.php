@@ -14,23 +14,22 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service;
 
 use Exception;
-use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\RecycleBin\ItemResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
-use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ItemsParameter;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Event\PreResponse\RecycleBinEvent;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Event\PreResponse\RelocatedItemEvent;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Messages\DeleteItemsMessage;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RecycleBinHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Model\RestoreResult;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Repository\RecycleBinRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Schema\RecycleBin;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\Element\Recyclebin as ElementRecycleBin;
 use Pimcore\Model\Element\Recyclebin\Item;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -48,13 +47,15 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
         private JobServiceInterface $jobService,
         private RecycleBinHydratorInterface $hydrator,
         private RecycleBinRepositoryInterface $recycleBinRepository,
-        private SynchronousProcessingServiceInterface $synchronousProcessing
+        private RestoreItemServiceInterface $restoreItemService,
     ) {
     }
 
     public function listRecycleBin(CollectionFilterParameter $parameters): Collection
     {
-        $listing = $this->recycleBinRepository->getListing($this->getFilterParameters($parameters));
+        $listing = $this->recycleBinRepository->getListing(
+            $this->filterMapper->getFilterParameters($parameters)
+        );
         $items = $listing->load();
         $list = [];
 
@@ -71,18 +72,24 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
     /**
      * {@inheritdoc}
      */
-    public function restore(ItemsParameter $parameter): ?int
+    public function restore(ItemsParameter $parameter): RestoreResult
     {
         $items = $parameter->getItems();
         if (count($items) === 1) {
-            $this->restoreItem($items[0]);
+            $relocatedItems = $this->restoreItemService->restoreItem($items[0]);
+            foreach ($relocatedItems as $relocatedItem) {
+                $this->eventDispatcher->dispatch(
+                    new RelocatedItemEvent($relocatedItem),
+                    RelocatedItemEvent::EVENT_NAME
+                );
+            }
 
-            return null;
+            return new RestoreResult(relocatedItems: $relocatedItems);
         }
 
         $sortedIds = $this->recycleBinRepository->getItemIdsSortedByPath($items);
 
-        return $this->jobService->createRestoreJob($sortedIds);
+        return new RestoreResult(jobRunId: $this->jobService->createRestoreJob($sortedIds));
     }
 
     /**
@@ -116,26 +123,7 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
      */
     public function restoreItem(int $id): void
     {
-        $syncProcessingEnabled = $this->synchronousProcessing->isEnabled();
-        $item = $this->itemResolver->getById($id);
-        if (!$item instanceof Item) {
-            throw new NotFoundException('recycle bin item', $id);
-        }
-
-        try {
-            $this->synchronousProcessing->enable();
-            $item->restore();
-        } catch (Exception $e) {
-            $errorKey = HttpResponseErrorKeys::RECYCLE_BIN_RESTORE;
-            if (str_contains($e->getMessage(), 'ParentID is mandatory and can´t be null')) {
-                $errorKey = HttpResponseErrorKeys::RECYCLE_BIN_RESTORE_MISSING_PARENT;
-            }
-
-            throw new EnvironmentException($e->getMessage(), $errorKey->value, $e);
-        } finally {
-            $syncProcessingEnabled ? $this->synchronousProcessing->enable() :
-            $this->synchronousProcessing->disable();
-        }
+        $this->restoreItemService->restoreItem($id);
     }
 
     /**
@@ -164,15 +152,5 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
         );
 
         return $entry;
-    }
-
-    private function getFilterParameters(CollectionFilterParameter $parameters): FilterParameter
-    {
-        $filterParameters = new FilterParameter();
-        if ($parameters->getFilters()) {
-            $filterParameters = $this->filterMapper->map($parameters);
-        }
-
-        return $filterParameters;
     }
 }

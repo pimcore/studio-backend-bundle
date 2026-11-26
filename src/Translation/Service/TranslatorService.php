@@ -189,11 +189,13 @@ final readonly class TranslatorService implements TranslatorServiceInterface
     public function listTranslations(string $domain, CollectionFilterParameter $parameter): Collection
     {
         $translations = [];
+        $allowedLanguages = $this->getAllowedLanguages($domain);
         $list = $this->getTranslationList($domain, $parameter);
         foreach ($list->getTranslations() as $translation) {
+            // The core listing ignores the requested languages for the admin domain and returns every language.
             $translation = $this->translationsHydrator->hydrate(
                 $translation
-            );
+            )->withLanguages($allowedLanguages);
 
             $this->eventDispatcher->dispatch(
                 new TranslationsEvent($translation),
@@ -211,10 +213,7 @@ final readonly class TranslatorService implements TranslatorServiceInterface
 
     public function getTranslationList(string $domain, CollectionFilterParameter $parameter): Listing
     {
-        $validLanguages = $this->languageService->getTranslationAllowedLanguages(
-            $this->securityService->getCurrentUser(),
-            $domain
-        );
+        $validLanguages = $this->getAllowedLanguages($domain);
 
         $list = $this->translationRepository->getTranslationList($domain);
         $list->setLanguages($validLanguages);
@@ -262,6 +261,17 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         }
 
         return $this->translationRepository->qualifyMainTableOrderKeys($list);
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getAllowedLanguages(string $domain): array
+    {
+        return $this->languageService->getTranslationAllowedLanguages(
+            $this->securityService->getCurrentUser(),
+            $domain
+        );
     }
 
     private function getTranslatorBag(): TranslatorBagInterface

@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configur
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\AbsentValue;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 
 /**
@@ -36,9 +37,17 @@ final readonly class KeyCreate
         private string $name,
         #[Property(description: 'ID of the store this key belongs to', type: 'integer', example: 1)]
         private int $storeId,
+        #[Property(description: 'Title of the key', type: 'string', example: 'My Key Title', nullable: true)]
+        private ?string $title = null,
+        // only refused here, never a property of this schema; the default stands for an absent key
+        mixed $identifier = AbsentValue::ABSENT,
     ) {
         if (empty($this->name)) {
             throw new InvalidArgumentException('Name cannot be empty.');
+        }
+
+        if ($identifier !== AbsentValue::ABSENT) {
+            throw new InvalidArgumentException('Identifier is assigned by the system and cannot be set.');
         }
     }
 
@@ -50,5 +59,10 @@ final readonly class KeyCreate
     public function getStoreId(): int
     {
         return $this->storeId;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
     }
 }

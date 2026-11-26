@@ -18,6 +18,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Utils\Enums\SelectionProcessingMode;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
@@ -27,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
@@ -41,6 +43,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\FieldKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
@@ -134,7 +137,7 @@ final readonly class PatchService implements PatchServiceInterface
                 ),
             ],
             [new ElementDescriptor($elementType, $folderId)],
-            [$folderId => $patchFolderParameter->getData()],
+            [$folderId => $this->coauthorService->withoutPayloadCoauthorInMcpCall($patchFolderParameter->getData())],
         );
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(
@@ -172,7 +175,10 @@ final readonly class PatchService implements PatchServiceInterface
                 $this->patchEditableData(
                     $element,
                     $elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY],
-                    $user
+                    $user,
+                    ElementSaveTasks::appliesRemoteChanges(
+                        $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null
+                    )
                 );
 
                 unset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]);
@@ -200,12 +206,18 @@ final readonly class PatchService implements PatchServiceInterface
             throw new ElementExistsException(
                 message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())
             );
-        } catch (ForbiddenException $exception) {
-            throw $exception;
         } catch (ValidationException $exception) {
             throw new FieldValidationFailedException($exception->getMessage(), previous: $exception);
+        } catch (AbstractApiException $exception) {
+            // the sibling of the PUT boundary
+            // ({@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataService::updateEditableData()}):
+            // an exception already carrying its own status and error key is the answer and is not
+            // masked as a 500. This is what the ForbiddenException clause here did, widened to
+            // every such exception so a PATCH refusing a Classification Store value answers the
+            // 422 and the error key the refusal states rather than a generic saving failure.
+            throw $exception;
         } catch (Exception $exception) {
-            throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
+            throw new ElementSavingFailedException($element->getId(), $exception->getMessage(), previous: $exception);
         }
     }
 
@@ -241,8 +253,12 @@ final readonly class PatchService implements PatchServiceInterface
     /**
      * @throws Exception
      */
-    private function patchEditableData(Concrete $element, array $data, UserInterface $user): void
-    {
+    private function patchEditableData(
+        Concrete $element,
+        array $data,
+        UserInterface $user,
+        bool $applyRemoteChanges
+    ): void {
         $class = $element->getClass();
         foreach ($data as $key => $value) {
             $fieldDefinition = $class->getFieldDefinition($key);
@@ -252,6 +268,10 @@ final readonly class PatchService implements PatchServiceInterface
 
             $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldtype());
             if ($adapter === null) {
+                continue;
+            }
+
+            if (!$applyRemoteChanges && $adapter instanceof RemoteStorageDataInterface) {
                 continue;
             }
 
@@ -406,7 +426,12 @@ final readonly class PatchService implements PatchServiceInterface
                 ),
                 $patchData
             ),
-            environmentData: array_column($patchData, null, 'id'),
+            // The worker runs outside the MCP call: a coauthor claimed in the payload must not reach it.
+            environmentData: array_column(
+                array_map($this->coauthorService->withoutPayloadCoauthorInMcpCall(...), $patchData),
+                null,
+                'id'
+            ),
         );
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(

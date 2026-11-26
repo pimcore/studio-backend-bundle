@@ -83,7 +83,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
             $user
         );
 
-        $columnCollection = $this->gridService->getConfigurationForExport($columns, $columnsDefinitions);
+        $columnCollection = $this->gridService->getConfigurationForExport($columns, $columnsDefinitions, $classId);
 
         $data = [];
         $jobStepName = $this->getJobStep($message)->getName();

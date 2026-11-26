@@ -1,0 +1,205 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer;
+
+use Closure;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\ImportReport;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexRemapTriggerInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
+use function ctype_digit;
+use function implode;
+use function sprintf;
+
+/**
+ * @internal
+ */
+final readonly class StoreTransferService implements StoreTransferServiceInterface
+{
+    private const string NOT_FOUND_TYPE = 'store configuration';
+
+    /**
+     * The command a store is brought up to a full set of identifiers with, which is what an export
+     * needs and what the refusal below points at.
+     */
+    private const string BACKFILL_COMMAND = 'pimcore:classificationstore:backfill-identifiers';
+
+    public function __construct(
+        private ArtifactBuilderInterface $artifactBuilder,
+        private ArtifactDuplicatorInterface $artifactDuplicator,
+        private ArtifactParserInterface $artifactParser,
+        private KeyRelationResolverInterface $keyRelationResolver,
+        private ReconcilerInterface $reconciler,
+        private SearchIndexRemapTriggerInterface $searchIndexRemapTrigger,
+        private StoreRepositoryInterface $storeRepository,
+    ) {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function exportStore(int $storeId): iterable
+    {
+        $store = $this->storeRepository->getById($storeId);
+        $withoutIdentifier = $this->storeRepository->findEntitiesWithoutIdentifier($storeId);
+
+        if ($withoutIdentifier !== []) {
+            throw new ConflictException($this->describeIdentifierGaps($withoutIdentifier));
+        }
+
+        return $this->artifactBuilder->stream($store);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function resolveStore(string $reference): StoreConfig
+    {
+        $store = $this->storeRepository->getByIdentifier($reference);
+
+        if ($store !== null) {
+            return $store;
+        }
+
+        if (ctype_digit($reference)) {
+            return $this->storeRepository->getById((int) $reference);
+        }
+
+        throw new NotFoundException(self::NOT_FOUND_TYPE, $reference, 'identifier');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function importStore(int $storeId, string $json, bool $dryRun = false): ImportReport
+    {
+        $store = $this->storeRepository->getById($storeId);
+        $document = $this->artifactParser->parse($json);
+        $replace = $this->describesAnotherStore($store, $document);
+
+        if ($replace) {
+            $document = $this->artifactDuplicator->duplicate($document);
+        }
+
+        try {
+            $report = $this->reconciler->apply($document, $store, $dryRun, $replace);
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
+
+        if ($report->hasConflicts()) {
+            // the notes are not touched here: whether the keys this apply wrote are gone is known
+            // to the apply alone, which takes back what it rolled back and nothing a writer before
+            // it in this request left ({@see ReconcilerInterface::apply()})
+            throw new ConflictException(
+                'The configuration was not applied: ' . implode('; ', $report->getNamed(ApplyOutcome::CONFLICT))
+            );
+        }
+
+        // one remap for the whole apply, handed over only now its transaction has committed
+        $this->searchIndexRemapTrigger->flush();
+
+        return $this->buildImportReport($report, $replace);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function applyArtifact(string $json, bool $dryRun, ?Closure $onDecision = null): ApplyReport
+    {
+        $document = $this->artifactParser->parse($json);
+        $store = $this->storeRepository->getByIdentifier($document->getStoreIdentifier());
+
+        try {
+            $report = $this->reconciler->apply($document, $store, $dryRun, false, $onDecision);
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
+
+        if ($report->hasConflicts()) {
+            // as above: the refused apply has already taken back the notes of the writes it rolled
+            // back, and a note it did not take is not this method's to drop
+            return $report;
+        }
+
+        // a dry run writes no key, so it notes nothing and this hands nothing over
+        $this->searchIndexRemapTrigger->flush();
+
+        return $report;
+    }
+
+    /**
+     * Whether the file is a configuration of somewhere else, which is what makes the import a
+     * duplicate rather than a restore.
+     *
+     * A store that carries an identifier answers for itself. A store that carries none can still be
+     * the one the file is about - that is the adoption the apply performs - unless another store
+     * already owns the file's identifier, in which case the row in front of the operator is not it.
+     */
+    private function describesAnotherStore(StoreConfig $store, ArtifactDocument $document): bool
+    {
+        $carried = $store->getIdentifier();
+
+        if ($carried !== null) {
+            return $carried !== $document->getStoreIdentifier();
+        }
+
+        $named = $this->storeRepository->getByIdentifier($document->getStoreIdentifier());
+
+        return $named !== null && $named->getId() !== $store->getId();
+    }
+
+    /**
+     * @param list<array{level: string, name: string}> $withoutIdentifier
+     */
+    private function describeIdentifierGaps(array $withoutIdentifier): string
+    {
+        $named = [];
+        foreach ($withoutIdentifier as $entity) {
+            $named[] = sprintf('%s "%s"', $entity['level'], $entity['name']);
+        }
+
+        return sprintf(
+            'The store cannot be exported while %s carry no identifier. Run "%s" first.',
+            implode(', ', $named),
+            self::BACKFILL_COMMAND
+        );
+    }
+
+    private function buildImportReport(ApplyReport $report, bool $replaced): ImportReport
+    {
+        return new ImportReport(
+            created: $report->getCount(ApplyOutcome::CREATED),
+            updated: $report->getCount(ApplyOutcome::UPDATED),
+            adopted: $report->getCount(ApplyOutcome::ADOPTED),
+            matchedUnchanged: $report->getCount(ApplyOutcome::MATCHED_UNCHANGED),
+            targetOnly: $report->getCount(ApplyOutcome::TARGET_ONLY),
+            createdEntries: $report->getNamed(ApplyOutcome::CREATED),
+            updatedEntries: $report->getNamed(ApplyOutcome::UPDATED),
+            adoptedEntries: $report->getNamed(ApplyOutcome::ADOPTED),
+            targetOnlyEntries: $report->getNamed(ApplyOutcome::TARGET_ONLY),
+            conflicts: $report->getNamed(ApplyOutcome::CONFLICT),
+            skipped: $report->getCount(ApplyOutcome::SKIPPED),
+            skippedEntries: $report->getNamed(ApplyOutcome::SKIPPED),
+            replaced: $replaced,
+            removed: $report->getCount(ApplyOutcome::REMOVED),
+            removedEntries: $report->getNamed(ApplyOutcome::REMOVED),
+            storedValuesRemoved: $report->hasRemovedGroup(),
+        );
+    }
+}

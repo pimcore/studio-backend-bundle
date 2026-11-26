@@ -21,7 +21,8 @@ final readonly class ClassificationStoreFilterValue
     public function __construct(
         private readonly int $groupId,
         private readonly int $keyId,
-        private readonly string|array $value
+        private readonly string|array $value,
+        private readonly ?string $variant = null
     ) {
 
     }
@@ -34,6 +35,17 @@ final readonly class ClassificationStoreFilterValue
     public function getKeyId(): int
     {
         return $this->keyId;
+    }
+
+    /**
+     * The variant of a `multiValue` key the filter addresses, null for the key's own (default) slot.
+     * The sibling field it names is resolved by
+     * {@see \Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ClassificationStoreSegmentResolverInterface},
+     * because the search index names it from the key's identifier and not from the key's name.
+     */
+    public function getVariant(): ?string
+    {
+        return $this->variant;
     }
 
     public function getValue(): string|array

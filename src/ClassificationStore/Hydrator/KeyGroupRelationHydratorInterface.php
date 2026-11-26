@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation as CoreKeyGroupRelation;
 
 /**
@@ -22,5 +23,15 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation as CoreKeyGrou
  */
 interface KeyGroupRelationHydratorInterface
 {
-    public function hydrate(CoreKeyGroupRelation $keyGroupRelation, GroupConfig $groupConfig): KeyGroupRelation;
+    /**
+     * `$keyLocalized` and `$keyConfig` are the key's own columns, which core's relation listing
+     * selects and then drops: the caller reads them for the whole page and passes each relation's
+     * own, so that hydrating a row costs no statement.
+     */
+    public function hydrate(
+        CoreKeyGroupRelation $keyGroupRelation,
+        GroupConfig $groupConfig,
+        ?bool $keyLocalized = null,
+        ?KeyConfig $keyConfig = null,
+    ): KeyGroupRelation;
 }

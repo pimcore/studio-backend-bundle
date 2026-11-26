@@ -15,11 +15,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mercure\Service;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Model\TopicCollection;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\AccessTokenFactory;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\AudienceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ClientTokenService;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubService;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TopicLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
-use Symfony\Component\Mercure\Jwt\LcobucciFactory;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
 
 final class HubServiceTest extends Unit
@@ -79,7 +82,11 @@ final class HubServiceTest extends Unit
                 $this->makeEmpty(TopicLoaderInterface::class, [
                     'loadTopics' => new TopicCollection([], [], [], ['studio-backend-default']),
                 ]),
-                new LcobucciFactory(self::JWT_KEY),
+                new AccessTokenFactory(self::JWT_KEY, 'https://example.com'),
+                $this->makeEmpty(AudienceServiceInterface::class, [
+                    'getSubscriberAudience' => ['http://mercure/.well-known/mercure'],
+                ]),
+                $this->makeEmpty(SecurityServiceInterface::class, ['isLoggedIn' => false]),
                 $lifetime
             ),
             $this->makeEmpty(UrlServiceInterface::class, ['getClientSideUrl' => 'https://example.com/hub']),
@@ -92,6 +99,105 @@ final class HubServiceTest extends Unit
         $this->assertSame($lifetime, $service->getCookieLifetime());
         $this->assertEqualsWithDelta($lifetime, $claims['exp'] - time(), 5);
         $this->assertEqualsWithDelta($claims['exp'], $cookie->getExpiresTime(), 5);
+    }
+
+    public function testCookieNameIsSecurePrefixedOverHttps(): void
+    {
+        $cookie = $this->createHubService(self::CUSTOM_LIFETIME)->createCookies()[1];
+
+        $this->assertSame('__Secure-mercure_access_token', $cookie->getName());
+        $this->assertTrue($cookie->isSecure());
+    }
+
+    /**
+     * Browsers drop __Secure- cookies that are not sent over HTTPS.
+     */
+    public function testCookieNameHasNoPrefixOverHttp(): void
+    {
+        $service = new HubService(
+            $this->makeEmpty(TokenProviderInterface::class, ['getJwt' => 'jwt']),
+            $this->makeEmpty(UrlServiceInterface::class, ['getClientSideUrl' => 'http://localhost/hub']),
+        );
+
+        $cookie = $service->createCookies()[1];
+
+        $this->assertSame('mercure_access_token', $cookie->getName());
+        $this->assertFalse($cookie->isSecure());
+    }
+
+    /**
+     * Each hub reads the cookie of its own protocol; both carry the same token and scope.
+     */
+    public function testCookiesServeBothProtocols(): void
+    {
+        $service = new HubService(
+            $this->makeEmpty(TokenProviderInterface::class, ['getJwt' => 'jwt']),
+            $this->makeEmpty(UrlServiceInterface::class, ['getClientSideUrl' => 'https://example.com/hub']),
+            jwtCookieHost: '.example.com'
+        );
+
+        $cookies = $service->createCookies();
+
+        $this->assertSame(
+            ['mercureAuthorization', '__Secure-mercure_access_token'],
+            array_map(static fn (Cookie $cookie): string => $cookie->getName(), $cookies)
+        );
+        foreach ($cookies as $cookie) {
+            $this->assertSame('jwt', $cookie->getValue());
+            $this->assertSame('/hub', $cookie->getPath());
+            $this->assertSame('.example.com', $cookie->getDomain());
+            $this->assertTrue($cookie->isSecure());
+            $this->assertTrue($cookie->isHttpOnly());
+        }
+    }
+
+    public function testCookiesShareOneToken(): void
+    {
+        $tokenProvider = $this->createMock(TokenProviderInterface::class);
+        $tokenProvider->expects($this->once())->method('getJwt')->willReturn('jwt');
+        $service = new HubService(
+            $tokenProvider,
+            $this->makeEmpty(UrlServiceInterface::class, ['getClientSideUrl' => 'http://localhost/hub']),
+        );
+
+        $this->assertSame(
+            ['mercureAuthorization', 'mercure_access_token'],
+            array_map(static fn (Cookie $cookie): string => $cookie->getName(), $service->createCookies())
+        );
+    }
+
+    /**
+     * Callers outside this bundle (e.g. pimcore/portal-engine) set createCookie() with a token that
+     * only 0.x hubs and 1.x hubs in compatibility mode accept, so it must stay the 0.x cookie.
+     */
+    public function testCreateCookieKeepsTheLegacyCookie(): void
+    {
+        foreach (['https://example.com/hub' => true, 'http://localhost/hub' => false] as $url => $secure) {
+            $service = new HubService(
+                $this->makeEmpty(TokenProviderInterface::class, ['getJwt' => 'jwt']),
+                $this->makeEmpty(UrlServiceInterface::class, ['getClientSideUrl' => $url]),
+                cookieName: 'custom_mercure_cookie'
+            );
+
+            $cookie = $service->createCookie();
+
+            $this->assertSame('mercureAuthorization', $cookie->getName());
+            $this->assertSame('jwt', $cookie->getValue());
+            $this->assertSame('/hub', $cookie->getPath());
+            $this->assertSame($secure, $cookie->isSecure());
+        }
+    }
+
+    public function testConfiguredCookieNameIsUsed(): void
+    {
+        $service = new HubService(
+            $this->makeEmpty(TokenProviderInterface::class, ['getJwt' => 'jwt']),
+            $this->makeEmpty(UrlServiceInterface::class, ['getClientSideUrl' => 'https://example.com/hub']),
+            cookieName: 'custom_mercure_cookie'
+        );
+
+        $this->assertSame('custom_mercure_cookie', $service->createCookies()[1]->getName());
+        $this->assertSame('mercureAuthorization', $service->createCookie()->getName());
     }
 
     /**

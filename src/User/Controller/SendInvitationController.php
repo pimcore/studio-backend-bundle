@@ -24,13 +24,10 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParame
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\User\Attribute\Request\InvitationRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\Invitation;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserLoginServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -63,16 +60,15 @@ final class SendInvitationController extends AbstractApiController
         tags: [Tags::User->value]
     )]
     #[IdParameter(type: 'user')]
-    #[InvitationRequestBody]
     #[SuccessResponse]
     #[DefaultResponses([
         HttpResponseCodes::UNPROCESSABLE_CONTENT,
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function sendInvitation(int $id, #[MapRequestPayload] Invitation $parameter): Response
+    public function sendInvitation(int $id): Response
     {
-        $this->loginService->sendInvitation($id, $parameter);
+        $this->loginService->sendInvitation($id);
 
         return new Response();
     }

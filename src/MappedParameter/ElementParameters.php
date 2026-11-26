@@ -43,6 +43,14 @@ final readonly class ElementParameters
         return $this->type;
     }
 
+    /**
+     * The type as given in the request, without the mapping of data-object to the core type object.
+     */
+    public function getRequestedType(): string
+    {
+        return $this->type;
+    }
+
     public function getId(): int
     {
         return $this->id;

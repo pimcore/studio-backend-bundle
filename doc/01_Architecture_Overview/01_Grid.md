@@ -123,6 +123,7 @@ Available filters are:
 |          system.quantity_value           |                  array                   | `from`, `to`, `is`, `setting`, `unitId` |      true      |
 |       system.input_quantity_value        |                  string                  |    `unitId`(string), `value`(string)    |      true      |
 |               system.rgba                |                  object                  |         `r`,`g`,`b`,`a (0 - 1)`         |      true      |
+|             system.fieldName             |                  string                  |  relation field name, see note below    |     false      |
 |        classificationstore.string        |                  string                  |                                         |      true      |
 |         classificationstore.rgba         |                  object                  |         `r`,`g`,`b`,`a(0 - 1)`          |      true      |
 |         classificationstore.date         | object of ISO 8601<br/>will round to day |          `from`, `to`, or `on`          |      true      |
@@ -138,6 +139,26 @@ Available filters are:
 |          system.unreferenced             |                 boolean                  |  Asset grid only — unreferenced assets  |     false      |
 |                 workflow                 |              string or null              | place name; omit/`null` = all states of the workflow |      true      |
 
+> **Note:** `system.fieldName` is a context-only filter. The Studio UI adds it in the data object
+> element selector so that the backend knows which relation field the selection is being made for.
+> Studio ships no filter for it, so by default it does not change the result set. To act on it,
+> register your own filter — see
+> [Extending Search Index Filters](../03_Extending/09_Extending_Filters/01_Extending_Search_Index_Filters.md).
+
+
+#### Empty / not empty
+
+Any column filter with a `key` can carry an `operator` instead of a value to find elements where the field has no value
+(`empty`) or any value (`notEmpty`). The `filterValue` is not needed and ignored, the `type` of the column still has to
+be sent. This works for every field type that is searchable, including relations, quantity values and image galleries.
+
+| `operator` | Matches                                                          |
+|:----------:|:-----------------------------------------------------------------|
+|  `empty`   | the field has no value (missing, `null`, or an empty string for text fields) |
+| `notEmpty` | the field has any value                                          |
+
+An unknown `operator` or a `key` that is not a plain field name (letters, digits, `_`, `.`) is rejected with HTTP
+status 422.
 
 ### Examples:
 
@@ -170,6 +191,19 @@ Rows are returned whose value equals **any** of the values exactly: no wildcards
 The values are trimmed, empty values are ignored and duplicates are removed. A list without values does not filter,
 and at most 1000 values are accepted. Every value must be a string; otherwise (or above the limit) the request is
 rejected with HTTP status 422.
+
+Filter by a relation without a value, e.g. all products without a category:
+```json
+...
+"columnFilters" [
+  {
+    "key": "categories",
+    "type": "dataobject.relation",
+    "operator": "empty"
+  }
+]
+...
+```
 
 Filter by a select column:
 ```json

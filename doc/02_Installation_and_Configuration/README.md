@@ -165,6 +165,12 @@ pimcore_studio_backend:
         # If it is not set, the default will be set to "http(s)://<YOUR_CURRENT_PIMCORE_HOST>/hub".
         # It is possible to use "<PIMCORE_SCHEMA_HOST>" as a placeholder for the current schema and host if path to mercure should be different.
         hub_url_client: 'https://your-app-domain.com/hub'
+        # "auto" (default), "0.x" or "1.0"
+        protocol_version: 'auto'
+        # Only for 1.x hubs without compatibility mode, see the Mercure Setup page
+        issuer: 'https://your-app-domain.com'
+        cookie_name: 'mercure_access_token'
+        resource_identifier: 'https://hub.your-app-domain.com/.well-known/mercure'
         cookie_lifetime: 3600
         jwt_cookie_strictness: true
         jwt_cookie_host: '.your-app-domain.com'
@@ -207,6 +213,11 @@ pimcore_studio_backend:
 
 The value must be at least 1. A higher limit also raises the PHP memory a single preview request needs, because the
 file is held in memory several times while it is converted to UTF-8; keep `memory_limit` in mind when raising it.
+
+## Publish and Save Permissions
+
+For data objects, the `publish` and `unpublish` permissions include saving the changes sent with the request. See
+[Publish and Save Permissions](./06_Publish_and_Save_Permissions.md) for the details.
 
 ## Changing the prefix of the Studio Backend
 It is possible to change the route where you can reach the API. By default, the route is `/pimcore-studio/api/`.  

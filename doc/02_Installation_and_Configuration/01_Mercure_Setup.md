@@ -7,17 +7,30 @@ description: Configure Mercure for real-time updates in Pimcore Studio.
 
 ## Start and configure Mercure server
 
-Use Mercure hub **0.24**, e.g. via their docker container (`dunglas/mercure:v0.24`). For details see
-[Mercure docs](https://mercure.rocks/docs/hub/install).
+Pimcore Studio works with Mercure 0.x and 1.x hubs (see the [Mercure docs](https://mercure.rocks/docs/getting-started/installation)):
 
-> Always pin the image to `v0.24` instead of using `latest` or an untagged image. Mercure 1.0 and later contain breaking
-> changes (token format, subscription parameters, hub configuration, development UI), so an unpinned image will pull a
-> hub that this setup is not written for.
+| Hub | Docker image | `MERCURE_EXTRA_DIRECTIVES` |
+|---|---|---|
+| 1.x (recommended) | `dunglas/mercure:v1` | `anonymous`; optionally `protocol_version_compatibility 8` |
+| 0.x | `dunglas/mercure:v0.24` | `anonymous`; never add `protocol_version_compatibility 8` |
+
+> Since 2026.4. Before 2026.4, Studio speaks only the 0.x protocol: a 1.x hub needs `protocol_version_compatibility 8`.
+
+Pin the image to `v1` or `v0.24`. The 0.x protocol is removed in the next major version.
+
+- `mercure_settings.protocol_version`: `auto` (default) detects the protocol via
+  `GET <hub origin>/.well-known/oauth-protected-resource<hub path>` of `hub_url_server`, from PHP; let it through
+  proxies. `0.x` or `1.0` skip the detection.
+- Studio sets two cookies with the same token: `mercureAuthorization` (0.x) and `__Secure-mercure_access_token` (1.0).
 
 ### Mercure configuration
-Following Mercure configuration aspects need to be considered
-- Add same JWT key to `MERCURE_PUBLISHER_JWT_KEY` and `MERCURE_SUBSCRIBER_JWT_KEY`
-- JWT key needs to be minimum 256 bits (or 32 chars) long
+- Add the same JWT key to `MERCURE_PUBLISHER_JWT_KEY` and `MERCURE_SUBSCRIBER_JWT_KEY`
+- The JWT key needs to be at least 256 bits (32 characters) long
+
+### 1.x hubs without compatibility mode
+- `issuer` (default `https://localhost`) must be in the hub's `MERCURE_TRUSTED_ISSUERS`.
+- `cookie_name`: over plain HTTP the cookie is `mercure_access_token`; add `cookie_name mercure_access_token` to the hub.
+- `resource_identifier`: set it, and the hub's `resource_identifier`, when a proxy exposes the hub under another host.
 
 ## Example Configuration with docker compose
 Following there are configuration snippets for a setup with docker compose.
@@ -64,13 +77,14 @@ Add Mercure to your docker compose file and make sure to add the configuration f
       - ~/.certs:/etc/nginx/certs
 
   mercure:
-    image: dunglas/mercure:v0.24
+    image: dunglas/mercure:v1
     restart: unless-stopped
     environment:
         # Disable HTTPS
         SERVER_NAME: ':80'
         MERCURE_PUBLISHER_JWT_KEY: '<your-256-bit-secret-min-32-chars>'
         MERCURE_SUBSCRIBER_JWT_KEY: '<your-256-bit-secret-min-32-chars>'
+        MERCURE_EXTRA_DIRECTIVES: anonymous
     expose:
         - "80"
     volumes:
@@ -109,7 +123,7 @@ To see if Mercure is up and available, call ``https://your-app-domain.com/hub`` 
 you configured in configuration). This request should return the text
 
 ```
-Missing "topic" parameter.
+missing "match" subscription parameter
 ```
 
 or
@@ -149,14 +163,15 @@ or Direct Edit events) are not delivered while the hub is down. Notifications th
 published, so they still show up after the next reload.
 
 If the hub itself needs to be highly available, Mercure offers clustered editions (Mercure Enterprise with a shared
-transport, or Mercure Cloud; both are licensed by Mercure, not by Pimcore). Note that these are Mercure 1.x hubs, while
-this page is written for hub 0.24 (see the warning at the top), and their compatibility with this bundle's setup has not
+transport, or Mercure Cloud; both are licensed by Mercure, not by Pimcore). Note that these are Mercure 1.x hubs, which need
+the compatibility mode described at the top of this page, and their compatibility with this bundle's setup has not
 been verified. Alternatively, restart the single hub quickly with a process supervisor or your orchestrator.
 
 > The legacy Direct Edit path (`FileEditControllerTrait` of `pimcore/direct-edit`, deprecated since 2026.3, removal
 > planned for 2027.1) asks the hub which clients are subscribed (subscriptions API). This requires that all clients
 > are connected to the one hub the application asks, with the `subscriptions` directive enabled. If you run that hub as
-> a cluster, only the Redis/Valkey transport supports subscriptions cluster-wide.
+> a cluster, only the Redis/Valkey transport supports subscriptions cluster-wide. This path speaks only the 0.x protocol:
+> with a 1.x hub it needs `protocol_version_compatibility 8`.
 >
 > Direct Edit also has its own, deprecated hub settings (`mercure_settings.server_side_url`, `parameters.mercure.hub.*`)
 > that can override the hub URL and key. Remove them or set them to the same values as the hub configured above.
@@ -171,7 +186,7 @@ When running Mercure as external service with external URL, make sure to configu
 Sample based on docker compose, important part is the `cors_origins` directive.
 ```yaml
   mercure:
-    image: dunglas/mercure:v0.24
+    image: dunglas/mercure:v1
     restart: unless-stopped
     environment:
       # All other necessary configs ... 
@@ -179,6 +194,7 @@ Sample based on docker compose, important part is the `cors_origins` directive.
       
       # Add anonymous directives and cors configuration
       MERCURE_EXTRA_DIRECTIVES: |-
+          anonymous
           cors_origins "https://<YOUR_PIMCORE_URL>"
 ```
 
@@ -194,8 +210,8 @@ Beware that the development UI is not working when using a reverse proxy. (See o
 #### Apache Reverse Proxy
 For Apache, for example, enable `http_proxy` in apache and add the following reverse proxy in your apache config:
 ```
-   ProxyPass /hub/ http://localhost:3000/
-   ProxyPassReverse /hub/ http://localhost:3000/
+   ProxyPass /hub http://localhost:3000/.well-known/mercure
+   ProxyPassReverse /hub http://localhost:3000/.well-known/mercure
 ```
 
 #### Nginx Reverse Proxy
@@ -209,21 +225,23 @@ For Nginx use following configuration:
 ### Development UI
 The development UI can be helpful to develop new features. It is possible to subscribe and publish messages.
 
-With the configuration below, the development ui is available at `http://localhost:8080/.well-known/mercure/ui/`.
+With the configuration below, the development UI is available at `http://localhost:8080/.well-known/mercure/debug/`.
 
 ```yaml
   mercure:
-    image: dunglas/mercure:v0.24
+    image: dunglas/mercure:v1
     restart: unless-stopped
     environment:
       # All other necessary configs ... 
       # ...
-      
-      # Uncomment the following line to enable the development mode
-      command: /usr/bin/caddy run --config /etc/caddy/dev.Caddyfile
-      ports:
-        - "8080:80"
+      MERCURE_EXTRA_DIRECTIVES: |-
+          anonymous
+          debugger
+    ports:
+      - "8080:80"
 ```
-The UI is available at `http://localhost:8080/.well-known/mercure/ui/` when running Mercure in development mode.
+
+`debugger` only serves the UI, which uses the token you provide, and is safe in production. `playground` also mints an
+all-access token and relaxes the hub's security settings: use it only for local development.
 
 Please note the trailing slash in the URL, without it the UI will not be available.

@@ -90,6 +90,10 @@ services:
         class: Symfony\Component\Cache\Psr16Cache
         arguments: ['@pimcore_studio_backend.mcp.session']
 
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContext: ~
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContextInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Context\McpCallContext
+
     Pimcore\Bundle\StudioBackendBundle\Mcp\Server\McpServerFactory:
         arguments:
             $sessionCache: '@pimcore_studio_backend.mcp.session_cache'
@@ -99,6 +103,10 @@ services:
     Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolver: ~
     Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolverInterface:
         alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolver
+
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpToolCallScopeGuard: ~
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpToolCallScopeGuardInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpToolCallScopeGuard
 
     # All MCP controllers (the runtime serving endpoint + the Studio-API management
     # controllers) are public service-controllers.

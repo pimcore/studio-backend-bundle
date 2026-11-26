@@ -3,6 +3,158 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Mercure] Changed: Studio works with Mercure 0.x and 1.x hubs (with or without `protocol_version_compatibility 8`)
+  and detects the hub's protocol (`mercure_settings.protocol_version`, default `auto`).
+  See [Mercure Setup](./01_Mercure_Setup.md).
+  - Restart the Messenger workers after updating.
+  - Fixed: long-running workers no longer publish with an expired token.
+  - The 0.x protocol is removed in the next major (https://github.com/pimcore/platform-version/issues/889).
+- [Elements] Deprecated: `coauthorType` and `coauthor` in the bodies of the element patch and update endpoints
+  and of `PUT /pimcore-studio/api/versions/{id}`. They still work, are marked `deprecated` in the OpenAPI schema and
+  raise a deprecation notice. They are removed in 2027.1 (https://github.com/pimcore/platform-version/issues/814).
+  The coauthor is set by the server.
+- [Authentication] Deprecated: static MCP personal access tokens (`pimcore_studio_backend.mcp.authentication.tokens`,
+  handled by `PatAuthenticator`). They keep working on 2026.x; configuring them and each request they authenticate
+  raise a deprecation. They are removed in 2027.1. Migrate integrations to MCP access tokens issued for a dedicated
+  Pimcore user (`McpAccessTokenServiceInterface::issue()`), and people to OAuth `authorization_code`. See [MCP Server](../04_Development_Details/08_MCP_Server.md#patauthenticator-external-clients---deprecated).
+- [Service Users] Added: machine identities, a Pimcore user of type `serviceuser` (a `Pimcore\Model\User` whose `isServiceUser()` is true),
+  managed through the new "Service User Management" endpoints and the console command
+  `studio-backend-bundle:service-user:mcp-token`. Everything is additive: no existing endpoint, schema or user type
+  changes. The service-user endpoints need a core release that provides `User::newServiceUser()`
+  (pimcore/pimcore#19692). See [Service Users](./08_Service_Users.md).
+- [Service Users] Semantic notes, for code that works with users:
+  - A service user never logs in with a password. Setting one or setting it as an administrator is refused on the
+    core class; every save stores an unusable random value that no password verifies against (as users created
+    through OpenID Connect have), so `Authentication::isValidUser()` treats it like any user. It is never an administrator, has no two-factor authentication and cannot log in to
+    Studio. Its `email` is an optional contact address for the team responsible. Logging in and password recovery do
+    not use it.
+  - Identity kinds never mix. `User::getByName()`, `User\Listing` and the user endpoints return humans only: the
+    user tree and lists leave service users out, and the endpoints that read or change one user by id (detail,
+    update, password, delete, login link, two-factor reset, object dependencies) answer `404` for a service-user id.
+    Only the user image is served for any id, as authors are shown by id. A service user is reached through the
+    service-user endpoints, and its name is unique across humans and service users. Nothing converts one kind into
+    the other: creating a service user from a human copies permissions, roles and workspaces and leaves the human
+    unchanged.
+  - `User::getById()` returns the `User` for a service-user id as for any user id, with `isServiceUser()` true. Code that
+    assumes an id always names a human must call `isServiceUser()` first.
+- [Service Users] MCP server sharing: a service user's entry in `access.shared_users` is stored with `canRead` and `canEdit` false, whatever the client sent; `canAccess` is kept as sent. See [MCP Server Management](../04_Development_Details/09_MCP_Server_Management.md#access-and-sharing).
+- [Service Users] Added: the service-user schema carries `responsibleUsers` and `responsibleRoles` (lists of ids, the
+  people and the roles who answer for the service user), and `POST /service-user` and `PUT /service-user/{id}` accept
+  both as optional lists. On create a missing list means none; on update a missing (or `null`) list keeps the stored
+  values and an empty list clears them. An unknown user or role id answers `404`; a
+  service-user id in `responsibleUsers` answers `422`. Needs `pimcore/pimcore` with `User::getResponsibleUsers()` and
+  `getResponsibleRoles()`. Additive; no endpoint or permission changes.
+- [Service Users] Added: the service-user schema (`GET /pimcore-studio/api/service-users` and
+  `/service-user/{id}`, and the responses that return it) carries `clientCredentialsEnabled` (whether the OAuth
+  `client_credentials` grant is on) and `mcpTokens` (`active`, `latestExpiresAt`; a summary of the MCP access tokens,
+  read with one grouped query for the whole collection, as are the client ids). Additive; no endpoint, permission
+  or token lifetime changes.
+- [Service Users] Changed: `clientSecret` is nullable in the service-user credentials response (create, create from a
+  user, rotate secret). It is `null` while `pimcore_studio_backend.oauth.client_credentials.enabled` is off; the key is
+  still present. See [Service Users](./08_Service_Users.md#which-credential-to-use).
+- [OAuth] Added: the Client Credentials grant for clients bound to a service user, behind
+  `pimcore_studio_backend.oauth.client_credentials.enabled` (default `false`). Its tokens last
+  `oauth.client_credentials.access_token_ttl` seconds (default 900, minimum 60) and carry no refresh token. Nothing
+  changes until the switch is turned on. The guarantee that every token acts for a logged-in human no longer holds
+  once it is on. See [OAuth Server](./06_OAuth_Server.md#service-user-clients-client-credentials).
+- [Classification Store] Changed: a store created through Studio or by a configuration import is created on the
+  `document` engine instead of EAV. Existing stores are untouched, and `pimcore:classificationstore:flip` still
+  changes a store's engine. `engine` now reports the resolved engine, so a store that stores none reports `eav`.
+- [Classification Store] Changed: a configuration import refuses a `multiValue` key in a store whose engine cannot
+  address qualifiers, reporting it as a conflict and skipping it. A key the store already carries is not refused.
+- [Classification Store] Changed: an `imageGallery` or `encryptedField` key now exports its value in the grid
+  export, where it previously produced an empty cell.
+- [Classification Store] Added: disabled keys can be listed and re-enabled.
+- [Classification Store] Added: the key and key-group assignment reads carry a key's resolved select options and
+  unit vocabulary, so a configuration screen no longer needs the object editor to learn them.
+- [Classification Store] Added: a saved grid column showing a classification store attribute also records the
+  identifiers of its group and key. Configurations saved earlier keep working.
+- [Classification Store] Changed: a classification store column filter addresses the search index by group and key
+  identifier instead of by name. It needs `generic-data-index:deployment:reindex` and finds nothing on an index
+  built before that.
+- [Classification Store] Fixed: a classification store column filter searches the language the key is kept in — the
+  column's language only for a localized key — where it previously returned no row for a non-localized key.
+- [Classification Store] Changed: a classification store filter the grid cannot apply is refused with a `422`
+  naming the key, instead of returning every row.
+- [Classification Store] Added: collections, groups, sub groups and keys carry free-form custom metadata, readable,
+  editable and exportable with the store configuration. Pimcore itself reads none of it.
+- [Classification Store] Changed: a group's key relations are loaded once per request and shared by every consumer,
+  and the within-group key order of `objectData` and the search preview is now deterministic (`sorter` ascending,
+  then id), where it was whatever the database returned.
+- [Classification Store] Added: every key of the three layout responses carries an optional `title`, the key
+  configuration's label resolved for the requesting user's language, or `null` when no language of the chain holds
+  one. It is resolved server-side: do not treat it as a translation key, and keep falling back to `name` for display.
+- [Classification Store] Added: the key configuration responses carry the raw stored `title`, untranslated and with
+  no fallback to `name`. `POST /classification-store/configuration/keys/add` accepts an optional `title`; sending
+  none, `null` or `""` keeps writing the name.
+- [Classification Store] Changed: `title` or `description` sent as `null` to
+  `PUT /classification-store/configuration/keys/{id}` now clears the stored value instead of leaving it alone.
+  Leaving the field out still keeps it.
+- [Classification Store] Changed: `layout-by-group`, `layout-by-collection` and `key-group-relations` return their
+  items in a new order (`sorter` then id; relations grouped by group id first). A client that pages
+  `key-group-relations` gets different relations on a given page than before. No response schema changed.
+- [Classification Store] Added: the three object layout responses carry a `title` on every active group and key of a
+  classification store field. The key title falls back to the key's `name` as a last resort, so the editor never
+  renders a blank label; the group title is the group's `name`.
+- [Classification Store] Added: `GroupLayout` carries an optional `title` holding the group's `name`, so a group
+  added in the session reports the same shape as a pre-loaded one.
+- [Classification Store] Added: sub groups, the per-store vocabulary a key's assignment to a group can be tagged
+  with.
+- [Classification Store] Added: a key reports and accepts its own `localized` flag; no value means the class field
+  decides.
+- [Classification Store] Added: a key's assignment to a group can be written and read with its own per-assignment
+  options — definition override, sub group and metadata — and the generated identifiers are published alongside.
+  The definition override is stored and published but not yet applied to the rendered field definitions.
+- [Classification Store] Changed: adding a key's assignment no longer resets its sort order and mandatory flag when
+  the payload omits them. Two payloads that used to pass are now refused: a create or update carrying an identifier,
+  and an assignment naming a key id that does not exist.
+- [Classification Store] Added: `indexed`, a reserved member of a key's own definition rather than of an
+  assignment's `metadata`. Changing it enqueues a deferred remap of every search index the key's store reaches.
+- [Classification Store] Added: a key of type `multiValue` declares one value per variant, and the object data
+  endpoints read and write it through the core store's qualified API. `variants` or `multiValue` written into the
+  definition of any other type are ignored, not migrated.
+- [Classification Store] Added: a store's whole configuration can be exported and imported as one file, from the
+  store editor, the store-scoped import endpoint and the commands
+  `studio-backend-bundle:classificationstore:export` and `:apply`. Importing a file describing the same store
+  creates and updates but never deletes, so un-assigning a key stays a manual step. Importing a file describing a
+  *different* store duplicates it: the configuration the target held is replaced, **which removes the stored values
+  under every removed group, and importing again does not bring them back**. Send `dryRun` for the report without
+  writing.
+- [Classification Store] Changed: a key's own `localized` flag is honoured by the object data endpoints, so a key
+  localized inside a non-localized field is read and written per language.
+- [Classification Store] Changed: a classification store grid column reads the language its key decides, and may be
+  offered a language where the field itself is not localized.
+- [Classification Store] Changed: a store configuration export refuses when the configuration changed while it was
+  being written, and must be run again — a truncated download over HTTP, a failed command on the console.
+- [Listing] Changed: a collection request body that omits `filters` is paged with the documented defaults instead of
+  returning every row. Send `filters.page` and `filters.pageSize` and walk the pages until you have `totalItems`.
+- [Listing] Fixed: a client-supplied `equals` filter on the column a route-scoped listing is already scoped by
+  narrows that scope instead of replacing it. Reach another scope through its own route.
+- [Listing] Fixed: a `date` filter on a date column stored as a Unix timestamp selects the window it names, instead
+  of matching nothing or everything. Such a filter returns different rows than before.
+- [User] Added: `welcomeScreenTarget`, the page Studio opens after login when the welcome screen is on, as
+  `<provider>:<id>` (e.g. `studio-dashboards:<dashboard id>`). The user (`GET /pimcore-studio/api/user/{id}`) and the
+  login user info (`GET /pimcore-studio/api/user/current-user-information`) always return it (`null` when nothing is
+  chosen); `PUT /pimcore-studio/api/user/{id}` and `PUT /pimcore-studio/api/user/update-profile` accept it. A missing
+  (or `null`) value keeps the stored target and an empty string clears it; more than 255 characters answer `422`.
+  Needs `pimcore/pimcore` with `User::getWelcomeScreenTarget()` (column `users.welcomeScreenTarget`).
+- [Elements] Changed: the `422` response of a failed element validation (`PUT /pimcore-studio/api/assets/{id}`,
+  `.../data-objects/{id}`, `.../documents/{id}` and the synchronous `POST .../assets/add/{parentId}` and
+  `POST .../assets/{id}/replace`) now carries `validationErrors` next to `message` and `errorKey`, one entry per failed
+  field with `field`, `fieldTitle`, `path`, `message`, `messageKey` and `parameters`. `message` and `errorKey` are
+  unchanged. A client that translates the errors needs `pimcore/pimcore` `^2026.4` (`StructuredValidationException`).
+  The synchronous asset upload and replace answer `422` instead of `500` when the validation of the asset fails. An
+  error of a data object in a language the user may not view is reduced to the generic message
+  `The value is not valid.`, its `messageKey` and empty `parameters`; the top-level `message` is then
+  `Validation failed`. `message` is untrusted text and must be escaped before it is rendered.
+- [Authorization] Added: `GET /pimcore-studio/api/session` tells whether the request carries a Studio session
+  (`{"authenticated": true|false}`, plus the two-factor step of a login that waits for its code). It always answers 200
+  and reveals only the state of the caller's own session. With the matching Studio UI the login page no longer shows a
+  failed `user/current-user-information` request. The bundle opens the route itself with a `PUBLIC_ACCESS` rule for
+  `<url_prefix>/session`, put in front of the application's `security.access_control` rules when the container is
+  compiled: `config/packages/security.yaml` needs no change, and this works with a custom `url_prefix` as well. The rule
+  has no `ips`, `host` or `channel` restriction, so an IP or https restriction of the application does not apply to this
+  one route. `user/current-user-information` keeps answering 401 without a session.
 - [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
   is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
   `TextEncoder` got the optional constructor argument `$maxFileSize`.
@@ -35,10 +187,22 @@ The following steps are necessary during updating to newer versions.
   `ScoreAwareInterface` (`getScore()`/`setScore()`); subclasses that already declare these methods must match the
   new signatures.
 
+- [Grid] Changed: the data object `available-columns` response
+  (`GET /pimcore-studio/api/data-object/grid/available-columns`) now reports relation (`manyToOneRelation`,
+  `manyToManyRelation`, `manyToManyObjectRelation`, `advancedManyToManyRelation`, `advancedManyToManyObjectRelation`),
+  `image`, `imageGallery`, `geopoint` and `quantityValue` columns as `filterable: true`; they were `false`. These
+  fields can now be added in the listing's filter panel. Relations and quantity values show a value filter that
+  already existed but was never reachable; image, image gallery and geo point fields can only be searched for "no
+  value" or "any value" with the new `operator` of a column filter (see `doc/01_Architecture_Overview/01_Grid.md`).
+  This is additive and intended, but an API client that treated `filterable: false` as "never filterable" will see a
+  difference for these fields.
+
 - [OpenAPI] Improved: `zircote/swagger-php` 6.x is now supported (`^5.0 || ^6.0`); the previous `>=5.6` conflict was removed. The generated Studio OpenAPI document is unchanged.
 
 > **Note:** since swagger-php 5.6 an explicit `type:` or `ref:` on a `#[Property]` attribute no longer inherits the nullability of the PHP parameter it annotates. A property such as `#[Property(type: 'string')] private ?string $title` is emitted as `"type": "string"` instead of `"type": ["string", "null"]` once an installation resolves swagger-php >= 5.6. All Studio schemas now declare `nullable: true` explicitly. Bundles that register their own `open_api_scan_paths` must do the same for every PHP-nullable (or `mixed`) parameter whose attribute sets `type:` or `ref:`, otherwise their schemas silently lose `null` in the generated document and in clients generated from it. Properties without an explicit `type:` are not affected. The static `OpenApi\Generator::scan()` was removed in swagger-php 6.0; `OpenApiService` now uses `(new Generator())->generate()`.
 
+- [Recycle Bin] Changed: restoring an element whose parent no longer exists puts it into a `/__restored` folder of
+  its element type at the root, created on demand, instead of failing. A taken key gets a number (`_1`, `_2`, ...).
 - [Security] Added: two-factor authentication for the Studio login (authenticator app codes). See
   [Two-Factor Authentication](./07_Two_Factor_Authentication.md).
   - New configuration: `pimcore_studio_backend.two_factor_authentication.issuer` (default `Pimcore`) and
@@ -47,7 +211,7 @@ The following steps are necessary during updating to newer versions.
   - New endpoints: `POST /login/2fa`, `POST /user/two-factor/setup`, `POST /user/two-factor/confirm`,
     `DELETE /user/two-factor`, `DELETE /user/{id}/two-factor`. No change to `access_control` is needed.
 
-> **Note:** `POST /login` changes for users with two-factor authentication required or enabled: it answers `200` with
+> **Note:** `POST /login` changes for users with two-factor authentication required: it answers `200` with
 > `{"twoFactorRequired": true, "twoFactorStep": "verify"|"setup", "digits": 6}` instead of an empty body, and the user is not logged
 > in until the code is sent to `POST /login/2fa`. Clients that treat any `200` from `POST /login` as logged in break
 > for these users only; users without two-factor authentication get the same empty `200` as before. Users who have
@@ -55,6 +219,83 @@ The following steps are necessary during updating to newer versions.
 > the login. The login token (`POST /login/token`) still skips the code. While a code is pending, other endpoints
 > answer `401` with the same `twoFactorRequired`, `twoFactorStep` and `digits`, e.g. for a client returning from an OpenID
 > Connect (SSO) login.
+
+## Upgrade to 2026.3.5
+- [Data Objects] Fixed: `POST /data-objects/select-options` resolves the keys of a classification store, so select
+  and multiselect keys with an options provider load their options. They are addressed as
+  `<storeFieldName>.<groupId>.<keyId>`, or `<storeFieldName>.<groupId>.<language>.<keyId>` in the language comparison
+  view. The provider receives the same owner context as on the initial layout load (`ownerType`, `ownerName`, `keyId`,
+  `groupId`, `keyDefinition`). This needs `pimcore/studio-ui-bundle` 2026.3.5 or later, which sends the new field name.
+
+> **Note:** a field name this endpoint cannot resolve now returns `422` with the parse error instead of `404`
+> "Class with ID: ... not found". This applies to every field type, not only classification store keys. The context of
+> the request stays in the nested `context` key of the options provider context and does not overwrite the keys above.
+
+- [Data Objects] Fixed: the auto-save of a data object draft no longer writes the owner objects of a reverse object relation. These edits are applied only on an explicit save (and on updates without a task). The same applies to `PATCH` requests carrying an auto-save task.
+
+> **Note:** edits of such a field that were skipped by an auto-save are not part of the stored draft, so reopening the draft cannot recover them; the client has to send them again with the explicit save. This also applies to custom data adapters that implement the public marker `RemoteStorageDataInterface`: they are skipped while an auto-save stores a draft, and in `POST /data-objects/select-options`. The marker is only checked on the adapter of a top-level field; adapters nested in localized fields, object bricks or field collections are not checked. `DataServiceInterface::updateEditableData()` gained an optional `bool $applyRemoteChanges = true` parameter; the default keeps the previous behavior.
+- [Users] Security (GHSA-x3pq-323g-f95v): a user who may manage users (`users` permission) can no longer hand out more
+  privilege than they hold themselves. This changes the behavior of the following endpoints for non-admin user
+  managers (admins are not affected):
+  - Saving a user or role (`PUT /user/{id}`, `PUT /role/{id}`) returns `403` if the submitted permissions contain one
+    the caller does not hold (directly or through a role). The full submitted set is checked, so re-saving a user or
+    role that carries a permission the caller lacks fails until it is reduced first.
+  - Assigning a role the caller does not hold returns `403`. Clearing roles stays allowed. Role ids that are unknown or
+    not integers return `404`.
+  - Changing the password (`PUT /user/{id}/password`) or the email (`PUT /user/{id}`) of another user is admin-only
+    and returns `403` otherwise. Users can still change their own password and email.
+  - Login token links for another user (`POST /user/token-link/{id}`) are admin-only and return `403` otherwise. A
+    link for the caller's own account still works.
+- [Users] Changed: the login token link is built on the server as
+  `<scheme>://<host><base url><pimcore_studio_ui.url_path>/login/?token=...`. A `tokenLink` request body is ignored;
+  `TokenLinkRequestBody` and `TokenLink` are deprecated and without effect. Scheme, host and port come from the
+  request context, so behind a reverse proxy configure `framework.trusted_proxies` (and `trusted_headers`), otherwise
+  the link may point to a different origin than the one the browser uses.
+- [Studio UI] The "login as different user" action and the role options in the user form should be limited to what the
+  backend now allows (admins only for login links, the caller's own roles for non-admins). Until then, non-admin user
+  managers see `403` errors for these actions.
+
+## Upgrade to 2025.4.21
+- [Documents] Security (GHSA): updating a document (`PUT /documents/{id}`) now checks the per-element workspace
+  permissions. This changes the behavior for users who relied on the `documents` permission alone:
+  - The caller needs the `save` permission on the document (not required for the `publish`/`unpublish` tasks, which
+    keep their own checks), otherwise the request returns `403` and nothing is changed.
+  - Moving a document to a different parent (`parentId`) additionally requires the `create` permission on the
+    destination document and returns `403` otherwise. A non-existent destination returns `404`.
+- [Properties] Security: listing the predefined properties (`GET /properties`) now requires the
+  `predefined_properties` permission, like creating, updating and deleting them. Users without it get `403`.
+
+## Upgrade to 2025.4.20
+- [Users] Security (GHSA-x3pq-323g-f95v): a user who may manage users (`users` permission) can no longer hand out more
+  privilege than they hold themselves. This changes the behavior of the following endpoints for non-admin user
+  managers (admins are not affected):
+  - Saving a user or role (`PUT /user/{id}`, `PUT /role/{id}`) returns `403` if the submitted permissions contain one
+    the caller does not hold (directly or through a role). The full submitted set is checked, so re-saving a user or
+    role that carries a permission the caller lacks fails until it is reduced first.
+  - Assigning a role the caller does not hold returns `403`. Clearing roles stays allowed. Role ids that are unknown or
+    not integers return `404`.
+  - Changing the password (`PUT /user/{id}/password`) or the email (`PUT /user/{id}`) of another user is admin-only
+    and returns `403` otherwise. Users can still change their own password and email.
+  - Login token links for another user (`POST /user/token-link/{id}`) are admin-only and return `403` otherwise. A
+    link for the caller's own account still works.
+- [Users] Changed: the login token link is built on the server as
+  `<scheme>://<host><base url><pimcore_studio_ui.url_path>/login/?token=...`. A `tokenLink` request body is ignored;
+  `TokenLinkRequestBody` and `TokenLink` are deprecated and without effect. Scheme, host and port come from the
+  request context, so behind a reverse proxy configure `framework.trusted_proxies` (and `trusted_headers`), otherwise
+  the link may point to a different origin than the one the browser uses.
+- [Studio UI] The "login as different user" action and the role options in the user form should be limited to what the
+  backend now allows (admins only for login links, the caller's own roles for non-admins). Until then, non-admin user
+  managers see `403` errors for these actions.
+
+## Upgrade to 2026.3.4
+- [Translations] Fixed: the `admin` translation domain is maintained in Studio with the website languages, but the
+  backend still used the admin UI languages for it. Columns of website languages that are no admin UI language
+  (e.g. `fr_BE`) stayed empty and sorting by them failed. `POST /translations/list`, `POST /translations/export` and
+  the CSV import now use the website translation languages the user is allowed to view for the `admin` domain, and the
+  list only returns the values of these languages. Only the `studio` domain uses the admin UI languages.
+
+> **Note:** this replaces the `admin` domain part of the 2025.4.15 entry below. As for the other website domains, a
+> user without any valid website translation language receives `403` for list, export and import of the `admin` domain.
 
 ## Upgrade to 2026.3.3
 - [Data Objects] Changed: the data object detail loads `manyToManyObjectRelation` and `manyToManyRelation` values of

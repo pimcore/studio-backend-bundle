@@ -17,12 +17,18 @@ use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
+use Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UpdateUserProfile;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateService;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateService;
@@ -37,6 +43,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class UserUpdateServiceTest extends Unit
 {
+    private const string WELCOME_SCREEN_TARGET = 'studio-dashboards:019c7555_49f6_712b_af5f_bd0c22b3d1f7';
+
     public function testNonAdminCannotUpdateAdminUser(): void
     {
         $targetUser = $this->createTargetUser(isAdmin: true);
@@ -111,7 +119,7 @@ final class UserUpdateServiceTest extends Unit
         $authenticationResolver = $this->createAuthenticationResolver(isSamePassword: true, expectedUser: $targetUser);
         $service = $this->createService(
             $targetUser,
-            $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
+            $this->createNonAdmin(id: 42),
             $authenticationResolver
         );
 
@@ -125,7 +133,7 @@ final class UserUpdateServiceTest extends Unit
         $targetUser = $this->createTargetUser(isAdmin: false);
         $service = $this->createService(
             $targetUser,
-            $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
+            $this->createNonAdmin(id: 42),
             $this->createAuthenticationResolver(isSamePassword: false)
         );
 
@@ -139,7 +147,7 @@ final class UserUpdateServiceTest extends Unit
         $targetUser = $this->createTargetUser(isAdmin: false);
         $service = $this->createService(
             $targetUser,
-            $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
+            $this->createNonAdmin(id: 42),
             $this->createAuthenticationResolver(isSamePassword: false),
             $this->createValidator(violations: 0)
         );
@@ -157,7 +165,7 @@ final class UserUpdateServiceTest extends Unit
         $targetUser = $this->createTargetUser(isAdmin: false);
         $service = $this->createService(
             $targetUser,
-            $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
+            $this->createNonAdmin(id: 42),
             $this->createAuthenticationResolver(isSamePassword: false),
             $this->createValidator(violations: 1)
         );
@@ -168,6 +176,47 @@ final class UserUpdateServiceTest extends Unit
             new UpdatePasswordParameter('new-password-1', 'new-password-1', 'wrong-password'),
             42
         );
+    }
+
+    /**
+     * @dataProvider welcomeScreenTargetProvider
+     */
+    public function testUpdateUserAppliesTheWelcomeScreenTarget(
+        ?string $stored,
+        ?string $sent,
+        ?string $expected
+    ): void {
+        $targetUser = $this->createTargetUser(isAdmin: false)->setWelcomeScreenTarget($stored);
+        $service = $this->createService($targetUser, $this->makeEmpty(UserInterface::class, ['isAdmin' => true]));
+
+        $service->updateUserById($this->createUpdateParams(welcomeScreenTarget: $sent), 42);
+
+        $this->assertSame($expected, $targetUser->getWelcomeScreenTarget());
+    }
+
+    /**
+     * @dataProvider welcomeScreenTargetProvider
+     */
+    public function testUpdateProfileAppliesTheWelcomeScreenTarget(
+        ?string $stored,
+        ?string $sent,
+        ?string $expected
+    ): void {
+        $user = $this->createTargetUser(isAdmin: false)->setWelcomeScreenTarget($stored);
+        $service = $this->createService($user, $user);
+
+        $service->updateUserProfile($user, $this->createProfileParams($sent));
+
+        $this->assertSame($expected, $user->getWelcomeScreenTarget());
+    }
+
+    public static function welcomeScreenTargetProvider(): array
+    {
+        return [
+            'a new target is stored' => [null, self::WELCOME_SCREEN_TARGET, self::WELCOME_SCREEN_TARGET],
+            'an empty string clears it' => [self::WELCOME_SCREEN_TARGET, '', null],
+            'an omitted field keeps it' => [self::WELCOME_SCREEN_TARGET, null, self::WELCOME_SCREEN_TARGET],
+        ];
     }
 
     private function createValidator(int $violations): ValidatorInterface
@@ -201,20 +250,160 @@ final class UserUpdateServiceTest extends Unit
         ]);
     }
 
+    public function testNonAdminCannotUpdatePasswordOfAnotherUser(): void
+    {
+        $target = $this->createTargetUser(isAdmin: false);
+        $service = $this->createPasswordService($target, $this->createNonAdmin(id: 7));
+
+        try {
+            $service->updatePasswordById($this->createPasswordParams(), 42);
+            $this->fail('Expected a ForbiddenException');
+        } catch (ForbiddenException $exception) {
+            $this->assertSame('Only admin can change the password of another user', $exception->getMessage());
+        }
+
+        $this->assertNull($target->getPassword());
+    }
+
+    public function testNonAdminCanUpdateOwnPassword(): void
+    {
+        $target = $this->createTargetUser(isAdmin: false);
+        $service = $this->createPasswordService($target, $this->createNonAdmin(id: 42));
+
+        $service->updatePasswordById($this->createPasswordParams(), 42);
+
+        $this->assertSame('hashed-password', $target->getPassword());
+    }
+
+    public function testAdminCanUpdatePasswordOfAnotherUser(): void
+    {
+        $target = $this->createTargetUser(isAdmin: false);
+        $admin = $this->makeEmpty(UserInterface::class, ['isAdmin' => true, 'getId' => 1]);
+        $service = $this->createPasswordService($target, $admin);
+
+        $service->updatePasswordById($this->createPasswordParams(), 42);
+
+        $this->assertSame('hashed-password', $target->getPassword());
+    }
+
+    public function testNonAdminCannotUpdatePasswordOfAdminUser(): void
+    {
+        $service = $this->createPasswordService(
+            $this->createTargetUser(isAdmin: true),
+            $this->createNonAdmin(id: 7)
+        );
+
+        $this->expectException(ForbiddenException::class);
+        $this->expectExceptionMessage('Only admin can update admin user');
+        $service->updatePasswordById($this->createPasswordParams(), 42);
+    }
+
+    public function testNonAdminCannotChangeEmailOfAnotherUser(): void
+    {
+        $target = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService($target, $this->createNonAdmin(id: 7));
+
+        try {
+            $service->updateUserById($this->createUpdateParams(email: 'attacker@example.com'), 42);
+            $this->fail('Expected a ForbiddenException');
+        } catch (ForbiddenException $exception) {
+            $this->assertSame('Only admin can change the email of another user', $exception->getMessage());
+        }
+
+        $this->assertSame('test@example.com', $target->getEmail());
+    }
+
+    public function testNonAdminCanSaveAnotherUserWithUnchangedEmail(): void
+    {
+        $target = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService($target, $this->createNonAdmin(id: 7));
+
+        $service->updateUserById($this->createUpdateParams(), 42);
+
+        $this->assertSame('test@example.com', $target->getEmail());
+    }
+
+    public function testNonAdminCanChangeOwnEmail(): void
+    {
+        $target = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService($target, $this->createNonAdmin(id: 42));
+
+        $service->updateUserById($this->createUpdateParams(email: 'new@example.com'), 42);
+
+        $this->assertSame('new@example.com', $target->getEmail());
+    }
+
+    public function testAdminCanChangeEmailOfAnotherUser(): void
+    {
+        $target = $this->createTargetUser(isAdmin: false);
+        $admin = $this->makeEmpty(UserInterface::class, ['isAdmin' => true, 'getId' => 1]);
+        $service = $this->createService($target, $admin);
+
+        $service->updateUserById($this->createUpdateParams(email: 'new@example.com'), 42);
+
+        $this->assertSame('new@example.com', $target->getEmail());
+    }
+
+    private function createNonAdmin(int $id): UserInterface
+    {
+        return $this->makeEmpty(UserInterface::class, [
+            'isAdmin' => false,
+            'getId' => $id,
+        ]);
+    }
+
+    private function createPasswordParams(): UpdatePasswordParameter
+    {
+        return new UpdatePasswordParameter('very-long-password-1', 'very-long-password-1', null);
+    }
+
+    private function createPasswordService(User $targetUser, UserInterface $currentUser): UserUpdateService
+    {
+        $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
+            'getCurrentUser' => $currentUser,
+        ]);
+
+        return new UserUpdateService(
+            $this->makeEmpty(AuthenticationResolverInterface::class, [
+                'getPasswordHash' => 'hashed-password',
+            ]),
+            $this->makeEmpty(CacheResolverInterface::class),
+            $securityService,
+            $this->makeEmpty(UserRepositoryInterface::class, [
+                'getPersonById' => $targetUser,
+            ]),
+            new UpdateService(
+                $this->makeEmpty(PermissionRepositoryInterface::class),
+                $this->makeEmpty(RoleRepositoryInterface::class),
+                $this->makeEmpty(ClassDefinitionRepositoryInterface::class),
+                $this->makeEmpty(ServiceResolverInterface::class),
+                $this->makeEmpty(UserPerspectiveServiceInterface::class),
+                $securityService,
+            ),
+            $this->makeEmpty(UserPerspectiveServiceInterface::class),
+            $this->makeEmpty(ValidatorInterface::class),
+        );
+    }
+
     private function createTargetUser(bool $isAdmin): User
     {
         $user = new User();
         $user->setAdmin($isAdmin);
         $user->setActive(true);
         $user->setName('targetuser');
+        $user->setId(42);
+        $user->setEmail('test@example.com');
 
         return $user;
     }
 
-    private function createUpdateParams(bool $admin = false): UpdateUserParameter
-    {
+    private function createUpdateParams(
+        bool $admin = false,
+        string $email = 'test@example.com',
+        ?string $welcomeScreenTarget = null
+    ): UpdateUserParameter {
         return new UpdateUserParameter(
-            email: 'test@example.com',
+            email: $email,
             firstname: 'Test',
             lastname: 'User',
             active: true,
@@ -238,6 +427,23 @@ final class UserUpdateServiceTest extends Unit
             assetWorkspaces: [],
             dataObjectWorkspaces: [],
             documentWorkspaces: [],
+            welcomeScreenTarget: $welcomeScreenTarget,
+        );
+    }
+
+    private function createProfileParams(?string $welcomeScreenTarget): UpdateUserProfile
+    {
+        return new UpdateUserProfile(
+            firstname: 'Test',
+            lastname: 'User',
+            email: 'test@example.com',
+            language: 'en',
+            dateTimeLocale: null,
+            welcomeScreen: true,
+            memorizeTabs: false,
+            contentLanguages: [],
+            keyBindings: [],
+            welcomeScreenTarget: $welcomeScreenTarget,
         );
     }
 
@@ -264,7 +470,7 @@ final class UserUpdateServiceTest extends Unit
                 'getCurrentUser' => $currentUser,
             ]),
             $this->makeEmpty(UserRepositoryInterface::class, [
-                'getUserById' => $targetUser,
+                'getPersonById' => $targetUser,
             ]),
             $updateService,
             $this->makeEmpty(UserPerspectiveServiceInterface::class),

@@ -41,4 +41,5 @@ enum Jobs: string
     case BULK_IMPORT_CLASS_DEFINITIONS = 'studio_ee_job_bulk_import_class_definitions';
     case OWNERSHIP_MANAGEMENT_REASSIGN_OWNER = 'studio_ee_job_ownership_management_reassign_owner';
     case OWNERSHIP_MANAGEMENT_DELETE = 'studio_ee_job_ownership_management_delete';
+    case INDEX_SYNC = 'studio_ee_job_index_sync';
 }

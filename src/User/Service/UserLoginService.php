@@ -24,24 +24,23 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\Invitation;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\TokenLink;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use function in_array;
+use function rtrim;
+use function sprintf;
+use function urlencode;
 
 /**
  * @internal
  */
 final readonly class UserLoginService implements UserLoginServiceInterface
 {
-    private const array TRUSTED_URL_ALLOWED_SCHEMES = ['http', 'https'];
-
-    private const string TOKEN_QUERY_PARAMETER = 'token';
+    private const array RESET_PASSWORD_URL_ALLOWED_SCHEMES = ['http', 'https'];
 
     public function __construct(
         private AuthenticationResolverInterface $authenticationResolver,
@@ -53,6 +52,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         private SecurityServiceInterface $securityService,
         private SettingsProviderInterface $settingsProvider,
         private SiteRepositoryInterface $siteRepository,
+        private string $studioPath = '/pimcore-studio',
     ) {
     }
 
@@ -61,7 +61,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
      */
     public function resetPassword(ResetPassword $resetPassword): void
     {
-        $this->validateTrustedUrl($resetPassword->getResetPasswordUrl(), 'reset password URL');
+        $this->validateResetPasswordUrl($resetPassword->getResetPasswordUrl());
 
         $user = $this->userResolver->getByName($resetPassword->getUsername());
 
@@ -73,21 +73,34 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         }
 
         $token = $this->authenticationResolver->generateTokenByUser($user);
-        $loginUrl = $this->withToken($resetPassword->getResetPasswordUrl(), $token);
+        $loginUrl = $resetPassword->getResetPasswordUrl() . '?token=' . $token;
 
         try {
             $this->mailService->sendResetPasswordMail($user, $token, $loginUrl);
         } catch (DomainConfigurationException|SendMailException $exception) {
-            $this->pimcoreLogger->error('Error sending password recovery email', ['error' => $exception->getMessage()]);
+            $this->pimcoreLogger->error(
+                'Error sending password recovery email',
+                ['error' => $exception->getPrevious()?->getMessage() ?? $exception->getMessage()]
+            );
 
             throw $exception;
         }
     }
 
-    public function getLoginTokenUrl(int $id, TokenLink $parameter): string
+    public function getLoginTokenUrl(int $id): string
     {
-        $user = $this->userRepository->getUserById($id);
-        if ($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
+        $user = $this->userRepository->getPersonById($id);
+        $currentUser = $this->securityService->getCurrentUser();
+
+        if ($user->isAdmin() && !$currentUser->isAdmin()) {
+            throw new ForbiddenException(
+                'Cannot generate login token URL for this user',
+                HttpResponseErrorKeys::LOGIN_TOKEN_NON_ADMIN->value
+            );
+        }
+
+        // only superusers may log in as somebody else; everyone else only gets a link for their own account
+        if (!$currentUser->isAdmin() && $user->getId() !== $currentUser->getId()) {
             throw new ForbiddenException(
                 'Cannot generate login token URL for this user',
                 HttpResponseErrorKeys::LOGIN_TOKEN_NON_ADMIN->value
@@ -104,25 +117,16 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         /** @var User $user */
         $token = $this->authenticationResolver->generateTokenByUser($user);
 
-        if ($parameter->getTokenLoginUrl() !== '') {
-            return $this->withToken($parameter->getTokenLoginUrl(), $token);
-        }
-
-        return $this->urlGenerator->generate(
-            TokenLoginController::ROUTE_NAME,
-            ['token' => $token],
-            UrlGeneratorInterface::ABSOLUTE_URL
-        );
+        return $this->buildStudioTokenUrl('/login/', $token);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function sendInvitation(int $id, Invitation $parameter): void
+    public function sendInvitation(int $id): void
     {
-        $this->validateTrustedUrl($parameter->getInvitationUrl(), 'invitation URL');
-
-        $user = $this->userRepository->getUserById($id);
+        // getPersonById, not getUserById: a service user must not be invited either
+        $user = $this->userRepository->getPersonById($id);
 
         if ($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
             throw new ForbiddenException(
@@ -158,49 +162,67 @@ final readonly class UserLoginService implements UserLoginServiceInterface
 
         $token = $this->authenticationResolver->generateTokenByUser($user);
 
-        $this->mailService->sendInvitationMail($user, $this->withToken($parameter->getInvitationUrl(), $token));
+        // The reset password route logs the invitee in with the token and opens the profile in reset
+        // mode, so they set a password of their own. The plain login route would drop them at the root
+        // holding a password they do not know.
+        $this->mailService->sendInvitationMail($user, $this->buildStudioTokenUrl('/reset-password/', $token));
     }
 
     /**
-     * A trusted URL may already carry a query, a fragment or even a stale token, and appending
-     * "?token=" to those produces a link that carries no token parameter at all - after a fragment
-     * it is not even sent to the server. The parameter is set on the query, before any fragment.
+     * A Studio URL carrying the token, built from the configured origin rather than from anything the
+     * caller supplied, so the mail can never be pointed at a host of someone else's choosing.
      */
-    private function withToken(string $url, string $token): string
+    private function buildStudioTokenUrl(string $path, string $token): string
     {
-        $fragment = '';
-        $fragmentPosition = strpos($url, '#');
-
-        if ($fragmentPosition !== false) {
-            $fragment = substr($url, $fragmentPosition);
-            $url = substr($url, 0, $fragmentPosition);
-        }
-
-        $queryPosition = strpos($url, '?');
-        $path = $queryPosition === false ? $url : substr($url, 0, $queryPosition);
-        $query = $queryPosition === false ? '' : substr($url, $queryPosition + 1);
-
-        parse_str($query, $parameters);
-        $parameters[self::TOKEN_QUERY_PARAMETER] = $token;
-
-        return $path . '?' . http_build_query($parameters) . $fragment;
+        return sprintf(
+            '%s%s%s%s?token=%s',
+            $this->getOrigin(),
+            $this->urlGenerator->getContext()->getBaseUrl(),
+            rtrim($this->studioPath, '/'),
+            $path,
+            urlencode($token)
+        );
     }
 
-    private function validateTrustedUrl(string $url, string $subject): void
+    /**
+     * Scheme, host and port the Studio is served from, taken from the router context
+     * (the same origin the absolute API URLs are generated for). The application base URL
+     * (e.g. /cms) is added separately by the caller.
+     */
+    private function getOrigin(): string
+    {
+        $apiUrl = $this->urlGenerator->generate(
+            TokenLoginController::ROUTE_NAME,
+            [],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
+        $parts = parse_url($apiUrl);
+
+        return sprintf(
+            '%s://%s%s',
+            $parts['scheme'] ?? 'https',
+            $parts['host'] ?? '',
+            isset($parts['port']) ? ':' . $parts['port'] : ''
+        );
+    }
+
+    private function validateResetPasswordUrl(string $url): void
     {
         $parsed = parse_url($url);
 
         // Reject anything parse_url() and a browser could read differently: credentials in the
-        // authority, backslashes, whitespace and control characters.
+        // authority, backslashes, whitespace and control characters. Curly braces are no valid
+        // URL characters either and would open template syntax wherever the link ends up.
         if (
             $parsed === false
             || !isset($parsed['scheme'], $parsed['host'])
-            || !in_array(strtolower($parsed['scheme']), self::TRUSTED_URL_ALLOWED_SCHEMES, true)
+            || !in_array(strtolower($parsed['scheme']), self::RESET_PASSWORD_URL_ALLOWED_SCHEMES, true)
             || isset($parsed['user'])
             || isset($parsed['pass'])
-            || preg_match('/[\x00-\x20\x7f\\\\]/', $url) === 1
+            || preg_match('/[\x00-\x20\x7f\\\\{}]/', $url) === 1
         ) {
-            throw new InvalidArgumentException(sprintf('Invalid %s provided', $subject));
+            throw new InvalidArgumentException('Invalid reset password URL provided');
         }
 
         if ($this->isRegisteredDomain($parsed['host'])) {
@@ -208,7 +230,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         }
 
         throw new InvalidArgumentException(
-            sprintf('%s domain does not match any trusted domain', ucfirst($subject))
+            'Reset password URL domain does not match any trusted domain'
         );
     }
 

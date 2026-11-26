@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ClassIdParametersInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ClassNameParametersInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\FilterOperator;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
@@ -27,6 +28,8 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParameterInterface;
 use function array_key_exists;
 use function count;
+use function implode;
+use function is_string;
 
 /**
  * @internal
@@ -41,6 +44,8 @@ final class FilterParameter implements
     ClassNameParametersInterface,
     ClassIdParametersInterface
 {
+    private const string INVALID_COLUMN_FILTER = 'Invalid column filter';
+
     private ?string $path = null;
 
     private ?string $className = null;
@@ -115,11 +120,14 @@ final class FilterParameter implements
      */
     public function getColumnFilterByType(string $type): iterable
     {
-        $columns  = array_filter($this->columnFilters, static fn ($columnFilter) => $columnFilter['type'] === $type);
+        $columns = array_filter(
+            $this->columnFilters,
+            static fn ($columnFilter) => ($columnFilter['operator'] ?? null) === null && $columnFilter['type'] === $type
+        );
 
         foreach ($columns as $column) {
             if (!isset($column['key'], $column['type']) || !array_key_exists('filterValue', $column)) {
-                throw new InvalidArgumentException('Invalid column filter');
+                throw new InvalidArgumentException(self::INVALID_COLUMN_FILTER);
             }
 
             yield new ColumnFilter(
@@ -131,11 +139,49 @@ final class FilterParameter implements
         }
     }
 
+    /**
+     * @return ColumnFilter[]
+     */
+    public function getOperatorColumnFilters(): iterable
+    {
+        $columns = array_filter(
+            $this->columnFilters,
+            static fn ($columnFilter) => ($columnFilter['operator'] ?? null) !== null
+        );
+
+        foreach ($columns as $column) {
+            if (
+                !is_string($column['key'] ?? null) ||
+                !is_string($column['type'] ?? null) ||
+                !is_string($column['operator']) ||
+                !is_string($column['locale'] ?? '')
+            ) {
+                throw new InvalidArgumentException(self::INVALID_COLUMN_FILTER);
+            }
+
+            $operator = FilterOperator::tryFrom($column['operator']);
+
+            if ($operator === null) {
+                throw new InvalidArgumentException(
+                    'Invalid column filter operator, allowed are: ' . implode(', ', FilterOperator::values())
+                );
+            }
+
+            yield new ColumnFilter(
+                $column['key'],
+                $column['type'],
+                null,
+                $column['locale'] ?? null,
+                $operator
+            );
+        }
+    }
+
     public function getSimpleColumnFilterByType(string $type): ?SimpleColumnFilter
     {
         $columns  = array_filter(
             $this->columnFilters,
-            static fn ($columnFilter) => $columnFilter['type'] === $type
+            static fn ($columnFilter) => ($columnFilter['operator'] ?? null) === null && $columnFilter['type'] === $type
         );
 
         if (count($columns) > 1) {

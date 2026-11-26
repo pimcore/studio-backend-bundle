@@ -19,12 +19,11 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\KeyGroupRela
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
-use Pimcore\Model\DataObject\ClassDefinition\Data\LayoutDefinitionEnrichmentInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
-use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Classificationstore\LabelEntityType;
+use Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_map;
 use function count;
 
 /**
@@ -38,6 +37,9 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         private KeyGroupRelationHydratorInterface $keyGroupRelationHydrator,
         private GroupConfigResolverInterface $groupConfigResolver,
         private EventDispatcherInterface $eventDispatcher,
+        private KeyLocalizationResolverInterface $keyLocalizationResolver,
+        private LabelResolverInterface $labelResolver,
+        private LabelLanguageResolverInterface $labelLanguageResolver,
     ) {
     }
 
@@ -60,10 +62,20 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
             $parameter->getSearchTerm()
         );
 
+        // the flag and the title of every key on the page in one statement, never one per relation
+        $keyConfigs = $this->keyGroupRelationRepository->getKeyConfigs($this->keyIds($keyGroupRelations));
+        $this->preloadKeyTitles($keyGroupRelations);
+
         foreach ($keyGroupRelations as $keyGroupRelation) {
             $groupConfig = $this->groupConfigResolver->getById($keyGroupRelation->getGroupId());
+            $keyConfig = $keyConfigs[$keyGroupRelation->getKeyId()] ?? null;
 
-            $hydratedKeyGroupRelation = $this->keyGroupRelationHydrator->hydrate($keyGroupRelation, $groupConfig);
+            $hydratedKeyGroupRelation = $this->keyGroupRelationHydrator->hydrate(
+                $keyGroupRelation,
+                $groupConfig,
+                $keyConfig === null ? null : $this->keyLocalizationResolver->getLocalized($keyConfig),
+                $keyConfig
+            );
 
             $this->eventDispatcher->dispatch(
                 new KeyGroupRelationEvent($hydratedKeyGroupRelation),
@@ -84,35 +96,33 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
     }
 
     /**
-     * {@inheritdoc}
+     * The labels of every key on the page in one statement, so the hydrator's title lookups cost nothing.
+     *
+     * @param KeyGroupRelation[] $keyGroupRelations
      */
-    public function getLayoutDefinition(
-        KeyGroupRelation $keyGroupRelation,
-        Concrete $object,
-        string $fieldName
-    ): EncryptedField|Data {
-        $definition = json_decode($keyGroupRelation->getDefinition(), true);
-        $definition = \Pimcore\Model\DataObject\Classificationstore\Service::getFieldDefinitionFromJson(
-            $definition,
-            $keyGroupRelation->getType()
+    private function preloadKeyTitles(array $keyGroupRelations): void
+    {
+        if ($keyGroupRelations === []) {
+            return;
+        }
+
+        $this->labelResolver->preload(
+            LabelEntityType::Key,
+            $this->keyIds($keyGroupRelations),
+            $this->labelLanguageResolver->getLabelLanguage()
         );
+    }
 
-        if (method_exists($definition, '__wakeup')) {
-            $definition->__wakeup();
-        }
-
-        if ($definition instanceof LayoutDefinitionEnrichmentInterface) {
-            $context['object'] = $object;
-            $context['class'] = $object->getClass();
-            $context['ownerType'] = 'classificationstore';
-            $context['ownerName'] = $fieldName;
-            $context['keyId'] = $keyGroupRelation->getKeyId();
-            $context['groupId'] = $keyGroupRelation->getGroupId();
-            $context['keyDefinition'] = $definition;
-
-            $definition = $definition->enrichLayoutDefinition($object, $context);
-        }
-
-        return $definition;
+    /**
+     * @param KeyGroupRelation[] $keyGroupRelations
+     *
+     * @return int[]
+     */
+    private function keyIds(array $keyGroupRelations): array
+    {
+        return array_map(
+            static fn (KeyGroupRelation $keyGroupRelation): int => $keyGroupRelation->getKeyId(),
+            $keyGroupRelations
+        );
     }
 }

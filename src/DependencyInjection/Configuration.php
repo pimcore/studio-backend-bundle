@@ -17,6 +17,7 @@ use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant\ProtocolVersion;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepository;
@@ -27,18 +28,21 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use function array_diff;
 use function array_filter;
 use function array_keys;
+use function array_map;
 use function implode;
 use function in_array;
 use function is_array;
 use function is_int;
 use function is_null;
 use function is_string;
+use function mb_strlen;
 use function preg_match;
 use function sprintf;
 
@@ -358,6 +362,42 @@ class Configuration implements ConfigurationInterface
                         ->info('The key used to sign the JWT token. Must be longer than 256 bits.')
                         ->isRequired()
                         ->defaultValue('some-secret-default')
+                    ->end()
+                    ->scalarNode('issuer')
+                        ->info('Issuer ("iss" claim) of the Mercure access tokens. A 1.x hub without ' .
+                            'compatibility mode must trust it, ' .
+                            'e.g. with its MERCURE_TRUSTED_ISSUERS environment variable. ' .
+                            'The default matches the default of the hub, which only suits development.'
+                        )
+                        ->defaultValue('https://localhost')
+                    ->end()
+                    ->enumNode('protocol_version')
+                        ->info('Mercure protocol the clients subscribe with: "0.x" for 0.x hubs, "1.0" for 1.x hubs, ' .
+                            'or "auto" to detect it on hub_url_server. Tokens and cookies always serve both ' .
+                            'protocols. The 0.x protocol is removed in the next major version.'
+                        )
+                        ->values(array_map(
+                            static fn (ProtocolVersion $version): string => $version->value,
+                            ProtocolVersion::cases()
+                        ))
+                        ->defaultValue(ProtocolVersion::AUTO->value)
+                    ->end()
+                    ->scalarNode('resource_identifier')
+                        ->info('Audience ("aud" claim) of the Mercure access tokens: ' .
+                            'the resource identifier of the hub. ' .
+                            'If it is not set, the tokens are valid for hub_url_server and for the origin of ' .
+                            'hub_url_client. Set it, and the same "resource_identifier" directive on the hub, when ' .
+                            'a proxy exposes the hub under another host.'
+                        )
+                        ->defaultNull()
+                    ->end()
+                    ->scalarNode('cookie_name')
+                        ->info('Name of the Mercure 1.0 authorization cookie, next to the 0.x "mercureAuthorization" ' .
+                            'cookie. If it is not set, ' .
+                            '"__Secure-mercure_access_token" is used for an https hub_url_client and ' .
+                            '"mercure_access_token" otherwise. Must match the "cookie_name" directive of the hub.'
+                        )
+                        ->defaultNull()
                     ->end()
                      ->integerNode('cookie_lifetime')
                         ->info('Lifetime of the mercure cookie in seconds. Default is one hour.')
@@ -840,6 +880,13 @@ class Configuration implements ConfigurationInterface
                                     'Map of Pimcore username to bearer token list. '
                                     . 'Tokens can reference env vars: \'%%env(MY_TOKEN)%%\'.'
                                 )
+                                ->setDeprecated(
+                                    'pimcore/studio-backend-bundle',
+                                    '2026.4',
+                                    'Static MCP personal access tokens are deprecated and will be removed in 2027.1. '
+                                    . 'Use OAuth (authorization_code for people, client_credentials for service users) '
+                                    . 'or MCP access tokens.'
+                                )
                                 ->useAttributeAsKey('username')
                                 ->arrayPrototype()
                                     ->scalarPrototype()->end()
@@ -874,6 +921,18 @@ class Configuration implements ConfigurationInterface
                         static fn (int|string $id): bool => preg_match(McpPath::STUDIO_SLUG_PATTERN, (string) $id) !== 1
                     ) !== [])
                     ->thenInvalid('MCP server ids are their URL slug and may only contain a-z, 0-9 and hyphens: %s')
+                ->end()
+                // The id is stamped as the version coauthor, which is limited to the column width.
+                ->validate()
+                    ->ifTrue(static fn (array $servers): bool => array_filter(
+                        array_keys($servers),
+                        static fn (int|string $id): bool => mb_strlen((string) $id)
+                            > VersionCoauthor::MAX_COAUTHOR_LENGTH
+                    ) !== [])
+                    ->thenInvalid(
+                        'MCP server ids are stamped as the version coauthor '
+                        . 'and may have at most 255 characters: %s'
+                    )
                 ->end()
                 ->arrayPrototype()
                     ->children()
@@ -1024,6 +1083,7 @@ class Configuration implements ConfigurationInterface
                         ->scalarPrototype()->end()
                         ->defaultValue([])
                     ->end()
+                    ->append($this->addOAuthClientCredentialsNode())
                     ->append($this->addOAuthClientIdMetadataDocumentsNode())
                     ->append($this->addOAuthDynamicClientRegistrationNode())
                     ->arrayNode('keys')
@@ -1132,6 +1192,31 @@ class Configuration implements ConfigurationInterface
         }
 
         return false;
+    }
+
+    private function addOAuthClientCredentialsNode(): ArrayNodeDefinition
+    {
+        $node = (new TreeBuilder('client_credentials'))->getRootNode();
+        $node
+            ->addDefaultsIfNotSet()
+            ->info(
+                'OAuth client_credentials grant for confidential clients bound to a service user. '
+                . 'The token is issued for the bound service user, without a refresh token. '
+                . 'Dynamically registered and CIMD clients never get this grant. Opt-in; default off.'
+            )
+            ->children()
+                ->booleanNode('enabled')
+                    ->info('Enable the grant at the token endpoint and advertise it in metadata.')
+                    ->defaultFalse()
+                ->end()
+                ->integerNode('access_token_ttl')
+                    ->info('Access-token lifetime in seconds for this grant. Keep it short.')
+                    ->min(60)
+                    ->defaultValue(900)
+                ->end()
+            ->end();
+
+        return $node;
     }
 
     private function addOAuthClientIdMetadataDocumentsNode(): ArrayNodeDefinition

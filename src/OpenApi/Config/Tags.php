@@ -39,6 +39,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_cache_description',
 )]
 #[Tag(
+    name: Tags::IndexSync->value,
+    description: 'tag_index_sync_description'
+)]
+#[Tag(
     name: Tags::Mcp->value,
     description: 'tag_mcp_description',
 )]
@@ -87,6 +91,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_gdpr_description'
 )]
 #[Tag(
+    name: Tags::MaintenanceMode->value,
+    description: 'tag_maintenance_mode_description'
+)]
+#[Tag(
     name: Tags::Mercure->value,
     description: 'tag_mercure_description'
 )]
@@ -125,6 +133,10 @@ use OpenApi\Attributes\Tag;
 #[Tag(
     name: Tags::Role->value,
     description: 'tag_role_description'
+)]
+#[Tag(
+    name: Tags::ServiceUser->value,
+    description: 'tag_service_user_description'
 )]
 #[Tag(
     name: Tags::Schedule->value,
@@ -207,6 +219,8 @@ enum Tags: string
     case Emails = 'E-Mails';
     case Export = 'Export';
     case GDPR = 'GDPR Data Extractor';
+    case IndexSync = 'Index Sync';
+    case MaintenanceMode = 'Maintenance Mode';
     case Mercure = 'Mercure';
     case Metadata = 'Metadata';
     case Notes = 'Notes';
@@ -220,6 +234,7 @@ enum Tags: string
     case Search = 'Search';
     case Mcp = 'MCP';
     case Schedule = 'Schedule';
+    case ServiceUser = 'Service User Management';
     case Settings = 'Settings';
     case SettingsAdmin = 'Settings Admin';
     case Tags = 'Tags';

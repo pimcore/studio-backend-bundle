@@ -22,14 +22,16 @@ use function sprintf;
  */
 final class SendMailException extends AbstractApiException
 {
-    public function __construct(
-        string $originalMessage,
-        string $mailType = 'mail',
-        ?Throwable $previous = null
-    ) {
+    /**
+     * The message is returned to the caller of the unauthenticated reset password endpoint, so it must
+     * not carry the reason of the failure. The reason stays available as the previous exception. The
+     * mail type only names the operation, so it is safe to report.
+     */
+    public function __construct(?Throwable $previous = null, string $mailType = 'reset password mail')
+    {
         parent::__construct(
             HttpResponseCodes::INTERNAL_SERVER_ERROR->value,
-            sprintf('Failed to send %s: %s', $mailType, $originalMessage),
+            sprintf('Failed to send %s', $mailType),
             $previous,
         );
     }

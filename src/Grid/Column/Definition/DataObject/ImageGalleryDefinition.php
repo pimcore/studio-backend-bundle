@@ -35,10 +35,4 @@ final readonly class ImageGalleryDefinition extends AbstractDefinition
     {
         return false;
     }
-
-    #[Override]
-    public function isFilterable(): bool
-    {
-        return false;
-    }
 }

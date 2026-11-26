@@ -42,6 +42,19 @@ final class GroupLayout implements AdditionalAttributesInterface
         private readonly ?string $description,
         #[Property(description: 'Description', type: 'array', items: new Items(ref: KeyLayout::class))]
         private readonly array $keys = [],
+        #[Property(description: 'Title of the group', type: 'string', example: 'value', nullable: true)]
+        private readonly ?string $title = null,
+        #[Property(
+            description: 'Sub groups the keys of this group are assigned to, ordered by their first key',
+            type: 'array',
+            items: new Items(ref: SubGroupLayout::class),
+            example: [[
+                'identifier' => '01JBQ8X9Z0ABCDEFGHJKMNPQRS',
+                'name' => 'dimensions',
+                'description' => 'Physical dimensions',
+            ]]
+        )]
+        private readonly array $subGroups = [],
     ) {
     }
 
@@ -66,5 +79,18 @@ final class GroupLayout implements AdditionalAttributesInterface
     public function getKeys(): array
     {
         return $this->keys;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    /**
+     * @return SubGroupLayout[]
+     */
+    public function getSubGroups(): array
+    {
+        return $this->subGroups;
     }
 }

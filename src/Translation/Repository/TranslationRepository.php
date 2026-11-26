@@ -38,20 +38,18 @@ use function trim;
 /**
  * @internal
  */
-final readonly class TranslationRepository implements TranslationRepositoryInterface
+final class TranslationRepository implements TranslationRepositoryInterface
 {
     private const array MAIN_TABLE_ORDER_KEYS = ['key', 'type'];
 
-    private array $validLanguages;
+    private ?array $systemSettings = null;
 
     public function __construct(
-        private SettingsProviderInterface $systemSettingsProvider,
-        private Connection $db,
-        private SecurityServiceInterface $securityService,
-        private Config $config,
+        private readonly SettingsProviderInterface $systemSettingsProvider,
+        private readonly Connection $db,
+        private readonly SecurityServiceInterface $securityService,
+        private readonly Config $config,
     ) {
-        $settings = $this->systemSettingsProvider->getSettings();
-        $this->validLanguages = $settings['validLanguages'] ?? [];
     }
 
     /**
@@ -249,9 +247,20 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
 
     private function setNewValues(Translation $translation): void
     {
-        foreach ($this->validLanguages as $language) {
+        foreach ($this->getValidLanguages() as $language) {
             $translation->addTranslation($language, '');
         }
+    }
+
+    /**
+     * Resolved on first use and memoised: the system settings cannot be read in the constructor,
+     * because they throw when a configured error document is missing.
+     */
+    private function getValidLanguages(): array
+    {
+        $this->systemSettings ??= $this->systemSettingsProvider->getSettings();
+
+        return $this->systemSettings['validLanguages'] ?? [];
     }
 
     private function getTranslationByKey(string $key, string $domain): ?Translation
@@ -268,7 +277,7 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
      */
     private function validateLocale(string $locale): void
     {
-        if (!in_array($locale, $this->validLanguages, true)) {
+        if (!in_array($locale, $this->getValidLanguages(), true)) {
             throw new InvalidLocaleException($locale);
         }
     }
