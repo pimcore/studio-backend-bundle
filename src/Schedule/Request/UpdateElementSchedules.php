@@ -28,10 +28,10 @@ final readonly class UpdateElementSchedules
     ) {
         $this->schedules = array_map(static function (array $scheduleData) {
             return new UpdateSchedule(
-                $scheduleData['id'],
+                $scheduleData['id'] ?? null,
                 $scheduleData['date'],
-                $scheduleData['action'],
-                $scheduleData['version'],
+                $scheduleData['action'] ?? null,
+                $scheduleData['version'] ?? null,
                 $scheduleData['active'],
             );
         }, $items);
