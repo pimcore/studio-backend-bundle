@@ -77,8 +77,7 @@ final class KeyGroupRelation implements AdditionalAttributesInterface
         )]
         private readonly ?string $filterUnavailableReason = null,
         #[Property(
-            description: 'Resolved label of the key in the label language, falling back to its name;'
-                . ' null where the key configuration is gone',
+            description: 'Label of the key in the label language, else its name; null if the key is gone',
             type: 'string',
             example: 'Height',
             nullable: true
