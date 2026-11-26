@@ -29,6 +29,7 @@ final readonly class HubService implements HubServiceInterface
         private bool $jwtCookieStrictness = true,
         private ?string $jwtCookieHost = null,
         private ?string $cookieName = null,
+        private ?AccessTokenFactoryInterface $tokenFactory = null,
     ) {
     }
 
@@ -39,7 +40,7 @@ final readonly class HubService implements HubServiceInterface
 
     public function createCookie(): Cookie
     {
-        return $this->buildCookie(Mercure::AUTHORIZATION_COOKIE_NAME->value, $this->tokenProvider->getJwt());
+        return $this->buildLegacyCookie($this->tokenProvider->getJwt());
     }
 
     public function createCookies(): array
@@ -48,9 +49,18 @@ final readonly class HubService implements HubServiceInterface
 
         // Each hub reads only the cookie of its own protocol
         return [
-            $this->buildCookie(Mercure::AUTHORIZATION_COOKIE_NAME->value, $jwt),
+            $this->buildLegacyCookie($jwt),
             $this->buildCookie($this->getCookieName($this->isSecure()), $jwt),
         ];
+    }
+
+    private function buildLegacyCookie(string $jwt): Cookie
+    {
+        // 1.x hubs in compatibility mode fall back to this cookie and accept only 0.x tokens in it
+        return $this->buildCookie(
+            Mercure::AUTHORIZATION_COOKIE_NAME->value,
+            $this->tokenFactory?->toLegacy($jwt) ?? $jwt
+        );
     }
 
     private function buildCookie(string $name, string $jwt): Cookie

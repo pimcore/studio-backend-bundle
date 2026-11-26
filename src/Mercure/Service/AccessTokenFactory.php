@@ -15,12 +15,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 
 use DateTimeImmutable;
 use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Exception;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key\InMemory;
+use Lcobucci\JWT\Token\RegisteredClaims;
+use Lcobucci\JWT\UnencryptedToken;
+use Lcobucci\JWT\Validation\Constraint\SignedWith;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant\Mercure;
 use function array_map;
 use function array_values;
 use function bin2hex;
+use function is_string;
 use function random_bytes;
 use function time;
 
@@ -36,6 +41,8 @@ final readonly class AccessTokenFactory implements AccessTokenFactoryInterface
     private const string ACTION_PUBLISH = 'publish';
 
     private const string ACTION_SUBSCRIBE = 'subscribe';
+
+    private const string LEGACY_CLAIM = 'mercure';
 
     private Configuration $configuration;
 
@@ -87,7 +94,40 @@ final readonly class AccessTokenFactory implements AccessTokenFactoryInterface
         if ($details !== []) {
             $builder = $builder
                 ->withClaim('authorization_details', $details)
-                ->withClaim('mercure', $legacy);
+                ->withClaim(self::LEGACY_CLAIM, $legacy);
+        }
+
+        return $builder
+            ->getToken($this->configuration->signer(), $this->configuration->signingKey())
+            ->toString();
+    }
+
+    public function toLegacy(string $accessToken): string
+    {
+        try {
+            $token = $this->configuration->parser()->parse($accessToken);
+        } catch (Exception) {
+            return $accessToken;
+        }
+
+        $claims = $token instanceof UnencryptedToken ? $token->claims() : null;
+        $signedByUs = new SignedWith($this->configuration->signer(), $this->configuration->verificationKey());
+        if ($claims === null || !$claims->has(self::LEGACY_CLAIM) ||
+            !$this->configuration->validator()->validate($token, $signedByUs)
+        ) {
+            return $accessToken;
+        }
+
+        // Without authorization_details a 1.x hub in compatibility mode treats it as a 0.x token
+        $builder = $this->configuration->builder()->withClaim(self::LEGACY_CLAIM, $claims->get(self::LEGACY_CLAIM));
+        $issuer = $claims->get(RegisteredClaims::ISSUER);
+        if (is_string($issuer) && $issuer !== '') {
+            $builder = $builder->issuedBy($issuer);
+        }
+
+        $expiresAt = $claims->get(RegisteredClaims::EXPIRATION_TIME);
+        if ($expiresAt instanceof DateTimeImmutable) {
+            $builder = $builder->expiresAt(new DateTimeImmutable('@' . $expiresAt->getTimestamp()));
         }
 
         return $builder
