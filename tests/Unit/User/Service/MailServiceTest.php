@@ -222,6 +222,42 @@ final class MailServiceTest extends Unit
         $service->sendInvitationMail($this->createUser(), self::TEMPLATE_URL);
     }
 
+    /**
+     * The hostname resolved by the tool follows the request's Host header, which the caller chooses.
+     *
+     * @throws Exception
+     */
+    public function testInvitationMailSubjectNamesTheMainDomain(): void
+    {
+        $subjects = [];
+        $mail = $this->makeEmpty(Mail::class);
+        $context = new RequestContext(host: 'evil.example');
+
+        $service = new MailService(
+            $this->makeEmpty(SettingsProviderInterface::class, [
+                'getSettings' => ['main_domain' => 'mysite.com'],
+            ]),
+            $this->makeEmpty(RouterInterface::class, ['getContext' => $context]),
+            $this->makeEmpty(EventDispatcherInterface::class, [
+                'dispatch' => static fn (object $event): object => $event,
+            ]),
+            $this->makeEmpty(ToolResolverInterface::class, [
+                'getHostname' => 'evil.example',
+                'getMail' => static function (array $recipients, string $subject) use (&$subjects, $mail): Mail {
+                    $subjects[] = $subject;
+
+                    return $mail;
+                },
+            ]),
+            'noreply@example.com',
+        );
+
+        $service->sendInvitationMail($this->createUser(), self::TEMPLATE_URL);
+
+        $this->assertSame(['Pimcore login invitation for mysite.com'], $subjects);
+        $this->assertSame('evil.example', $context->getHost(), 'The shared router context is left alone.');
+    }
+
     private function createUser(): User
     {
         return (new User())->setEmail('user@example.com');
