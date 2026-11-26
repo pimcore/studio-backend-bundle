@@ -44,8 +44,8 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
         $this->synchronousProcessingService->enable();
         $element->setUserModification($user->getId());
 
-        if ($task === null) {
-            $element->save();
+        if ($task === null || $task === ElementSaveTasks::SAVE->value) {
+            $this->processPlainSave($element, $user);
 
             return;
         }
@@ -54,12 +54,39 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
     }
 
     /**
+     * A save must not make a published object's changes live unless the user may publish it.
+     * Without the publish permission the data is stored as a version (draft), like the "Save draft" action does.
+     *
+     * @throws Exception
+     */
+    private function processPlainSave(ElementInterface $element, UserInterface $user): void
+    {
+        if ($element instanceof Concrete && $element->isPublished() && !$this->canPublish($element, $user)) {
+            $this->processVersionTasks($element, $user, ElementSaveTasks::VERSION->value);
+
+            return;
+        }
+
+        $element->save();
+    }
+
+    private function canPublish(ElementInterface $element, UserInterface $user): bool
+    {
+        try {
+            $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
+        } catch (ForbiddenException) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * @throws Exception
      */
     private function processTask(ElementInterface $element, UserInterface $user, string $task): void
     {
         match ($task) {
-            ElementSaveTasks::SAVE->value => $element->save(),
             ElementSaveTasks::AUTOSAVE->value, ElementSaveTasks::VERSION->value =>
                 $this->processVersionTasks($element, $user, $task),
             ElementSaveTasks::PUBLISH->value, ElementSaveTasks::UNPUBLISH->value =>
