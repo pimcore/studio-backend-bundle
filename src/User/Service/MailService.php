@@ -103,9 +103,6 @@ final class MailService implements MailServiceInterface
             throw new DomainConfigurationException();
         }
 
-        $context = $this->router->getContext();
-        $context->setHost($domain);
-
         /** @var User $user */
         $event = new InvitationEvent($user, $invitationUrl);
         $this->eventDispatcher->dispatch($event, InvitationEvent::EVENT_NAME);
@@ -115,7 +112,8 @@ final class MailService implements MailServiceInterface
             try {
                 $mail = $this->toolResolver->getMail(
                     [$user->getEmail()],
-                    'Pimcore login invitation for ' . $this->toolResolver->getHostname()
+                    // the main domain, not the request hostname: the Host header is chosen by the caller
+                    'Pimcore login invitation for ' . $domain
                 );
                 $mail->setIgnoreDebugMode(true);
                 $mail->addFrom($this->fromEmail);

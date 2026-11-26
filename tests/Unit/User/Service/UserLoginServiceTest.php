@@ -402,7 +402,7 @@ final class UserLoginServiceTest extends Unit
         $this->assertSame('https://mysite.com:8443/cms/pimcore-studio/login/?token=test-token-123', $url);
     }
 
-    public function testSendInvitationBuildsTheLinkFromTheConfiguredOrigin(): void
+    public function testSendInvitationBuildsTheLinkFromTheMainDomain(): void
     {
         $sentUrls = [];
         $service = $this->createInvitationService(
@@ -412,11 +412,73 @@ final class UserLoginServiceTest extends Unit
 
         $service->sendInvitation(42);
 
-        // built from the router origin, never from anything the caller supplied
         self::assertSame(
-            ['https://mysite.com:8443/cms/pimcore-studio/reset-password/?token=test-token-123'],
+            ['https://mysite.com/cms/pimcore-studio/reset-password/?token=test-token-123'],
             $sentUrls
         );
+    }
+
+    /**
+     * The router context is filled from the request, and the request's Host header is chosen by the
+     * caller. The mail goes to someone else, so its link must not follow a forged host.
+     */
+    public function testSendInvitationIgnoresTheRequestHost(): void
+    {
+        $sentUrls = [];
+        $service = $this->createInvitationService(
+            $this->createInviteeUser(password: 'hashed-password'),
+            sentUrls: $sentUrls,
+            requestHost: 'evil.example',
+        );
+
+        $service->sendInvitation(42);
+
+        self::assertCount(1, $sentUrls);
+        self::assertStringNotContainsString('evil.example', $sentUrls[0]);
+        self::assertStringStartsWith('https://mysite.com/', $sentUrls[0]);
+    }
+
+    public function testSendInvitationKeepsThePortOfTheMainDomain(): void
+    {
+        $sentUrls = [];
+        $service = $this->createInvitationService(
+            $this->createInviteeUser(password: 'hashed-password'),
+            sentUrls: $sentUrls,
+            mainDomain: 'localhost:8080',
+        );
+
+        $service->sendInvitation(42);
+
+        self::assertSame(
+            ['https://localhost:8080/cms/pimcore-studio/reset-password/?token=test-token-123'],
+            $sentUrls
+        );
+    }
+
+    public function testSendInvitationIsRefusedWithoutAMainDomain(): void
+    {
+        $calls = [];
+        $sentUrls = [];
+        $invitee = $this->createInviteeUser(password: null);
+        $service = $this->createInvitationService(
+            $invitee,
+            sentUrls: $sentUrls,
+            calls: $calls,
+            mainDomain: '',
+        );
+
+        try {
+            $service->sendInvitation(42);
+            self::fail('An InvalidArgumentException was expected.');
+        } catch (InvalidArgumentException $exception) {
+            self::assertSame(422, $exception->getStatusCode());
+            self::assertSame('error_invitation_no_main_domain', $exception->getErrorKey());
+        }
+
+        // refused before anything is written: no placeholder password, no token, no mail
+        self::assertNull($invitee->getPassword());
+        self::assertSame([], $calls);
+        self::assertSame([], $sentUrls);
     }
 
     public function testSendInvitationAssignsAPasswordWhenTheUserHasNone(): void
@@ -533,6 +595,8 @@ final class UserLoginServiceTest extends Unit
         array &$sentUrls = [],
         bool $mailFails = false,
         array &$calls = [],
+        string $mainDomain = 'mysite.com',
+        string $requestHost = 'mysite.com',
     ): UserLoginService {
         return new UserLoginService(
             $this->makeEmpty(AuthenticationResolverInterface::class, [
@@ -556,8 +620,8 @@ final class UserLoginServiceTest extends Unit
             ]),
             $this->makeEmpty(LoggerInterface::class),
             $this->makeEmpty(UrlGeneratorInterface::class, [
-                'generate' => 'https://mysite.com:8443/cms/pimcore-studio/api/login/token',
-                'getContext' => new RequestContext('/cms'),
+                'generate' => 'https://' . $requestHost . ':8443/cms/pimcore-studio/api/login/token',
+                'getContext' => new RequestContext('/cms', 'POST', $requestHost, 'https', 80, 8443),
             ]),
             $this->makeEmpty(UserRepositoryInterface::class, [
                 'getPersonById' => $invitee,
@@ -572,7 +636,9 @@ final class UserLoginServiceTest extends Unit
                     'getId' => 7,
                 ]),
             ]),
-            $this->makeEmpty(SettingsProviderInterface::class),
+            $this->makeEmpty(SettingsProviderInterface::class, [
+                'getSettings' => ['main_domain' => $mainDomain],
+            ]),
             $this->makeEmpty(SiteRepositoryInterface::class),
         );
     }

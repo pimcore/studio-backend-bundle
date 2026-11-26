@@ -37,6 +37,7 @@ enum HttpResponseErrorKeys: string
     case INVITATION_NON_ADMIN = 'error_invitation_as_admin_non_admin_user';
     case INVITATION_NO_EMAIL = 'error_invitation_no_email';
     case INVITATION_USER_INACTIVE = 'error_invitation_user_inactive';
+    case INVITATION_NO_MAIN_DOMAIN = 'error_invitation_no_main_domain';
     case GDI_PARSING_EXCEPTION = 'error_gdi_parsing_exception';
     case UID_ALREADY_EXISTS = 'error_uid_used';
     case RECYCLE_BIN_RESTORE  = 'error_recycle_bin_restore';

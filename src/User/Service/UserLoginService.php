@@ -31,6 +31,7 @@ use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use function in_array;
+use function is_string;
 use function rtrim;
 use function sprintf;
 use function urlencode;
@@ -150,6 +151,10 @@ final readonly class UserLoginService implements UserLoginServiceInterface
             );
         }
 
+        // Resolved before anything is written: without a main domain no safe link can be built, and the
+        // placeholder password must not be stored for an invitation that is never sent.
+        $origin = $this->getMainDomainOrigin();
+
         /** @var User $user */
         // The token is only accepted for a user that has a password: Tool\Authentication::isValidUser()
         // requires one. An invited user usually has none, so give them one they will never learn. It is
@@ -165,23 +170,47 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         // The reset password route logs the invitee in with the token and opens the profile in reset
         // mode, so they set a password of their own. The plain login route would drop them at the root
         // holding a password they do not know.
-        $this->mailService->sendInvitationMail($user, $this->buildStudioTokenUrl('/reset-password/', $token));
+        $this->mailService->sendInvitationMail(
+            $user,
+            $this->buildStudioTokenUrl('/reset-password/', $token, $origin)
+        );
     }
 
     /**
-     * A Studio URL carrying the token, built from the configured origin rather than from anything the
-     * caller supplied, so the mail can never be pointed at a host of someone else's choosing.
+     * A Studio URL carrying the token. Without an explicit origin it is taken from the router context,
+     * which follows the current request: only use that for a link handed back to the caller themselves.
      */
-    private function buildStudioTokenUrl(string $path, string $token): string
+    private function buildStudioTokenUrl(string $path, string $token, ?string $origin = null): string
     {
         return sprintf(
             '%s%s%s%s?token=%s',
-            $this->getOrigin(),
+            $origin ?? $this->getOrigin(),
             $this->urlGenerator->getContext()->getBaseUrl(),
             rtrim($this->studioPath, '/'),
             $path,
             urlencode($token)
         );
+    }
+
+    /**
+     * The origin for a link mailed to someone other than the caller. Its host must never come from the
+     * request, because the Host header is chosen by the caller; only the configured main domain is used,
+     * including a port it may carry.
+     *
+     * @throws InvalidArgumentException
+     */
+    private function getMainDomainOrigin(): string
+    {
+        $mainDomain = $this->settingsProvider->getSettings()['main_domain'] ?? '';
+
+        if (!is_string($mainDomain) || $mainDomain === '') {
+            throw new InvalidArgumentException(
+                'Cannot invite a user while no main domain is set in the system settings',
+                errorKey: HttpResponseErrorKeys::INVITATION_NO_MAIN_DOMAIN->value
+            );
+        }
+
+        return sprintf('%s://%s', $this->urlGenerator->getContext()->getScheme(), $mainDomain);
     }
 
     /**
