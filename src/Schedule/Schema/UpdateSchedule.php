@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ScheduleActions;
  */
 #[Schema(
     title: 'UpdateSchedule',
-    required: ['id', 'date', 'active'],
+    required: ['date', 'active'],
     type: 'object'
 )]
 final readonly class UpdateSchedule
