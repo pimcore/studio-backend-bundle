@@ -142,6 +142,12 @@ def check_file(path):
                 yield line, len(text), text
 
 
+def escape_command(value, is_property=False):
+    """Escape a value for a GitHub workflow command so source text cannot start another command."""
+    value = value.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+    return value.replace(':', '%3A').replace(',', '%2C') if is_property else value
+
+
 def main(paths):
     failures = 0
     for root in map(Path, paths or ['src']):
@@ -149,8 +155,9 @@ def main(paths):
             for line, length, text in check_file(path):
                 failures += 1
                 shown = text if len(text) <= 80 else text[:77] + '...'
-                print(f'::error file={path},line={line}::Property description has {length} characters '
-                      f'(allowed {MIN_LENGTH}-{MAX_LENGTH}): {shown}')
+                message = (f'Property description has {length} characters '
+                           f'(allowed {MIN_LENGTH}-{MAX_LENGTH}): {shown}')
+                print(f'::error file={escape_command(str(path), True)},line={line}::{escape_command(message)}')
     if failures:
         print(f'{failures} property description(s) outside {MIN_LENGTH}-{MAX_LENGTH} characters')
     return 1 if failures else 0
