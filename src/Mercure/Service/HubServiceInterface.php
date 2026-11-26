@@ -23,9 +23,10 @@ interface HubServiceInterface
     public function createCookie(): Cookie;
 
     /**
-     * One cookie per protocol, carrying the same token: first the 0.x "mercureAuthorization" cookie
-     * (the one createCookie() returns), then the 1.0 cookie ("__Secure-mercure_access_token",
-     * "mercure_access_token" for a plain HTTP client URL, or the configured cookie_name).
+     * One cookie per protocol, with the same scope: first the 0.x "mercureAuthorization" cookie
+     * (the one createCookie() returns, carrying a 0.x token), then the 1.0 cookie
+     * ("__Secure-mercure_access_token", "mercure_access_token" for a plain HTTP client URL,
+     * or the configured cookie_name).
      *
      * @return array{0: Cookie, 1: Cookie}
      */

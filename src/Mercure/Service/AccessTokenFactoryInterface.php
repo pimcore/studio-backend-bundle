@@ -35,4 +35,10 @@ interface AccessTokenFactoryInterface
         array $audience,
         DateTimeImmutable $expiresAt
     ): string;
+
+    /**
+     * Re-mints a token of this factory as a 0.x token: only the "mercure" claim, issuer and expiry.
+     * 1.x hubs accept nothing else in the legacy cookie. Any other token is returned unchanged.
+     */
+    public function toLegacy(string $accessToken): string;
 }

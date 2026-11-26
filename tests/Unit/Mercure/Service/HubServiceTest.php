@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mercure\Service;
 
 use Codeception\Test\Unit;
+use DateTimeImmutable;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Model\TopicCollection;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\AccessTokenFactory;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\AudienceServiceInterface;
@@ -24,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
+use function array_slice;
 
 final class HubServiceTest extends Unit
 {
@@ -188,6 +190,54 @@ final class HubServiceTest extends Unit
         }
     }
 
+    /**
+     * 1.x hubs in compatibility mode fall back to the legacy cookie when theirs is missing,
+     * e.g. over plain HTTP without cookie_name, and accept only a 0.x token there.
+     */
+    public function testLegacyCookieCarriesA0xToken(): void
+    {
+        $tokenFactory = new AccessTokenFactory(self::JWT_KEY, 'https://example.com');
+        $service = new HubService(
+            new ClientTokenService(
+                $this->makeEmpty(TopicLoaderInterface::class, [
+                    'loadTopics' => new TopicCollection([], [], [], ['studio-backend-default/user/2']),
+                ]),
+                $tokenFactory,
+                $this->makeEmpty(AudienceServiceInterface::class, [
+                    'getSubscriberAudience' => ['http://localhost/.well-known/mercure'],
+                ]),
+                $this->makeEmpty(SecurityServiceInterface::class, ['isLoggedIn' => false])
+            ),
+            $this->makeEmpty(UrlServiceInterface::class, ['getClientSideUrl' => 'http://localhost/hub']),
+            tokenFactory: $tokenFactory
+        );
+
+        [$legacyCookie, $cookie] = $service->createCookies();
+        [$legacyHeader, $legacyClaims] = $this->decode((string) $legacyCookie->getValue());
+        [$header, $claims] = $this->decode((string) $cookie->getValue());
+
+        $this->assertSame('JWT', $legacyHeader['typ']);
+        $this->assertSame([
+            'mercure' => ['subscribe' => ['studio-backend-default/user/2']],
+            'iss' => 'https://example.com',
+            'exp' => $claims['exp'],
+        ], $legacyClaims);
+        $this->assertSame('at+jwt', $header['typ']);
+        $this->assertArrayHasKey('authorization_details', $claims);
+        $this->assertSame($legacyClaims['mercure'], $claims['mercure']);
+        $this->assertSame('JWT', $this->decode((string) $service->createCookie()->getValue())[0]['typ']);
+    }
+
+    public function testLegacyTokenIsOnlyMintedFromOwnTokens(): void
+    {
+        $tokenFactory = new AccessTokenFactory(self::JWT_KEY, 'https://example.com');
+        $foreign = (new AccessTokenFactory(self::JWT_KEY . '-other', 'https://example.com'))
+            ->create(['topic'], [], 'sub', ['aud'], new DateTimeImmutable('+1 hour'));
+
+        $this->assertSame('jwt', $tokenFactory->toLegacy('jwt'));
+        $this->assertSame($foreign, $tokenFactory->toLegacy($foreign));
+    }
+
     public function testConfiguredCookieNameIsUsed(): void
     {
         $service = new HubService(
@@ -205,9 +255,23 @@ final class HubServiceTest extends Unit
      */
     private function decodeClaims(string $jwt): array
     {
-        $payload = explode('.', $jwt)[1];
+        return $this->decode($jwt)[1];
+    }
 
-        return json_decode(base64_decode(strtr($payload, '-_', '+/')), true, 512, JSON_THROW_ON_ERROR);
+    /**
+     * @return array{0: array<string, mixed>, 1: array<string, mixed>}
+     */
+    private function decode(string $jwt): array
+    {
+        return array_map(
+            static fn (string $part): array => json_decode(
+                base64_decode(strtr($part, '-_', '+/')),
+                true,
+                512,
+                JSON_THROW_ON_ERROR
+            ),
+            array_slice(explode('.', $jwt), 0, 2)
+        );
     }
 
     private function createHubService(int $cookieLifetime): HubService
