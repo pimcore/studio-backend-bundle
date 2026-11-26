@@ -14,11 +14,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Class\Service\SelectOptions;
 
 use Codeception\Test\Unit;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\SelectOptions\ConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\SelectOption\DetailHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateSelectOptionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\SelectOptionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\SelectOption\SelectOptionDetail;
+use Pimcore\Bundle\StudioBackendBundle\Class\Service\SelectOptions\ImportDataParser;
+use Pimcore\Bundle\StudioBackendBundle\Class\Service\SelectOptions\ImportDataParserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\SelectOptions\SelectOptionService;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -80,12 +82,17 @@ final class SelectOptionServiceTest extends Unit
                     && $config->getSelectOptionsAsData() === [['value' => 'new', 'label' => 'New', 'name' => '']];
             }));
 
+        $parser = $this->createMock(ImportDataParserInterface::class);
+        $parser->expects($this->once())
+            ->method('parse')
+            ->with('uploaded file')
+            ->willReturn(new UpdateSelectOptionParameters('imported', true, '', '', [
+                ['value' => 'new', 'label' => 'New'],
+            ]));
+
         $detail = $this->createDetail();
-        $result = $this->createService($repository, $detail)->importSelectOptionFromJson(
-            'EventStatus',
-            '{"id": "OtherStatus", "group": "imported", "adminOnly": true, "useTraits": "",'
-            . ' "implementsInterfaces": "", "selectOptions": [{"value": "new", "label": "New"}]}'
-        );
+        $result = $this->createService(repository: $repository, detail: $detail, importDataParser: $parser)
+            ->importSelectOptionFromJson('EventStatus', 'uploaded file');
 
         $this->assertSame($detail, $result);
     }
@@ -106,99 +113,43 @@ final class SelectOptionServiceTest extends Unit
                 $savedConfig = $config;
             });
 
-        $service = $this->createService($repository);
+        $service = $this->createService(repository: $repository, importDataParser: new ImportDataParser());
         $service->importSelectOptionFromJson('EventStatus', $service->exportSelectOption('EventStatus')->getJson());
 
         $this->assertSame(json_encode($config), json_encode($savedConfig));
     }
 
-    public function testImportRejectsInvalidJson(): void
+    public function testImportSavesNothingWhenTheFileIsRejected(): void
     {
         $repository = $this->createMock(SelectOptionRepositoryInterface::class);
         $repository->method('getById')->willReturn($this->createConfig());
         $repository->expects($this->never())->method('save');
+
+        $parser = $this->createMock(ImportDataParserInterface::class);
+        $parser->method('parse')->willThrowException(new InvalidArgumentException('Uploaded file is not valid JSON'));
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Uploaded file is not valid JSON');
 
-        $this->createService($repository)->importSelectOptionFromJson('EventStatus', '{not json');
+        $this->createService(repository: $repository, importDataParser: $parser)
+            ->importSelectOptionFromJson('EventStatus', '{not json');
     }
 
-    /**
-     * @dataProvider notAnExportProvider
-     */
-    #[DataProvider('notAnExportProvider')]
-    public function testImportRejectsFilesThatAreNotASelectOptionsExport(string $json): void
+    public function testImportRejectsAnOptionWithoutValueWithoutSaving(): void
     {
         $repository = $this->createMock(SelectOptionRepositoryInterface::class);
         $repository->method('getById')->willReturn($this->createConfig());
         $repository->expects($this->never())->method('save');
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Uploaded file is not a select options export: missing "selectOptions".');
-
-        $this->createService($repository)->importSelectOptionFromJson('EventStatus', $json);
-    }
-
-    /**
-     * @return array<string, array{string}>
-     */
-    public static function notAnExportProvider(): array
-    {
-        return [
-            'class definition export' => ['{"id": "EventStatus", "layoutDefinitions": null}'],
-            'scalar' => ['"EventStatus"'],
-            'empty list' => ['[]'],
-        ];
-    }
-
-    /**
-     * @dataProvider malformedImportProvider
-     */
-    #[DataProvider('malformedImportProvider')]
-    public function testImportRejectsMalformedValuesWithoutSaving(string $json, string $expectedMessage): void
-    {
-        $repository = $this->createMock(SelectOptionRepositoryInterface::class);
-        $repository->method('getById')->willReturn($this->createConfig());
-        $repository->expects($this->never())->method('save');
+        $parser = $this->makeEmpty(ImportDataParserInterface::class, [
+            'parse' => new UpdateSelectOptionParameters(selectOptions: [['label' => 'Open']]),
+        ]);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage($expectedMessage);
+        $this->expectExceptionMessage('Select option at index 0 must have a non-empty "value" field');
 
-        $this->createService($repository)->importSelectOptionFromJson('EventStatus', $json);
-    }
-
-    /**
-     * @return array<string, array{string, string}>
-     */
-    public static function malformedImportProvider(): array
-    {
-        return [
-            'adminOnly as string' => [
-                '{"adminOnly": "yes", "selectOptions": []}',
-                'Invalid value for "adminOnly": expected boolean, got string.',
-            ],
-            'group as number' => [
-                '{"group": 1, "selectOptions": []}',
-                'Invalid value for "group": expected string or NULL, got integer.',
-            ],
-            'selectOptions as object' => [
-                '{"selectOptions": {"open": {"value": "open"}}}',
-                'Invalid value for "selectOptions": expected a list of objects.',
-            ],
-            'option as string' => [
-                '{"selectOptions": ["open"]}',
-                'Invalid value for "selectOptions[0]": expected array, got string.',
-            ],
-            'option value as number' => [
-                '{"selectOptions": [{"value": 1}]}',
-                'Invalid value for "selectOptions[0].value": expected string, got integer.',
-            ],
-            'option without value' => [
-                '{"selectOptions": [{"label": "Open"}]}',
-                'Select option at index 0 must have a non-empty "value" field',
-            ],
-        ];
+        $this->createService(repository: $repository, importDataParser: $parser)
+            ->importSelectOptionFromJson('EventStatus', '{"selectOptions": [{"label": "Open"}]}');
     }
 
     public function testImportRejectsAConfigurationThatIsNotWriteable(): void
@@ -224,12 +175,13 @@ final class SelectOptionServiceTest extends Unit
         $repository->method('getById')->willReturn($this->createConfig(adminOnly: true));
         $repository->expects($this->never())->method('save');
 
+        $parser = $this->createMock(ImportDataParserInterface::class);
+        $parser->expects($this->never())->method('parse');
+
         $this->expectException(ForbiddenException::class);
 
-        $this->createService(repository: $repository, isAdmin: false)->importSelectOptionFromJson(
-            'EventStatus',
-            '{"selectOptions": [{"value": "open"}]}'
-        );
+        $this->createService(repository: $repository, isAdmin: false, importDataParser: $parser)
+            ->importSelectOptionFromJson('EventStatus', '{"selectOptions": [{"value": "open"}]}');
     }
 
     private function createConfig(bool $adminOnly = false): Config
@@ -265,6 +217,7 @@ final class SelectOptionServiceTest extends Unit
         ?SelectOptionDetail $detail = null,
         ?DetailHydratorInterface $hydrator = null,
         bool $isAdmin = true,
+        ?ImportDataParserInterface $importDataParser = null,
     ): SelectOptionService {
         return new SelectOptionService(
             $repository,
@@ -277,6 +230,9 @@ final class SelectOptionServiceTest extends Unit
             $this->makeEmpty(EventDispatcherInterface::class),
             $this->makeEmpty(SecurityServiceInterface::class, [
                 'getCurrentUser' => $this->makeEmpty(UserInterface::class, ['isAdmin' => $isAdmin]),
+            ]),
+            $importDataParser ?? $this->makeEmpty(ImportDataParserInterface::class, [
+                'parse' => new UpdateSelectOptionParameters(selectOptions: [['value' => 'open']]),
             ]),
         );
     }
