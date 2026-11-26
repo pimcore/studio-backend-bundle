@@ -308,6 +308,36 @@ final class UserLoginServiceTest extends Unit
         $service->resetPassword($resetPassword);
     }
 
+    /**
+     * A main domain may carry a port, which the invitation link keeps. The reset password URL is
+     * matched by its hostname, so the port must not make the main domain unmatchable.
+     */
+    public function testResetPasswordAcceptsMainDomainWithPort(): void
+    {
+        $service = $this->createService(
+            mainDomain: 'localhost:8080',
+            sites: [],
+            userExists: true,
+        );
+
+        $resetPassword = new ResetPassword('testuser', 'http://localhost:8080/pimcore-studio/reset-password/');
+
+        $service->resetPassword($resetPassword);
+    }
+
+    public function testResetPasswordRejectsOtherHostWhenMainDomainHasPort(): void
+    {
+        $service = $this->createService(
+            mainDomain: 'mysite.com:8443',
+            sites: [],
+            userExists: true,
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $service->resetPassword(new ResetPassword('testuser', 'https://mysite.com.evil.example:8443/reset-password/'));
+    }
+
     public function testResetPasswordAcceptsConfiguredLocalhostDev(): void
     {
         $service = $this->createService(

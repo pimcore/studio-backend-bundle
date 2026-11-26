@@ -268,7 +268,8 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         $settings = $this->settingsProvider->getSettings();
         $mainDomain = $settings['main_domain'] ?? '';
 
-        if ($mainDomain !== '' && $host === $mainDomain) {
+        // The main domain may carry a port (the invitation link keeps it), the host compared here never does
+        if (is_string($mainDomain) && $mainDomain !== '' && $host === $this->getHostname($mainDomain)) {
             return true;
         }
 
@@ -283,6 +284,16 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         }
 
         return false;
+    }
+
+    /**
+     * The hostname of a configured domain, without the port it may carry.
+     */
+    private function getHostname(string $domain): string
+    {
+        $host = parse_url('//' . $domain, PHP_URL_HOST);
+
+        return is_string($host) && $host !== '' ? $host : $domain;
     }
 
     /**
