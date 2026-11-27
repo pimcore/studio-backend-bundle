@@ -29,6 +29,8 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizati
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyQualifierResolver;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject as StudioDataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -37,6 +39,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\ColumnMapper;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
@@ -44,6 +47,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnCollectorLoaderInterfa
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnDefinitionLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnResolverLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridService;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnService;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMergerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ClassificationStoreConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
@@ -73,6 +78,7 @@ use Pimcore\Model\User;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_map;
+use function count;
 
 /**
  * @internal
@@ -155,12 +161,13 @@ final class GridServiceTest extends Unit
                 'searchDataObjects' => $searchResult,
             ]),
             serviceResolver: $serviceResolver,
+            columnResolverLoader: $this->createCoreKeyColumnResolverLoader(),
             // The missing element must produce exactly one warning.
             logger: $this->makeEmpty(LoggerInterface::class, ['warning' => Expected::once()]),
         );
 
-        // Empty column set keeps the test focused on the element-loading behaviour.
-        $gridParameter = new GridParameter(folderId: 1, columns: [], filters: null);
+        // A column that is read from the object, so that every row has to load it.
+        $gridParameter = $this->createCoreKeyGridParameter();
 
         $result = $service->getDataObjectGrid($gridParameter, null);
 
@@ -1295,6 +1302,319 @@ final class GridServiceTest extends Unit
     }
 
     /**
+     * A grid that asks only for system columns is answered from the search result entries: every value is
+     * already in the entry, so the objects are not loaded from the database.
+     */
+    public function testDataObjectGridDoesNotLoadTheObjectsWhenOnlySystemColumnsAreRequested(): void
+    {
+        $service = $this->createService(
+            gridSearch: $this->createDataObjectGridSearch([100, 101]),
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => Expected::never(),
+            ]),
+            columnResolverLoader: $this->createSystemColumnResolverLoader(),
+        );
+
+        $result = $service->getDataObjectGrid(
+            $this->createGridParameterForColumns([$this->systemColumn('key'), $this->systemColumn('fullpath')]),
+            null
+        );
+
+        $this->assertCount(2, $result->getItems());
+        foreach ($result->getItems() as $row) {
+            $this->assertSame(['from-entry', 'from-entry'], array_map(
+                static fn (ColumnData $columnData) => $columnData->getValue(),
+                $row['columns']
+            ));
+        }
+    }
+
+    /**
+     * A single column that is not a system column needs the object, and every value of the row, system
+     * columns included, is then read from it as before.
+     */
+    public function testDataObjectGridLoadsTheObjectsWhenANonSystemColumnIsRequested(): void
+    {
+        $service = $this->createService(
+            gridSearch: $this->createDataObjectGridSearch([100, 101]),
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => Expected::exactly(2, $this->makeEmpty(AbstractObject::class, [
+                    'getKey' => 'from-core',
+                ])),
+            ]),
+            columnResolverLoader: $this->createSystemColumnResolverLoader(),
+        );
+
+        $result = $service->getDataObjectGrid(
+            $this->createGridParameterForColumns([
+                $this->systemColumn('key'),
+                ['key' => 'name', 'locale' => null, 'type' => 'test.key'],
+            ]),
+            null
+        );
+
+        $this->assertCount(2, $result->getItems());
+        foreach ($result->getItems() as $row) {
+            $this->assertSame(['from-core', 'from-core'], array_map(
+                static fn (ColumnData $columnData) => $columnData->getValue(),
+                $row['columns']
+            ));
+        }
+    }
+
+    /**
+     * A system column with a locale is checked against the language permissions of the object, so it
+     * needs the object.
+     */
+    public function testDataObjectGridLoadsTheObjectsForASystemColumnWithALocale(): void
+    {
+        $service = $this->createService(
+            gridSearch: $this->createDataObjectGridSearch([100]),
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => Expected::once($this->makeEmpty(AbstractObject::class, [
+                    'getKey' => 'from-core',
+                ])),
+            ]),
+            columnResolverLoader: $this->createSystemColumnResolverLoader(),
+        );
+
+        $result = $service->getDataObjectGrid(
+            $this->createGridParameterForColumns([$this->systemColumn('key', 'en')]),
+            null
+        );
+
+        $this->assertSame('from-core', $result->getItems()[0]['columns'][0]->getValue());
+    }
+
+    /**
+     * Only the known system columns are read from the entry. Any other key of a system column type may
+     * name a getter of the object, so it needs the object.
+     */
+    public function testDataObjectGridLoadsTheObjectsForAnUnknownSystemColumnKey(): void
+    {
+        $service = $this->createService(
+            gridSearch: $this->createDataObjectGridSearch([100]),
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => Expected::once($this->makeEmpty(AbstractObject::class, [
+                    'getKey' => 'from-core',
+                ])),
+            ]),
+            columnResolverLoader: $this->createSystemColumnResolverLoader(),
+        );
+
+        $result = $service->getDataObjectGrid(
+            $this->createGridParameterForColumns([$this->systemColumn('parent')]),
+            null
+        );
+
+        $this->assertSame('from-core', $result->getItems()[0]['columns'][0]->getValue());
+    }
+
+    /**
+     * Every known system column of a data object is read from the entry, none of them needs the object.
+     *
+     * @dataProvider dataObjectSystemColumnProvider
+     */
+    public function testDataObjectGridServesEveryDataObjectSystemColumnFromTheEntry(string $key, string $type): void
+    {
+        $service = $this->createService(
+            gridSearch: $this->createDataObjectGridSearch([100]),
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => Expected::never(),
+            ]),
+            columnResolverLoader: $this->makeEmpty(ColumnResolverLoaderInterface::class, [
+                'loadColumnResolvers' => [$type => $this->createSystemColumnResolver($type)],
+            ]),
+        );
+
+        $result = $service->getDataObjectGrid(
+            $this->createGridParameterForColumns([['key' => $key, 'locale' => null, 'type' => $type]]),
+            null
+        );
+
+        $this->assertSame('from-entry', $result->getItems()[0]['columns'][0]->getValue());
+    }
+
+    public static function dataObjectSystemColumnProvider(): array
+    {
+        return [
+            'id' => ['id', 'system.id'],
+            'fullpath' => ['fullpath', 'system.string'],
+            'key' => ['key', 'system.string'],
+            'filename' => ['filename', 'system.string'],
+            'classname' => ['classname', 'system.string'],
+            'type' => ['type', 'system.string'],
+            'published' => ['published', 'system.boolean'],
+            'creationDate' => ['creationDate', 'system.datetime'],
+            'modificationDate' => ['modificationDate', 'system.datetime'],
+            'index' => ['index', 'system.integer'],
+            'userOwner' => ['userOwner', 'system.user'],
+            'userModification' => ['userModification', 'system.user'],
+        ];
+    }
+
+    /**
+     * A folder row is not described by its entry the way an object is (it has no class), so it keeps
+     * reading its values from the folder, which is loaded.
+     */
+    public function testDataObjectGridLoadsTheFolderForAFolderRow(): void
+    {
+        $service = $this->createService(
+            gridSearch: $this->makeEmpty(GridSearchInterface::class, [
+                'searchDataObjects' => new DataObjectSearchResult(
+                    items: [$this->makeEmpty(StudioDataObject::class, [
+                        'getId' => 100,
+                        'getType' => ElementTypes::TYPE_FOLDER,
+                        'getPermissions' => new DataObjectPermissions(),
+                    ])],
+                    currentPage: 1,
+                    pageSize: 10,
+                    totalItems: 1,
+                ),
+            ]),
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => Expected::once($this->makeEmpty(AbstractObject::class, [
+                    'getKey' => 'from-core',
+                ])),
+            ]),
+            columnResolverLoader: $this->createSystemColumnResolverLoader(),
+        );
+
+        $result = $service->getDataObjectGrid(
+            $this->createGridParameterForColumns([$this->systemColumn('key')]),
+            null
+        );
+
+        $this->assertSame('from-core', $result->getItems()[0]['columns'][0]->getValue());
+    }
+
+    /**
+     * Rows that were handed in with a user are permission checked against the object, as before: the
+     * object is loaded, the view permission is checked and the permission event listeners still run.
+     */
+    public function testGridDataForElementWithAUserLoadsTheObjectAndChecksTheViewPermission(): void
+    {
+        $user = $this->buildUser(isAdmin: true);
+        $object = $this->makeEmpty(AbstractObject::class, ['getKey' => 'from-core']);
+
+        $service = $this->createService(
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => Expected::once($object),
+            ]),
+            columnResolverLoader: $this->createSystemColumnResolverLoader(),
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'hasElementPermission' => Expected::once(
+                    static function (object $element, object $permissionUser, string $permission) use (
+                        $object,
+                        $user
+                    ): bool {
+                        self::assertSame($object, $element);
+                        self::assertSame($user, $permissionUser);
+                        self::assertSame(ElementPermissions::VIEW_PERMISSION, $permission);
+
+                        return true;
+                    }
+                ),
+            ]),
+        );
+
+        $data = $service->getGridDataForElement(
+            new ColumnCollection([new Column('key', null, 'system.string', null, [])]),
+            $this->makeEmpty(StudioElementInterface::class, ['getId' => 100]),
+            ElementTypes::TYPE_OBJECT,
+            100,
+            false,
+            $user
+        );
+
+        $this->assertSame('from-core', $data['columns'][0]->getValue());
+    }
+
+    /**
+     * Without an entry there is nothing to read the values from, so the object is loaded.
+     */
+    public function testGridDataForElementWithoutAnEntryLoadsTheObject(): void
+    {
+        $service = $this->createService(
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => Expected::once($this->makeEmpty(AbstractObject::class, [
+                    'getKey' => 'from-core',
+                ])),
+            ]),
+            columnResolverLoader: $this->createSystemColumnResolverLoader(),
+        );
+
+        $data = $service->getGridDataForElement(
+            new ColumnCollection([new Column('key', null, 'system.string', null, [])]),
+            null,
+            ElementTypes::TYPE_OBJECT,
+            100
+        );
+
+        $this->assertSame('from-core', $data['columns'][0]->getValue());
+    }
+
+    /**
+     * An export reads its values from the object, also when it only has system columns.
+     */
+    public function testGridValuesForExportLoadTheObjectForSystemColumns(): void
+    {
+        $service = $this->createService(
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => Expected::once($this->makeEmpty(AbstractObject::class, [
+                    'getKey' => 'from-core',
+                ])),
+            ]),
+            columnResolverLoader: $this->createSystemColumnResolverLoader(),
+        );
+
+        $values = $service->getGridValuesForElement(
+            new ColumnCollection([new Column('key', null, 'system.string', null, [])]),
+            ElementTypes::TYPE_OBJECT,
+            100,
+            $this->buildUser(isAdmin: true)
+        );
+
+        $this->assertSame(['from-core'], $values);
+    }
+
+    /**
+     * An entry with a workflow that restricts permissions still gets its permissions merged from the
+     * object, which is loaded for that purpose only.
+     */
+    public function testDataObjectGridMergesWorkflowPermissionsWhenOnlySystemColumnsAreRequested(): void
+    {
+        $mergedPermissions = new Permissions(delete: false);
+
+        $service = $this->createService(
+            gridSearch: $this->makeEmpty(GridSearchInterface::class, [
+                'searchDataObjects' => new DataObjectSearchResult(
+                    items: [$this->createStudioElement(new Permissions(), true, 100)],
+                    currentPage: 1,
+                    pageSize: 10,
+                    totalItems: 1,
+                ),
+            ]),
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => Expected::once($this->makeEmpty(AbstractObject::class)),
+            ]),
+            workflowPermissionMerger: $this->makeEmpty(WorkflowPermissionMergerInterface::class, [
+                'mergeWorkflowPermissions' => Expected::once($mergedPermissions),
+            ]),
+            columnResolverLoader: $this->createSystemColumnResolverLoader(),
+        );
+
+        $result = $service->getDataObjectGrid(
+            $this->createGridParameterForColumns([$this->systemColumn('key')]),
+            null
+        );
+
+        $row = $result->getItems()[0];
+        $this->assertSame('from-entry', $row['columns'][0]->getValue());
+        $this->assertSame($mergedPermissions, $row['permissions']);
+    }
+
+    /**
      * User is final and cannot be doubled - a real instance with just the admin flag set is
      * enough for the permission checks under test here.
      */
@@ -1336,15 +1656,98 @@ final class GridServiceTest extends Unit
                 'searchDataObjects' => $searchResult,
             ]),
             serviceResolver: $serviceResolver,
+            columnResolverLoader: $this->createCoreKeyColumnResolverLoader(),
             runtimeCacheResolver: $this->makeEmpty(RuntimeCacheResolverInterface::class, [
                 'isRegistered' => static fn (string $index): bool => $runtimeCache->offsetExists($index),
                 'getInstance' => $runtimeCache,
             ]),
         );
 
-        $result = $service->getDataObjectGrid(new GridParameter(folderId: 1, columns: [], filters: null), null);
+        $result = $service->getDataObjectGrid($this->createCoreKeyGridParameter(), null);
 
         $this->assertCount(1, $result->getItems());
+    }
+
+    /**
+     * @param int[] $ids
+     */
+    private function createDataObjectGridSearch(array $ids): GridSearchInterface
+    {
+        return $this->makeEmpty(GridSearchInterface::class, [
+            'searchDataObjects' => new DataObjectSearchResult(
+                items: array_map(
+                    fn (int $id): StudioElementInterface => $this->makeEmpty(StudioElementInterface::class, [
+                        'getId' => $id,
+                    ]),
+                    $ids
+                ),
+                currentPage: 1,
+                pageSize: 10,
+                totalItems: count($ids),
+            ),
+        ]);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $columns
+     */
+    private function createGridParameterForColumns(array $columns): GridParameter
+    {
+        return new GridParameter(folderId: 1, columns: $columns, filters: null);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function systemColumn(string $key, ?string $locale = null): array
+    {
+        return ['key' => $key, 'locale' => $locale, 'type' => 'system.string'];
+    }
+
+    /**
+     * A system string resolver next to a core element resolver, both for data objects: the system one can
+     * read the core element and the entry and tells which one a value came from.
+     */
+    private function createSystemColumnResolverLoader(): ColumnResolverLoaderInterface
+    {
+        return $this->makeEmpty(ColumnResolverLoaderInterface::class, [
+            'loadColumnResolvers' => [
+                'system.string' => $this->createSystemColumnResolver('system.string'),
+                'test.key' => $this->createCoreKeyColumnResolver(),
+            ],
+        ]);
+    }
+
+    private function createSystemColumnResolver(string $type): ColumnResolverInterface
+    {
+        return new class($type) implements
+            ColumnResolverInterface,
+            CoreElementColumnResolverInterface,
+            StudioElementColumnResolverInterface {
+            public function __construct(private readonly string $type)
+            {
+            }
+
+            public function getType(): string
+            {
+                return $this->type;
+            }
+
+            public function supportedElementTypes(): array
+            {
+                return [ElementTypes::TYPE_OBJECT];
+            }
+
+            public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
+            {
+                return new ColumnData($column->getKey(), $column->getLocale(), $element->getKey(), 'input');
+            }
+
+            public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
+            {
+                return new ColumnData($column->getKey(), $column->getLocale(), 'from-entry', 'input');
+            }
+        };
     }
 
     private function buildUser(bool $isAdmin): User
@@ -1355,15 +1758,19 @@ final class GridServiceTest extends Unit
         return $user;
     }
 
-    private function createStudioElement(Permissions $permissions, bool $hasWorkflowWithPermissions): Element
-    {
-        return new class($permissions, $hasWorkflowWithPermissions) extends Element implements WorkflowPermissionsAwareInterface {
+    private function createStudioElement(
+        Permissions $permissions,
+        bool $hasWorkflowWithPermissions,
+        int $id = 1
+    ): Element {
+        return new class($permissions, $hasWorkflowWithPermissions, $id) extends Element implements WorkflowPermissionsAwareInterface {
             public function __construct(
                 private readonly Permissions $studioPermissions,
                 private readonly bool $workflowFlag,
+                int $id,
             ) {
                 parent::__construct(
-                    1,
+                    $id,
                     1,
                     '/test',
                     new ElementIcon('name', 'pimcore_icon'),
@@ -1677,6 +2084,7 @@ final class GridServiceTest extends Unit
         ?ClassDefinitionResolverInterface $classDefinitionResolver = null,
         ?ColumnVariantExpanderInterface $columnVariantExpander = null,
         ?KeyLocalizationResolverInterface $keyLocalizationResolver = null,
+        ?SystemColumnServiceInterface $systemColumnService = null,
     ): GridService {
         return new GridService(
             $this->makeEmpty(ColumnDefinitionLoaderInterface::class),
@@ -1705,6 +2113,7 @@ final class GridServiceTest extends Unit
                 $this->makeEmpty(ColumnReferenceServiceInterface::class)
             ),
             $keyLocalizationResolver ?? new InMemoryKeyLocalizationResolver(),
+            $systemColumnService ?? new SystemColumnService(new ColumnMapper()),
         );
     }
 }
