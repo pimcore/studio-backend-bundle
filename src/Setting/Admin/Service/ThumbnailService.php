@@ -22,6 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Hydrator\SettingsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\ThumbnailPaths;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
 use Pimcore\Model\Asset\Image;
 
 /**
@@ -29,6 +31,8 @@ use Pimcore\Model\Asset\Image;
  */
 final readonly class ThumbnailService implements ThumbnailServiceInterface
 {
+    private const int BACKGROUND_IMAGE_MAX_WIDTH = 1920;
+
     public function __construct(
         private AssetThumbnailServiceInterface $assetThumbnailService,
         private AssetResolverInterface $assetResolver,
@@ -53,26 +57,47 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         return new ThumbnailPaths(
             $this->getThumbnailPath(
                 $customLogo,
-                299,
-                105
+                $this->getLogoParameters(299, 105)
             ),
             $this->getThumbnailPath(
                 $customLogo,
-                586,
-                206
+                $this->getLogoParameters(586, 206)
             ),
             $this->getThumbnailPath(
                 $backgroundImage,
-                586,
-                206
+                $this->getBackgroundImageParameters()
             )
         );
     }
 
+    private function getLogoParameters(int $width, int $height): ImageDownloadConfigParameter
+    {
+        return new ImageDownloadConfigParameter(
+            mimeType: 'png',
+            width: $width,
+            height: $height
+        );
+    }
+
+    /**
+     * The login background covers the whole screen, so it is not fitted into a box like the logo.
+     * It is capped at a full HD width (smaller images are never scaled up) and delivered as JPEG:
+     * a full-size PNG of a photo is several megabytes and can take longer to encode than the PHP
+     * execution time allows, in which case the thumbnail is never stored and every visit of the
+     * login screen starts generating it again.
+     */
+    private function getBackgroundImageParameters(): ImageDownloadConfigParameter
+    {
+        return new ImageDownloadConfigParameter(
+            mimeType: MimeTypes::JPEG->value,
+            resizeMode: ResizeModes::SCALE_BY_WIDTH,
+            width: self::BACKGROUND_IMAGE_MAX_WIDTH
+        );
+    }
+
     private function getThumbnailPath(
-        ?RelatedElementData $assetData = null,
-        int $width = 299,
-        int $height = 105
+        ?RelatedElementData $assetData,
+        ImageDownloadConfigParameter $parameters
     ): ?string {
 
         if ($assetData === null) {
@@ -89,11 +114,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
 
         $thumbnail = $this->assetThumbnailService->getThumbnailFromConfiguration(
             $asset,
-            new ImageDownloadConfigParameter(
-                mimeType: 'png',
-                width: $width,
-                height: $height
-            )
+            $parameters
         );
 
         return $thumbnail->getPath();
