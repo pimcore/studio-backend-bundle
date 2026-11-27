@@ -30,9 +30,9 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Dimensions;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Model\Version;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use Pimcore\Model\Version;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
