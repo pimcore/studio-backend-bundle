@@ -102,9 +102,13 @@ final class GenerateConfigJsonCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        // keep stdout clean for --output=-: all messages go to stderr when available
-        $errorOutput = $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output;
-        $io = new SymfonyStyle($input, $errorOutput);
+        $target = $input->getOption(self::OPTION_OUTPUT);
+        // Only --output=- needs a clean stdout (the JSON itself goes there), so only then do the
+        // messages move to stderr; every other mode keeps them on stdout as before.
+        $messageOutput = $target === '-' && $output instanceof ConsoleOutputInterface
+            ? $output->getErrorOutput()
+            : $output;
+        $io = new SymfonyStyle($input, $messageOutput);
 
         try {
             $spec = $this->openApiExportService->exportConfig(
@@ -131,7 +135,6 @@ final class GenerateConfigJsonCommand extends Command
             isset($spec['paths']) ? count($spec['paths']) : 0
         ));
 
-        $target = $input->getOption(self::OPTION_OUTPUT);
         if ($target === '-') {
             $output->writeln($json, OutputInterface::OUTPUT_RAW);
 
