@@ -64,7 +64,7 @@ class GridConfiguration implements ShareableConfigurationInterface
     private array $columns;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    private ?array $filter;
+    private ?array $filter = null;
 
     #[ORM\Column(type: 'datetime', nullable: false)]
     private DateTime $creationDate;
