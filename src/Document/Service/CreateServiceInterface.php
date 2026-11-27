@@ -15,7 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\Document;
 use Pimcore\Model\UserInterface;
 
@@ -25,7 +27,7 @@ use Pimcore\Model\UserInterface;
 interface CreateServiceInterface
 {
     /**
-     * @throws ElementSavingFailedException|InvalidArgumentException
+     * @throws ElementSavingFailedException|ForbiddenException|InvalidArgumentException|NotFoundException
      */
     public function createDocument(Document $parent, DocumentAddParameters $parameters, UserInterface $user): int;
 }
