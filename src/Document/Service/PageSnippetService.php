@@ -84,6 +84,13 @@ final readonly class PageSnippetService implements PageSnippetServiceInterface
      */
     public function setMainDocument(int $documentId, ?string $mainDocumentPath = null): void
     {
+        if ($mainDocumentPath !== null && $mainDocumentPath !== '') {
+            $this->documentService->getDocumentElementByPath(
+                $this->securityService->getCurrentUser(),
+                $mainDocumentPath
+            );
+        }
+
         try {
             $snippet = $this->getPageSnippet($documentId);
             $snippet->setEditables([]);
