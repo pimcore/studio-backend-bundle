@@ -127,9 +127,10 @@ final readonly class GridSearch implements GridSearchInterface
         $query = $this->getSearchQuery($type, $gridParameter, $user);
 
         if ($type === ElementTypes::TYPE_DATA_OBJECT) {
-            // The grid reads every column value from the database. The search result items only need the
-            // system fields, and the full documents of a large page are tens of megabytes. The items lazy-load
-            // their full search index data if something reads it.
+            // The grid reads the values of its non-system columns from the database, and the values of the system
+            // columns from the search result items. The items only need the system fields, and the full documents
+            // of a large page are tens of megabytes. The items lazy-load their full search index data if something
+            // reads it.
             $query->getSearch()->addModifier(new SystemFieldsOnlySource());
         }
 

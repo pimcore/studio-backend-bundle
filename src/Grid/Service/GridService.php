@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ColumnVariant
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject as StudioDataObject;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -35,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\DeniedColumnDataResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
@@ -77,6 +79,19 @@ final class GridService implements GridServiceInterface
     use ElementProviderTrait;
 
     /**
+     * The column types of the system columns of a data object. The search result entry of a row carries the
+     * value of each of them, so a row of these columns does not need the data object.
+     */
+    private const ENTRY_SYSTEM_COLUMN_TYPES = [
+        ColumnType::SYSTEM_ID->value,
+        ColumnType::SYSTEM_STRING->value,
+        ColumnType::SYSTEM_DATETIME->value,
+        ColumnType::SYSTEM_BOOLEAN->value,
+        ColumnType::SYSTEM_INTEGER->value,
+        ColumnType::SYSTEM_USER->value,
+    ];
+
+    /**
      * @param array<int, ColumnDefinitionInterface> $columnDefinitions
      */
     private array $columnDefinitions = [];
@@ -90,6 +105,11 @@ final class GridService implements GridServiceInterface
      * @param array<string, ColumnCollectorInterface> $columnCollectors
      */
     private array $columnCollectors = [];
+
+    /**
+     * @var string[]|null
+     */
+    private ?array $dataObjectSystemColumnKeys = null;
 
     public function __construct(
         private readonly ColumnDefinitionLoaderInterface $columnDefinitionLoader,
@@ -110,6 +130,7 @@ final class GridService implements GridServiceInterface
         private readonly ColumnReferenceServiceInterface $columnReferenceService,
         private readonly ColumnVariantExpanderInterface $columnVariantExpander,
         private readonly KeyLocalizationResolverInterface $keyLocalizationResolver,
+        private readonly SystemColumnServiceInterface $systemColumnService,
     ) {
     }
 
@@ -299,7 +320,9 @@ final class GridService implements GridServiceInterface
         $data = [];
 
         $databaseElement = $coreElement;
-        if ($databaseElement === null && ($isExport || $elementType === ElementTypes::TYPE_OBJECT)) {
+        if ($databaseElement === null
+            && $this->requiresDatabaseElement($columnCollection, $element, $elementType, $isExport, $user)
+        ) {
             $databaseElement = $this->getElement($this->serviceResolver, $elementType, $elementId);
         }
 
@@ -351,6 +374,73 @@ final class GridService implements GridServiceInterface
         }
 
         return $data;
+    }
+
+    /**
+     * Whether the row has to be built from the database element. A data object row whose columns are all
+     * system columns is built from its search result entry alone, which saves loading the object. Everything
+     * that has to see the object keeps loading it: exports, rows that are checked for a user (the view
+     * permission and its events), rows without an entry and folders.
+     */
+    private function requiresDatabaseElement(
+        ColumnCollection $columnCollection,
+        ?StudioElementInterface $element,
+        string $elementType,
+        bool $isExport,
+        ?UserInterface $user,
+    ): bool {
+        if ($isExport) {
+            return true;
+        }
+
+        if ($elementType !== ElementTypes::TYPE_OBJECT) {
+            return false;
+        }
+
+        if ($element === null || $user !== null) {
+            return true;
+        }
+
+        // A folder is not described by its entry the way an object is (it has no class).
+        if ($element instanceof StudioDataObject && $element->getType() === ElementTypes::TYPE_FOLDER) {
+            return true;
+        }
+
+        return !$this->isEverySupportedColumnAnEntrySystemColumn($columnCollection, $elementType);
+    }
+
+    private function isEverySupportedColumnAnEntrySystemColumn(
+        ColumnCollection $columnCollection,
+        string $elementType
+    ): bool {
+        $systemColumnKeys = $this->getDataObjectSystemColumnKeys();
+
+        foreach ($columnCollection->getColumns() as $column) {
+            if (!$this->supports($column, $elementType)) {
+                continue;
+            }
+
+            // A column with a locale is checked against the language permissions of the object.
+            if ($column->getLocale() !== null
+                || !in_array($column->getType(), self::ENTRY_SYSTEM_COLUMN_TYPES, true)
+                || !in_array($column->getKey(), $systemColumnKeys, true)
+                || !$this->getColumnResolvers()[$column->getType()] instanceof StudioElementColumnResolverInterface
+            ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getDataObjectSystemColumnKeys(): array
+    {
+        return $this->dataObjectSystemColumnKeys ??= array_keys(
+            $this->systemColumnService->getSystemColumnsForDataObjects()
+        );
     }
 
     /**

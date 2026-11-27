@@ -16,17 +16,22 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\SimpleGetterTrait;
+use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
  */
-final class IntegerResolver implements ColumnResolverInterface, CoreElementColumnResolverInterface
+final class IntegerResolver implements
+    ColumnResolverInterface,
+    CoreElementColumnResolverInterface,
+    StudioElementColumnResolverInterface
 {
     use SimpleGetterTrait;
     use ColumnDataTrait;
@@ -35,6 +40,18 @@ final class IntegerResolver implements ColumnResolverInterface, CoreElementColum
      * @throws InvalidArgumentException
      */
     public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
+    {
+        return $this->getColumnData(
+            $column,
+            $this->getValue($column, $element),
+            $this->getType()
+        );
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
     {
         return $this->getColumnData(
             $column,
