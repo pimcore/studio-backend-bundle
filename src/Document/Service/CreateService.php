@@ -22,8 +22,12 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\Document\Util\Trait\DocumentClassTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\DocType;
@@ -49,6 +53,7 @@ final readonly class CreateService implements CreateServiceInterface
         private ElementSaveServiceInterface $elementSaveService,
         private ResolverInterface $classResolver,
         private ServiceResolverInterface $serviceResolver,
+        private SecurityServiceInterface $securityService,
         private string $defaultController,
         private array $defaultControllers = []
     ) {
@@ -60,7 +65,8 @@ final readonly class CreateService implements CreateServiceInterface
     public function createDocument(Document $parent, DocumentAddParameters $parameters, UserInterface $user): int
     {
         $isTranslation = false;
-        $baseTranslationDocument = $this->getBaseTranslationDocument($parameters);
+        $baseTranslationDocument = $this->getBaseTranslationDocument($parameters, $user);
+        $this->validateInheritanceSource($parameters, $user);
         if ($baseTranslationDocument instanceof Document) {
             $isTranslation = true;
         }
@@ -178,14 +184,45 @@ final readonly class CreateService implements CreateServiceInterface
         return $this->defaultControllers[$type] ?? $this->defaultController;
     }
 
-    private function getBaseTranslationDocument(DocumentAddParameters $parameters): ?Document
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    private function getBaseTranslationDocument(DocumentAddParameters $parameters, UserInterface $user): ?Document
     {
         $id = $parameters->getTranslationsSourceId();
         if ($id === null) {
             return null;
         }
 
-        return $this->documentResolver->getById($id);
+        return $this->getViewableDocument($id, $user);
+    }
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    private function validateInheritanceSource(DocumentAddParameters $parameters, UserInterface $user): void
+    {
+        $id = $parameters->getInheritanceSourceId();
+        if ($id === null) {
+            return;
+        }
+
+        $this->getViewableDocument($id, $user);
+    }
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    private function getViewableDocument(int $id, UserInterface $user): Document
+    {
+        $document = $this->documentResolver->getById($id);
+        if (!$document instanceof Document) {
+            throw new NotFoundException(ElementTypes::TYPE_DOCUMENT, $id);
+        }
+
+        $this->securityService->hasElementPermission($document, $user, ElementPermissions::VIEW_PERMISSION);
+
+        return $document;
     }
 
     private function addLanguageProperty(
