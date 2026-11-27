@@ -23,6 +23,7 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Workflow\Manager;
 use Symfony\Component\Workflow\WorkflowInterface;
 
@@ -65,10 +66,11 @@ final readonly class TransitionActionSubmitter implements TransitionActionSubmit
                 $parameters->getActionType()
             );
         } catch (Exception $e) {
+            // Only a validation refusal is kept: Symfony reads previous exceptions and may answer by their type
             throw new WorkflowActionSubmissionException(
                 $transitionName,
                 $e->getMessage(),
-                $e
+                $e instanceof ValidationException ? $e : null
             );
         }
     }

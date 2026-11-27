@@ -53,6 +53,7 @@ use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject as DataObjectModel;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -332,7 +333,12 @@ final readonly class DataObjectService implements DataObjectServiceInterface
 
             return $object->getId();
         } catch (Exception $exception) {
-            throw new ElementSavingFailedException(null, $exception->getMessage(), $exception);
+            // Only a validation refusal is kept: Symfony reads previous exceptions and may answer by their type
+            throw new ElementSavingFailedException(
+                null,
+                $exception->getMessage(),
+                $exception instanceof ValidationException ? $exception : null
+            );
         }
     }
 

@@ -80,7 +80,6 @@ final class WorkflowActionService implements WorkflowActionServiceInterface
             throw new WorkflowActionSubmissionException(
                 $parameters->getTransition(),
                 $exception->getMessage(),
-                $exception,
             );
         }
 

@@ -16,50 +16,55 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Workflow\ActionSubmitter
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\WorkflowActionSubmissionException;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Exception\Api\FailureCauseProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\WorkflowActionTypes;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\GlobalActionSubmitter;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\TransitionActionSubmitter;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction;
 use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Model\Element\ValidationException;
 use Pimcore\Workflow\GlobalAction;
 use Pimcore\Workflow\Manager;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 /**
- * A failed workflow action keeps what failed as its cause, so a caller can tell a save that
- * validation refused from any other error.
+ * A workflow action that validation refused keeps the refusal as its cause, so a caller can tell it from any
+ * other error.
  *
  * @internal
  */
 final class FailedActionCauseTest extends Unit
 {
+    use FailureCauseProviderTrait;
+
     /**
+     * @dataProvider failureCauses
+     *
      * @throws Exception
      */
-    public function testFailedTransitionKeepsItsCause(): void
+    public function testFailedTransitionKeepsOnlyAValidationCause(Exception $cause, bool $kept): void
     {
-        $cause = new ValidationException('Empty mandatory field [ name ]');
         $manager = $this->makeEmpty(Manager::class, [
             'applyWithAdditionalData' => static function () use ($cause): never {
                 throw $cause;
             },
         ]);
 
-        $this->assertSubmissionKeepsCause(
+        $this->assertSubmissionCause(
             new TransitionActionSubmitter($manager),
             WorkflowActionTypes::TRANSITION_ACTION,
-            $cause
+            $cause,
+            $kept
         );
     }
 
     /**
+     * @dataProvider failureCauses
+     *
      * @throws Exception
      */
-    public function testFailedGlobalActionKeepsItsCause(): void
+    public function testFailedGlobalActionKeepsOnlyAValidationCause(Exception $cause, bool $kept): void
     {
-        $cause = new ValidationException('Empty mandatory field [ name ]');
         $manager = $this->makeEmpty(Manager::class, [
             'getGlobalAction' => $this->makeEmpty(GlobalAction::class, ['isGuardValid' => true]),
             'applyGlobalAction' => static function () use ($cause): never {
@@ -67,20 +72,22 @@ final class FailedActionCauseTest extends Unit
             },
         ]);
 
-        $this->assertSubmissionKeepsCause(
+        $this->assertSubmissionCause(
             new GlobalActionSubmitter($manager),
             WorkflowActionTypes::GLOBAL_ACTION,
-            $cause
+            $cause,
+            $kept
         );
     }
 
     /**
      * @throws Exception
      */
-    private function assertSubmissionKeepsCause(
+    private function assertSubmissionCause(
         TransitionActionSubmitter|GlobalActionSubmitter $submitter,
         string $actionType,
-        ValidationException $cause
+        Exception $cause,
+        bool $kept
     ): void {
         try {
             $submitter->submit(
@@ -90,11 +97,8 @@ final class FailedActionCauseTest extends Unit
             );
             $this->fail('Expected WorkflowActionSubmissionException');
         } catch (WorkflowActionSubmissionException $exception) {
-            $this->assertSame(
-                'Submitting action publish failed: Empty mandatory field [ name ]',
-                $exception->getMessage()
-            );
-            $this->assertSame($cause, $exception->getPrevious());
+            $this->assertSame('Submitting action publish failed: ' . $cause->getMessage(), $exception->getMessage());
+            $this->assertSame($kept ? $cause : null, $exception->getPrevious());
         }
     }
 }

@@ -34,6 +34,7 @@ use Pimcore\Model\Document\DocType;
 use Pimcore\Model\Document\Page;
 use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Document\Service;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Pimcore\Resolver\ResolverInterface;
 use function in_array;
@@ -97,7 +98,12 @@ final readonly class CreateService implements CreateServiceInterface
         try {
             $this->elementSaveService->save($document, $user);
         } catch (Exception $e) {
-            throw new ElementSavingFailedException($document->getId(), $e->getMessage(), $e);
+            // Only a validation refusal is kept: Symfony reads previous exceptions and may answer by their type
+            throw new ElementSavingFailedException(
+                $document->getId(),
+                $e->getMessage(),
+                $e instanceof ValidationException ? $e : null
+            );
         }
 
         // New Document has to be saved already

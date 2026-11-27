@@ -27,13 +27,13 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedExceptio
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Exception\Api\FailureCauseProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\DocType;
 use Pimcore\Model\Document\Email;
 use Pimcore\Model\Document\Link;
 use Pimcore\Model\Document\Page;
-use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Pimcore\Resolver\ResolverInterface;
 use ReflectionClass;
@@ -47,6 +47,8 @@ use ReflectionClass;
  */
 final class CreateServiceTest extends Unit
 {
+    use FailureCauseProviderTrait;
+
     private const string DEFAULT_CONTROLLER = 'App\\Controller\\DefaultController::defaultAction';
 
     private const string EMAIL_CONTROLLER = 'App\\Controller\\MailController::defaultAction';
@@ -315,11 +317,12 @@ final class CreateServiceTest extends Unit
     }
 
     /**
+     * @dataProvider failureCauses
+     *
      * @throws Exception
      */
-    public function testRefusedFirstSaveKeepsItsCause(): void
+    public function testFailedFirstSaveKeepsOnlyAValidationCause(Exception $cause, bool $kept): void
     {
-        $cause = new ValidationException('Title is missing');
         $service = $this->buildService(
             $this->makeEmpty(DocumentResolverInterface::class, [
                 'createByClassName' => $this->makeEmpty(Page::class, ['getId' => 9]),
@@ -339,7 +342,7 @@ final class CreateServiceTest extends Unit
             );
             $this->fail('Expected ElementSavingFailedException');
         } catch (ElementSavingFailedException $exception) {
-            $this->assertSame($cause, $exception->getPrevious());
+            $this->assertSame($kept ? $cause : null, $exception->getPrevious());
         }
     }
 
