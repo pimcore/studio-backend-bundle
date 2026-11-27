@@ -219,6 +219,102 @@ final class CreateServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testViewableInheritanceSourceIsAssignedAsMainDocument(): void
+    {
+        $assigned = null;
+        $created = $this->makeEmpty(Page::class, [
+            'getId' => 9,
+            'setContentMainDocumentId' => function (int $id) use (&$assigned, &$created) {
+                $assigned = $id;
+
+                return $created;
+            },
+        ]);
+
+        $service = $this->buildService(
+            $this->makeEmpty(DocumentResolverInterface::class, [
+                'getById' => $this->makeEmpty(Page::class, ['getId' => 4]),
+                'createByClassName' => $created,
+            ]),
+            null,
+            []
+        );
+
+        $id = $service->createDocument(
+            $this->makeEmpty(Page::class, ['getId' => self::PARENT_ID]),
+            new DocumentAddParameters(key: 'inh', type: 'page', inheritanceSourceId: 4),
+            $this->makeEmpty(UserInterface::class, ['getId' => 1])
+        );
+
+        $this->assertSame(9, $id);
+        $this->assertSame(4, $assigned);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testViewableTranslationSourceDataIsUsed(): void
+    {
+        $captured = null;
+        $properties = null;
+        $checked = [];
+        $user = $this->makeEmpty(UserInterface::class, ['getId' => 1]);
+        $source = $this->makeEmpty(Page::class, [
+            'getId' => 4,
+            'getTemplate' => 'source/template.html.twig',
+            'getController' => 'App\\Controller\\SourceController::indexAction',
+            'getStaticGeneratorEnabled' => false,
+            'getProperties' => ['seo' => 'source-value'],
+        ]);
+        $created = $this->makeEmpty(Page::class, [
+            'getId' => 9,
+            'getProperties' => [],
+            'setProperties' => static function (array $value) use (&$properties): void {
+                $properties = $value;
+            },
+        ]);
+
+        $service = $this->buildService(
+            $this->makeEmpty(DocumentResolverInterface::class, [
+                'getById' => $source,
+                'createByClassName' => function (string $className, int $parentId, array $data) use (
+                    &$captured,
+                    $created
+                ): Document {
+                    $captured = $data;
+
+                    return $created;
+                },
+            ]),
+            null,
+            [],
+            $this->makeEmpty(SecurityServiceInterface::class, [
+                'hasElementPermission' => static function ($element, $u, string $permission) use (&$checked): void {
+                    $checked[] = [$element, $u, $permission];
+                },
+            ])
+        );
+
+        try {
+            $service->createDocument(
+                $this->makeEmpty(Page::class, ['getId' => self::PARENT_ID]),
+                new DocumentAddParameters(key: 'tr', type: 'page', translationsSourceId: 4, language: 'de'),
+                $user
+            );
+        } catch (Error) {
+            // writing the translation link needs a booted kernel; everything before it has run
+        }
+
+        $this->assertSame([[$source, $user, ElementPermissions::VIEW_PERMISSION]], $checked);
+        $this->assertIsArray($captured);
+        $this->assertSame('source/template.html.twig', $captured['template']);
+        $this->assertSame('App\\Controller\\SourceController::indexAction', $captured['controller']);
+        $this->assertSame(['seo' => 'source-value'], $properties);
+    }
+
+    /**
+     * @throws Exception
+     */
     private function assertRejectedWithoutSideEffects(DocumentAddParameters $parameters): void
     {
         $created = false;
