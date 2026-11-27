@@ -51,6 +51,9 @@ services:
     arguments:
       $versionHydratorLocator: '@listing.version_hydrator.service_locator'
 
+  Pimcore\Bundle\StudioBackendBundle\Version\Service\DeletedRelationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Service\DeletedRelationService
+
   Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionBinaryServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionBinaryService
 
