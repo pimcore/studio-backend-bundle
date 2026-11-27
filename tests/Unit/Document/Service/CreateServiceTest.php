@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Document\Service;
 
 use Codeception\Test\Unit;
+use Error;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocTypeResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentResolverInterface;
@@ -22,6 +23,10 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\CreateService;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentTypeServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\DocType;
 use Pimcore\Model\Document\Email;
@@ -29,6 +34,7 @@ use Pimcore\Model\Document\Link;
 use Pimcore\Model\Document\Page;
 use Pimcore\Model\UserInterface;
 use Pimcore\Resolver\ResolverInterface;
+use ReflectionClass;
 
 /**
  * A new page, snippet or email document created without a predefined document type gets the
@@ -123,6 +129,173 @@ final class CreateServiceTest extends Unit
     }
 
     /**
+     * @throws Exception
+     */
+    public function testUnviewableTranslationSourceIsRejectedWithoutSideEffects(): void
+    {
+        $this->assertRejectedWithoutSideEffects(
+            new DocumentAddParameters(key: 'tr', type: 'page', translationsSourceId: 4, language: 'de')
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUnviewableInheritanceSourceIsRejectedWithoutSideEffects(): void
+    {
+        $this->assertRejectedWithoutSideEffects(
+            new DocumentAddParameters(key: 'inh', type: 'page', inheritanceSourceId: 4)
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testMissingTranslationSourceIsNotFound(): void
+    {
+        $created = false;
+        $service = $this->buildService(
+            $this->makeEmpty(DocumentResolverInterface::class, [
+                'getById' => null,
+                'createByClassName' => function () use (&$created): Document {
+                    $created = true;
+
+                    return $this->makeEmpty(Page::class, ['getId' => 9]);
+                },
+            ]),
+            null,
+            []
+        );
+
+        try {
+            $service->createDocument(
+                $this->makeEmpty(Page::class, ['getId' => self::PARENT_ID]),
+                new DocumentAddParameters(key: 'tr', type: 'page', translationsSourceId: 404, language: 'de'),
+                $this->makeEmpty(UserInterface::class, ['getId' => 1])
+            );
+            $this->fail('Expected NotFoundException');
+        } catch (NotFoundException) {
+            $this->assertFalse($created);
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testInheritanceSourceIsCheckedForViewPermission(): void
+    {
+        $source = $this->makeEmpty(Page::class, ['getId' => 4]);
+        $checked = [];
+        $user = $this->makeEmpty(UserInterface::class, ['getId' => 1]);
+
+        $service = $this->buildService(
+            $this->makeEmpty(DocumentResolverInterface::class, [
+                'getById' => $source,
+                'createByClassName' => $this->makeEmpty(Page::class, ['getId' => 9]),
+            ]),
+            null,
+            [],
+            $this->makeEmpty(SecurityServiceInterface::class, [
+                'hasElementPermission' => static function ($element, $u, string $permission) use (&$checked): void {
+                    $checked[] = [$element, $u, $permission];
+                },
+            ])
+        );
+
+        $service->createDocument(
+            $this->makeEmpty(Page::class, ['getId' => self::PARENT_ID]),
+            new DocumentAddParameters(key: 'inh', type: 'page', inheritanceSourceId: 4),
+            $user
+        );
+
+        $this->assertNotSame([], $checked);
+        foreach ($checked as [$element, $checkedUser, $permission]) {
+            $this->assertSame($source, $element);
+            $this->assertSame($user, $checkedUser);
+            $this->assertSame(ElementPermissions::VIEW_PERMISSION, $permission);
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function assertRejectedWithoutSideEffects(DocumentAddParameters $parameters): void
+    {
+        $created = false;
+        $saved = false;
+
+        $service = $this->buildService(
+            $this->makeEmpty(DocumentResolverInterface::class, [
+                'getById' => $this->makeEmpty(Page::class, ['getId' => 4]),
+                'createByClassName' => function () use (&$created): Document {
+                    $created = true;
+
+                    return $this->makeEmpty(Page::class, ['getId' => 9]);
+                },
+            ]),
+            null,
+            [],
+            $this->makeEmpty(SecurityServiceInterface::class, [
+                'hasElementPermission' => static function (): void {
+                    throw new ForbiddenException();
+                },
+            ]),
+            static function () use (&$saved): void {
+                $saved = true;
+            }
+        );
+
+        try {
+            $service->createDocument(
+                $this->makeEmpty(Page::class, ['getId' => self::PARENT_ID]),
+                $parameters,
+                $this->makeEmpty(UserInterface::class, ['getId' => 1])
+            );
+            $this->fail('Expected ForbiddenException');
+        } catch (Error) {
+            // the unguarded flow reaches the translation link write, which needs a booted kernel
+            $this->fail('Expected ForbiddenException before the translation link is written');
+        } catch (ForbiddenException) {
+            $this->assertFalse($created);
+            $this->assertFalse($saved);
+        }
+    }
+
+    private function buildService(
+        DocumentResolverInterface $documentResolver,
+        ?DocType $docType,
+        array $defaultControllers,
+        ?SecurityServiceInterface $securityService = null,
+        ?callable $onSave = null
+    ): CreateService {
+        $arguments = [
+            'documentResolver' => $documentResolver,
+            'docTypeResolver' => $this->makeEmpty(DocTypeResolverInterface::class, ['getById' => $docType]),
+            'documentTypeService' => $this->makeEmpty(DocumentTypeServiceInterface::class, ['tryTypeAdapter' => null]),
+            'elementSaveService' => $this->makeEmpty(
+                ElementSaveServiceInterface::class,
+                $onSave === null ? [] : ['save' => $onSave]
+            ),
+            'classResolver' => $this->makeEmpty(ResolverInterface::class),
+            'serviceResolver' => $this->makeEmpty(ServiceResolverInterface::class, [
+                'getValidKey' => static fn (string $key): string => $key,
+            ]),
+            'defaultController' => self::DEFAULT_CONTROLLER,
+            'defaultControllers' => $defaultControllers,
+        ];
+
+        $constructor = (new ReflectionClass(CreateService::class))->getConstructor();
+        foreach ($constructor->getParameters() as $parameter) {
+            if ($parameter->getName() === 'securityService') {
+                $arguments['securityService'] = $securityService
+                    ?? $this->makeEmpty(SecurityServiceInterface::class);
+            }
+        }
+
+        return new CreateService(...$arguments);
+    }
+
+    /**
      * Runs CreateService::createDocument() and returns the data array handed to the document
      * resolver, which is what the new document is built from.
      *
@@ -147,18 +320,7 @@ final class CreateServiceTest extends Unit
             },
         ]);
 
-        $service = new CreateService(
-            documentResolver: $documentResolver,
-            docTypeResolver: $this->makeEmpty(DocTypeResolverInterface::class, ['getById' => $docType]),
-            documentTypeService: $this->makeEmpty(DocumentTypeServiceInterface::class, ['tryTypeAdapter' => null]),
-            elementSaveService: $this->makeEmpty(ElementSaveServiceInterface::class),
-            classResolver: $this->makeEmpty(ResolverInterface::class),
-            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
-                'getValidKey' => static fn (string $key): string => $key,
-            ]),
-            defaultController: self::DEFAULT_CONTROLLER,
-            defaultControllers: $defaultControllers
-        );
+        $service = $this->buildService($documentResolver, $docType, $defaultControllers);
 
         $parent = $this->makeEmpty(Page::class, ['getId' => self::PARENT_ID]);
         $user = $this->makeEmpty(UserInterface::class, ['getId' => 1]);
