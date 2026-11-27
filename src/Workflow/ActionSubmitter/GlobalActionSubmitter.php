@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\WorkflowActionSubmissionExc
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Response\ActionSubmissionResponse;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Workflow\Manager;
 use Symfony\Component\Workflow\WorkflowInterface;
 
@@ -74,9 +75,11 @@ final readonly class GlobalActionSubmitter implements GlobalActionSubmitterInter
                 $parameters->getActionType()
             );
         } catch (Exception $e) {
+            // Only a validation refusal is kept: Symfony reads previous exceptions and may answer by their type
             throw new WorkflowActionSubmissionException(
                 $actionName,
-                $e->getMessage()
+                $e->getMessage(),
+                $e instanceof ValidationException ? $e : null
             );
         }
     }

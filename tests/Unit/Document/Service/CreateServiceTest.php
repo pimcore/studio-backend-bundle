@@ -23,9 +23,11 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\CreateService;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentTypeServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Exception\Api\FailureCauseProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\DocType;
@@ -45,6 +47,8 @@ use ReflectionClass;
  */
 final class CreateServiceTest extends Unit
 {
+    use FailureCauseProviderTrait;
+
     private const string DEFAULT_CONTROLLER = 'App\\Controller\\DefaultController::defaultAction';
 
     private const string EMAIL_CONTROLLER = 'App\\Controller\\MailController::defaultAction';
@@ -310,6 +314,36 @@ final class CreateServiceTest extends Unit
         $this->assertSame('source/template.html.twig', $captured['template']);
         $this->assertSame('App\\Controller\\SourceController::indexAction', $captured['controller']);
         $this->assertSame(['seo' => 'source-value'], $properties);
+    }
+
+    /**
+     * @dataProvider failureCauses
+     *
+     * @throws Exception
+     */
+    public function testFailedFirstSaveKeepsOnlyAValidationCause(Exception $cause, bool $kept): void
+    {
+        $service = $this->buildService(
+            $this->makeEmpty(DocumentResolverInterface::class, [
+                'createByClassName' => $this->makeEmpty(Page::class, ['getId' => 9]),
+            ]),
+            null,
+            [],
+            onSave: static function () use ($cause): never {
+                throw $cause;
+            }
+        );
+
+        try {
+            $service->createDocument(
+                $this->makeEmpty(Page::class, ['getId' => self::PARENT_ID]),
+                new DocumentAddParameters(key: 'about', type: 'page'),
+                $this->makeEmpty(UserInterface::class, ['getId' => 1])
+            );
+            $this->fail('Expected ElementSavingFailedException');
+        } catch (ElementSavingFailedException $exception) {
+            $this->assertSame($kept ? $cause : null, $exception->getPrevious());
+        }
     }
 
     /**

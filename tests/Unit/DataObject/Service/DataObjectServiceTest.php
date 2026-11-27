@@ -14,24 +14,30 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataObject\Service;
 
 use Codeception\Test\Unit;
+use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectPermissions;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectService;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMerger;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Exception\Api\FailureCauseProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateServiceInterface;
+use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Folder;
 use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\User;
 use Pimcore\Workflow\Manager;
@@ -45,6 +51,8 @@ use Symfony\Component\Workflow\WorkflowInterface;
  */
 final class DataObjectServiceTest extends Unit
 {
+    use FailureCauseProviderTrait;
+
     private const int OBJECT_ID = 5;
 
     private const int CURRENT_USER_ID = 7;
@@ -178,11 +186,53 @@ final class DataObjectServiceTest extends Unit
         $this->assertFalse($service->getDataObject(self::OBJECT_ID, false)->getPermissions()->isPublish());
     }
 
+    /**
+     * @dataProvider failureCauses
+     */
+    public function testFailedFirstSaveKeepsOnlyAValidationCause(Exception $cause, bool $kept): void
+    {
+        $parent = $this->createMock(Folder::class);
+        $parent->method('getId')->willReturn(1);
+        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
+        $serviceResolver->method('getElementById')->willReturn($parent);
+
+        $class = new ClassDefinition();
+        $class->setId('CAR');
+        $class->setName('Car');
+        $classDefinitionResolver = $this->createMock(ClassDefinitionResolverInterface::class);
+        $classDefinitionResolver->method('getById')->willReturn($class);
+
+        $factory = $this->createMock(FactoryInterface::class);
+        $factory->method('build')->willReturn($this->createMock(Concrete::class));
+
+        $elementSaveService = $this->createMock(ElementSaveServiceInterface::class);
+        $elementSaveService->method('save')->willThrowException($cause);
+
+        $service = $this->createService(
+            $this->createMock(DataObjectSearchServiceInterface::class),
+            $this->createManagerNeverEvaluated(),
+            $serviceResolver,
+            classDefinitionResolver: $classDefinitionResolver,
+            factory: $factory,
+            elementSaveService: $elementSaveService,
+        );
+
+        try {
+            $service->addDataObject(1, new DataObjectAddParameters('car', 'CAR', 'object'));
+            $this->fail('Expected ElementSavingFailedException');
+        } catch (ElementSavingFailedException $exception) {
+            $this->assertSame($kept ? $cause : null, $exception->getPrevious());
+        }
+    }
+
     private function createService(
         DataObjectSearchServiceInterface $searchService,
         Manager $manager,
         ?ServiceResolverInterface $serviceResolver = null,
         bool $loggedIn = true,
+        ?ClassDefinitionResolverInterface $classDefinitionResolver = null,
+        ?FactoryInterface $factory = null,
+        ?ElementSaveServiceInterface $elementSaveService = null,
     ): DataObjectService {
         if ($serviceResolver === null) {
             $serviceResolver = $this->createMock(ServiceResolverInterface::class);
@@ -196,17 +246,17 @@ final class DataObjectServiceTest extends Unit
         $securityService->method('getCurrentUser')->willReturn($this->createUser(self::CURRENT_USER_ID));
 
         return new DataObjectService(
-            $this->createMock(ClassDefinitionResolverInterface::class),
+            $classDefinitionResolver ?? $this->createMock(ClassDefinitionResolverInterface::class),
             $this->createMock(DataServiceInterface::class),
             $this->createMock(DataObjectQueryProviderInterface::class),
             $searchService,
             $this->createMock(DataObjectServiceResolverInterface::class),
-            $this->createMock(FactoryInterface::class),
+            $factory ?? $this->createMock(FactoryInterface::class),
             $this->createMock(FilterServiceProviderInterface::class),
             $this->createMock(EventDispatcherInterface::class),
             $securityService,
             $serviceResolver,
-            $this->createMock(ElementSaveServiceInterface::class),
+            $elementSaveService ?? $this->createMock(ElementSaveServiceInterface::class),
             new WorkflowPermissionMerger($manager),
             $this->makeEmpty(WorkflowStateServiceInterface::class),
         );
