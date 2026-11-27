@@ -22,12 +22,15 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\AssetVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\DataObjectVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\DocumentVersionEvent;
+use Pimcore\Bundle\StudioBackendBundle\Version\Model\DeletedRelationReference;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Dimensions;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
 use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Version;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -44,6 +47,7 @@ final readonly class VersionDetailService implements VersionDetailServiceInterfa
         private EventDispatcherInterface $eventDispatcher,
         private ServiceProviderInterface $versionHydratorLocator,
         private VersionRepositoryInterface $repository,
+        private DeletedRelationServiceInterface $deletedRelationService,
     ) {
     }
 
@@ -61,6 +65,10 @@ final readonly class VersionDetailService implements VersionDetailServiceInterfa
             $element,
             $this->getElementClass($element)
         );
+
+        if ($hydratedVersion instanceof DataObjectVersion && $element instanceof Concrete) {
+            $this->addDeletedRelations($hydratedVersion, $element, $version);
+        }
 
         $this->dispatchVersionEvent($hydratedVersion);
 
@@ -135,6 +143,42 @@ final readonly class VersionDetailService implements VersionDetailServiceInterfa
         }
 
         throw new InvalidElementTypeException($class);
+    }
+
+    /**
+     * Relations to elements deleted after the version was saved can not be loaded with the version data,
+     * the version only knows them as unresolved references.
+     *
+     * @todo drop the guard once pimcore/pimcore ^2026.3.8 (which adds Version::getUnresolvedReferences()) is required
+     */
+    private function addDeletedRelations(DataObjectVersion $hydratedVersion, Concrete $element, Version $version): void
+    {
+        // @phpstan-ignore function.impossibleType, function.alreadyNarrowedType
+        if (!method_exists($version, 'getUnresolvedReferences')) {
+            return;
+        }
+
+        $references = array_map(
+            static fn (object $reference) => new DeletedRelationReference(
+                $reference->getFieldName(),
+                $reference->getLanguage(),
+                $reference->getIndex(),
+                $reference->getElementType(),
+                $reference->getElementId()
+            ),
+            $version->getUnresolvedReferences()
+        );
+        if ($references === []) {
+            return;
+        }
+
+        $hydratedVersion->setObjectData(
+            $this->deletedRelationService->addDeletedRelations(
+                $hydratedVersion->getObjectData(),
+                $element->getClass(),
+                $references
+            )
+        );
     }
 
     private function dispatchVersionEvent(AssetVersion|DocumentVersion|DataObjectVersion $version): void
