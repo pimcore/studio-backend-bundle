@@ -28,10 +28,7 @@ use Pimcore\Model\Element\ElementInterface;
 /**
  * @internal
  */
-final class IntegerResolver implements
-    ColumnResolverInterface,
-    CoreElementColumnResolverInterface,
-    StudioElementColumnResolverInterface
+final class IntegerResolver implements ColumnResolverInterface, CoreElementColumnResolverInterface, StudioElementColumnResolverInterface
 {
     use SimpleGetterTrait;
     use ColumnDataTrait;

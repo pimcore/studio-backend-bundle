@@ -438,9 +438,11 @@ final class GridService implements GridServiceInterface
      */
     private function getDataObjectSystemColumnKeys(): array
     {
-        return $this->dataObjectSystemColumnKeys ??= array_keys(
-            $this->systemColumnService->getSystemColumnsForDataObjects()
-        );
+        if ($this->dataObjectSystemColumnKeys === null) {
+            $this->dataObjectSystemColumnKeys = array_keys($this->systemColumnService->getSystemColumnsForDataObjects());
+        }
+
+        return $this->dataObjectSystemColumnKeys;
     }
 
     /**
