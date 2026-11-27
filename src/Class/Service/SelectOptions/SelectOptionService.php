@@ -13,7 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\SelectOptions;
 
+use const JSON_PRETTY_PRINT;
+use const JSON_THROW_ON_ERROR;
+use const JSON_UNESCAPED_SLASHES;
 use InvalidArgumentException;
+use JsonException;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\SelectOptions\ConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\SelectOption\DetailEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\SelectOption\UsageItemEvent;
@@ -23,13 +27,17 @@ use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateSelectOptionP
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\SelectOptionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\SelectOption\SelectOptionDetail;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\SelectOption\SelectOptionUsageItem;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException as ApiInvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\JsonExport;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\SelectOptions\Config;
 use RuntimeException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function is_array;
+use function json_encode;
 use function sprintf;
 
 /**
@@ -43,6 +51,7 @@ final readonly class SelectOptionService implements SelectOptionServiceInterface
         private DetailHydratorInterface $detailHydrator,
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
+        private ImportDataParserInterface $importDataParser,
     ) {
     }
 
@@ -74,24 +83,7 @@ final readonly class SelectOptionService implements SelectOptionServiceInterface
         $config = $this->selectOptionRepository->getById($id);
         $this->validateAdminAccess($config);
 
-        $this->validateSelectOptions($parameters->getSelectOptions());
-
-        try {
-            $config = $this->configResolver->createFromData([
-                Config::PROPERTY_ID => $id,
-                Config::PROPERTY_GROUP => $parameters->getGroup(),
-                Config::PROPERTY_ADMIN_ONLY => $parameters->isAdminOnly(),
-                Config::PROPERTY_USE_TRAITS => $parameters->getUseTraits(),
-                Config::PROPERTY_IMPLEMENTS_INTERFACES => $parameters->getImplementsInterfaces(),
-                Config::PROPERTY_SELECT_OPTIONS => $parameters->getSelectOptions(),
-            ]);
-        } catch (InvalidArgumentException | RuntimeException $e) {
-            throw new ApiInvalidArgumentException(message: $e->getMessage(), previous: $e);
-        }
-
-        $this->selectOptionRepository->save($config);
-
-        return $this->hydrateDetail($config);
+        return $this->replaceConfiguration($id, $parameters);
     }
 
     /**
@@ -125,6 +117,61 @@ final readonly class SelectOptionService implements SelectOptionServiceInterface
         }
 
         return $usages;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function exportSelectOption(string $id): JsonExport
+    {
+        $config = $this->selectOptionRepository->getById($id);
+
+        try {
+            $json = json_encode($config, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+        } catch (JsonException $e) {
+            throw new ApiInvalidArgumentException(
+                'Export data could not be encoded to JSON: ' . $e->getMessage(),
+                $e,
+            );
+        }
+
+        return new JsonExport($json, 'select_option_' . $config->getId() . '_export.json');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function importSelectOptionFromJson(string $id, string $json): SelectOptionDetail
+    {
+        $config = $this->selectOptionRepository->getById($id);
+        $this->validateAdminAccess($config);
+
+        return $this->replaceConfiguration($id, $this->importDataParser->parse($json));
+    }
+
+    /**
+     * @throws ApiInvalidArgumentException|ElementSavingFailedException|NotWriteableException
+     */
+    private function replaceConfiguration(string $id, UpdateSelectOptionParameters $parameters): SelectOptionDetail
+    {
+        $this->validateSelectOptions($parameters->getSelectOptions());
+
+        try {
+            $config = $this->configResolver->createFromData([
+                Config::PROPERTY_ID => $id,
+                Config::PROPERTY_GROUP => $parameters->getGroup(),
+                Config::PROPERTY_ADMIN_ONLY => $parameters->isAdminOnly(),
+                Config::PROPERTY_USE_TRAITS => $parameters->getUseTraits(),
+                Config::PROPERTY_IMPLEMENTS_INTERFACES => $parameters->getImplementsInterfaces(),
+                Config::PROPERTY_SELECT_OPTIONS => $parameters->getSelectOptions(),
+            ]);
+        } catch (InvalidArgumentException | RuntimeException $e) {
+            throw new ApiInvalidArgumentException(message: $e->getMessage(), previous: $e);
+        }
+
+        $this->selectOptionRepository->save($config);
+
+        return $this->hydrateDetail($config);
     }
 
     private function hydrateDetail(Config $config): SelectOptionDetail

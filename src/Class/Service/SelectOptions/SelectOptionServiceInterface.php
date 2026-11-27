@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\JsonExport;
 
 /**
  * @internal
@@ -65,4 +66,19 @@ interface SelectOptionServiceInterface
      * @return SelectOptionUsageItem[]
      */
     public function getSelectOptionUsages(string $id): array;
+
+    /**
+     * @throws InvalidArgumentException
+     * @throws NotFoundException
+     */
+    public function exportSelectOption(string $id): JsonExport;
+
+    /**
+     * @throws ElementSavingFailedException
+     * @throws ForbiddenException
+     * @throws InvalidArgumentException
+     * @throws NotFoundException
+     * @throws NotWriteableException
+     */
+    public function importSelectOptionFromJson(string $id, string $json): SelectOptionDetail;
 }
