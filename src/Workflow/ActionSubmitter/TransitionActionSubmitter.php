@@ -67,7 +67,8 @@ final readonly class TransitionActionSubmitter implements TransitionActionSubmit
         } catch (Exception $e) {
             throw new WorkflowActionSubmissionException(
                 $transitionName,
-                $e->getMessage()
+                $e->getMessage(),
+                $e
             );
         }
     }

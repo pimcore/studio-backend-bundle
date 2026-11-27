@@ -332,7 +332,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
 
             return $object->getId();
         } catch (Exception $exception) {
-            throw new ElementSavingFailedException(null, $exception->getMessage());
+            throw new ElementSavingFailedException(null, $exception->getMessage(), $exception);
         }
     }
 

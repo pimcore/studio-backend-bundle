@@ -19,19 +19,24 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResol
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectPermissions;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectService;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMerger;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowStateServiceInterface;
+use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Folder;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\User;
 use Pimcore\Workflow\Manager;
@@ -176,6 +181,54 @@ final class DataObjectServiceTest extends Unit
         );
 
         $this->assertFalse($service->getDataObject(self::OBJECT_ID, false)->getPermissions()->isPublish());
+    }
+
+    public function testRefusedFirstSaveKeepsItsCause(): void
+    {
+        $cause = new ValidationException('Key is reserved');
+
+        $parent = $this->createMock(Folder::class);
+        $parent->method('getId')->willReturn(1);
+        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
+        $serviceResolver->method('getElementById')->willReturn($parent);
+
+        $class = new ClassDefinition();
+        $class->setId('CAR');
+        $class->setName('Car');
+        $classDefinitionResolver = $this->createMock(ClassDefinitionResolverInterface::class);
+        $classDefinitionResolver->method('getById')->willReturn($class);
+
+        $factory = $this->createMock(FactoryInterface::class);
+        $factory->method('build')->willReturn($this->createMock(Concrete::class));
+
+        $elementSaveService = $this->createMock(ElementSaveServiceInterface::class);
+        $elementSaveService->method('save')->willThrowException($cause);
+
+        $securityService = $this->createMock(SecurityServiceInterface::class);
+        $securityService->method('getCurrentUser')->willReturn($this->createUser(self::CURRENT_USER_ID));
+
+        $service = new DataObjectService(
+            $classDefinitionResolver,
+            $this->createMock(DataServiceInterface::class),
+            $this->createMock(DataObjectQueryProviderInterface::class),
+            $this->createMock(DataObjectSearchServiceInterface::class),
+            $this->createMock(DataObjectServiceResolverInterface::class),
+            $factory,
+            $this->createMock(FilterServiceProviderInterface::class),
+            $this->createMock(EventDispatcherInterface::class),
+            $securityService,
+            $serviceResolver,
+            $elementSaveService,
+            new WorkflowPermissionMerger($this->createMock(Manager::class)),
+            $this->makeEmpty(WorkflowStateServiceInterface::class),
+        );
+
+        try {
+            $service->addDataObject(1, new DataObjectAddParameters('car', 'CAR', 'object'));
+            $this->fail('Expected ElementSavingFailedException');
+        } catch (ElementSavingFailedException $exception) {
+            $this->assertSame($cause, $exception->getPrevious());
+        }
     }
 
     private function createService(

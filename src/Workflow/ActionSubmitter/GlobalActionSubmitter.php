@@ -76,7 +76,8 @@ final readonly class GlobalActionSubmitter implements GlobalActionSubmitterInter
         } catch (Exception $e) {
             throw new WorkflowActionSubmissionException(
                 $actionName,
-                $e->getMessage()
+                $e->getMessage(),
+                $e
             );
         }
     }

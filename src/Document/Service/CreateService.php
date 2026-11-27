@@ -97,7 +97,7 @@ final readonly class CreateService implements CreateServiceInterface
         try {
             $this->elementSaveService->save($document, $user);
         } catch (Exception $e) {
-            throw new ElementSavingFailedException($document->getId(), $e->getMessage());
+            throw new ElementSavingFailedException($document->getId(), $e->getMessage(), $e);
         }
 
         // New Document has to be saved already

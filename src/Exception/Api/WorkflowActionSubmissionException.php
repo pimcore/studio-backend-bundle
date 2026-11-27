@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Throwable;
 use function sprintf;
 
 /**
@@ -21,7 +22,7 @@ use function sprintf;
  */
 final class WorkflowActionSubmissionException extends AbstractApiException
 {
-    public function __construct(string $actionName, string $message)
+    public function __construct(string $actionName, string $message, ?Throwable $previous = null)
     {
         parent::__construct(
             HttpResponseCodes::BAD_REQUEST->value,
@@ -29,7 +30,8 @@ final class WorkflowActionSubmissionException extends AbstractApiException
                 'Submitting action %s failed: %s',
                 $actionName,
                 $message
-            )
+            ),
+            $previous
         );
     }
 }

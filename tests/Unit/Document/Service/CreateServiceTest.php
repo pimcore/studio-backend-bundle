@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\CreateService;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentTypeServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -32,6 +33,7 @@ use Pimcore\Model\Document\DocType;
 use Pimcore\Model\Document\Email;
 use Pimcore\Model\Document\Link;
 use Pimcore\Model\Document\Page;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Pimcore\Resolver\ResolverInterface;
 use ReflectionClass;
@@ -310,6 +312,35 @@ final class CreateServiceTest extends Unit
         $this->assertSame('source/template.html.twig', $captured['template']);
         $this->assertSame('App\\Controller\\SourceController::indexAction', $captured['controller']);
         $this->assertSame(['seo' => 'source-value'], $properties);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRefusedFirstSaveKeepsItsCause(): void
+    {
+        $cause = new ValidationException('Title is missing');
+        $service = $this->buildService(
+            $this->makeEmpty(DocumentResolverInterface::class, [
+                'createByClassName' => $this->makeEmpty(Page::class, ['getId' => 9]),
+            ]),
+            null,
+            [],
+            onSave: static function () use ($cause): never {
+                throw $cause;
+            }
+        );
+
+        try {
+            $service->createDocument(
+                $this->makeEmpty(Page::class, ['getId' => self::PARENT_ID]),
+                new DocumentAddParameters(key: 'about', type: 'page'),
+                $this->makeEmpty(UserInterface::class, ['getId' => 1])
+            );
+            $this->fail('Expected ElementSavingFailedException');
+        } catch (ElementSavingFailedException $exception) {
+            $this->assertSame($cause, $exception->getPrevious());
+        }
     }
 
     /**
