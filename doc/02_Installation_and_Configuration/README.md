@@ -111,6 +111,30 @@ bin/console studio-backend-bundle:generate-openapi-config-json --file-name=<your
 Filename is optional. If not provided, the default filename is `studio-backend-openapi.json`. 
 The file will be saved in the `temp` directory of your Pimcore project. If the file with the same name already exists, it will be overwritten
 
+The command can also write the spec somewhere else and tailor it for the per-slice API client
+sync ([service-operations#1713](https://github.com/pimcore/service-operations/issues/1713)):
+
+```bash
+# write the spec to a file (messages stay on stdout)
+bin/console studio-backend-bundle:generate-openapi-config-json --output=var/openapi.json --locale=en
+
+# print the spec to stdout — the JSON is the only thing on stdout, every message goes to stderr,
+# so the output pipes cleanly into other tools
+bin/console studio-backend-bundle:generate-openapi-config-json -o - --pretty > openapi.json
+
+# restrict the spec to one bundle's endpoints
+bin/console studio-backend-bundle:generate-openapi-config-json -o - \
+  --scope=/pimcore-studio/api/bundle/data-hub --no-bundle-filter > data-hub.json
+```
+
+| Option | Effect |
+| ------ | ------ |
+| `--output` / `-o` | Write the spec to this file instead of the temp storage; `-` prints it to stdout (messages then go to stderr). |
+| `--locale` | Translate `summary`/`description` values into this locale (e.g. `en`); untranslated keys stay raw. |
+| `--scope` | Keep only paths under this prefix (segment-aware, repeatable); referenced components survive, unused ones are dropped. |
+| `--no-bundle-filter` | Keep the endpoints of optional bundles (SEO, application logger, custom reports) even when those bundles are not active. |
+| `--pretty` | Pretty-print the JSON. |
+
 ## Setting Up Generic Data Index
 
 The Studio Backend requires the Generic Data Index bundle, which is a default dependency and

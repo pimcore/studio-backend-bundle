@@ -33,7 +33,7 @@ use function is_array;
 use function is_string;
 use function sprintf;
 
-final readonly class OpenApiService implements OpenApiServiceInterface
+final readonly class OpenApiService implements OpenApiServiceInterface, OpenApiExportServiceInterface
 {
     private const array TRANSLATABLE_PROPERTIES = ['summary', 'description'];
 
@@ -51,12 +51,47 @@ final readonly class OpenApiService implements OpenApiServiceInterface
      */
     public function getConfig(): OpenApi
     {
-        $this->checkValidOpenApiScanPaths();
+        return $this->buildConfig($this->openApiScanPaths, true);
+    }
 
-        $config = (new Generator())->generate([...$this->openApiScanPaths]);
+    public function exportConfig(
+        ?array $scanPaths = null,
+        ?string $locale = null,
+        array $scopes = [],
+        bool $applyBundleFilter = true,
+        bool $sortAllKeys = false,
+    ): array {
+        $config = $this->buildConfig($scanPaths ?? $this->openApiScanPaths, $applyBundleFilter);
+        $spec = $locale === null ? $this->toArray($config) : $this->translateConfig($config, $locale);
+
+        return OpenApiSpecProcessor::sortStable(
+            OpenApiSpecProcessor::restrictToScopes($spec, $scopes),
+            $sortAllKeys
+        );
+    }
+
+    public function translateConfig(OpenApi $config, string $locale = 'en'): array
+    {
+        $configArray = $this->toArray($config);
+
+        $this->translateRecursive($configArray, $locale);
+
+        return $configArray;
+    }
+
+    /**
+     * @throws InvalidPathException
+     */
+    private function buildConfig(array $scanPaths, bool $applyBundleFilter): OpenApi
+    {
+        $this->checkValidOpenApiScanPaths($scanPaths);
+
+        $config = (new Generator())->generate([...$scanPaths]);
 
         if ($config) {
-            $this->filterConfigs($config);
+            if ($applyBundleFilter) {
+                $this->filterConfigs($config);
+            }
 
             usort($config->components->schemas, [$this, 'sortSchemas']);
             usort($config->tags, [$this, 'sortTags']);
@@ -78,11 +113,13 @@ final readonly class OpenApiService implements OpenApiServiceInterface
         return $config;
     }
 
-    public function translateConfig(OpenApi $config, string $locale = 'en'): array
+    /**
+     * @throws EnvironmentException
+     */
+    private function toArray(OpenApi $config): array
     {
         try {
-
-            $configArray = json_decode(
+            return json_decode(
                 json_encode(
                     $config,
                     JSON_THROW_ON_ERROR
@@ -94,10 +131,6 @@ final readonly class OpenApiService implements OpenApiServiceInterface
         } catch (JsonException) {
             throw new EnvironmentException('Failed to convert OpenAPI config to array');
         }
-
-        $this->translateRecursive($configArray, $locale);
-
-        return $configArray;
     }
 
     private function sortSchemas(Schema $a, Schema $b): int
@@ -107,14 +140,7 @@ final readonly class OpenApiService implements OpenApiServiceInterface
 
     private function sortTags(Tag $a, Tag $b): int
     {
-        $aIsBundle = str_starts_with($a->name, 'Bundle');
-        $bIsBundle = str_starts_with($b->name, 'Bundle');
-
-        if ($aIsBundle !== $bIsBundle) {
-            return $aIsBundle ? 1 : -1;
-        }
-
-        return $aIsBundle ? $a->name <=> $b->name : 0;
+        return OpenApiSpecProcessor::compareTagNames($a->name, $b->name);
     }
 
     private function translateRecursive(array &$config, string $locale = 'en'): void
@@ -152,9 +178,9 @@ final readonly class OpenApiService implements OpenApiServiceInterface
     /**
      * @throws InvalidPathException
      */
-    private function checkValidOpenApiScanPaths(): void
+    private function checkValidOpenApiScanPaths(array $scanPaths): void
     {
-        foreach ($this->openApiScanPaths as $path) {
+        foreach ($scanPaths as $path) {
             if (!is_dir($path)) {
                 throw new InvalidPathException(
                     sprintf(

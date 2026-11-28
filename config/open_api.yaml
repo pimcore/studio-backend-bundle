@@ -20,3 +20,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiService
+
+  Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiExportServiceInterface:
+    alias: Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface
