@@ -38,6 +38,12 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassService
 
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\RelationVisibleFieldServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\RelationVisibleFieldService
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\RelationVisibleFieldDefinitionFactoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\RelationVisibleFieldDefinitionFactory
+
   Pimcore\Bundle\StudioBackendBundle\Class\Service\IdentifierServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Service\IdentifierService
 

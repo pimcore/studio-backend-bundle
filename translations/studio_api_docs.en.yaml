@@ -384,6 +384,14 @@ class_get_available_visible_fields_description: |
   The <strong>{classNames}</strong> must be a comma separated list of existing data object class names.
 class_get_available_visible_fields_summary: Get available visible fields for classes
 class_get_available_visible_fields_success_response: Successfully retrieved available visible fields
+class_get_available_visible_fields_for_relation_description: |
+  Get the fields a Many-To-Many Relation or Advanced Many-To-Many Relation can show as visible fields. <br>
+  The allowed types are sent in the request body, so unsaved field settings of the class editor can be used. <br>
+  The fields are the union of what every allowed element type offers; <strong>sources</strong> names where each
+  field comes from (<strong>object</strong> for every object, <strong>object:ClassName</strong> for the fields of a class,
+  <strong>asset</strong> or <strong>document</strong>).
+class_get_available_visible_fields_for_relation_summary: Get available visible fields for a Many-To-Many Relation
+class_get_available_visible_fields_for_relation_success_response: Successfully retrieved available visible fields for the relation
 class_get_fields_by_type_description: |
   Get class definition fields filtered by one or more field types. <br>
   The <strong>{classId}</strong> must be an ID of an existing data object class. <br>
@@ -2355,6 +2363,12 @@ notification_get_unread_count_success_response: Count of unread notifications fo
 data_object_get_available_grid_columns_for_relation_description: Get all available grid columns for data objects Many to many relation field (defined in the visible columns)
 data_object_get_available_grid_columns_for_relation_summary: Get all available grid columns for data objects Many to many relation field
 data_object_get_available_grid_columns_success_for_relation_response: List of available grid columns for data objects Many to many relation field
+data_object_get_visible_field_values_for_relation_description: |
+  Get the visible field values of the given rows of a Many-To-Many Relation or Advanced Many-To-Many Relation. <br>
+  Request the rows that are rendered (at most 200 per request), not the whole relation. <br>
+  Elements the user may not view are left out; a field that does not apply to an element is null.
+data_object_get_visible_field_values_for_relation_summary: Get visible field values for rows of a Many-To-Many Relation
+data_object_get_visible_field_values_for_relation_success_response: Visible field values per related element
 data_object_get_phpcode_transformers_description: |
   Returns a list of available PHPCode transformers used in grid rendering.  
   These transformers can be applied to grid columns to dynamically modify or format values using PHP logic.
