@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidActionTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\WorkflowActionSubmissionException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -32,6 +33,7 @@ use Pimcore\Workflow\GlobalAction;
 use Pimcore\Workflow\Manager;
 use Pimcore\Workflow\Notes\CustomHtmlServiceInterface;
 use Pimcore\Workflow\Transition;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Workflow\Registry;
 use Symfony\Component\Workflow\WorkflowInterface;
 use Symfony\Contracts\Service\ServiceProviderInterface;
@@ -52,6 +54,9 @@ final class WorkflowActionService implements WorkflowActionServiceInterface
         private readonly ServiceProviderInterface $actionSubmitterLocator,
         private readonly ServiceResolverInterface $serviceResolver,
         private readonly UserServiceInterface $userService,
+        // lazy: the data service depends on the workflow details service, whose hydrators depend on this service
+        #[Autowire(lazy: true)]
+        private readonly DataServiceInterface $objectDataService,
     ) {
     }
 
@@ -89,10 +94,32 @@ final class WorkflowActionService implements WorkflowActionServiceInterface
         }
 
         return $this->actionSubmitterLocator->get($actionType)->submit(
-            $element,
+            $this->getLatestDraftElement($element, $user),
             $workflow,
             $parameters
         );
+    }
+
+    /**
+     * Workflow actions are applied to the user's latest draft of the element (like in the classic admin
+     * UI and like the allowed transitions are computed in WorkflowDetailsService), so that a transition
+     * saves or publishes the draft's data instead of the published state, and is checked against the
+     * place the draft is in. Elements without a draft are used as they are.
+     */
+    private function getLatestDraftElement(ElementInterface $element, UserInterface $user): ElementInterface
+    {
+        $version = $this->getLatestVersionForUser($element, $user);
+        $draftElement = $this->getVersionData($element, $version);
+
+        if ($draftElement === $element) {
+            return $element;
+        }
+
+        if ($draftElement instanceof Concrete && $element instanceof Concrete) {
+            $this->objectDataService->handleDraftData($draftElement, $element);
+        }
+
+        return $draftElement;
     }
 
     public function enrichActionNotes(
